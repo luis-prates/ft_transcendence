@@ -1,11 +1,14 @@
 # compiled output
 dist
 node_modules
+dist-ssr
+*.local
 
 # Logs
 logs
 *.log
 npm-debug.log*
+
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -18,7 +21,7 @@ lerna-debug.log*
 coverage
 .nyc_output
 
-# IDEs and editors
+# IDEs and editors - backend
 .idea
 .project
 .classpath
@@ -27,9 +30,20 @@ coverage
 .settings/
 *.sublime-workspace
 
+# IDEs and editors - frontend
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+frontend/src/env.ts
+
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+/cypress/videos/
+/cypress/screenshots/
