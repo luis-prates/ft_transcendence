@@ -10,6 +10,7 @@
 import { Game } from "@/game/ping_pong/pingPong";
 import { onMounted } from "vue";
 import tableImage from "@/assets/images/pingpong/table_1.png";
+import { Table } from "@/game/ping_pong/table";
 
 
 onMounted(function () {
@@ -22,9 +23,11 @@ onMounted(function () {
   console.log(game);
   const table = new Image();
   table.src = tableImage;
+  const tableBoard = new Table(canvas.width, canvas.height, "DarkSlateBlue", "green");
+
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(table, 0, 100, game.width, game.height + 128);
+    tableBoard.draw(ctx);
     game.update();
     game.draw(ctx);
     requestAnimationFrame(animate);

@@ -91,12 +91,12 @@ export class Ball {
     if (this.x <= 0 || this.x + this.width >= this.game.width) {
       if (this.x <= 0) {
         // Marca um ponto para o jogador 2
-        this.game.point(2);
+        this.game.Player2.point();
         this.angle = this.generateRandomAngle(-45, 45);
         this.dir = 2;
       } else {
         // Marca um ponto para o jogador 1
-        this.game.point(1);
+        this.game.Player1.point();
         this.angle = this.generateRandomAngle(135, 225);
         this.dir = 1;
       }
@@ -111,5 +111,9 @@ export class Ball {
     else if (this.dir === 2) context.fillStyle = "blue";
 
     context.fillRect(this.x, this.y, this.width, this.height);
+    context.strokeStyle = "black";
+    context.lineWidth = 3;
+
+    context.strokeRect(this.x, this.y, this.width, this.height);
   }
 }
