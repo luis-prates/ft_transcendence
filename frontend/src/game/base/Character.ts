@@ -1,14 +1,14 @@
 import imgUrl from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
 import type { GameObject } from "./GameObject";
 import { AnimationController } from "../animation/AnimationController";
-import { PathFinding } from "../path_finding/PathFinding";
+import { PathFinding, type PathNode } from "../path_finding/PathFinding";
 
 export interface CharacterOnline {
   name: string;
   objectId: string;
   x: number;
   y: number;
-  animation: { name: string; isStop: boolean };
+  pathFinding: PathNode[];
 }
 
 export class Character implements GameObject {
@@ -75,8 +75,9 @@ export class Character implements GameObject {
       this.objectId = data.objectId;
       this.x = data.x;
       this.y = data.y;
-      this.animation?.setAnimation(data.animation.name);
-      this.animation?.setStop(data.animation.isStop);
+      this.agent.setPath(data.pathFinding);
+      // this.animation?.setAnimation(data.animation.name);
+      // this.animation?.setStop(data.animation.isStop);
     }
   }
 
@@ -92,5 +93,12 @@ export class Character implements GameObject {
 
   update(deltaTime: number): void {
     this.agent.update(deltaTime);
+  }
+
+  public isMouseColision(x: number, y: number): boolean {
+    if (x >= this.x && x <= this.x + this.w && y >= this.y && y <= this.y + this.h) {
+      return true;
+    }
+    return false;
   }
 }

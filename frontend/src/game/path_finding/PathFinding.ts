@@ -3,11 +3,17 @@ import { Map } from "@/game/base/Map";
 
 export type eventCompleted = () => void;
 
-export interface PathFindingNode {
+interface PathFindingNode {
   x: number;
   y: number;
   g: number;
   preview: PathFindingNode | null;
+  direction: number;
+}
+
+export interface PathNode {
+  x: number;
+  y: number;
   direction: number;
 }
 
@@ -24,7 +30,7 @@ export class PathFinding {
 
   close: PathFindingNode[] = [];
 
-  public path: PathFindingNode[] = [];
+  private path: PathNode[] = [];
 
   private onCompleted: eventCompleted | undefined = undefined;
   private character: Character;
@@ -52,6 +58,7 @@ export class PathFinding {
     this.open = [];
     this.close = [];
     this.path = [];
+    this.time = 0;
     x /= Map.SIZE;
     y /= Map.SIZE;
     dx /= Map.SIZE;
@@ -70,7 +77,7 @@ export class PathFinding {
 
   private createPath(node: PathFindingNode | null) {
     while (node != null && node.preview != null) {
-      this.path.unshift(node);
+      this.path.unshift({ x: node.x, y: node.y, direction: node.direction });
       this.createPathNodes(node, node.preview);
       node = node.preview;
     }
@@ -149,8 +156,15 @@ export class PathFinding {
     return false;
   }
 
-  public getPath(): PathFindingNode[] {
+  public getPath(): PathNode[] {
     return this.path;
+  }
+
+  public setPath(path: PathNode[]): void {
+    this.path = path;
+    if (this.path.length > 0) this._isPathFinding = true;
+    this.time = 0;
+    console.log("setPath: ", this.path);
   }
 
   time: number = 0;
