@@ -110,10 +110,11 @@ export class Ball {
     if (this.dir === 1) context.fillStyle = "red";
     else if (this.dir === 2) context.fillStyle = "blue";
 
-    context.fillRect(this.x, this.y, this.width, this.height);
-    context.strokeStyle = "black";
+    context.beginPath();
+    context.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, 360);
+    context.fill();
+    context.strokeStyle = 'black';
     context.lineWidth = 3;
-
-    context.strokeRect(this.x, this.y, this.width, this.height);
+    context.stroke();
   }
 }
