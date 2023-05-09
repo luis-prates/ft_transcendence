@@ -1,33 +1,31 @@
-import imgUrl from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
-import type { GameObject } from "./GameObject";
-import { Game, type Inputhandler } from "./Game";
-import { AnimationController } from "../animation/AnimationController";
 import { Character } from "./Character";
 import socket from "@/socket/Socket";
+import { PathFinding } from "../path_finding/PathFinding";
+import { Map } from "./Map";
 
 export class Player extends Character {
-
   constructor() {
     super();
     this.name = "Player_" + Date.now();
-    socket.emit("new_player", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop }});
+    // socket.emit("new_player", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop } });
   }
 
-  keyDown(key: string[]): void {
-    if (key.includes("w")) (this.y -= this.speed * Game.deltaTime), this.animation?.setAnimation("walk_top");
-    if (key.includes("s")) (this.y += this.speed * Game.deltaTime), this.animation?.setAnimation("walk_bottom");
-    if (key.includes("a")) (this.x -= this.speed * Game.deltaTime), this.animation?.setAnimation("walk_left");
-    if (key.includes("d")) (this.x += this.speed * Game.deltaTime), this.animation?.setAnimation("walk_right");
-    // if (key.includes("p")) {
-    //   this.animation?.stop(1);
-    // }
-    this.animation.setStop(false);
-    socket.emit("player_move", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop }});
+  draw(contex: CanvasRenderingContext2D): void {
+    super.draw(contex);
+    contex.fillStyle = "yellow";
+    this.agent.path.forEach((node) => {
+      contex.fillStyle = "green";
+      // no centro do grid
+      contex.fillRect(node.x * Map.SIZE + 10, node.y * Map.SIZE + 10, 6, 6);
+      //   contex.fillRect(node.x * Map.SIZE, node.y * Map.SIZE, Map.SIZE, Map.SIZE);
+    });
+    if (this.agent.path.length > 0) {
+      contex.fillStyle = "blue";
+      contex.fillRect(this.agent.path[this.agent.path.length - 1].x * Map.SIZE + 10, this.agent.path[this.agent.path.length - 1].y * Map.SIZE + 10, 6, 6);
+    }
   }
-
-  keyUp(key: string[]): void {
-    if (!key.includes("w") || !key.includes("s") || !key.includes("a") || !key.includes("d")) this.animation?.setStop(true)
-    socket.emit("player_move", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop }});
+  mouseClick?(x: number, y: number, button: number): void {
+    console.log("this.agent.getDistinction(this.x, this.y, x, y)");
+    if (button == 0) this.agent.setDistinction(this.x, this.y, x, y, 0);
   }
-
 }

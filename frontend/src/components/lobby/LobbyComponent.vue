@@ -16,20 +16,19 @@ onMounted(() => {
   if (game.value !== undefined) {
     game.value.appendChild(lobby.canvas);
     lobby.addGameObject(new Player());
-    // lobby.addGameObject(new Player2());
 
     lobby.update();
   }
 });
 
 onUnmounted(() => {
- console.log("unmounted");
+  console.log("unmounted");
+  lobby.destructor();
 });
 
 function send() {
   socket.emit("start", "hello word");
 }
-
 </script>
 
 <style scoped>
