@@ -6,7 +6,7 @@ type eventkeyup = (keys: string[]) => void;
 export class Game {
   canvas = document.createElement("canvas") as HTMLCanvasElement;
   context: CanvasRenderingContext2D;
-  protected gameObjets: GameObject[] = [];
+  gameObjets: GameObject[] = [];
   private inputHandler = new Inputhandler();
   private static lastFrameTime = performance.now();
   public static deltaTime: number = 0;
@@ -17,8 +17,9 @@ export class Game {
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
   }
 
-   private draw() {
+  draw() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.gameObjets = this.gameObjets.sort((gameObject1: GameObject, gameObjec2: GameObject)=> (gameObject1.y - gameObjec2.y));
     this.gameObjets.forEach((obj) => obj.draw(this.context));
   }
 
@@ -29,14 +30,15 @@ export class Game {
       this.inputHandler.eventDown.forEach((event) => event(this.inputHandler.keys));
     this.gameObjets.forEach((obj) => obj.update(Game.deltaTime));
     this.draw();
-    requestAnimationFrame(this.update.bind(this));
     Game.lastFrameTime = currentTime;
+    requestAnimationFrame(this.update.bind(this));
   }
 
-  addGameObject(gameObject: GameObject) {
+  addGameObject(gameObject: GameObject): GameObject {
     this.gameObjets.push(gameObject);
     if (gameObject.keyDown) this.inputHandler.eventDown.push(gameObject.keyDown.bind(gameObject));
     if (gameObject.keyUp) this.inputHandler.eventUp.push(gameObject.keyUp.bind(gameObject));
+    return gameObject;
   }
 
   removeGameObject(gameObject: GameObject) {
@@ -55,11 +57,19 @@ export class Inputhandler {
   eventUp: eventkeyup[] = [];
 
   constructor() {
-    window.addEventListener("keypress", (e: KeyboardEvent) => {
+
+    window.addEventListener("keydown", (e: KeyboardEvent) => {
       if (this.keys.indexOf(e.key) === -1) {
         this.keys.push(e.key);
+
       }
+      this.eventUp.forEach((event) => event(this.keys));
     });
+    // window.addEventListener("keypress", (e: KeyboardEvent) => {
+    //   if (this.keys.indexOf(e.key) === -1) {
+    //     this.keys.push(e.key);
+    //   }
+    // });
 
     window.addEventListener("keyup", (e) => {
       this.keys.splice(this.keys.indexOf(e.key), 1);

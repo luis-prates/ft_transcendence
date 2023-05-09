@@ -27,7 +27,7 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: routes_login,
+  routes: routes,
 });
 
 class Router {

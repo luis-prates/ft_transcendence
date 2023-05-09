@@ -1,7 +1,8 @@
 <template>
   <div class="box" href>
-    <ProfileComponent class="profile" />    
-    <!-- <LobbyComponent /> -->
+    <!-- <ProfileComponent class="profile" />     -->
+    <LobbyComponent />
+    <!-- <ProfileComponent class="profile" />    -->
   </div>
 </template>
 

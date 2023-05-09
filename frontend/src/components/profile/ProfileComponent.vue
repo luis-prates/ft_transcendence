@@ -35,6 +35,7 @@ function onFileChanged(event: any) {
 
 function onSubmit() {
   // console.log("onSubmit", user.image);
+  store.update(user);
 }
 </script>
 

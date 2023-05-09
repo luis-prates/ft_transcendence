@@ -15,8 +15,6 @@ interface animations {
 
 export class AnimationController {
   private image: HTMLImageElement;
-  private w: number;
-  private h: number;
   private speed: number;
   private frame: number = 0;
   private frameX: number = 0;
@@ -25,17 +23,16 @@ export class AnimationController {
   private currentAnimation: string = "";
   private size_w: number;
   private size_h: number;
-  private isStop = true;
+  isStop = true;
+  name: string = "";
 
   constructor(image: HTMLImageElement, size_w: number, size_h: number, speed: number) {
     this.image = image;
-    this.w = image.width / size_w;
-    this.h = image.height / size_h;
     this.size_w = size_w;
     this.size_h = size_h;
-    console.log(image.width, image.height, size_w, size_h, this.w, this.h);
     this.speed = speed;
   }
+
 
   public createAnimation(name: string, frames: animationList) {
     frames.frames = frames.frames.map((frame) => {
@@ -43,13 +40,12 @@ export class AnimationController {
       frame.y = frame.y * this.size_h;
       return frame;
     });
-    console.log(frames);
     this.animation[name] = frames;
   }
 
   public setAnimation(name: string) {
+    this.name = name;
     if (name != this.currentAnimation || this.isStop) this.currentAnimation = name;
-    console.log(this.currentAnimation);
     this.isStop = false;
   }
 
@@ -65,16 +61,9 @@ export class AnimationController {
     contex.drawImage(this.image, this.frameX, this.frameY, this.size_w, this.size_h, x, y, w, h);
   }
 
-  public stop(frame: number = 0) {
-    this.frame = frame;
-    this.isStop = true;
-  }
-
-  public play() {
-    this.isStop = false;
-  }
-
-  public isStoped() {
-    return this.isStop;
+  public setStop(isStop: boolean) {
+    if (isStop)
+      this.frame  = 1;
+    this.isStop = isStop;
   }
 }
