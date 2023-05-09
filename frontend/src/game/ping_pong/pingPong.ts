@@ -27,19 +27,15 @@ export class Game {
   }
 
   isEndGame() {
-
-    if (this.Player1.score === this.maxPoint || this.Player2.score === this.maxPoint)
-        return true;
+    if (this.Player1.score === this.maxPoint || this.Player2.score === this.maxPoint) return true;
     return false;
   }
 
   update() {
-    if (!this.isEndGame())
-        this.Ball.update(this.Player1, this.Player2);
-    
+    if (!this.isEndGame()) this.Ball.update(this.Player1, this.Player2);
+
     this.Player1.update(this.inputKey.keys);
     this.Player2.update(this.inputKey.keys);
-
   }
 
   draw(context: CanvasRenderingContext2D) {

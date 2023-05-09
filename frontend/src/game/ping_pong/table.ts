@@ -1,4 +1,3 @@
-
 export class Table {
   width: number = 30;
   height: number = 100;
@@ -6,17 +5,15 @@ export class Table {
   color: string;
 
   constructor(width: number, height: number, background: string, color: string) {
-	this.width = width;
-	this.height = height;
-	this.background = background;
-	this.color = color;
+    this.width = width;
+    this.height = height;
+    this.background = background;
+    this.color = color;
   }
 
-  update() {
-  }
+  update() {}
 
-draw(context: CanvasRenderingContext2D) {
-    
+  draw(context: CanvasRenderingContext2D) {
     context.fillStyle = this.background;
     context.fillRect(0, 0, this.width, this.height);
     context.fillStyle = "white";
