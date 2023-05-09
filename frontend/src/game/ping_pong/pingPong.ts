@@ -31,6 +31,20 @@ export class Game {
     return false;
   }
 
+  endGame(context: CanvasRenderingContext2D) {
+    context.font = "100px 'Press Start 2P', cursive";
+    context.fillStyle = "black";
+
+    context.strokeStyle = "black";
+    context.lineWidth = 10;
+    context.strokeText("GAME OVER", 55, 380);
+    context.strokeText("____ ____", 55, 405);
+
+    context.fillStyle = "yellow";
+    context.fillText("GAME OVER", 55, 380);
+    context.fillText("____ ____", 55, 405);
+  }
+
   update() {
     if (!this.isEndGame()) this.Ball.update(this.Player1, this.Player2);
 
@@ -43,6 +57,7 @@ export class Game {
     this.Player2.draw(context);
     this.drawScore(context);
     this.Ball.draw(context);
+    if (this.isEndGame()) this.endGame(context);
   }
 
   drawScore(ctx: CanvasRenderingContext2D) {
