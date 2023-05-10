@@ -19,8 +19,8 @@ export class Map implements GameObject {
   constructor() {
     this.type = "map";
     this.imagem.src = titles;
-    this.w = 1000;
-    this.h = 1000;
+    this.w = 3000;
+    this.h = 3000;
     const sw = this.w / Map.SIZE;
     const sh = this.h / Map.SIZE;
     Map.map = [];
@@ -37,7 +37,7 @@ export class Map implements GameObject {
     for (let x = 0; x < this.w; x += Map.SIZE) {
       for (let y = 0; y < this.h; y += Map.SIZE) {
         contex.drawImage(this.imagem, 576, 0, Map.SIZE, Map.SIZE, x, y, Map.SIZE, Map.SIZE);
-        contex.strokeRect(x, y, Map.SIZE, Map.SIZE);
+        // contex.strokeRect(x, y, Map.SIZE, Map.SIZE);
         if (Map.map[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] === 1) {
           contex.fillStyle = "rgba(255, 0, 0, 0.5)";
           contex.fillRect(x, y, Map.SIZE, Map.SIZE);

@@ -70,14 +70,11 @@ export class Character implements GameObject {
 
   public setDados(data: CharacterOnline) {
     if (data) {
-      console.log("set: data", data);
       this.name = data.name;
       this.objectId = data.objectId;
       this.x = data.x;
       this.y = data.y;
       this.agent?.setPath(data.pathFinding);
-      // this.animation?.setAnimation(data.animation.name);
-      // this.animation?.setStop(data.animation.isStop);
     }
   }
 

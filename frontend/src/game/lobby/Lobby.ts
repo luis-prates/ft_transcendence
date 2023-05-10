@@ -5,16 +5,17 @@ import { Map } from "./objects/Map";
 
 import { Character, type CharacterOnline } from "../base/Character";
 import { Npc } from "./objects/Npc";
-interface eventsUpdate {
-  data: CharacterOnline;
-  character: Character;
-}
+import type { Player } from "..";
+// interface eventsUpdate {
+//   data: CharacterOnline;
+//   character: Character;
+// }
 
 export class Lobby extends Game {
   private characterOnline: Character[] = [];
 
-  constructor(map: Map) {
-    super(map);
+  constructor(map: Map, player: Player) {
+    super(map, player);
     this.addGameObject(new Npc());
     socket.on("new_player", (data: CharacterOnline) => {
       console.log("lobby -> new_playe: ", data);

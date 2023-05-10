@@ -8,19 +8,18 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { Lobby } from "@/game/lobby/Lobby";
-import { Player, Camera } from "@/game/lobby/objects/Player";
-import { Map } from "@/game/lobby/objects/Map";
+import { Player, Map, Lobby } from "@/game";
 
 const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
-const lobby = new Lobby(new Map());
+const lobby = new Lobby(new Map(), new Player(menu));
 
 onMounted(() => {
   if (game.value !== undefined) {
     game.value.appendChild(lobby.canvas);
-    lobby.addGameObject(new Player(menu));
     lobby.update();
+    const a: [] = [];
+    a.length;
   }
 });
 

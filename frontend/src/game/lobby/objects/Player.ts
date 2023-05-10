@@ -11,6 +11,8 @@ export class Player extends Character {
 
   constructor(menu: Ref<HTMLDivElement | undefined>) {
     super();
+    this.x = window.innerWidth / 2;
+    this.y = window.innerHeight / 2;
     this.menu = menu;
     this.menu.value?.setAttribute("style", "display: none");
     this.type = "player";
