@@ -23,8 +23,10 @@ export class Table {
     context.fillRect(78, this.height - 330, this.width - 154, 10);
     context.fillRect(this.width / 2 - 5, 152, 10, this.height - 205);
     context.fillStyle = "black";
-    context.fillRect(this.width / 2 - 10, 132, 20, 20);
-    context.fillRect(this.width / 2 - 10, this.height - 53, 20, 20);
+    context.beginPath();
+    context.arc(this.width / 2, 146, 20 / 2, 0, 360);
+    context.arc(this.width / 2, this.height - 46, 20 / 2, 0, 360);
+    context.fill();
   }
 
   drawTableColor(context: CanvasRenderingContext2D)

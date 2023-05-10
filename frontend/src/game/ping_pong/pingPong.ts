@@ -1,6 +1,9 @@
 import { Player } from "./player";
 import { InputHandler } from "./input";
 import { Ball } from "./ball";
+import socket from "@/socket/Socket";
+
+//Images
 import tableImage from "@/assets/images/pingpong/table_1.png";
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import marvin from "@/assets/images/pingpong/marvin.png";
@@ -24,6 +27,10 @@ export class Game {
     this.Player1 = new Player(this, 1, "Player 1", avatarDefault);
     this.Player2 = new Player(this, 2, "Player 2", marvin);
     this.Ball = new Ball(this);
+    socket.emit("new_game", {name: "tes", x: 6 });
+    socket.on("new_game", e => {
+        console.log("new_game", e)
+    })
   }
 
   isEndGame() {
@@ -37,12 +44,12 @@ export class Game {
 
     context.strokeStyle = "black";
     context.lineWidth = 10;
-    context.strokeText("GAME OVER", 55, 380);
-    context.strokeText("____ ____", 55, 405);
+    context.strokeText("GAME OVER", 56, 380);
+    context.strokeText("____ ____", 56, 405);
 
     context.fillStyle = "yellow";
-    context.fillText("GAME OVER", 55, 380);
-    context.fillText("____ ____", 55, 405);
+    context.fillText("GAME OVER", 56, 380);
+    context.fillText("____ ____", 56, 405);
   }
 
   update() {

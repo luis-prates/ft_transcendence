@@ -23,7 +23,7 @@ onMounted(function () {
   console.log(game);
   const table = new Image();
   table.src = tableImage;
-  const tableBoard = new Table(canvas.width, canvas.height, "DarkSlateBlue", "green");
+  const tableBoard = new Table(canvas.width, canvas.height, "DarkSlateBlue", "#1e8c2f");
 
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -48,9 +48,9 @@ onMounted(function () {
 #canvas1 {
   border: 5px solid black;
   position: absolute;
-  top: 0px;
+  top: 0%;
   left: 50%;
-  transform: translate(-50%, 50%);
+  transform: translate(-50%, 5%);
   max-width: 100%;
   max-height: 100%;
 }
