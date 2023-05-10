@@ -4,12 +4,15 @@ import type { GameObject } from "./GameObject";
 // type eventkeyup = (keys: string[]) => void;
 
 export class Game {
+  public static instance: Game;
+
   canvas = document.createElement("canvas") as HTMLCanvasElement;
   context: CanvasRenderingContext2D;
   gameObjets: GameObject[] = [];
   private static lastFrameTime = performance.now();
   public static deltaTime: number = 0;
   private mouseEvents: any[] = [];
+  private static gameObjectSelected: GameObject | undefined;
 
   constructor() {
     this.canvas.width = 2000;
@@ -17,6 +20,7 @@ export class Game {
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.canvas.addEventListener("click", this.mouseClick.bind(this));
     this.canvas.addEventListener("contextmenu", this.mouseClick.bind(this));
+    Game.instance = this;
   }
 
   private mouseClick(event: MouseEvent) {
@@ -56,6 +60,19 @@ export class Game {
   destructor() {
     // Lógica de limpeza ou liberação de recursos
     console.log("Executando o destrutor da classe");
+  }
+
+  public static MouseColision(x: number, y: number): GameObject | undefined {
+    if (Game.gameObjectSelected && Game.gameObjectSelected.onDeselected) Game.gameObjectSelected.onDeselected();
+    for (let gameObject of Game.instance.gameObjets) {
+      if (gameObject.type != "map" && x >= gameObject.x && x <= gameObject.x + gameObject.w && y >= gameObject.y && y <= gameObject.y + gameObject.h) {
+        Game.gameObjectSelected = gameObject;
+        if (Game.gameObjectSelected.onSelected) Game.gameObjectSelected.onSelected();
+        return gameObject;
+      }
+    }
+    Game.gameObjectSelected = undefined;
+    return undefined;
   }
 }
 

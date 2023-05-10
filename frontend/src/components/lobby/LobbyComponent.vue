@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { Lobby } from "@/game/lobby/Lobby";
-import { Player } from "@/game/base/Player";
+import { Player } from "@/game/lobby/objects/Player";
 import socket from "@/socket/Socket";
 
 const game = ref<HTMLDivElement>();

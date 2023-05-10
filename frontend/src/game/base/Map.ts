@@ -1,4 +1,4 @@
-import type { GameObject } from "./GameObject";
+import type { GameObject, GameObjectType } from "./GameObject";
 import titles from "@/assets/images/lobby/tiles.png";
 
 export class Map implements GameObject {
@@ -7,6 +7,8 @@ export class Map implements GameObject {
   y: number = 0;
   w: number = 0;
   h: number = 0;
+  type: GameObjectType;
+  isSelect: boolean = false;
   public static SIZE = 32;
   public static map: number[][] = [];
 
@@ -15,6 +17,7 @@ export class Map implements GameObject {
   numColunas = 10; // Número de colunas do grid
 
   constructor() {
+    this.type = "map";
     this.imagem.src = titles;
     this.w = 1000;
     this.h = 1000;

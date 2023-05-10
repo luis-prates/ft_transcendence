@@ -1,11 +1,15 @@
-import { Character } from "./Character";
+import { Character } from "../../base/Character";
 import socket from "@/socket/Socket";
-import { PathFinding } from "../path_finding/PathFinding";
-import { Map } from "./Map";
+import { Map } from "../../base/Map";
+import { Game } from "@/game/base/Game";
+import type { GameObject } from "@/game/base/GameObject";
 
 export class Player extends Character {
+  select: GameObject | undefined = undefined;
+
   constructor() {
     super();
+    this.type = "player";
     this.name = "Player_" + Date.now();
     socket.emit("new_player", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop } });
   }
@@ -25,10 +29,22 @@ export class Player extends Character {
     }
   }
   mouseClick?(x: number, y: number, button: number): void {
-    console.log("this.agent.getDistinction(this.x, this.y, x, y)");
     if (button == 0) {
-      this.agent.setDistinction(this.x, this.y, x, y, 0);
+      this.select = Game.MouseColision(x, y);
+      if (this.select) {
+        console.log(this.select);
+        this.agent.setDistinctionObject(this.select, (gameObject) => {
+          if (gameObject instanceof Character) (gameObject as Character).setLookAt(this);
+        });
+      } else this.agent.setDistinction(x, y, 0);
       socket.emit("player_move", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, pathFinding: this.agent.getPath() });
     }
+  }
+
+  onSelected(): void {}
+
+  public setLookAt(gameObject: GameObject): void {
+    super.setLookAt(gameObject);
+    // socket.emit("player_animation", { animation: this.animation.name , });
   }
 }

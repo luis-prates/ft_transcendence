@@ -1,7 +1,8 @@
 import { Character } from "@/game/base/Character";
 import { Map } from "@/game/base/Map";
+import type { GameObject } from "../base/GameObject";
 
-export type eventCompleted = () => void;
+export type eventCompleted = (objectDestination: GameObject | undefined) => void;
 
 interface PathFindingNode {
   x: number;
@@ -36,6 +37,7 @@ export class PathFinding {
   private character: Character;
 
   private _isPathFinding = false;
+  private objectDestination: GameObject | undefined = undefined;
 
   constructor(character: Character) {
     this.character = character;
@@ -49,12 +51,21 @@ export class PathFinding {
     return dx + dy;
   }
 
+  public setDistinctionObject(objectDestination: GameObject, onCompleted?: eventCompleted) {
+    let destination = { x: objectDestination.x - 10, y: objectDestination.y };
+    if (objectDestination.getPointEvent) {
+      destination = objectDestination.getPointEvent();
+    }
+    this.setDistinction(destination.x, objectDestination.y, 0, objectDestination, onCompleted);
+  }
   /**
    * the event onCompleted is executed only once, when the object reaches the destination
    */
-  public setDistinction(x: number, y: number, dx: number, dy: number, direction: number, onCompleted?: eventCompleted): boolean {
+  public setDistinction(dx: number, dy: number, direction: number, objectDestination: GameObject | undefined = undefined, onCompleted?: eventCompleted): boolean {
+    let x = this.character.x;
+    let y = this.character.y;
     this.onCompleted = onCompleted;
-    console.log("setDistinction: ", x, y, dx, dy, direction);
+    this.objectDestination = objectDestination;
     this.open = [];
     this.close = [];
     this.path = [];
@@ -160,7 +171,8 @@ export class PathFinding {
     return this.path;
   }
 
-  public setPath(path: PathNode[]): void {
+  public setPath(path: PathNode[] | null): void {
+    if (path == null) path = [];
     this.path = path;
     if (this.path.length > 0) this._isPathFinding = true;
     this.time = 0;
@@ -196,18 +208,20 @@ export class PathFinding {
     if (this._isPathFinding) {
       if (this.path.length > 0) {
         this.time += deltaTime;
-        console.log(this.time, " / ", this.character.speed);
         if (this.time > this.character.speed) {
           let node = this.path[0];
           this.time = 0;
           if (node != null) {
             this.character.move(node.x * Map.SIZE, node.y * Map.SIZE, this.getAnimation(node.direction));
             this.path.shift();
-            if (this.onCompleted != undefined) this.onCompleted();
           }
         }
       } else {
         this._isPathFinding = false;
+        if (this.objectDestination != null) {
+          this.character.setLookAt(this.objectDestination);
+        }
+        if (this.onCompleted != undefined) this.onCompleted(this.objectDestination);
         this.character.animation.setStop(true);
       }
     }
