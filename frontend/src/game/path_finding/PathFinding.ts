@@ -1,5 +1,5 @@
 import { Character } from "@/game/base/Character";
-import { Map } from "@/game/base/Map";
+import { Map } from "@/game/lobby/objects/Map";
 import type { GameObject } from "../base/GameObject";
 
 export type eventCompleted = (objectDestination: GameObject | undefined) => void;

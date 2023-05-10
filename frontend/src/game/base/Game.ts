@@ -1,4 +1,4 @@
-import type { GameObject } from "./GameObject";
+import { Camera, Player, type GameObject, Map } from "@/game";
 
 // type eventkeydown = (keys: string[]) => void;
 // type eventkeyup = (keys: string[]) => void;
@@ -13,10 +13,13 @@ export class Game {
   public static deltaTime: number = 0;
   private mouseEvents: any[] = [];
   private static gameObjectSelected: GameObject | undefined;
+  private camera: Camera = new Camera();
+  private map: Map;
 
-  constructor() {
+  constructor(map: Map) {
     this.canvas.width = 2000;
     this.canvas.height = 2000;
+    this.map = map;
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.canvas.addEventListener("click", this.mouseClick.bind(this));
     this.canvas.addEventListener("contextmenu", this.mouseClick.bind(this));
@@ -32,9 +35,25 @@ export class Game {
   }
 
   draw() {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.gameObjets = this.gameObjets.sort((gameObject1: GameObject, gameObjec2: GameObject) => gameObject1.y - gameObjec2.y);
-    this.gameObjets.forEach((obj) => obj.draw(this.context));
+    if (this.camera) {
+      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      const width = this.camera.w + this.camera.x;
+      const height = this.camera.h + this.camera.y;
+      for (let x = this.camera.x; x < width; x += Map.SIZE) {
+        for (let y = this.camera.y; y < height; y += Map.SIZE) {
+          this.map.drawTile(this.context, x, y);
+        }
+      }
+      this.gameObjets = this.gameObjets.sort((gameObject1: GameObject, gameObjec2: GameObject) => gameObject1.y - gameObjec2.y);
+      this.gameObjets.forEach((obj) => {
+        if (this.isColision(this.camera, obj)) obj.draw(this.context);
+      });
+      // this.camera.draw(this.context);
+    } else {
+      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.gameObjets = this.gameObjets.sort((gameObject1: GameObject, gameObjec2: GameObject) => gameObject1.y - gameObjec2.y);
+      this.gameObjets.forEach((obj) => obj.draw(this.context));
+    }
   }
 
   update() {
@@ -47,6 +66,7 @@ export class Game {
   }
 
   addGameObject(gameObject: GameObject): GameObject {
+    if (gameObject instanceof Player) this.camera.setPlayer(gameObject as Player);
     this.gameObjets.push(gameObject);
     if (gameObject.mouseClick) this.mouseEvents.push(gameObject.mouseClick.bind(gameObject));
     return gameObject;
@@ -73,6 +93,14 @@ export class Game {
     }
     Game.gameObjectSelected = undefined;
     return undefined;
+  }
+
+  public isColision(gameObject1: GameObject, gameObjec2: GameObject): boolean {
+    if (gameObject1.x + gameObject1.w < gameObjec2.x) return false;
+    if (gameObject1.x > gameObjec2.x + gameObjec2.w) return false;
+    if (gameObject1.y + gameObject1.h < gameObjec2.y) return false;
+    if (gameObject1.y > gameObjec2.y + gameObjec2.h) return false;
+    return true;
   }
 }
 

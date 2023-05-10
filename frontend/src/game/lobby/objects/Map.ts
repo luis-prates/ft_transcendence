@@ -1,4 +1,4 @@
-import type { GameObject, GameObjectType } from "./GameObject";
+import type { GameObject, GameObjectType } from "../../base/GameObject";
 import titles from "@/assets/images/lobby/tiles.png";
 
 export class Map implements GameObject {
@@ -51,6 +51,10 @@ export class Map implements GameObject {
   pintarSelect(contex: CanvasRenderingContext2D, x: number, y: number) {
     contex.strokeStyle = "red";
     contex.strokeRect(x, y, Map.SIZE, Map.SIZE);
+  }
+
+  drawTile(contex: CanvasRenderingContext2D, x: number, y: number) {
+    contex.drawImage(this.imagem, 576, 0, Map.SIZE, Map.SIZE, x, y, Map.SIZE, Map.SIZE);
   }
 
   mouseClick(x: number, y: number, button: number): void {

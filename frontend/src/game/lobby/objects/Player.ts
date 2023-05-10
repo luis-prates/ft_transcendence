@@ -1,14 +1,18 @@
 import { Character } from "../../base/Character";
 import socket from "@/socket/Socket";
-import { Map } from "../../base/Map";
+import { Map } from "./Map";
 import { Game } from "@/game/base/Game";
 import type { GameObject } from "@/game/base/GameObject";
+import { type Ref } from "vue";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
+  private menu: Ref<HTMLDivElement | undefined>;
 
-  constructor() {
+  constructor(menu: Ref<HTMLDivElement | undefined>) {
     super();
+    this.menu = menu;
+    this.menu.value?.setAttribute("style", "display: none");
     this.type = "player";
     this.name = "Player_" + Date.now();
     socket.emit("new_player", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop } });
@@ -29,14 +33,18 @@ export class Player extends Character {
     }
   }
   mouseClick?(x: number, y: number, button: number): void {
+    this.menu.value?.setAttribute("style", "display: none");
     if (button == 0) {
       this.select = Game.MouseColision(x, y);
-      if (this.select) {
+      if (this.select && this.select != this) {
         console.log(this.select);
         this.agent.setDistinctionObject(this.select, (gameObject) => {
           if (gameObject instanceof Character) (gameObject as Character).setLookAt(this);
+          this.menu.value?.setAttribute("style", "top: " + y + "px; left: " + x + "px; display: block");
         });
-      } else this.agent.setDistinction(x, y, 0);
+      } else {
+        this.agent.setDistinction(x, y, 0);
+      }
       socket.emit("player_move", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, pathFinding: this.agent.getPath() });
     }
   }
