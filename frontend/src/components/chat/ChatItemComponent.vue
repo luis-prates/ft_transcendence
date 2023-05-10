@@ -1,7 +1,7 @@
 <template>
     <div class="item">
         <div style=" width: 70px;">
-            <img class="avatar" :src="props.channel.avatar || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541'" alt="Image Description'">
+            <img class="avatar" :src="props.channel.avatar || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541'">
         </div>
         <div style=" width: 70px; font-family:monospace;">
             <h3 class="name"> {{ props.channel.name }}</h3>
