@@ -1,15 +1,15 @@
 <template>
   <div class="box" href>
     <!-- <ProfileComponent class="profile" />     -->
-    <LobbyComponent />
-
+    <!-- <LobbyComponent /> -->
+    <ChatComponent/>
     <!-- <ProfileComponent class="profile" />    -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { userStore } from "@/stores/userStore";
-import { ProfileComponent, LobbyComponent } from "@/components";
+import {  ChatComponent} from "@/components";
 
 const store = userStore();
 
