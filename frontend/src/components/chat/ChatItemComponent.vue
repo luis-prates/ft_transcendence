@@ -22,6 +22,7 @@ const props = defineProps<{channel: channel}>()
 
 .status {
     margin: 1%;
+    right: -10%;
     display: inline-block;
     transform: translateY(-50%);
     color: #8d8d8d;
@@ -52,6 +53,10 @@ const props = defineProps<{channel: channel}>()
     padding-top: 10px;
     color: aliceblue;
     display: inline-block;
+    text-overflow: ellipsis;
+  overflow: hidden; 
+  width: 200%; 
+  white-space: nowrap;
 }
 
 .item
@@ -70,7 +75,8 @@ const props = defineProps<{channel: channel}>()
 {
     /* display: inline-block; */
     padding: 3px;
-    height: 50px;
+    height: 75%;
+    width: 75%;
     border-radius: 50%;
     background-color: #878B96;
     display: block;

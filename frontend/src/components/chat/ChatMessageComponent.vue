@@ -6,6 +6,10 @@
         <div class="name">{{ selected?.name }}</div>
         <div class="status">{{ selected?.status }}</div>
       </div>
+      <div class="options">
+        <button style="background-color: transparent; color: #525252; font-size: x-large;">⋮</button>
+        <button @click="store.showChannel(undefined)" style="background-color: transparent; color: #525252; font-size: x-large;">⨯</button>
+      </div>
     </div>
     <div class="messages" ref="scroll">
       <div v-for="(message, index) in selected?.messages" :key="index" class="message">
@@ -58,6 +62,10 @@ function sendMessage() {
   border-radius: 4px 0px 0px 0px;
 }
 
+.hidden {
+  display: none;
+}
+
 .header {
   background-color: #ececec;
   color: #fff;
@@ -69,6 +77,11 @@ function sendMessage() {
   border-bottom-width: 1px;
   background-color: #ececec;
   border-radius: 10px 0px 0px 0px;
+}
+.options
+{
+  position: absolute;
+  right: 1%;
 }
 
 .avatar {
@@ -88,6 +101,10 @@ function sendMessage() {
   color:#444653;
   font-size: 18px;
   font-weight: bold;
+  text-overflow: ellipsis;
+  overflow: hidden; 
+  white-space: nowrap;
+  width: 70%;
 }
 
 .status {
@@ -156,4 +173,5 @@ button {
   padding: 10px;
   cursor: pointer;
 }
+
 </style>

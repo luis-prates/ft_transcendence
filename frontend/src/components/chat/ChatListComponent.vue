@@ -1,8 +1,8 @@
 <template>
   <div class="box2">
     <div class="search">
-      <input placeholder="Search" />
-      <button @click="sendMessage">≣</button>
+      <input placeholder="Search"/>
+      <button style="border-style: hidden;" @click="sendMessage">+</button>
     </div>
     <li class="list">
       <u v-for="channel in store.channels">
@@ -26,8 +26,8 @@ function selectChannel(channel:channel) {
 function sendMessage() {
   console.log("sendMessage");
   store.addChannel({
-    name: "string",
-    status: "string",
+    name: "Zé Manuel da silva ahaha lo sdfsf sdfsl asdasda asdasdasd asdasdasda sdasdasd",
+    status: "online",
     avatar: "https://cdn.intra.42.fr/users/a99e8dd9d772038a6765065e3ac5187f/ede-alme.jpg",
     messages: [],
   });
@@ -48,7 +48,7 @@ function sendMessage() {
       background-color: #696c75;
       border-radius: 5px;
       color: #d8d8d8;
-      width: 80%;
+      width: 85%;
       margin: 10px;
       height: 55%;
       padding: 0px;
@@ -66,6 +66,17 @@ function sendMessage() {
       text-align: start;
       padding: 0px;
     }
+  }
+  .search::after
+  {
+    //content: icon;
+    color:#d8d8d8;
+    content: "⌕";
+    //margin-right: 50px;
+    font-size: 20px;
+    position: fixed;
+    right: 6%;
+    margin-top: 2%;
   }
 
   .list {
