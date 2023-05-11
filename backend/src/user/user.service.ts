@@ -25,7 +25,7 @@ export class UserService {
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				if (error.code === 'P2002') {
-					throw new ForbiddenException('Defined field value already exists.');
+					throw new ForbiddenException(`Defined field value already exists. Error: ${error.message.substring(error.message.indexOf('Unique constraint'))}`);
 				}
 			}
 			throw error;

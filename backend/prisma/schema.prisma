@@ -11,19 +11,117 @@ datasource db {
 }
 
 model User {
-	id Int @id @unique
-	createdAt DateTime @default(now())
-	updatedAt DateTime @updatedAt
+	id						Int @id @unique
+	createdAt				DateTime @default(now())
+	updatedAt				DateTime @updatedAt
 
-	email String @unique
-	hash String
+	email					String @unique
+	hash					String
 
-	name String
-	nickname String @unique
-	image String?
+	name					String
+	nickname				String @unique
+	image					String?
+
+	status					UserStatus @default(OFFLINE) // Offline, In Game, Online
+
 	// lastName String?
 
-	// bookmarks Bookmark[]
-	
+	sentFriendRequests		FriendRequest[] @relation("FriendShipRequestor")
+	receivedFriendRequests	FriendRequest[] @relation("FriendShipRequestee")
+	friends					Friend[] @relation("Friends")
+	friendsOf				Friend[] @relation("FriendsOf")
+
+	@@unique([id, nickname])
 	@@map("users")
 }
+
+model FriendRequest {
+	id						Int @unique @default(autoincrement())
+	createdAt				DateTime @default(now())
+	updatedAt				DateTime @updatedAt
+
+	requestorId				Int
+	requestorName			String
+	requesteeId				Int
+	requesteeName			String
+	status					FriendReqStatus @default(PENDING) // Pending, Accepted, Rejected, Blocked
+
+	requestor				User @relation(fields: [requestorId, requestorName], references: [id, nickname], name: "FriendShipRequestor")
+	requestee				User @relation(fields: [requesteeId, requesteeName], references: [id, nickname], name: "FriendShipRequestee")
+
+
+	@@id([requestorId, requesteeId])
+	@@index([requestorId, requesteeId], name: "friendship_index")
+	@@map("friend_requests")
+}
+
+// Need to test like this
+model Friend {
+	id						Int @unique @default(autoincrement())
+	userId					Int
+	userName				String
+	friendId				Int
+	friendName				String
+
+	//user					User @relation(fields: [userId], references: [id], name: "Users")
+	user					User @relation(fields: [userId, userName], references: [id, nickname], name: "Friends")
+	friend					User @relation(fields: [friendId, friendName], references: [id, nickname], name: "FriendsOf")
+
+	@@id([userId, friendId])
+	@@index([userId, friendId], name: "friend_index")
+	@@map("friends")
+}
+
+enum FriendReqStatus {
+	PENDING
+	ACCEPTED
+	REJECTED
+	BLOCKED
+	CANCELLED
+}
+
+enum UserStatus {
+	OFFLINE
+	IN_GAME
+	ONLINE
+}
+
+// model Game {
+// 	id Int @id @unique @default(autoincrement())
+// 	createdAt DateTime @default(now())
+// 	updatedAt DateTime @updatedAt
+
+// 	status Int @default(0)
+// 	player1Id Int
+// 	player1 User @relation("matchHistory", fields: [player1Id], references: [id])
+	
+// 	player2Id Int
+// 	player2 User @relation("matchHistory", fields: [player2Id], references: [id])
+
+// 	//result User
+// 	winner User
+// 	loser User
+
+// }
+
+// model Chat {
+// 	id Int @id @unique @default(autoincrement())
+// 	createdAt DateTime @default(now())
+// 	updatedAt DateTime @updatedAt
+
+// 	//messages Message[]
+// 	users User[]
+
+// 	channelName String @unique
+// 	// channel mode may be in front end (public, private, protected by password)
+// 	password String? // if protected
+	
+// 	channelOwnerId Int
+// 	channelOwner User[] @relation("channelOwner", fields: [channelOwnerId], references: [id])
+// 	channelAdminId Int
+// 	channelAdmin User[] @relation("channelAdmin", fields: [channelAdminId], references: [id])
+// 	channelMuteId Int
+// 	channelMute User[] @relation("channelMute", fields: [channelMuteId], references: [id])
+// 	channelBanId Int
+// 	channelBan User[] @relation("channelBan", fields: [channelBanId], references: [id])
+// }
