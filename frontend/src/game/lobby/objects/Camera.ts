@@ -35,6 +35,7 @@ export class Camera {
   render(context: CanvasRenderingContext2D, gameObjecs: GameObject[]) {
     context.save();
     context.translate(-this.x, -this.y);
+    gameObjecs = gameObjecs.sort((a, b) => a.y - b.y);
     for (let gameObjec of gameObjecs) {
       gameObjec.draw(context);
     }

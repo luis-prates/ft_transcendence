@@ -55,8 +55,9 @@ export class PathFinding {
     let destination = { x: objectDestination.x - 10, y: objectDestination.y };
     if (objectDestination.getPointEvent) {
       destination = objectDestination.getPointEvent();
+      console.log("destination: ", destination);
     }
-    this.setDistinction(destination.x, objectDestination.y, 0, objectDestination, onCompleted);
+    this.setDistinction(destination.x, destination.y, 0, objectDestination, onCompleted);
   }
   /**
    * the event onCompleted is executed only once, when the object reaches the destination

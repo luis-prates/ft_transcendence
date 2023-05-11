@@ -4,6 +4,11 @@
     <button style="left: 10px">Test</button>
     <button style="right: 0px">Test</button>
   </div>
+  <div class="table">
+    <img src="@/assets/images/lobby/table_2aaa15.png" />
+    <img src="@/assets/images/lobby/table_efc120.png" />
+    <img src="@/assets/images/lobby/table_de1bda.png" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -50,6 +55,7 @@ onUnmounted(() => {
   padding: 5px;
   border-radius: 15px;
   box-shadow: 0px 0px 10px 0px rgba(59, 217, 15, 0.75);
+  display: none;
   button {
     width: 40%;
     height: 100%;
@@ -62,6 +68,26 @@ onUnmounted(() => {
     background-color: rgb(200, 213, 23);
     border: 2px solid rgb(59, 217, 15);
     box-shadow: 0px 0px 10px 0px rgba(59, 217, 15, 0.75);
+  }
+}
+
+.table {
+  /* left: 0px; */
+  top: 70px;
+  /* z-index: -1; */
+  position: absolute;
+  width: 150px;
+  height: 90px;
+  right: 5px;
+  top: 5px;
+  background-color: rgb(179, 103, 95);
+  border: 2px solid rgb(178, 120, 120);
+  padding: 10px;
+  border-radius: 15px;
+  img {
+    width: 32px;
+    height: 64px;
+    margin-right: 10px;
   }
 }
 </style>

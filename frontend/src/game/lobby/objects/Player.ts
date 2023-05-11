@@ -42,7 +42,7 @@ export class Player extends Character {
         console.log(this.select);
         this.agent.setDistinctionObject(this.select, (gameObject) => {
           if (gameObject instanceof Character) (gameObject as Character).setLookAt(this);
-          this.menu.value?.setAttribute("style", "top: " + y + "px; left: " + x + "px; display: block");
+          // this.menu.value?.setAttribute("style", "top: " + y + "px; left: " + x + "px; display: block");
         });
       } else {
         this.agent.setDistinction(x, y, 0);

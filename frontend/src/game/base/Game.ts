@@ -1,4 +1,4 @@
-import { Camera, Player, type GameObject, Map } from "@/game";
+import { Camera, Player, type GameObject, Map, Table } from "@/game";
 
 export class Game {
   public static instance: Game;
@@ -21,6 +21,25 @@ export class Game {
     this.canvas.addEventListener("click", this.mouseClick.bind(this));
     this.canvas.addEventListener("contextmenu", this.mouseClick.bind(this));
     Game.instance = this;
+
+    // Adicione os event listeners para os eventos de drag e drop
+    this.canvas.addEventListener("dragover", (event) => event.preventDefault());
+    this.canvas.addEventListener("drop", (event) => {
+      if (event.dataTransfer && event.dataTransfer.types.includes("text/uri-list")) {
+        // Get the ID of the dragged component
+        const componentId = event.dataTransfer.getData("text/uri-list");
+        console.log("componentId:", componentId);
+        const color = componentId.includes("assets/images/lobby/table_") ? "#" + componentId.substring(componentId.indexOf("_") + 1, componentId.indexOf(".")) : "green";
+        console.log("color: ", color);
+
+        const rect = this.canvas.getBoundingClientRect();
+        const table = new Table(color);
+        table.x = Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE;
+        table.y = Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE;
+        this.addGameObject(table);
+      }
+      event.preventDefault();
+    });
   }
 
   private mouseClick(event: MouseEvent) {
