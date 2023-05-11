@@ -7,8 +7,8 @@ const routes_login = [
   {
     path: "/:catchAll(.*)",
     name: "login",
-    component:  LoginPage,
-    props: (route: any) => ({ code: route.query.code })
+    component: LoginPage,
+    props: (route: any) => ({ code: route.query.code }),
   },
 ];
 
@@ -18,11 +18,11 @@ const routes = [
     name: "home",
     component: HomePage,
   },
-//   {
-//     path: "/about",
-//     name: "About",
-//     component: About,
-//   },
+  //   {
+  //     path: "/about",
+  //     name: "About",
+  //     component: About,
+  //   },
 ];
 
 const router = createRouter({
@@ -31,16 +31,13 @@ const router = createRouter({
 });
 
 class Router {
-
-
   public static ROUTE_LOGIN = routes_login;
   public static ROUTE_ALL = routes;
 
   public static clearAll() {
     const routes = router.getRoutes();
     routes.forEach((route: RouteRecordNormalized) => {
-      if (route.name)
-        router.removeRoute(route.name);
+      if (route.name) router.removeRoute(route.name);
     });
   }
 
@@ -59,7 +56,6 @@ class Router {
   public static addRoute(route: RouteRecordRaw[]) {
     route.forEach((route: RouteRecordRaw) => router.addRoute(route));
   }
-
 }
 
 // const ro = new Router();

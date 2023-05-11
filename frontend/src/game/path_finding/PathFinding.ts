@@ -1,6 +1,7 @@
 import { Character } from "@/game/base/Character";
 import { Map } from "@/game/lobby/objects/Map";
 import type { GameObject } from "../base/GameObject";
+import { Game } from "..";
 
 export type eventCompleted = (objectDestination: GameObject | undefined) => void;
 
@@ -75,8 +76,8 @@ export class PathFinding {
     y /= Map.SIZE;
     dx /= Map.SIZE;
     dy /= Map.SIZE;
-    if (this.isEmpty(Map.map, dx, dy)) {
-      this.createNodes(Map.map, { x, y, g: 0, preview: null, direction }, dx, dy);
+    if (this.isEmpty(Game.Map.grid, dx, dy)) {
+      this.createNodes(Game.Map.grid, { x, y, g: 0, preview: null, direction }, dx, dy);
       this.open = [];
       this.close = [];
     }

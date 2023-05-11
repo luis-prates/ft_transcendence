@@ -1,4 +1,5 @@
 import { Camera, Player, type GameObject, Map, Table } from "@/game";
+import socket from "@/socket/Socket";
 
 export class Game {
   public static instance: Game;
@@ -10,11 +11,15 @@ export class Game {
   private mouseEvents: any[] = [];
   private static gameObjectSelected: GameObject | undefined;
   private camera: Camera;
+  protected map: Map;
+  protected player: Player;
 
   constructor(map: Map, player: Player) {
     this.camera = new Camera(player, map);
     this.canvas.width = 2000;
     this.canvas.height = 2000;
+    this.map = map;
+    this.player = player;
     this.addGameObject(map);
     this.addGameObject(player);
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -28,14 +33,10 @@ export class Game {
       if (event.dataTransfer && event.dataTransfer.types.includes("text/uri-list")) {
         // Get the ID of the dragged component
         const componentId = event.dataTransfer.getData("text/uri-list");
-        console.log("componentId:", componentId);
         const color = componentId.includes("assets/images/lobby/table_") ? "#" + componentId.substring(componentId.indexOf("_") + 1, componentId.indexOf(".")) : "green";
-        console.log("color: ", color);
-
         const rect = this.canvas.getBoundingClientRect();
-        const table = new Table(color);
-        table.x = Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE;
-        table.y = Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE;
+        const table = new Table({ color, x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE, y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE });
+        socket.emit("new_table", table.data);
         this.addGameObject(table);
       }
       event.preventDefault();
@@ -97,5 +98,13 @@ export class Game {
     if (gameObject1.y + gameObject1.h < gameObjec2.y) return false;
     if (gameObject1.y > gameObjec2.y + gameObjec2.h) return false;
     return true;
+  }
+
+  public static get Map(): Map {
+    return Game.instance.map;
+  }
+
+  public static getPlayer(): Player {
+    return Game.instance.player;
   }
 }

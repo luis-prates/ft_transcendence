@@ -10,7 +10,7 @@ export class Map implements GameObject {
   type: GameObjectType;
   isSelect: boolean = false;
   public static SIZE = 32;
-  public static map: number[][] = [];
+  public grid: number[][] = [];
 
   // Definindo as configurações do grid
   numLinhas = 10; // Número de linhas do grid
@@ -23,11 +23,11 @@ export class Map implements GameObject {
     this.h = 3000;
     const sw = this.w / Map.SIZE;
     const sh = this.h / Map.SIZE;
-    Map.map = [];
+    this.grid = [];
     for (let i = 0; i < sh; i++) {
-      Map.map[i] = [];
+      this.grid[i] = [];
       for (let j = 0; j < sw; j++) {
-        Map.map[i][j] = 0;
+        this.grid[i][j] = 0;
       }
     }
   }
@@ -37,8 +37,8 @@ export class Map implements GameObject {
     for (let x = 0; x < this.w; x += Map.SIZE) {
       for (let y = 0; y < this.h; y += Map.SIZE) {
         contex.drawImage(this.imagem, 576, 0, Map.SIZE, Map.SIZE, x, y, Map.SIZE, Map.SIZE);
-        contex.strokeRect(x, y, Map.SIZE, Map.SIZE);
-        if (Map.map[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] === 1) {
+        // contex.strokeRect(x, y, Map.SIZE, Map.SIZE);
+        if (this.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] === 1) {
           contex.fillStyle = "rgba(255, 0, 0, 0.5)";
           contex.fillRect(x, y, Map.SIZE, Map.SIZE);
         }
@@ -62,14 +62,14 @@ export class Map implements GameObject {
     y = Math.floor(y / Map.SIZE);
     if (button === 2) {
       console.log("Map: ", x, y, button);
-      Map.map[x][y] = 1;
+      this.grid[x][y] = 1;
     }
     console.log("Map: ", x, y, button);
   }
 
   async saveMap() {
     const data = {
-      map: Map.map,
+      map: this.grid,
       width: this.w,
       height: this.h,
       size: Map.SIZE,

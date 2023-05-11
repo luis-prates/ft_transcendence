@@ -1,36 +1,44 @@
-import type { GameObject } from "@/game";
+import { Game, type GameObject, Map } from "@/game";
 import type { GameObjectType } from "@/game/base/GameObject";
 import table from "@/assets/images/lobby/table0.png";
+import socket from "@/socket/Socket";
 
-export class Table implements GameObject {
-  type: GameObjectType = "item";
-  imagem: any = new Image();
+interface TableOnline {
+  objectId?: string;
   x: number;
   y: number;
+  color: string;
+  type?: string;
+}
+
+export class Table implements GameObject {
+  type: GameObjectType = "table";
+  imagem: any = new Image();
   w: number;
   h: number;
   isSelect: boolean;
-  color: string;
+  private _data: TableOnline;
 
-  constructor(color: string = "green") {
-    this.color = color;
-    this.x = 100;
-    this.y = 100;
+  constructor(data: TableOnline) {
+    this._data = data;
+    this.data.objectId = Game.getPlayer().objectId + "_" + Date.now();
+    this.data.type = "type";
     this.w = 32;
     this.h = 64;
     this.isSelect = false;
     this.imagem.src = table;
+    Game.Map.grid[this.x / Map.SIZE][this.y / Map.SIZE] = 1;
   }
 
   private pontoEvento = [
     { x: 13, y: 68, isFree: true },
-    { x: 13, y: -0, isFree: true },
+    { x: 13, y: -5, isFree: true },
   ];
 
   draw(contex: CanvasRenderingContext2D): void {
-    contex.fillStyle = this.color;
-    contex.fillRect(this.x, this.y, this.w - 1, this.h - 14);
-    contex.drawImage(this.imagem, this.x, this.y, this.w, this.h);
+    contex.fillStyle = this.data.color;
+    contex.fillRect(this.x, this.y - 10, this.w - 1, this.h - 14);
+    contex.drawImage(this.imagem, this.x, this.y - 10, this.w, this.h);
     // this.pontoEvento.forEach((ponto) => {
     //   contex.fillStyle = ponto.isFree ? "yellow" : "red";
     //   contex.fillRect(this.x + ponto.x, this.y + ponto.y, 6, 6);
@@ -51,5 +59,21 @@ export class Table implements GameObject {
       } else ponto.isFree = true;
     }
     return _ponto;
+  }
+
+  get x(): number {
+    return this.data.x;
+  }
+
+  get y(): number {
+    return this.data.y;
+  }
+
+  public set data(data: TableOnline) {
+    this._data = data;
+  }
+
+  public get data(): TableOnline {
+    return this._data;
   }
 }

@@ -3,7 +3,7 @@
     <!-- <ProfileComponent class="profile" />     -->
     <LobbyComponent />
 
-    <!-- <ProfileComponent class="profile" />    -->
+    <!-- <ProfileComponent class="profile" /> -->
   </div>
 </template>
 

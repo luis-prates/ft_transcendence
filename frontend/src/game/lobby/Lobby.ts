@@ -1,15 +1,10 @@
 import socket from "@/socket/Socket";
 import { Game } from "../base/Game";
-import type { GameObject } from "../base/GameObject";
 import { Map } from "./objects/Map";
 
 import { Character, type CharacterOnline } from "../base/Character";
 import { Npc } from "./objects/Npc";
-import type { Player } from "..";
-// interface eventsUpdate {
-//   data: CharacterOnline;
-//   character: Character;
-// }
+import { Table, type Player } from "..";
 
 export class Lobby extends Game {
   private characterOnline: Character[] = [];
@@ -53,6 +48,10 @@ export class Lobby extends Game {
           break;
         }
       }
+    });
+
+    socket.on("new_table", (data: any) => {
+      this.addGameObject(new Table(data));
     });
   }
 

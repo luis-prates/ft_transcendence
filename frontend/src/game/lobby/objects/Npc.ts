@@ -5,7 +5,6 @@ export class Npc extends Character {
     super();
     this.type = "npc";
     this.animation.sx = 144;
-    console.log("Npc -> constructor -> this.animation.sx", this.animation);
     this.x = 320;
     this.y = 320;
   }

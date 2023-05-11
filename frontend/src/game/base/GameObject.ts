@@ -1,4 +1,4 @@
-export type GameObjectType = "map" | "character" | "npc" | "item" | "player" | "camera";
+export type GameObjectType = "map" | "character" | "npc" | "item" | "player" | "camera" | "table";
 
 export interface GameObject {
   type: GameObjectType;
