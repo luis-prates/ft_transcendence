@@ -6,7 +6,7 @@ export class Ball {
   speedIncrement = 1;
   speedStart = 5;
 
-  game;
+  game: Game;
   width: number = 25;
   height: number = 25;
   x: number = 0;
@@ -113,7 +113,7 @@ export class Ball {
     context.beginPath();
     context.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, 360);
     context.fill();
-    context.strokeStyle = 'black';
+    context.strokeStyle = "black";
     context.lineWidth = 3;
     context.stroke();
   }

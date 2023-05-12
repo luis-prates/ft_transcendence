@@ -8,33 +8,57 @@ import tableImage from "@/assets/images/pingpong/table_1.png";
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import marvin from "@/assets/images/pingpong/marvin.png";
 
+enum Status {
+  Waiting,
+  InGame,
+  Finish
+}
+
+export interface gameResquest {
+  objectId: string,
+  maxScore: number,
+  status: number,
+}
 export class Game {
+  status: number = Status.Waiting;
   width: number;
   height: number;
   offSet: number = 0;
-  maxPoint = 3;
+  //maxPoint = 3;
   inputKey: InputHandler;
   Player1: Player;
   Player2: Player;
   Ball: Ball;
+  data: gameResquest;
 
-  constructor(width: number, height: number, offSet: number, maxPoint: number = 3) {
+  
+  playerNumber: number = 0;
+
+  constructor(width: number, height: number, offSet: number, data: gameResquest) {
     this.width = width;
     this.height = height;
     this.offSet = offSet;
-    this.maxPoint = maxPoint;
+    //this.maxPoint = maxPoint;
     this.inputKey = new InputHandler();
     this.Player1 = new Player(this, 1, "Player 1", avatarDefault);
     this.Player2 = new Player(this, 2, "Player 2", marvin);
     this.Ball = new Ball(this);
-    socket.emit("new_game", {name: "tes", x: 6 });
-    socket.on("new_game", e => {
-        console.log("new_game", e)
-    })
+    this.data = data;
+    
+    /*socket.emit("new_game", { name: "tes", x: 6 });
+    socket.on("new_game", (e) => {
+      console.log("new_game", e);
+    });*/
   }
 
+  startGame()
+  {
+    
+  }
+
+
   isEndGame() {
-    if (this.Player1.score === this.maxPoint || this.Player2.score === this.maxPoint) return true;
+    if (this.Player1.score === this.data.maxScore || this.Player2.score === this.data.maxScore) return true;
     return false;
   }
 
@@ -52,7 +76,27 @@ export class Game {
     context.fillText("____ ____", 56, 405);
   }
 
-  update() {
+  waitingGame(context: CanvasRenderingContext2D) {
+    context.font = "100px 'Press Start 2P', cursive";
+    context.fillStyle = "black";
+
+    context.strokeStyle = "black";
+    context.lineWidth = 10;
+    context.strokeText("WAITING.", 95, 380);
+    context.strokeText("________", 95, 405);
+
+    context.fillStyle = "yellow";
+    context.fillText("WAITING.", 95, 380);
+    context.fillText("________", 95, 405);
+  }
+
+  update(context: CanvasRenderingContext2D) {
+    if (this.status === Status.Waiting || this.status === Status.Finish)
+    {
+      this.waitingGame(context);
+      return ;
+    }
+
     if (!this.isEndGame()) this.Ball.update(this.Player1, this.Player2);
 
     this.Player1.update(this.inputKey.keys);
@@ -79,3 +123,21 @@ export class Game {
     ctx.fillText(this.Player1.score + " : " + this.Player2.score, this.width / 2 - 120, 90);
   }
 }
+
+/*
+gameResquest {
+  player1: {
+	  name: string;
+    avatar: string;
+	};
+  player2: {
+	  name: string;
+    avatar: string;
+	};
+  maxPoint: number;
+}
+
+
+
+
+/*/

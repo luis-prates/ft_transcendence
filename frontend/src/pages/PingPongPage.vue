@@ -7,11 +7,14 @@
 </template>
 
 <script setup lang="ts">
-import { Game } from "@/game/ping_pong/pingPong";
+import { Game, type gameResquest } from "@/game/ping_pong/pingPong";
 import { onMounted } from "vue";
-import tableImage from "@/assets/images/pingpong/table_1.png";
 import { Table } from "@/game/ping_pong/table";
+import socket from "@/socket/Socket";
 
+const props = defineProps({
+  objectId: String
+});
 
 onMounted(function () {
   const canvas = document.getElementById('canvas1') as HTMLCanvasElement;
@@ -19,16 +22,33 @@ onMounted(function () {
   canvas.width = 1000;
   canvas.height = 750;
 
-  const game = new Game(canvas.width, canvas.height - 228, 164);
-  console.log(game);
-  const table = new Image();
-  table.src = tableImage;
+  socket.emit("entry_game",  { objectId: props.objectId });
+  console.log("pros: ", props)
+
+  const game = new Game(canvas.width, canvas.height - 228, 164, props as gameResquest);
+  console.log(props.objectId);
   const tableBoard = new Table(canvas.width, canvas.height, "DarkSlateBlue", "#1e8c2f");
 
+  socket.on("start_game", (e: any) =>{
+      
+      if (e.data === 1)
+      {
+        game.playerNumber = 1;
+        
+      }
+      else if (e.data === 2)
+      {
+        game.playerNumber = 2;
+        
+      }
+        
+      console.log("start_game: ", e)
+    })
+  
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     tableBoard.draw(ctx);
-    game.update();
+    game.update(ctx);
     game.draw(ctx);
     requestAnimationFrame(animate);
   }

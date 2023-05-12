@@ -35,13 +35,14 @@ export class Player {
   }
 
   update(input: string[]) {
-    if (this.player === 1) {
+    if (this.game.playerNumber === 1 || this.game.playerNumber === 2) {
       if (input.includes("w")) this.moveUp();
       if (input.includes("s")) this.moveDown();
-    } else if (this.player === 2) {
+    }
+    /* else if (this.player === 2) {
       if (input.includes("ArrowUp")) this.moveUp();
       if (input.includes("ArrowDown")) this.moveDown();
-    }
+    }*/
   }
 
   draw(context: CanvasRenderingContext2D) {
@@ -88,5 +89,4 @@ export class Player {
 
     context.strokeRect(this.x, this.y, this.width, this.height);
   }
-
 }

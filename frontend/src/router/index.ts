@@ -14,15 +14,16 @@ const routes_login = [
 ];
 
 const routes = [
-  // {
-  //   path: "/",
-  //   name: "home",
-  //   component: HomePage,
-  // },
   {
     path: "/",
+    name: "home",
+    component: HomePage,
+  },
+  {
+    path: "/game",
     name: "Ping Pong Game",
     component: PingPongPage,
+    props: (route: any) => ({ objectId: route.query.objectId,  maxScore: route.query.maxScore})
   },
 ];
 
