@@ -4,6 +4,10 @@
       <input placeholder="Search"/>
       <button style="border-style: hidden;" @click="sendMessage">+</button>
     </div>
+    <div class="buttom">
+      <button>🗨</button>
+      <button>🗫</button>
+    </div>
     <li class="list">
       <u v-for="channel in store.channels">
         <ChatItemComponent :channel="channel" @click="selectChannel(channel)"/>
@@ -37,6 +41,16 @@ function sendMessage() {
 <style scoped lang="scss">
 .box2 {
   background-color: #444653; 
+
+  .buttom {
+    button{
+      width: 50%;
+      font-size: x-large;
+      background-color: transparent;
+      border-color: transparent;
+      color: #f1f1f1;
+      }
+  }
   .search {
     height: 20%;
     width: 100%;
