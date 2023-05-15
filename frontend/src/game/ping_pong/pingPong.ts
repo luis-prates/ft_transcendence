@@ -1,64 +1,52 @@
-import { Player } from "./player";
-import { InputHandler } from "./input";
-import { Ball } from "./ball";
+import { Player } from "./Player";
+import { InputHandler } from "./Input";
+import { Ball } from "./Ball";
 import socket from "@/socket/Socket";
+import { type gameResquest } from "./SocketInterface";
 
 //Images
 import tableImage from "@/assets/images/pingpong/table_1.png";
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import marvin from "@/assets/images/pingpong/marvin.png";
 
-enum Status {
+export enum Status {
   Waiting,
   InGame,
   Finish
 }
 
-export interface gameResquest {
-  objectId: string,
-  maxScore: number,
-  status: number,
-}
 export class Game {
   status: number = Status.Waiting;
   width: number;
   height: number;
   offSet: number = 0;
-  //maxPoint = 3;
   inputKey: InputHandler;
-  Player1: Player;
-  Player2: Player;
-  Ball: Ball;
+  player1: Player;
+  player2: Player;
+  ball: Ball;
   data: gameResquest;
-
-  
   playerNumber: number = 0;
 
   constructor(width: number, height: number, offSet: number, data: gameResquest) {
     this.width = width;
     this.height = height;
     this.offSet = offSet;
-    //this.maxPoint = maxPoint;
     this.inputKey = new InputHandler();
-    this.Player1 = new Player(this, 1, "Player 1", avatarDefault);
-    this.Player2 = new Player(this, 2, "Player 2", marvin);
-    this.Ball = new Ball(this);
+    this.player1 = new Player(this, 1, "Player 1", avatarDefault);
+    this.player2 = new Player(this, 2, "Player 2", marvin);
+    this.ball = new Ball(this);
     this.data = data;
     
-    /*socket.emit("new_game", { name: "tes", x: 6 });
-    socket.on("new_game", (e) => {
-      console.log("new_game", e);
-    });*/
   }
 
-  startGame()
+  /*startGame()
   {
     
-  }
+  }*/
 
 
   isEndGame() {
-    if (this.Player1.score === this.data.maxScore || this.Player2.score === this.data.maxScore) return true;
+    if (this.player1.score === this.data.maxScore || this.player2.score === this.data.maxScore) return true;
     return false;
   }
 
@@ -91,23 +79,27 @@ export class Game {
   }
 
   update(context: CanvasRenderingContext2D) {
-    if (this.status === Status.Waiting || this.status === Status.Finish)
+
+
+    /*if (this.status !== Status.InGame)
     {
       this.waitingGame(context);
       return ;
-    }
+    }*/
 
-    if (!this.isEndGame()) this.Ball.update(this.Player1, this.Player2);
+    if (!this.isEndGame()) this.ball.update(this.player1, this.player2);
 
-    this.Player1.update(this.inputKey.keys);
-    this.Player2.update(this.inputKey.keys);
+    if (this.playerNumber === 1)
+      this.player1.update(this.inputKey.keys);
+    else if (this.playerNumber === 2)
+      this.player2.update(this.inputKey.keys);
   }
 
   draw(context: CanvasRenderingContext2D) {
-    this.Player1.draw(context);
-    this.Player2.draw(context);
-    this.drawScore(context);
-    this.Ball.draw(context);
+    this.player1.draw(context);
+    this.player2.draw(context);
+  //  this.drawScore(context);
+   // this.Ball.draw(context);
     if (this.isEndGame()) this.endGame(context);
   }
 
@@ -117,10 +109,10 @@ export class Game {
 
     ctx.strokeStyle = "black";
     ctx.lineWidth = 10;
-    ctx.strokeText(this.Player1.score + " : " + this.Player2.score, this.width / 2 - 120, 90);
+    ctx.strokeText(this.player1.score + " : " + this.player2.score, this.width / 2 - 120, 90);
 
     ctx.fillStyle = "white";
-    ctx.fillText(this.Player1.score + " : " + this.Player2.score, this.width / 2 - 120, 90);
+    ctx.fillText(this.player1.score + " : " + this.player2.score, this.width / 2 - 120, 90);
   }
 }
 

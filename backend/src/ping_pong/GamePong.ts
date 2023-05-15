@@ -2,11 +2,7 @@ import { Player } from "src/lobby/Lobby";
 import { Ball } from "./Ball";
 import { Player_Pong } from "./PlayerPong";
 import { Socket } from "socket.io";
-
-interface gameResquest {
-  objectId: string, 
-  maxScore: number
-}
+import { type gameResquest } from "./SocketInterface";
 
 export class Game {
 
@@ -29,17 +25,22 @@ export class Game {
   addUsers(user: Player)
   {
     if (!this.player1)
+    {
       this.player1 = new Player_Pong(1, user);
+      console.log("player1 connect");
+    }
     else if (!this.player2)
     {
       this.player2 = new Player_Pong(2, user);
+      console.log("player2 connect");
       this.player1.socket.emit("start_game", 1);
       this.player2.socket.emit("start_game", 2);
+      console.log("emit_start_game");
     }
     else if (!this.whatchers.includes(user))
       this.whatchers.push(user);
     
-    console.log("p1: ", this.player1, " p2: ", this.player2, " ws: ", this.whatchers);
+    //console.log("p1: ", this.player1, " p2: ", this.player2, " ws: ", this.whatchers);
   }
 
   emitWatchers(event: string, data: any): void {

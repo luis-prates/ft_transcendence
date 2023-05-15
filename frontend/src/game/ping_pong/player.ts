@@ -1,4 +1,6 @@
-import { Game } from "./pingPong";
+import { Game } from "./PingPong";
+import { type updatePlayer } from "./SocketInterface";
+import socket from "@/socket/Socket";
 
 export class Player {
   game: Game;
@@ -22,6 +24,21 @@ export class Player {
     this.avatar.src = avatar;
   }
 
+  emitMove()
+  {
+      const movePlayer: updatePlayer = {
+      objectId: this.game.data.objectId,
+      playerNumber: this.game.playerNumber,
+      x: this.x,
+      y: this.y,
+      score: this.score,
+    };
+
+    socket.emit("game_move", { movePlayer })
+    
+   // console.log("player" + this.game.playerNumber + " move!", ballUp)
+  }
+
   moveUp() {
     if (this.y > this.game.offSet) this.y -= this.speed;
   }
@@ -38,11 +55,8 @@ export class Player {
     if (this.game.playerNumber === 1 || this.game.playerNumber === 2) {
       if (input.includes("w")) this.moveUp();
       if (input.includes("s")) this.moveDown();
+      if (input.includes("w") || input.includes("s")) this.emitMove();
     }
-    /* else if (this.player === 2) {
-      if (input.includes("ArrowUp")) this.moveUp();
-      if (input.includes("ArrowDown")) this.moveDown();
-    }*/
   }
 
   draw(context: CanvasRenderingContext2D) {

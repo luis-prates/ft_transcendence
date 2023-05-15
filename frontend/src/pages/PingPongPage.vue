@@ -7,14 +7,16 @@
 </template>
 
 <script setup lang="ts">
-import { Game, type gameResquest } from "@/game/ping_pong/pingPong";
+import { Game, Status } from "@/game/ping_pong/PingPong.js";
 import { onMounted } from "vue";
-import { Table } from "@/game/ping_pong/table";
+import { Table } from "@/game/ping_pong/Table.js";
 import socket from "@/socket/Socket";
+import { type gameResquest, type updatePlayer, type updateBall } from "@/game/ping_pong/SocketInterface";
 
 const props = defineProps({
   objectId: String
 });
+
 
 onMounted(function () {
   const canvas = document.getElementById('canvas1') as HTMLCanvasElement;
@@ -31,20 +33,43 @@ onMounted(function () {
 
   socket.on("start_game", (e: any) =>{
       
-      if (e.data === 1)
+      if (e === 1)
       {
         game.playerNumber = 1;
+        game.status = Status.InGame;
+        console.log("start game, player 1, Game Status: ", game.status)
         
       }
-      else if (e.data === 2)
+      else if (e === 2)
       {
         game.playerNumber = 2;
+        game.status = Status.InGame;
+        console.log("start game, player 2, Game Status: ", game.status)
         
       }
-        
-      console.log("start_game: ", e)
     })
   
+    socket.on("game_update_player", (e: updatePlayer) =>{
+      
+      /*if (game.playerNumber === e.playerNumber)
+        return ;*/
+
+      if (e.playerNumber  === 1)
+      {
+        game.player1.x = e.x;
+        game.player1.y = e.y;
+        game.player1.score = e.score;
+      }
+      else if (e.playerNumber === 2)
+      {
+        game.player2.x = e.x;
+        game.player2.y = e.y;
+        game.player2.score = e.score;
+      }
+
+      console.log("GAME_MOVE", e)
+    })
+
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     tableBoard.draw(ctx);

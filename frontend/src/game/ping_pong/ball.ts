@@ -1,5 +1,5 @@
-import { Game } from "./pingPong";
-import { Player } from "./player";
+import { Game } from "./PingPong";
+import { Player } from "./Player";
 
 export class Ball {
   //Macros
@@ -91,12 +91,12 @@ export class Ball {
     if (this.x <= 0 || this.x + this.width >= this.game.width) {
       if (this.x <= 0) {
         // Marca um ponto para o jogador 2
-        this.game.Player2.point();
+        this.game.player2.point();
         this.angle = this.generateRandomAngle(-45, 45);
         this.dir = 2;
       } else {
         // Marca um ponto para o jogador 1
-        this.game.Player1.point();
+        this.game.player1.point();
         this.angle = this.generateRandomAngle(135, 225);
         this.dir = 1;
       }
