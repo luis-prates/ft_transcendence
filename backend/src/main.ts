@@ -23,7 +23,6 @@ async function bootstrap() {
   io.on('connection', (socket) => {
     socket.on('new_game', (e) => {
       console.log('PLAYER: ', e);
-
       games.push(new Game(e));
     });
     socket.on('entry_game', (e: any) => {

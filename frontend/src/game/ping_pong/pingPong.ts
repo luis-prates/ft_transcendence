@@ -11,6 +11,7 @@ import marvin from "@/assets/images/pingpong/marvin.png";
 
 export enum Status {
   Waiting,
+  Starting,
   InGame,
   Finish,
 }
@@ -26,6 +27,7 @@ export class Game {
   ball: Ball;
   data: gameResquest;
   playerNumber: number = 0;
+  counting: number = 0;
 
   constructor(width: number, height: number, offSet: number, data: gameResquest) {
     this.width = width;
@@ -38,14 +40,13 @@ export class Game {
     this.data = data;
   }
 
-  /*startGame()
-  {
-    
-  }*/
-
   isEndGame() {
     if (this.player1.score === this.data.maxScore || this.player2.score === this.data.maxScore) return true;
     return false;
+  }
+
+  start_game() {
+    this.status = Status.InGame;
   }
 
   endGame(context: CanvasRenderingContext2D) {
@@ -62,23 +63,8 @@ export class Game {
     context.fillText("____ ____", 56, 405);
   }
 
-  waitingGame(context: CanvasRenderingContext2D) {
-    context.font = "100px 'Press Start 2P', cursive";
-    context.fillStyle = "black";
-
-    context.strokeStyle = "black";
-    context.lineWidth = 10;
-    context.strokeText("WAITING.", 95, 380);
-    context.strokeText("________", 95, 405);
-
-    context.fillStyle = "yellow";
-    context.fillText("WAITING.", 95, 380);
-    context.fillText("________", 95, 405);
-  }
-
-  update(context: CanvasRenderingContext2D) {
+  update() {
     if (this.status !== Status.InGame) {
-      this.waitingGame(context);
       return;
     }
 
@@ -88,23 +74,75 @@ export class Game {
     else if (this.playerNumber === 2) this.player2.update(this.inputKey.keys);
   }
 
+  waitingGame(context: CanvasRenderingContext2D) {
+    context.font = "100px 'Press Start 2P', cursive";
+    context.fillStyle = "black";
+
+    context.strokeStyle = "black";
+    context.lineWidth = 10;
+    context.strokeText("WAITING!", 95, 380);
+    context.strokeText("________", 95, 405);
+
+    context.fillStyle = "yellow";
+    context.fillText("WAITING!", 95, 380);
+    context.fillText("________", 95, 405);
+  }
+
+  countingGame(context: CanvasRenderingContext2D, counting: number) {
+    context.font = "100px 'Press Start 2P', cursive";
+    context.fillStyle = "black";
+
+    context.strokeStyle = "black";
+    context.lineWidth = 10;
+    const aux: number = counting - 1;
+
+    if (counting == 1)
+    {
+      context.strokeText("GO!", this.width / 2 - 100, 470);
+      context.strokeText("___", this.width / 2 - 100, 485);
+    }
+    else if (counting > 1)
+    {
+      context.strokeText(aux.toString(), this.width / 2 - 50, 470);
+      context.strokeText("_", this.width / 2 - 50, 485);
+    }
+    
+    context.fillStyle = "yellow";
+    if (counting == 1)
+    {
+      context.fillText("GO!", this.width / 2 - 100, 470);
+      context.fillText("___", this.width / 2 - 100, 485);
+    }
+    else if (counting > 1)
+    {
+      context.fillText(aux.toString(), this.width / 2 - 50, 470);
+      context.fillText("_", this.width / 2 - 50, 485);
+    }
+  }
+
   draw(context: CanvasRenderingContext2D) {
     this.player1.draw(context);
     this.player2.draw(context);
-    this.drawScore(context);
     this.ball.draw(context);
+    this.drawScore(context);
     if (this.isEndGame()) this.endGame(context);
   }
 
-  drawScore(ctx: CanvasRenderingContext2D) {
-    ctx.font = "50px 'Press Start 2P', cursive";
-    ctx.fillStyle = "black";
+  drawScore(context: CanvasRenderingContext2D) {
 
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 10;
-    ctx.strokeText(this.player1.score + " : " + this.player2.score, this.width / 2 - 120, 90);
+    if (this.status == Status.Waiting)
+      this.waitingGame(context);
+    else if (this.status == Status.Starting)
+      this.countingGame(context, this.counting - 1);
 
-    ctx.fillStyle = "white";
-    ctx.fillText(this.player1.score + " : " + this.player2.score, this.width / 2 - 120, 90);
+    context.font = "50px 'Press Start 2P', cursive";
+    context.fillStyle = "black";
+
+    context.strokeStyle = "black";
+    context.lineWidth = 10;
+    context.strokeText(this.player1.score + " : " + this.player2.score, this.width / 2 - 120, 90);
+
+    context.fillStyle = "white";
+    context.fillText(this.player1.score + " : " + this.player2.score, this.width / 2 - 120, 90);
   }
 }

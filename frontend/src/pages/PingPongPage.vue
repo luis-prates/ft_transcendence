@@ -33,18 +33,24 @@ onMounted(function () {
 
   socket.on("start_game", (e: any) => {
 
-    if (e === 1) {
+    console.log(e);
+    if (e.player === 1) {
       game.playerNumber = 1;
-      game.status = Status.InGame;
-      console.log("start game, player 1, Game Status: ", game.status)
-
+      game.status = e.status;
+      game.ball.emitColiderAngle();
+      //console.log("start game, player 1, Game Status: ", game.status)
     }
-    else if (e === 2) {
+    else if (e.player === 2) {
       game.playerNumber = 2;
-      game.status = Status.InGame;
-      console.log("start game, player 2, Game Status: ", game.status)
-
+      game.status = e.status;
+      //console.log("start game, player 2, Game Status: ", game.status)
     }
+  })
+
+  socket.on("game_counting", (e: any) => {
+    game.counting = e;
+    if (game.counting == 0)
+      game.start_game();
   })
 
   socket.on("game_update_player", (e: updatePlayer) => {
@@ -63,7 +69,7 @@ onMounted(function () {
       game.player2.score = e.score;
     }
 
-    console.log("GAME_MOVE", e)
+    //console.log("GAME_MOVE", e)
   })
 
   socket.on("game_update_ball", (e: updateBall) => {
@@ -74,13 +80,19 @@ onMounted(function () {
     game.ball.dir = e.dir;
     game.ball.speed = e.speed;
 
-    console.log("Ball", e)
+   // console.log("Ball", e)
   })
+/*
+  socket.on("game_update_point", (e: updatePoint) => {
+
+    game.po
+
+  })*/
 
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     tableBoard.draw(ctx);
-    game.update(ctx);
+    game.update();
     game.draw(ctx);
     requestAnimationFrame(animate);
   }
