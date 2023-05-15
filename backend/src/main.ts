@@ -48,7 +48,7 @@ async function bootstrap() {
     //      ---- GAME ----      //
     socket.on("game_ball", (e: updateBall) =>{
 
-      const game = games.find( g => g.data.objectId == e.objectId)
+      let game = games.find( g => g.data.objectId == e.objectId)
       if (game)
       {
         game.Ball.angle = e.angle;
@@ -62,13 +62,11 @@ async function bootstrap() {
       //console.log("PLAYER: ", e)
       //io.emit("new_game", e)
     })
-    socket.on("game_move", (e: updatePlayer) =>{
+    socket.on("game_move", (e: any) =>{
 
-      const game = games.find( g => g.data.objectId === e.objectId);
-      //console.log(games, e);
+      let game = games.find( g => g.data.objectId == e.objectId);
       if (game)
       {
-        console.log("game_move", game);
         if (e.playerNumber === 1)
         {
           game.player1.x = e.x;
@@ -82,15 +80,9 @@ async function bootstrap() {
           game.player2.score = e.score;
         }
         if (e.playerNumber === 1 || e.playerNumber === 2)
-        {
           game.emitAll("game_update_player", e);
 
-          console.log("move!", e);
-        }
-
       }
-      
-      //console.log("move!", e);
 
     })
     socket.on("game_point", (e) =>{

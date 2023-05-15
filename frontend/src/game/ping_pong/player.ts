@@ -26,15 +26,13 @@ export class Player {
 
   emitMove()
   {
-      const movePlayer: updatePlayer = {
+    socket.emit("game_move", { 
       objectId: this.game.data.objectId,
       playerNumber: this.game.playerNumber,
       x: this.x,
       y: this.y,
-      score: this.score,
-    };
-
-    socket.emit("game_move", { movePlayer })
+      score: this.score, 
+    })
     
    // console.log("player" + this.game.playerNumber + " move!", ballUp)
   }
