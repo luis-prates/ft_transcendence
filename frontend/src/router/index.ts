@@ -8,8 +8,8 @@ const routes_login = [
   {
     path: "/:catchAll(.*)",
     name: "login",
-    component:  LoginPage,
-    props: (route: any) => ({ code: route.query.code })
+    component: LoginPage,
+    props: (route: any) => ({ code: route.query.code }),
   },
 ];
 
@@ -23,7 +23,7 @@ const routes = [
     path: "/game",
     name: "Ping Pong Game",
     component: PingPongPage,
-    props: (route: any) => ({ objectId: route.query.objectId,  maxScore: route.query.maxScore})
+    props: (route: any) => ({ objectId: route.query.objectId, maxScore: route.query.maxScore }),
   },
 ];
 
@@ -33,16 +33,13 @@ const router = createRouter({
 });
 
 class Router {
-
-
   public static ROUTE_LOGIN = routes_login;
   public static ROUTE_ALL = routes;
 
   public static clearAll() {
     const routes = router.getRoutes();
     routes.forEach((route: RouteRecordNormalized) => {
-      if (route.name)
-        router.removeRoute(route.name);
+      if (route.name) router.removeRoute(route.name);
     });
   }
 
@@ -61,7 +58,6 @@ class Router {
   public static addRoute(route: RouteRecordRaw[]) {
     route.forEach((route: RouteRecordRaw) => router.addRoute(route));
   }
-
 }
 
 // const ro = new Router();

@@ -24,51 +24,58 @@ onMounted(function () {
   canvas.width = 1000;
   canvas.height = 750;
 
-  socket.emit("entry_game",  { objectId: props.objectId });
+  socket.emit("entry_game", { objectId: props.objectId });
   console.log("pros: ", props)
 
   const game = new Game(canvas.width, canvas.height - 228, 164, props as gameResquest);
   console.log(props.objectId);
   const tableBoard = new Table(canvas.width, canvas.height, "DarkSlateBlue", "#1e8c2f");
 
-  socket.on("start_game", (e: any) =>{
-      
-      if (e === 1)
-      {
-        game.playerNumber = 1;
-        game.status = Status.InGame;
-        console.log("start game, player 1, Game Status: ", game.status)
-        
-      }
-      else if (e === 2)
-      {
-        game.playerNumber = 2;
-        game.status = Status.InGame;
-        console.log("start game, player 2, Game Status: ", game.status)
-        
-      }
-    })
-  
-    socket.on("game_update_player", (e: updatePlayer) =>{
-      
-      /*if (game.playerNumber === e.playerNumber)
-        return ;*/
+  socket.on("start_game", (e: any) => {
 
-      if (e.playerNumber  === 1)
-      {
-        game.player1.x = e.x;
-        game.player1.y = e.y;
-        game.player1.score = e.score;
-      }
-      else if (e.playerNumber === 2)
-      {
-        game.player2.x = e.x;
-        game.player2.y = e.y;
-        game.player2.score = e.score;
-      }
+    if (e === 1) {
+      game.playerNumber = 1;
+      game.status = Status.InGame;
+      console.log("start game, player 1, Game Status: ", game.status)
 
-      console.log("GAME_MOVE", e)
-    })
+    }
+    else if (e === 2) {
+      game.playerNumber = 2;
+      game.status = Status.InGame;
+      console.log("start game, player 2, Game Status: ", game.status)
+
+    }
+  })
+
+  socket.on("game_update_player", (e: updatePlayer) => {
+
+    /*if (game.playerNumber === e.playerNumber)
+      return ;*/
+
+    if (e.playerNumber === 1) {
+      game.player1.x = e.x;
+      game.player1.y = e.y;
+      game.player1.score = e.score;
+    }
+    else if (e.playerNumber === 2) {
+      game.player2.x = e.x;
+      game.player2.y = e.y;
+      game.player2.score = e.score;
+    }
+
+    console.log("GAME_MOVE", e)
+  })
+
+  socket.on("game_update_ball", (e: updateBall) => {
+
+    game.ball.angle = e.angle;
+    game.ball.x = e.x;
+    game.ball.y = e.y;
+    game.ball.dir = e.dir;
+    game.ball.speed = e.speed;
+
+    console.log("Ball", e)
+  })
 
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);

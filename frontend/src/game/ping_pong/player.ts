@@ -24,17 +24,14 @@ export class Player {
     this.avatar.src = avatar;
   }
 
-  emitMove()
-  {
-    socket.emit("game_move", { 
+  emitMove() {
+    socket.emit("game_move", {
       objectId: this.game.data.objectId,
       playerNumber: this.game.playerNumber,
       x: this.x,
       y: this.y,
-      score: this.score, 
-    })
-    
-   // console.log("player" + this.game.playerNumber + " move!", ballUp)
+      score: this.score,
+    });
   }
 
   moveUp() {

@@ -1,5 +1,7 @@
 import { Game } from "./PingPong";
 import { Player } from "./Player";
+import socket from "@/socket/Socket";
+import { type updatePlayer } from "./SocketInterface";
 
 export class Ball {
   //Macros
@@ -30,6 +32,17 @@ export class Ball {
     return (randomAngle * Math.PI) / 180;
   }
 
+  emitColiderAngle() {
+    socket.emit("game_ball", {
+      objectId: this.game.data.objectId,
+      x: this.x,
+      y: this.y,
+      angle: this.angle,
+      speed: this.speed,
+      dir: this.dir,
+    });
+  }
+
   update(player1: Player, player2: Player) {
     // Move a bola com base em sua velocidade e ângulo
     this.x += this.speed * Math.cos(this.angle);
@@ -37,7 +50,7 @@ export class Ball {
 
     const random = this.generateRandomAngle(-1, 1);
     // Verifica se a bola colidiu com a raquete do jogador 1
-    if (this.dir === 1) {
+    if (this.game.playerNumber == 1 && this.dir == 1) {
       if (
         this.x >= player1.x &&
         this.x <= player1.x + player1.width &&
@@ -56,10 +69,12 @@ export class Ball {
 
         this.dir = 2;
         this.speed += this.speedIncrement;
+
+        this.emitColiderAngle();
       }
     }
     // Verifica se a bola colidiu com a raquete do jogador 2
-    else if (this.dir === 2) {
+    else if (this.game.playerNumber == 2 && this.dir === 2) {
       if (
         this.x + this.width >= player2.x &&
         this.x + this.width <= player2.x + player2.width &&
@@ -78,6 +93,8 @@ export class Ball {
 
         this.dir = 1;
         this.speed += this.speedIncrement;
+
+        this.emitColiderAngle();
       }
     }
 
@@ -85,25 +102,45 @@ export class Ball {
     if (this.y < this.game.offSet || this.y + this.height > this.game.height + this.game.offSet) {
       // Inverte a direção da bola
       this.angle = -this.angle;
+      if (this.game.playerNumber == 1 && this.dir == 1) this.emitColiderAngle();
+      else if (this.game.playerNumber == 2 && this.dir === 2) this.emitColiderAngle();
     }
 
     // Verifica se a bola saiu do campo e marca um ponto
     if (this.x <= 0 || this.x + this.width >= this.game.width) {
-      if (this.x <= 0) {
+      if (this.x <= 0 && this.game.playerNumber == 2) {
         // Marca um ponto para o jogador 2
         this.game.player2.point();
         this.angle = this.generateRandomAngle(-45, 45);
         this.dir = 2;
-      } else {
+
+        // Reinicia a posição e o ângulo da bola
+        this.x = this.game.width / 2 - this.width / 2;
+        this.y = this.game.height / 2 - this.height / 2 + this.game.offSet;
+        this.speed = this.speedStart;
+
+        //  Emit
+        this.emitColiderAngle();
+        // this.game.player1.emitMove();
+      } else if (this.x + this.width >= this.game.width && this.game.playerNumber == 1) {
         // Marca um ponto para o jogador 1
         this.game.player1.point();
         this.angle = this.generateRandomAngle(135, 225);
         this.dir = 1;
+
+        // Reinicia a posição e o ângulo da bola
+        this.x = this.game.width / 2 - this.width / 2;
+        this.y = this.game.height / 2 - this.height / 2 + this.game.offSet;
+        this.speed = this.speedStart;
+
+        //  Emit
+        this.emitColiderAngle();
+        //this.game.player2.emitMove();
       }
       // Reinicia a posição e o ângulo da bola
-      this.x = this.game.width / 2 - this.width / 2;
-      this.y = this.game.height / 2 - this.height / 2 + this.game.offSet;
-      this.speed = this.speedStart;
+      /*this.x = this.game.width / 2 - this.width / 2;
+      this.y = this.game.height / 2 - this.height / 2 + this.game.offSet;*/
+      //this.speed = this.speedStart;
     }
   }
   draw(context: CanvasRenderingContext2D) {

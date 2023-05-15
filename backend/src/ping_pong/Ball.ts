@@ -1,5 +1,4 @@
 export class Ball {
-
   width: number = 25;
   height: number = 25;
   x: number = 0;

@@ -3,17 +3,17 @@
     <!-- <ProfileComponent class="profile" />     -->
     <!-- <LobbyComponent /> -->
     <div class="menu">
-      <button @click="newGame" >New game</button>
+      <button @click="newGame">New game</button>
       <button @click="entryGame">Enter</button>
     </div>
-  
+
     <!-- <ProfileComponent class="profile" />    -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { userStore } from "@/stores/userStore";
-import  {ProfileComponent, LobbyComponent}  from "@/components";
+import { ProfileComponent, LobbyComponent } from "@/components";
 import Router from "@/router";
 import socket from "@/socket/Socket";
 
@@ -21,13 +21,13 @@ const store = userStore();
 
 console.log(store.user);
 
-function newGame(){
+function newGame() {
   console.log("createGame")
-  socket.emit("new_game", { objectId:"gameteste", maxScore: 3, status: 0})
+  socket.emit("new_game", { objectId: "gameteste", maxScore: 3, status: 0 })
   Router.push("/game?objectId=gameteste");
 }
 
-function entryGame(){
+function entryGame() {
   Router.push("/game?objectId=gameteste");
 }
 
@@ -48,7 +48,7 @@ function entryGame(){
   width: 30%;
 }
 
-.menu{
+.menu {
   top: 0px;
   left: 0px;
   background-color: chocolate;
@@ -56,5 +56,4 @@ function entryGame(){
   width: 100px;
   height: 100px;
 }
-
 </style>

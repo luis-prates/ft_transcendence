@@ -1,7 +1,6 @@
-import { Player } from "src/lobby/Lobby";
+import { Player } from 'src/lobby/Lobby';
 
 export class Player_Pong {
-
   width: number = 30;
   height: number = 100;
   socket: Player;
@@ -14,15 +13,13 @@ export class Player_Pong {
   avatar: any;
 
   constructor(player_n: number, playerLobby: Player) {
-
     this.socket = playerLobby;
     this.player_n = player_n;
     this.nickname = playerLobby.data.name;
     //this.avatar.src = avatar;
   }
 
-  move(y: number)
-  {
+  move(y: number) {
     this.y = y;
   }
 

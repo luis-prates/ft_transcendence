@@ -12,7 +12,7 @@ import marvin from "@/assets/images/pingpong/marvin.png";
 export enum Status {
   Waiting,
   InGame,
-  Finish
+  Finish,
 }
 
 export class Game {
@@ -36,14 +36,12 @@ export class Game {
     this.player2 = new Player(this, 2, "Player 2", marvin);
     this.ball = new Ball(this);
     this.data = data;
-    
   }
 
   /*startGame()
   {
     
   }*/
-
 
   isEndGame() {
     if (this.player1.score === this.data.maxScore || this.player2.score === this.data.maxScore) return true;
@@ -79,27 +77,22 @@ export class Game {
   }
 
   update(context: CanvasRenderingContext2D) {
-
-
-    /*if (this.status !== Status.InGame)
-    {
+    if (this.status !== Status.InGame) {
       this.waitingGame(context);
-      return ;
-    }*/
+      return;
+    }
 
     if (!this.isEndGame()) this.ball.update(this.player1, this.player2);
 
-    if (this.playerNumber === 1)
-      this.player1.update(this.inputKey.keys);
-    else if (this.playerNumber === 2)
-      this.player2.update(this.inputKey.keys);
+    if (this.playerNumber === 1) this.player1.update(this.inputKey.keys);
+    else if (this.playerNumber === 2) this.player2.update(this.inputKey.keys);
   }
 
   draw(context: CanvasRenderingContext2D) {
     this.player1.draw(context);
     this.player2.draw(context);
-  //  this.drawScore(context);
-   // this.Ball.draw(context);
+    this.drawScore(context);
+    this.ball.draw(context);
     if (this.isEndGame()) this.endGame(context);
   }
 
@@ -115,21 +108,3 @@ export class Game {
     ctx.fillText(this.player1.score + " : " + this.player2.score, this.width / 2 - 120, 90);
   }
 }
-
-/*
-gameResquest {
-  player1: {
-	  name: string;
-    avatar: string;
-	};
-  player2: {
-	  name: string;
-    avatar: string;
-	};
-  maxPoint: number;
-}
-
-
-
-
-/*/
