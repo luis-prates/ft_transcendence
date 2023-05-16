@@ -1,0 +1,40 @@
+version: '3'
+services:
+  # Create frontend container
+  frontend: # Name of our service
+    build: ./frontend # path to dockerfile
+    ports: # Port binding to host from docker container
+      - "3377:8080" # Bind port 3000 of host to 3000 of container
+    container_name: frontend-docker
+    restart: always # What to do if container crashes
+    depends_on:
+      - backend
+    networks:
+      - freecodecamp
+  # Create backend container
+  backend:
+    # Create backend container  
+    build: ./backend
+    ports:
+      - "3370:3370"
+      - "5555:5555"
+    container_name: backend-docker
+    restart: always
+    depends_on:
+      - dev-db
+    networks:
+      - freecodecamp
+  # Create database container
+  dev-db:
+    image: postgres:13
+    container_name: postgres-docker
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: nest
+    networks:
+      - freecodecamp
+networks:
+  freecodecamp:
