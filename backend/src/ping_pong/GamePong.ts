@@ -38,7 +38,7 @@ export class Game {
       this.player1.socket.emit('start_game', { player: 1, status: Status.Starting });
       this.player2.socket.emit('start_game', { player: 2, status: Status.Starting });
       console.log('emit_start_game');
-      this.countdown(4);
+      this.startGame();
     } else if (!this.whatchers.includes(user)) this.whatchers.push(user);
 
     //console.log("p1: ", this.player1, " p2: ", this.player2, " ws: ", this.whatchers);
@@ -55,27 +55,24 @@ export class Game {
   }
 
   countdown(seconds: number) {
-    if (seconds - 1 > 0) {
+
+    console.log(seconds);
+    
+    if (seconds > 0) {
 
       this.emitAll("game_counting", seconds);
-      // Exibir o número atual do countdown
-      console.log(seconds);
-  
-      // Aguardar 1 segundo antes de chamar o próximo countdown
+
       setTimeout(() => {
         this.countdown(seconds - 1);
       }, 1000);
-    } else if (seconds == 0) {
-      // Exibir a mensagem "GO!" após a contagem regressiva
-      this.emitAll("game_counting", "GO!");
-      console.log("GO!");
-    } else {
+    }
+    else {
       this.emitAll("game_counting", 0);
     }
   }
 
   startGame() {
-    this.countdown(3);
+    this.countdown(4);
   }
   
 

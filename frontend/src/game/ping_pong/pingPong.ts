@@ -94,28 +94,27 @@ export class Game {
 
     context.strokeStyle = "black";
     context.lineWidth = 10;
-    const aux: number = counting - 1;
 
-    if (counting == 1)
+    if (counting == 0)
     {
       context.strokeText("GO!", this.width / 2 - 100, 470);
       context.strokeText("___", this.width / 2 - 100, 485);
     }
-    else if (counting > 1)
+    else if (counting > 0)
     {
-      context.strokeText(aux.toString(), this.width / 2 - 50, 470);
+      context.strokeText(counting.toString(), this.width / 2 - 50, 470);
       context.strokeText("_", this.width / 2 - 50, 485);
     }
     
     context.fillStyle = "yellow";
-    if (counting == 1)
+    if (counting == 0)
     {
       context.fillText("GO!", this.width / 2 - 100, 470);
       context.fillText("___", this.width / 2 - 100, 485);
     }
-    else if (counting > 1)
+    else if (counting > 0)
     {
-      context.fillText(aux.toString(), this.width / 2 - 50, 470);
+      context.fillText(counting.toString(), this.width / 2 - 50, 470);
       context.fillText("_", this.width / 2 - 50, 485);
     }
   }

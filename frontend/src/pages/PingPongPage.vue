@@ -37,7 +37,6 @@ onMounted(function () {
     if (e.player === 1) {
       game.playerNumber = 1;
       game.status = e.status;
-      game.ball.emitColiderAngle();
       //console.log("start game, player 1, Game Status: ", game.status)
     }
     else if (e.player === 2) {
@@ -45,6 +44,8 @@ onMounted(function () {
       game.status = e.status;
       //console.log("start game, player 2, Game Status: ", game.status)
     }
+    if (game.player1 && game.player2)
+      game.ball.emitColiderAngle();
   })
 
   socket.on("game_counting", (e: any) => {
