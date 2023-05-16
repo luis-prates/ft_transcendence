@@ -78,8 +78,10 @@ export class Player {
     ctx.lineWidth = 10;
     ctx.fillStyle = collor;
 
-    ctx.strokeText(this.nickname, pos_x, 89, 200);
-    ctx.fillText(this.nickname, pos_x, 89, 200);
+    const nickname = this.nickname.length > 10 ? this.nickname.slice(0, 10) + "." : this.nickname;
+
+    ctx.strokeText(nickname, pos_x, 89, 200);
+    ctx.fillText(nickname, pos_x, 89, 200);
   }
 
   drawPhoto(context: CanvasRenderingContext2D, whidth?: number) {

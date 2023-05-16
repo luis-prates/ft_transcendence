@@ -27,7 +27,7 @@ onMounted(function () {
   socket.emit("entry_game", { objectId: props.objectId });
   console.log("pros: ", props)
 
-  const game = new Game(canvas.width, canvas.height - 228, 164, props as gameResquest);
+  const game = new Game(canvas.width, canvas.height - 228, 164, ctx, props as gameResquest);
   console.log(props.objectId);
   const tableBoard = new Table(canvas.width, canvas.height, "DarkSlateBlue", "#1e8c2f");
 
@@ -49,9 +49,12 @@ onMounted(function () {
   })
 
   socket.on("game_counting", (e: any) => {
-    game.counting = e;
-    if (game.counting == 0)
-      game.start_game();
+
+    if (game.status == Status.Starting) {
+      game.counting = e;
+      if (game.counting == 0)
+        game.start_game();
+    }
   })
 
   socket.on("game_update_player", (e: updatePlayer) => {
@@ -81,20 +84,34 @@ onMounted(function () {
     game.ball.dir = e.dir;
     game.ball.speed = e.speed;
 
-   // console.log("Ball", e)
+    // console.log("Ball", e)
   })
-/*
-  socket.on("game_update_point", (e: updatePoint) => {
 
-    game.po
 
-  })*/
+  socket.on("game_update_point", (e: any) => {
+
+    if (game.status == Status.InGame) {
+      game.status = Status.Starting;
+      if (e.playerNumber === 1)
+        game.player1.point();
+      else if (e.playerNumber === 2)
+        game.player2.point();
+      if (game.isEndGame())
+        game.status = Status.Finish;
+    }
+  })
+
+  socket.on("end_game", (e: any) => {
+
+    game.status = Status.Finish;
+    game.endMessage = e.result;
+  })
 
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     tableBoard.draw(ctx);
     game.update();
-    game.draw(ctx);
+    game.draw();
     requestAnimationFrame(animate);
   }
   animate();

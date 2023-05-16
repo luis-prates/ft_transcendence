@@ -6,6 +6,7 @@ import { Player } from './lobby/Lobby';
 import {
   type updatePlayer,
   type updateBall,
+  type gamePoint,
 } from './ping_pong/SocketInterface';
 
 async function bootstrap() {
@@ -42,7 +43,7 @@ async function bootstrap() {
 
     //      ---- GAME ----      //
     socket.on('game_ball', (e: updateBall) => {
-      let game = games.find((g) => g.data.objectId == e.objectId);
+      const game = games.find((g) => g.data.objectId == e.objectId);
       if (game) {
         /* if (game.status != Status.InGame)
           return ;*/
@@ -53,12 +54,12 @@ async function bootstrap() {
         game.ball.speed = e.speed;
 
         game.emitAll('game_update_ball', e);
-        console.log('Ball: ', e);
+        //console.log('Ball: ', e);
       }
       //io.emit("new_game", e)
     });
     socket.on('game_move', (e: any) => {
-      let game = games.find((g) => g.data.objectId == e.objectId);
+      const game = games.find((g) => g.data.objectId == e.objectId);
       if (game) {
         if (e.playerNumber === 1) {
           game.player1.x = e.x;
@@ -73,30 +74,11 @@ async function bootstrap() {
           game.emitAll('game_update_player', e);
       }
     });
-    /*socket.on("game_point", (e) =>{
-
-      let game = games.find( g => g.data.objectId == e.objectId);
-      if (game)
-      {
-        if (e.playerNumber === 1)
-        {
-          game.player1.x = e.x;
-          game.player1.y = e.y;
-          game.player1.score = e.score;
-        }
-        else if (e.playerNumber === 2)
-        {
-          game.player2.x = e.x;
-          game.player2.y = e.y;
-          game.player2.score = e.score;
-        }
-        if (e.playerNumber === 1 || e.playerNumber === 2)
-          game.emitAll("game_update_player", e);
-
-      }
-      //console.log("PLAYER: ", e)
-      //io.emit("new_game", e)
-    })*/
+    socket.on('game_point', (e: gamePoint) => {
+      const game = games.find((g) => g.data.objectId == e.objectId);
+      if (game && game.status == Status.InGame)
+        game.makePoint(e.playerNumber, e);
+    });
   });
 }
 bootstrap();

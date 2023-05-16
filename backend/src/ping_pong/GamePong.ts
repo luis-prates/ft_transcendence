@@ -2,7 +2,7 @@ import { Player } from 'src/lobby/Lobby';
 import { Ball } from './Ball';
 import { Player_Pong } from './PlayerPong';
 import { Socket } from 'socket.io';
-import { type gameResquest } from './SocketInterface';
+import { type gameResquest, type gamePoint } from './SocketInterface';
 
 export enum Status {
   Waiting,
@@ -35,8 +35,14 @@ export class Game {
     } else if (!this.player2) {
       this.player2 = new Player_Pong(2, user);
       console.log('player2 connect');
-      this.player1.socket.emit('start_game', { player: 1, status: Status.Starting });
-      this.player2.socket.emit('start_game', { player: 2, status: Status.Starting });
+      this.player1.socket.emit('start_game', {
+        player: 1,
+        status: Status.Starting,
+      });
+      this.player2.socket.emit('start_game', {
+        player: 2,
+        status: Status.Starting,
+      });
       console.log('emit_start_game');
       this.startGame();
     } else if (!this.whatchers.includes(user)) this.whatchers.push(user);
@@ -55,26 +61,23 @@ export class Game {
   }
 
   countdown(seconds: number) {
-
     console.log(seconds);
-    
-    if (seconds > 0) {
 
-      this.emitAll("game_counting", seconds);
+    if (seconds > 0) {
+      this.emitAll('game_counting', seconds);
 
       setTimeout(() => {
         this.countdown(seconds - 1);
       }, 1000);
-    }
-    else {
-      this.emitAll("game_counting", 0);
+    } else {
+      this.emitAll('game_counting', 0);
+      this.status = Status.InGame;
     }
   }
 
   startGame() {
-    this.countdown(4);
+    if (this.status != Status.Finish) this.countdown(4);
   }
-  
 
   emitPlayers(event: string, data: any): void {
     this.player1.socket.emit(event, data);
@@ -86,41 +89,63 @@ export class Game {
     this.emitWatchers(event, data);
   }
 
-
-
   isEndGame() {
     if (
-      this.player1.score === this.maxPoint ||
-      this.player2.score === this.maxPoint
+      this.player1.score >= this.maxPoint ||
+      this.player2.score >= this.maxPoint
     )
       return true;
     return false;
   }
 
   endGame(player_n: number) {
-    if (player_n === 1) {
-      this.player1.socket.emit('end_game', { data: 'win' });
-      this.player2.socket.emit('end_game', { data: 'lose' });
-      this.emitWatchers('end_game', { data: 'player1' });
-    } else if (player_n === 2) {
-      this.player1.socket.emit('end_game', { data: 'win' });
-      this.player2.socket.emit('end_game', { data: 'lose' });
-      this.emitWatchers('end_game', { data: 'player2' });
+    if ((player_n == 1 || player_n == 2) && this.status != Status.Finish) {
+      if (player_n === 1) {
+        this.player1.socket.emit('end_game', {
+          objectId: this.data.objectId,
+          result: 'You Win!',
+        });
+        this.player2.socket.emit('end_game', {
+          objectId: this.data.objectId,
+          result: 'You Loose!',
+        });
+        this.emitWatchers('end_game', {
+          objectId: this.data.objectId,
+          result: this.player1.nickname + ' Win!',
+        });
+      } else if (player_n === 2) {
+        this.player1.socket.emit('end_game', {
+          objectId: this.data.objectId,
+          result: 'You Loose!',
+        });
+        this.player2.socket.emit('end_game', {
+          objectId: this.data.objectId,
+          result: 'You Win!',
+        });
+        this.emitWatchers('end_game', {
+          objectId: this.data.objectId,
+          result: this.player2.nickname + ' Win!',
+        });
+      }
+      this.status = Status.Finish;
+      //INSERT IN DATABASE
     }
   }
 
-  makePoint(player_n: number) {
+  makePoint(player_n: number, e: gamePoint) {
     this.status = Status.Waiting;
 
     if (player_n === 1) {
       this.player1.point();
     } else if (player_n === 2) this.player2.point();
 
-    if (this.isEndGame()) this.endGame(player_n);
-  }
+    if (player_n === 1 || player_n === 2) {
+      this.status = Status.Starting;
+      this.emitAll('game_update_point', e);
+    }
 
-  /*startGame()
-  {
-    if (this.s)
-  }*/
+    if (this.isEndGame()) this.endGame(player_n);
+    else this.startGame();
+    console.log('1: ', this.player1.score, ' 2:', this.player2.score);
+  }
 }

@@ -1,7 +1,7 @@
 import { Game } from "./PingPong";
 import { Player } from "./Player";
 import socket from "@/socket/Socket";
-import { type updatePlayer } from "./SocketInterface";
+import { type gamePoint } from "./SocketInterface";
 
 export class Ball {
   //Macros
@@ -110,7 +110,7 @@ export class Ball {
     if (this.x <= 0 || this.x + this.width >= this.game.width) {
       if (this.x <= 0 && this.game.playerNumber == 2) {
         // Marca um ponto para o jogador 2
-        this.game.player2.point();
+        //this.game.player2.point();
         this.angle = this.generateRandomAngle(-45, 45);
         this.dir = 2;
 
@@ -121,10 +121,13 @@ export class Ball {
 
         //  Emit
         this.emitColiderAngle();
-        // this.game.player1.emitMove();
+        socket.emit("game_point", {
+          objectId: this.game.data.objectId,
+          playerNumber: this.game.playerNumber,
+        });
       } else if (this.x + this.width >= this.game.width && this.game.playerNumber == 1) {
         // Marca um ponto para o jogador 1
-        this.game.player1.point();
+        // this.game.player1.point();
         this.angle = this.generateRandomAngle(135, 225);
         this.dir = 1;
 
@@ -135,7 +138,10 @@ export class Ball {
 
         //  Emit
         this.emitColiderAngle();
-        //this.game.player2.emitMove();
+        socket.emit("game_point", {
+          objectId: this.game.data.objectId,
+          playerNumber: this.game.playerNumber,
+        });
       }
       // Reinicia a posição e o ângulo da bola
       /*this.x = this.game.width / 2 - this.width / 2;

@@ -19,3 +19,8 @@ export interface updateBall {
   speed: number;
   dir: number;
 }
+
+export interface gamePoint {
+  objectId: string;
+  playerNumber: number;
+}
