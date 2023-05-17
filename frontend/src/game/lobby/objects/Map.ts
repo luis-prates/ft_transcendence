@@ -1,5 +1,5 @@
 import type { GameObject, GameObjectType } from "../../base/GameObject";
-import titles from "@/assets/images/lobby/tiles.png";
+import map from "@/assets/images/lobby/8c9c64e0b3fcf049435ca7adc5350507.png";
 
 export class Map implements GameObject {
   imagem: any = new Image();
@@ -11,39 +11,62 @@ export class Map implements GameObject {
   isSelect: boolean = false;
   public static SIZE = 32;
   public grid: number[][] = [];
+  objectId = 0;
+  private isLoaded = false;
 
   // Definindo as configurações do grid
   numLinhas = 10; // Número de linhas do grid
   numColunas = 10; // Número de colunas do grid
 
-  constructor() {
+  constructor(data: any) {
     this.type = "map";
-    this.imagem.src = titles;
-    this.w = 3000;
-    this.h = 3000;
-    const sw = this.w / Map.SIZE;
-    const sh = this.h / Map.SIZE;
-    this.grid = [];
-    for (let i = 0; i < sh; i++) {
-      this.grid[i] = [];
-      for (let j = 0; j < sw; j++) {
-        this.grid[i][j] = 0;
-      }
-    }
+    // this.imagem.src = map;
+    // this.w = 544;
+    // this.h = 672;
+    this.setData(data);
+
+    // this.grid = [];
+    // for (let x = 0; x < this.w; x += Map.SIZE) {
+    //   this.grid[Math.floor(x / Map.SIZE)] = [];
+    //   for (let y = 0; y < this.h; y += Map.SIZE) {
+    //     this.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] = 0;
+    //   }
+    // }
   }
 
   draw(contex: CanvasRenderingContext2D): void {
+    if (this.isLoaded === false) return;
+    console.log("Map: Desenhando, ", this.w, " ", this.h);
     contex.strokeStyle = "blue";
+
+    contex.drawImage(this.imagem, 0, 0, this.w, this.h);
     for (let x = 0; x < this.w; x += Map.SIZE) {
       for (let y = 0; y < this.h; y += Map.SIZE) {
-        contex.drawImage(this.imagem, 576, 0, Map.SIZE, Map.SIZE, x, y, Map.SIZE, Map.SIZE);
-        // contex.strokeRect(x, y, Map.SIZE, Map.SIZE);
+        contex.fillStyle = "rgba(255, 0, 0, 0.5)";
+        // contex.fillRect(x, y, Map.SIZE, Map.SIZE);
         if (this.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] === 1) {
           contex.fillStyle = "rgba(255, 0, 0, 0.5)";
           contex.fillRect(x, y, Map.SIZE, Map.SIZE);
         }
       }
     }
+    // contex.fillRect(this.x, this.y, this.w, this.h);
+  }
+
+  setData(data: any): void {
+    this.w = data.width;
+    this.h = data.height;
+    this.imagem.src = data.img;
+    this.grid = data.grid;
+    this.imagem.onload = () => {
+      console.log("Map: Imagem carregada");
+      this.isLoaded = true;
+    };
+    this.imagem.onerror = () => {
+      console.log("Map: Erro ao carregar a imagem");
+    };
+    console.log("Map_: ", data.img);
+    // this.grid = data.grid;
   }
 
   update(deltaTime: number): void {}
@@ -61,21 +84,29 @@ export class Map implements GameObject {
     x = Math.floor(x / Map.SIZE);
     y = Math.floor(y / Map.SIZE);
     if (button === 2) {
-      console.log("Map: ", x, y, button);
-      this.grid[x][y] = 1;
+      // console.log("Map: ", x, y, button);
+      this.grid[x][y] = this.grid[x][y] ? 0 : 1;
     }
-    console.log("Map: ", x, y, button);
+    // console.log("Map: ", x, y, button);
   }
 
   async saveMap() {
     const data = {
-      map: this.grid,
+      grid: this.grid,
       width: this.w,
       height: this.h,
       size: Map.SIZE,
+      img: "8c9c64e0b3fcf049435ca7adc5350507.png",
+      start_position: { x: 0, y: 0 },
     };
-    // const jsonData = JSON.stringify(this.data, null, 2);
-    // await fs.writeJson("output.json", data, { spaces: 2 });
-    // fs.writeFileSync("output.json", jsonData);
+    const jsonStr = JSON.stringify(data);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "desenho.json";
+    link.click();
+    console.log("Salvando mapa...");
   }
 }

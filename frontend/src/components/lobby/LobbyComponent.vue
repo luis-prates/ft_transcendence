@@ -1,37 +1,73 @@
 <template>
-  <div ref="game" class="game"></div>
-  <div ref="menu" class="menu">
-    <button style="left: 10px">Test</button>
-    <button style="right: 0px">Test</button>
-  </div>
-  <div class="table">
-    <img src="@/assets/images/lobby/table_2aaa15.png" />
-    <img src="@/assets/images/lobby/table_efc120.png" />
-    <img src="@/assets/images/lobby/table_de1bda.png" />
+  <div>
+    <div ref="game" class="game"></div>
+    <div ref="menu" class="menu">
+      <button style="left: 10px">Test</button>
+      <button style="right: 0px">Test</button>
+    </div>
+    <div class="table">
+      <img src="@/assets/images/lobby/table_2aaa15.png" />
+      <img src="@/assets/images/lobby/table_efc120.png" />
+      <img src="@/assets/images/lobby/table_de1bda.png" />
+      <button @click="test">Test</button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { Player, Map, Lobby } from "@/game";
+import { Player, Map, Lobby, Game } from "@/game";
+import socket from "@/socket/Socket";
+import { userStore } from "@/stores/userStore";
+// class MyClass {
+//   constructor(a: any[]) {
+//     console.log("Uma instância de MyClass foi criada.: ", a);
+//   }
+// }
 
+// const className = "MyClass";
+
+const store = userStore();
 const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
-const lobby = new Lobby(new Map(), new Player(menu));
+let lobby: Lobby | null = null;
+const isConcted = ref(false);
 
 onMounted(() => {
-  if (game.value !== undefined) {
-    game.value.appendChild(lobby.canvas);
-    lobby.update();
-    const a: [] = [];
-    a.length;
-  }
+  socket.emit("join_lobby", { objectId: store.user.id });
+  socket.on("load_lobby", (data: any) => {
+    lobby = new Lobby(new Map(data.map), new Player(menu, data.player));
+    if (game.value !== undefined) {
+      game.value.appendChild(lobby.canvas);
+      data.data.forEach((d: any) => {
+        lobby?.addGameObjectData(d);
+      });
+      lobby.update();
+    }
+    isConcted.value = true;
+  });
 });
 
 onUnmounted(() => {
   console.log("unmounted");
-  lobby.destructor();
+  lobby?.destructor();
 });
+
+function salvarDesenhoComoImagem() {
+  // const canvaElement = lobby?.canvas as HTMLCanvasElement;
+  // const imgData = canvaElement.toDataURL("image/png");
+  // const link = document.createElement("a");
+  // link.href = imgData;
+  // link.download = "desenho.png";
+  // link.click();
+  Game.Map.saveMap();
+  console.log("salvarDesenhoComoImagem");
+}
+
+function test() {
+  salvarDesenhoComoImagem();
+  // const dynamicInstance = eval(`new ${className}('${a}')`);
+}
 </script>
 
 <style scoped lang="scss">

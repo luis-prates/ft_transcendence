@@ -12,9 +12,12 @@ export class Camera {
 
   constructor(player: GameObject, map: Map) {
     this.map = map;
+    console.log("map: ", map.w, map.h);
     this.player = player;
     this.x = 0;
     this.y = 0;
+    this.width = map.w;
+    this.height = map.h;
   }
 
   leftEdge() {

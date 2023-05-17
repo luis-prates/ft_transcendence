@@ -1,5 +1,5 @@
 import socket from "@/socket/Socket";
-import { Game } from "../base/Game";
+import { Game } from "@/game";
 import { Map } from "./objects/Map";
 
 import { Character, type CharacterOnline } from "../base/Character";
@@ -11,47 +11,29 @@ export class Lobby extends Game {
 
   constructor(map: Map, player: Player) {
     super(map, player);
-    this.addGameObject(new Npc());
-    socket.on("new_player", (data: CharacterOnline) => {
-      console.log("lobby -> new_playe: ", data);
-      this.characterOnline.push(this.addGameObject(new Character(data)) as Character);
-      console.log(this.gameObjets.length);
+    // this.addGameObject(new Npc());
+
+    socket.on("new_gameobject", (data: any) => {
+      this.addGameObjectData(data);
     });
 
-    socket.on("player_disconnect", (data: CharacterOnline) => {
-      console.log("player_disconnect: ", data);
-      for (let gameObject of this.characterOnline) {
+    socket.on("update_gameobject", (data: any) => {
+      for (let gameObject of this.gameObjets) {
         if (gameObject.objectId === data.objectId) {
-          this, this.removeGameObject(gameObject);
+          gameObject.setData(data);
           break;
         }
       }
     });
 
-    socket.on("player_move", (data: CharacterOnline) => {
-      console.log("player_move: ", data);
-      for (let gameObject of this.characterOnline) {
+    socket.on("remove_gameobject", (data: any) => {
+      for (let gameObject of this.gameObjets) {
         if (gameObject.objectId === data.objectId) {
-          gameObject.setDados(data);
+          if (gameObject.destroy) gameObject.destroy();
+          this.removeGameObject(gameObject);
           break;
         }
       }
-    });
-
-    socket.on("player_look_all", (data: any) => {
-      console.log("player_look_all: ", data);
-      for (let gameObject of this.characterOnline) {
-        if (gameObject.objectId === data.objectId) {
-          const isStop = gameObject.animation.isStop;
-          gameObject.animation.setAnimation(data.animation);
-          gameObject.animation.setStop(isStop);
-          break;
-        }
-      }
-    });
-
-    socket.on("new_table", (data: any) => {
-      this.addGameObject(new Table(data));
     });
   }
 

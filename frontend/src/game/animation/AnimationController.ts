@@ -1,4 +1,4 @@
-import { Game } from "../base/Game";
+import { Game } from "@/game";
 
 export interface framePosition {
   x: number;

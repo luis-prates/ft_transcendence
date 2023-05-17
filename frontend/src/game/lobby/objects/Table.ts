@@ -1,7 +1,6 @@
 import { Game, type GameObject, Map } from "@/game";
 import type { GameObjectType } from "@/game/base/GameObject";
 import table from "@/assets/images/lobby/table0.png";
-import socket from "@/socket/Socket";
 
 interface TableOnline {
   objectId?: string;
@@ -17,11 +16,13 @@ export class Table implements GameObject {
   w: number;
   h: number;
   isSelect: boolean;
+  objectId: string;
   private _data: TableOnline;
 
   constructor(data: TableOnline) {
     this._data = data;
     this.data.objectId = Game.getPlayer().objectId + "_" + Date.now();
+    this.objectId = this.data.objectId;
     this.data.type = "type";
     this.w = 32;
     this.h = 64;

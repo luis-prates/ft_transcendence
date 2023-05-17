@@ -10,8 +10,23 @@
 <script setup lang="ts">
 import { userStore } from "@/stores/userStore";
 import { ProfileComponent, LobbyComponent } from "@/components";
+import { onBeforeRouteLeave } from "vue-router";
 
 const store = userStore();
+onBeforeRouteLeave((to, from, next) => {
+  console.log("to", to);
+  // Aqui você pode executar a lógica desejada quando o usuário tenta sair da página
+
+  // Por exemplo, exibir uma mensagem de confirmação
+  const shouldLeave = window.confirm("Deseja sair desta página?");
+  if (shouldLeave) {
+    // Se o usuário confirmar, permita a saída
+    next();
+  } else {
+    // Caso contrário, cancele a navegação
+    next(false);
+  }
+});
 
 console.log(store.user);
 </script>

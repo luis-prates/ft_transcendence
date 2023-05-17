@@ -2,6 +2,7 @@ import { Character } from "@/game/base/Character";
 import { Map } from "@/game/lobby/objects/Map";
 import type { GameObject } from "../base/GameObject";
 import { Game } from "..";
+import socket from "@/socket/Socket";
 
 export type eventCompleted = (objectDestination: GameObject | undefined) => void;
 
@@ -56,7 +57,6 @@ export class PathFinding {
     let destination = { x: objectDestination.x - 10, y: objectDestination.y };
     if (objectDestination.getPointEvent) {
       destination = objectDestination.getPointEvent();
-      console.log("destination: ", destination);
     }
     this.setDistinction(destination.x, destination.y, 0, objectDestination, onCompleted);
   }
@@ -156,7 +156,7 @@ export class PathFinding {
   private isEmpty(map: number[][], x: number, y: number): boolean {
     x = Math.floor(x);
     y = Math.floor(y);
-    return y >= 0 && y < map.length && x >= 0 && x < map[0].length && map[x][y] == 0;
+    return x >= 0 && x < map.length && y >= 0 && y < map[x].length && map[x][y] == 0;
   }
 
   private isPossible(map: number[][], x: number, y: number): boolean {
@@ -206,6 +206,17 @@ export class PathFinding {
     return "idle";
   }
 
+  private updateSocket(): void {
+    socket.emit("update_gameobject", {
+      className: "Character",
+      objectId: this.character.objectId,
+      name: this.character.name,
+      x: this.character.x,
+      y: this.character.y,
+      animation: { name: this.character.animation.name, isStop: this.character.animation.isStop },
+    });
+  }
+
   public update(deltaTime: number): void {
     if (this._isPathFinding) {
       if (this.path.length > 0) {
@@ -215,6 +226,7 @@ export class PathFinding {
           this.time = 0;
           if (node != null) {
             this.character.move(node.x * Map.SIZE, node.y * Map.SIZE, this.getAnimation(node.direction));
+            this.updateSocket();
             this.path.shift();
           }
         }
@@ -223,8 +235,9 @@ export class PathFinding {
         if (this.objectDestination != null) {
           this.character.setLookAt(this.objectDestination);
         }
-        if (this.onCompleted != undefined) this.onCompleted(this.objectDestination);
         this.character.animation.setStop(true);
+        if (this.onCompleted) this.onCompleted(this.objectDestination);
+        this.updateSocket();
       }
     }
   }

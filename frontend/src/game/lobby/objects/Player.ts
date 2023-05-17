@@ -4,15 +4,20 @@ import { Map } from "./Map";
 import { Game } from "@/game/base/Game";
 import type { GameObject } from "@/game/base/GameObject";
 import { type Ref } from "vue";
+import { userStore } from "@/stores/userStore";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
   private menu: Ref<HTMLDivElement | undefined>;
+  private store: any;
 
-  constructor(menu: Ref<HTMLDivElement | undefined>) {
+  constructor(menu: Ref<HTMLDivElement | undefined>, data: any) {
     super();
-    this.x = window.innerWidth / 2;
-    this.y = window.innerHeight / 2;
+    this.store = userStore();
+    this.objectId = this.store.user.id;
+    this.x = data.x;
+    this.y = data.y;
+    console.log("data: ", data);
     this.menu = menu;
     this.menu.value?.setAttribute("style", "display: none");
     this.type = "player";
@@ -38,16 +43,20 @@ export class Player extends Character {
     this.menu.value?.setAttribute("style", "display: none");
     if (button == 0) {
       this.select = Game.MouseColision(x, y);
+      if (this.select == this) {
+        console.log(this.store.user);
+      }
       if (this.select && this.select != this) {
-        console.log(this.select);
         this.agent.setDistinctionObject(this.select, (gameObject) => {
+          console.log("gameObject: ", this.animation.isStop);
           if (gameObject instanceof Character) (gameObject as Character).setLookAt(this);
+          console.log("gameObject: ", this.animation.isStop);
+          // this.move(x, y, this.animation.name);
           // this.menu.value?.setAttribute("style", "top: " + y + "px; left: " + x + "px; display: block");
         });
       } else {
         this.agent.setDistinction(x, y, 0);
       }
-      socket.emit("player_move", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, pathFinding: this.agent.getPath() });
     }
   }
 
@@ -57,4 +66,9 @@ export class Player extends Character {
     super.setLookAt(gameObject);
     // socket.emit("player_animation", { animation: this.animation.name , });
   }
+
+  // public move(x: number, y: number, animation: string): void {
+  //   super.move(x, y, animation);
+  //   socket.emit("update_gameobject", { className: "Character", objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: animation, isStop: this.animation.isStop } });
+  // }
 }

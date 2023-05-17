@@ -1,4 +1,4 @@
-import { Camera, Player, type GameObject, Map, Table } from "@/game";
+import { Camera, Player, type GameObject, Map, listClass } from "@/game";
 import socket from "@/socket/Socket";
 
 export class Game {
@@ -35,9 +35,8 @@ export class Game {
         const componentId = event.dataTransfer.getData("text/uri-list");
         const color = componentId.includes("assets/images/lobby/table_") ? "#" + componentId.substring(componentId.indexOf("_") + 1, componentId.indexOf(".")) : "green";
         const rect = this.canvas.getBoundingClientRect();
-        const table = new Table({ color, x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE, y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE });
-        socket.emit("new_table", table.data);
-        this.addGameObject(table);
+        const data = { className: "Table", color, x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE, y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE };
+        socket.emit("new_table", data);
       }
       event.preventDefault();
     });
@@ -68,6 +67,10 @@ export class Game {
     this.gameObjets.push(gameObject);
     if (gameObject.mouseClick) this.mouseEvents.push(gameObject.mouseClick.bind(gameObject));
     return gameObject;
+  }
+
+  addGameObjectData(data: any): GameObject {
+    return this.addGameObject(new listClass[data.className](data));
   }
 
   removeGameObject(gameObject: GameObject) {

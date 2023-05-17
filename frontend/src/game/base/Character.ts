@@ -4,18 +4,19 @@ import { AnimationController } from "../animation/AnimationController";
 import { PathFinding, type PathNode } from "../path_finding/PathFinding";
 
 export interface CharacterOnline {
+  className: string;
   name: string;
-  objectId: string;
+  objectId: number;
   x: number;
   y: number;
-  pathFinding: PathNode[];
+  animation: { name: string; isStop: boolean };
 }
 
 export class Character implements GameObject {
   imagem: any = new Image();
   type: GameObjectType = "character";
   name: string = "player";
-  objectId: string = "";
+  objectId: number = 0;
   x: number = 64;
   y: number = 64;
   w: number = 32;
@@ -65,16 +66,19 @@ export class Character implements GameObject {
     });
     this.animation.setAnimation("walk_bottom");
     this.animation.setStop(true);
-    if (data) this.setDados(data);
+    if (data) this.setData(data);
   }
 
-  public setDados(data: CharacterOnline) {
+  public setData(data: CharacterOnline) {
     if (data) {
       this.name = data.name;
       this.objectId = data.objectId;
       this.x = data.x;
       this.y = data.y;
-      this.agent?.setPath(data.pathFinding);
+      console.log("animation\n", data.animation);
+
+      this.animation?.setAnimation(data.animation.name);
+      this.animation?.setStop(data.animation.isStop);
     }
   }
 
