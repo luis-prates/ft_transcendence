@@ -13,7 +13,7 @@ export class Player_Pong {
   score: number = 0;
   nickname: string;
   avatar: any;
-  fps: number = 0;
+  fpsUpdate: number = 0;
 
   constructor(game: Game, player_n: number, playerLobby: Player) {
     this.game = game;
@@ -26,17 +26,17 @@ export class Player_Pong {
   }
 
   moveUp() {
-    if (this.fps == 1)
+    if (this.fpsUpdate == 1)
       return;
     if (this.y > 0) this.y -= this.speed;
-    this.fps = 1;
+    this.fpsUpdate = 1;
   }
 
   moveDown() {
-    if (this.fps == 1)
+    if (this.fpsUpdate == 1)
       return;
     if (this.y < this.game.height - this.height) this.y += this.speed;
-    this.fps = 1;
+    this.fpsUpdate = 1;
   }
 
   point() {
@@ -55,6 +55,6 @@ export class Player_Pong {
       x: this.x,
       y: this.y,
     });
-    this.fps = 0;
+    this.fpsUpdate = 0;
   }
 }

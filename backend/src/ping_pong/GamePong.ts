@@ -31,21 +31,17 @@ export class Game {
     this.ball = new Ball(this);
 
   }
+  //Game Loop 1000 milesecond (1second) for 60 fps
   gameLoop() {
-    this.update();
-
-    setTimeout(() => {
-      this.gameLoop();
-    }, 1000 / 60); 
-  }
-  //Game Update
-  update() {
     if (!this.isEndGame() && this.status == Status.InGame) 
     {
       this.ball.update();
       this.player1.update();
       this.player2.update();
     }
+    setTimeout(() => {
+      this.gameLoop();
+    }, 1000 / 60); 
   }
   //Create Players and Watchers
   addUsers(user: Player) {
