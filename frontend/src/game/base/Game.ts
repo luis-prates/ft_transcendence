@@ -6,6 +6,7 @@ export class Game {
   canvas = document.createElement("canvas") as HTMLCanvasElement;
   context: CanvasRenderingContext2D;
   gameObjets: GameObject[] = [];
+  private gameObjetsUpdate: GameObject[] = [];
   private static lastFrameTime = performance.now();
   public static deltaTime: number = 0;
   private mouseEvents: any[] = [];
@@ -13,6 +14,7 @@ export class Game {
   private camera: Camera;
   protected map: Map;
   protected player: Player;
+  public isRunning;
 
   constructor(map: Map, player: Player) {
     this.camera = new Camera(player, map);
@@ -40,6 +42,7 @@ export class Game {
       }
       event.preventDefault();
     });
+    this.isRunning = true;
   }
 
   private mouseClick(event: MouseEvent) {
@@ -55,17 +58,26 @@ export class Game {
   }
 
   update() {
-    const currentTime = performance.now();
-    Game.deltaTime = (currentTime - Game.lastFrameTime) / 1000;
-    this.gameObjets.forEach((obj) => obj.update(Game.deltaTime));
-    this.draw();
-    Game.lastFrameTime = currentTime;
-    requestAnimationFrame(this.update.bind(this));
+    if (this.isRunning) {
+      const currentTime = performance.now();
+      Game.deltaTime = (currentTime - Game.lastFrameTime) / 1000;
+      this.gameObjetsUpdate.forEach((obj: any) => {
+        obj.update(Game.deltaTime);
+      });
+      this.draw();
+      Game.lastFrameTime = currentTime;
+      requestAnimationFrame(this.update.bind(this));
+    } else {
+      this.gameObjets = [];
+      this.gameObjetsUpdate = [];
+      this.mouseEvents = [];
+    }
   }
 
   addGameObject(gameObject: GameObject): GameObject {
     this.gameObjets.push(gameObject);
     if (gameObject.mouseClick) this.mouseEvents.push(gameObject.mouseClick.bind(gameObject));
+    if (gameObject.update) this.gameObjetsUpdate.push(gameObject);
     return gameObject;
   }
 
@@ -76,10 +88,12 @@ export class Game {
   removeGameObject(gameObject: GameObject) {
     this.gameObjets = this.gameObjets.filter((obj) => obj != gameObject);
     if (gameObject.mouseClick) this.mouseEvents = this.mouseEvents.filter((action) => action != gameObject.mouseClick);
+    if (gameObject.update) this.gameObjetsUpdate = this.gameObjetsUpdate.filter((obj) => obj != gameObject);
   }
 
   destructor() {
-    console.log("Executando o destrutor da classe");
+    this.isRunning = false;
+    this.canvas.remove();
   }
 
   public static MouseColision(x: number, y: number): GameObject | undefined {

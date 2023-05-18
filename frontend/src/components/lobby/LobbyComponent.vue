@@ -34,8 +34,10 @@ let lobby: Lobby | null = null;
 const isConcted = ref(false);
 
 onMounted(() => {
-  socket.emit("join_lobby", { objectId: store.user.id });
-  socket.on("load_lobby", (data: any) => {
+  socket.emit("join_map", { objectId: store.user.id, mapName: "lobby" });
+  socket.on("load_map", (data: any) => {
+    console.log("load_map", data);
+    if (lobby) lobby.destructor();
     lobby = new Lobby(new Map(data.map), new Player(menu, data.player));
     if (game.value !== undefined) {
       game.value.appendChild(lobby.canvas);

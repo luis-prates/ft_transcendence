@@ -1,15 +1,9 @@
 {
-<<<<<<< HEAD
   "singleQuote": true,
   "trailingComma": "all",
-  "printWidth": 220
-}
-=======
-	"singleQuote": true,
-	"trailingComma": "all",
+  "printWidth": 220,
 	"tabWidth": 4,
 	"semi": true,
 	"useTabs": true,
-	"eslintIntegration": true,
+	"eslintIntegration": true
 }
->>>>>>> game_lobby

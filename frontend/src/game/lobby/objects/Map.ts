@@ -1,5 +1,7 @@
 import type { GameObject, GameObjectType } from "../../base/GameObject";
 import map from "@/assets/images/lobby/8c9c64e0b3fcf049435ca7adc5350507.png";
+import { Door } from "./Door";
+import { Game } from "@/game";
 
 export class Map implements GameObject {
   imagem: any = new Image();
@@ -13,6 +15,7 @@ export class Map implements GameObject {
   public grid: number[][] = [];
   objectId = 0;
   private isLoaded = false;
+  public gameObjects: GameObject[] = [];
 
   // Definindo as configurações do grid
   numLinhas = 10; // Número de linhas do grid
@@ -36,7 +39,6 @@ export class Map implements GameObject {
 
   draw(contex: CanvasRenderingContext2D): void {
     if (this.isLoaded === false) return;
-    console.log("Map: Desenhando, ", this.w, " ", this.h);
     contex.strokeStyle = "blue";
 
     contex.drawImage(this.imagem, 0, 0, this.w, this.h);
@@ -50,6 +52,9 @@ export class Map implements GameObject {
         }
       }
     }
+    // this.gameObjects.forEach((gameObject) => {
+    //   gameObject.draw(contex);
+    // });
     // contex.fillRect(this.x, this.y, this.w, this.h);
   }
 
@@ -85,28 +90,30 @@ export class Map implements GameObject {
     y = Math.floor(y / Map.SIZE);
     if (button === 2) {
       // console.log("Map: ", x, y, button);
-      this.grid[x][y] = this.grid[x][y] ? 0 : 1;
+      // this.grid[x][y] = this.grid[x][y] ? 0 : 1;
+      Game.instance.addGameObject(new Door({ x: x * Map.SIZE, y: y * Map.SIZE, objectId: this.objectId++, mapName: "mapa1", mapPosition: { x: 0, y: 0 } }));
+      // this.gameObjects.push(new Door({ x: x * Map.SIZE, y: y * Map.SIZE, objectId: this.objectId++, mapName: "mapa1", mapPosition: { x: 0, y: 0 } }));
     }
     // console.log("Map: ", x, y, button);
   }
 
   async saveMap() {
-    const data = {
-      grid: this.grid,
-      width: this.w,
-      height: this.h,
-      size: Map.SIZE,
-      img: "8c9c64e0b3fcf049435ca7adc5350507.png",
-      start_position: { x: 0, y: 0 },
-    };
-    const jsonStr = JSON.stringify(data);
-    const blob = new Blob([jsonStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
+    // const data = {
+    //   grid: this.grid,
+    //   width: this.w,
+    //   height: this.h,
+    //   size: Map.SIZE,
+    //   img: "8c9c64e0b3fcf049435ca7adc5350507.png",
+    //   start_position: { x: 0, y: 0 },
+    // };
+    // const jsonStr = JSON.stringify(data);
+    // const blob = new Blob([jsonStr], { type: "application/json" });
+    // const url = URL.createObjectURL(blob);
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "desenho.json";
-    link.click();
-    console.log("Salvando mapa...");
+    // const link = document.createElement("a");
+    // link.href = url;
+    // link.download = "desenho.json";
+    // link.click();
+    console.log("Salvando mapa...\n", this.gameObjects);
   }
 }

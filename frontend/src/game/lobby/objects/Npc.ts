@@ -34,4 +34,9 @@ export class Npc extends Character {
     console.log("Npc -> getPointEvent -> ponto", ponto);
     return { x: this.x + ponto.x, y: this.y + ponto.y };
   }
+
+  public interaction(gameObject: Character): void {
+    console.log("Npc -> interaction -> gameObject", gameObject);
+    this.setLookAt(gameObject);
+  }
 }

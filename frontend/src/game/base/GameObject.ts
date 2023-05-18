@@ -1,4 +1,4 @@
-export type GameObjectType = "map" | "character" | "npc" | "item" | "player" | "camera" | "table";
+export type GameObjectType = "map" | "character" | "npc" | "item" | "player" | "camera" | "table" | "door";
 
 export interface GameObject {
   type: GameObjectType;
@@ -11,13 +11,14 @@ export interface GameObject {
   isSelect: boolean;
 
   draw(contex: CanvasRenderingContext2D): void;
-  update(deltaTime: number): void;
+  update?(deltaTime: number): void;
   mouseClick?(x: number, y: number, button: number): void;
   onSelected?(): void;
   onDeselected?(): void;
   getPointEvent?(): { x: number; y: number };
   destroy?(): void;
   setData(data: any): void;
+  interaction?(gameObject: GameObject): void;
 }
 
 function SocketObject(config: { type: string }) {

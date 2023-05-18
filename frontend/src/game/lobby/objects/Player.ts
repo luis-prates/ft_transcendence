@@ -48,11 +48,7 @@ export class Player extends Character {
       }
       if (this.select && this.select != this) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {
-          console.log("gameObject: ", this.animation.isStop);
-          if (gameObject instanceof Character) (gameObject as Character).setLookAt(this);
-          console.log("gameObject: ", this.animation.isStop);
-          // this.move(x, y, this.animation.name);
-          // this.menu.value?.setAttribute("style", "top: " + y + "px; left: " + x + "px; display: block");
+          if (gameObject && gameObject.interaction) gameObject.interaction(this);
         });
       } else {
         this.agent.setDistinction(x, y, 0);

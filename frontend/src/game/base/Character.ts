@@ -86,7 +86,7 @@ export class Character implements GameObject {
     if (this.isSelect) {
       context.beginPath();
       context.arc(this.x + this.w / 2, this.y + this.h / 2 - 5, 10, 0, 2 * Math.PI);
-      context.fillStyle = "blue";
+      context.fillStyle = "red";
       context.fill();
       context.closePath();
     }
