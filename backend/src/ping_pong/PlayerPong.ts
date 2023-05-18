@@ -54,6 +54,7 @@ export class Player_Pong {
       playerNumber: this.player_n,
       x: this.x,
       y: this.y,
+      score: this.score,
     });
     this.fpsUpdate = 0;
   }

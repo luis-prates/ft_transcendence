@@ -62,6 +62,30 @@ async function bootstrap() {
         }
       }
     });
+    //Disconect
+    socket.on('disconnect', () => {
+      
+      console.log('Socket desconectado:', socket.id);
+      // Faça o tratamento necessário para lidar com a desconexão do socket
+      
+      function isInGame(game: Game)
+      {
+        const disconect = socket.id;
+        if (game.status == Status.Finish)
+          return ;
+        if (game.player1.socket.id == disconect)
+          game.endGame(2);
+        else if (game.player2.socket.id == socket.id)
+          game.endGame(1);
+        const index = game.watchers.findIndex((socket) => socket.id === disconect);
+        if (index !== -1) {
+          game.watchers.splice(index, 1);
+          console.log('Socket removido da lista de watchers');
+        }
+      }
+
+      games.forEach((game) => isInGame(game));
+    });
   });
 
 }

@@ -70,9 +70,10 @@ export class Player {
     }
   }
 
-  updatePlayer(x: number, y: number) {
+  updatePlayer(x: number, y: number, score: number) {
     this.x = x;
     this.y = y + this.game.offSet;
+    this.score = score;
   }
 
   draw(context: CanvasRenderingContext2D) {

@@ -62,8 +62,8 @@ onMounted(function () {
 
   socket.on("game_update_player", (e: updatePlayer) => {
 
-    if (e.playerNumber === 1) game.player1.updatePlayer(e.x, e.y);
-    else game.player2.updatePlayer(e.x, e.y);
+    if (e.playerNumber === 1) game.player1.updatePlayer(e.x, e.y, e.score);
+    else game.player2.updatePlayer(e.x, e.y, e.score);
   })
 
   socket.on("game_update_ball", (e: updateBall) => {

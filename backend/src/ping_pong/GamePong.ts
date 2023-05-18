@@ -19,7 +19,7 @@ export class Game {
   player1: Player_Pong;
   player2: Player_Pong;
   maxPoint = 3;
-  whatchers: Player[] = [];
+  watchers: Player[] = [];
   data: gameResquest;
 
   constructor(gameResquest: gameResquest) {
@@ -63,8 +63,8 @@ export class Game {
         console.log('emit_start_game');
         this.startGame();
         this.gameLoop();
-      } else if (!this.whatchers.includes(user)) {
-        this.whatchers.push(user);
+      } else if (!this.watchers.includes(user)) {
+        this.watchers.push(user);
       }
       //console.log("p1: ", this.player1, " p2: ", this.player2, " ws: ", this.whatchers);
   }
@@ -156,12 +156,14 @@ export class Game {
 
   //Emit for Players
   emitPlayers(event: string, data: any): void {
-    this.player1.socket.emit(event, data);
-    this.player2.socket.emit(event, data);
+    if (this.player1)
+      this.player1.socket.emit(event, data);
+    if (this.player2)
+      this.player2.socket.emit(event, data);
   }
   //Emit for Watchers
   emitWatchers(event: string, data: any): void {
-    this.whatchers.forEach((clientSocket) => {
+    this.watchers.forEach((clientSocket) => {
       if (
         clientSocket.id !== this.player1.socket.id ||
         clientSocket.id !== this.player2.socket.id
