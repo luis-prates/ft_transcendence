@@ -37,46 +37,48 @@ export class Game {
     this.offSet = offSet;
     this.context = context;
     this.inputKey = new InputHandler();
-    this.player1 = new Player(this, 1, "Player 1", avatarDefault);
+    this.player1 = new Player(this, 1, "Player 1", marvin);
     this.player2 = new Player(this, 2, "Player 2", marvin);
     this.ball = new Ball(this);
     this.data = data;
   }
-
-  isEndGame() {
-    if (this.player1.score === this.data.maxScore || this.player2.score === this.data.maxScore) return true;
-    return false;
-  }
-
-  start_game() {
-    this.status = Status.InGame;
-  }
-
-  endGame() {
-    this.context.font = "100px 'Press Start 2P', cursive";
-    this.context.fillStyle = "black";
-
-    this.context.strokeStyle = "black";
-    this.context.lineWidth = 10;
-    this.context.strokeText("GAME OVER", 56, 380);
-    this.context.strokeText("____ ____", 56, 405);
-
-    this.context.fillStyle = "yellow";
-    this.context.fillText("GAME OVER", 56, 380);
-    this.context.fillText("____ ____", 56, 405);
-  }
-
+  //Update Input Keys
   update() {
     if (this.status != Status.InGame) {
       return;
     }
-
-    if (!this.isEndGame()) this.ball.update(this.player1, this.player2);
-
-    if (this.playerNumber === 1) this.player1.update(this.inputKey.keys);
-    else if (this.playerNumber === 2) this.player2.update(this.inputKey.keys);
+    if (this.playerNumber == 1) this.player1.update(this.inputKey.keys);
+    else if (this.playerNumber == 2) this.player2.update(this.inputKey.keys);
   }
+  //Update Status and Emit for ALL  
+  updateStatus(status: number) {
+    if (this.status != status)
+      this.status = status;
+  }
+  //Draw Controller
+  draw() {
+    this.player1.draw(this.context);
+    this.player2.draw(this.context);
+    this.ball.draw(this.context);
+    this.drawScore();
+    if (this.status == Status.Waiting) this.waitingGame();
+    else if (this.status == Status.Starting) this.countingGame(this.counting - 1);
+    else if (this.status == Status.Finish) this.drawEndGame();
+  }
+  //Draw Score
+  drawScore() {
+    
+    this.context.font = "50px 'Press Start 2P', cursive";
+    this.context.fillStyle = "black";
 
+    this.context.strokeStyle = "black";
+    this.context.lineWidth = 10;
+    this.context.strokeText(this.player1.score + " : " + this.player2.score,this.width / 2 - 120, 90, this.width - 750);
+
+    this.context.fillStyle = "white";
+    this.context.fillText(this.player1.score + " : " + this.player2.score, this.width / 2 - 120, 90, this.width - 750);
+  }
+  //Draw Waiting Game
   waitingGame() {
     this.context.font = "100px 'Press Start 2P', cursive";
     this.context.fillStyle = "black";
@@ -90,7 +92,7 @@ export class Game {
     this.context.fillText("WAITING!", 95, 380, this.width - 180);
     this.context.fillText("________", 95, 405, this.width - 180);
   }
-
+  //Draw End Game
   drawEndGame() {
     this.context.font = "100px 'Press Start 2P', cursive";
     this.context.fillStyle = "black";
@@ -104,7 +106,7 @@ export class Game {
     this.context.fillText(this.endMessage, 95, 380, this.width - 180);
     this.context.fillText("_".repeat(this.endMessage.length), 95, 405, this.width - 180);
   }
-
+  //Draw Counting
   countingGame(counting: number) {
     this.context.font = "100px 'Press Start 2P', cursive";
     this.context.fillStyle = this.ball.dir == 1 ? "red" : "blue";
@@ -123,34 +125,5 @@ export class Game {
       this.context.fillText(counting.toString(), this.width / 2 - 50, 470);
       this.context.fillText("_", this.width / 2 - 50, 485);
     }
-  }
-
-  draw() {
-    this.player1.draw(this.context);
-    this.player2.draw(this.context);
-    this.ball.draw(this.context);
-    this.drawScore();
-    if (this.isEndGame()) this.endGame();
-  }
-
-  drawScore() {
-    if (this.status == Status.Waiting) this.waitingGame();
-    else if (this.status == Status.Starting) this.countingGame(this.counting - 1);
-    else if (this.status == Status.Finish) this.drawEndGame();
-
-    this.context.font = "50px 'Press Start 2P', cursive";
-    this.context.fillStyle = "black";
-
-    this.context.strokeStyle = "black";
-    this.context.lineWidth = 10;
-    this.context.strokeText(
-      this.player1.score + " : " + this.player2.score,
-      this.width / 2 - 120,
-      90,
-      this.width - 750
-    );
-
-    this.context.fillStyle = "white";
-    this.context.fillText(this.player1.score + " : " + this.player2.score, this.width / 2 - 120, 90, this.width - 750);
   }
 }

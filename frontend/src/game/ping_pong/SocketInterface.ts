@@ -1,7 +1,8 @@
 export interface gameResquest {
-  objectId: string;
-  maxScore: number;
-  status: number;
+  objectId: String,
+  maxScore: Number,
+  avatar: String,
+  nickname: String,
 }
 
 export interface updatePlayer {
@@ -29,4 +30,5 @@ export interface gamePoint {
 export interface gamePoint {
   objectId: string;
   playerNumber: number;
+  score: number;
 }

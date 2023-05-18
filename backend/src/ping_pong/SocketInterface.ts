@@ -23,4 +23,5 @@ export interface updateBall {
 export interface gamePoint {
   objectId: string;
   playerNumber: number;
+  score: number;
 }

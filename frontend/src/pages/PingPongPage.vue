@@ -11,10 +11,13 @@ import { Game, Status } from "@/game/ping_pong/PingPong.js";
 import { onMounted } from "vue";
 import { Table } from "@/game/ping_pong/Table.js";
 import socket from "@/socket/Socket";
-import { type gameResquest, type updatePlayer, type updateBall } from "@/game/ping_pong/SocketInterface";
+import { type gameResquest, type updatePlayer, type updateBall, type gamePoint } from "@/game/ping_pong/SocketInterface";
 
 const props = defineProps({
-  objectId: String
+  objectId: String,
+  maxScore: Number,
+  avatar: String,
+  nickname: String,
 });
 
 
@@ -24,16 +27,17 @@ onMounted(function () {
   canvas.width = 1000;
   canvas.height = 750;
 
-  socket.emit("entry_game", { objectId: props.objectId });
+  socket.emit("entry_game", props );
   console.log("pros: ", props)
 
   const game = new Game(canvas.width, canvas.height - 228, 164, ctx, props as gameResquest);
-  console.log(props.objectId);
+  console.log(props);
   const tableBoard = new Table(canvas.width, canvas.height, "DarkSlateBlue", "#1e8c2f");
 
   socket.on("start_game", (e: any) => {
 
     console.log(e);
+    console.log(game);
     if (e.player === 1) {
       game.playerNumber = 1;
       game.status = e.status;
@@ -44,66 +48,37 @@ onMounted(function () {
       game.status = e.status;
       //console.log("start game, player 2, Game Status: ", game.status)
     }
-    if (game.player1 && game.player2)
-      game.ball.emitColiderAngle();
   })
-
-  socket.on("game_counting", (e: any) => {
-
+  socket.on("game_update_status", (status: any) => {
+    if (game.status != Status.Finish) {
+      game.updateStatus(status);
+    }
+  })
+  socket.on("game_counting", (seconds: any) => {
     if (game.status == Status.Starting) {
-      game.counting = e;
-      if (game.counting == 0)
-        game.start_game();
+      game.counting = seconds;
     }
   })
 
   socket.on("game_update_player", (e: updatePlayer) => {
 
-    /*if (game.playerNumber === e.playerNumber)
-      return ;*/
-
-    if (e.playerNumber === 1) {
-      game.player1.x = e.x;
-      game.player1.y = e.y;
-      game.player1.score = e.score;
-    }
-    else if (e.playerNumber === 2) {
-      game.player2.x = e.x;
-      game.player2.y = e.y;
-      game.player2.score = e.score;
-    }
-
-    //console.log("GAME_MOVE", e)
+    if (e.playerNumber === 1) game.player1.updatePlayer(e.x, e.y);
+    else game.player2.updatePlayer(e.x, e.y);
   })
 
   socket.on("game_update_ball", (e: updateBall) => {
-
-    game.ball.angle = e.angle;
-    game.ball.x = e.x;
-    game.ball.y = e.y;
-    game.ball.dir = e.dir;
-    game.ball.speed = e.speed;
-
-    // console.log("Ball", e)
+    game.ball.updateBall(e.x, e.y, e.dir);
   })
-
-
-  socket.on("game_update_point", (e: any) => {
+  socket.on("game_update_point", (e: gamePoint) => {
 
     if (game.status == Status.InGame) {
-      game.status = Status.Starting;
-      if (e.playerNumber === 1)
-        game.player1.point();
-      else if (e.playerNumber === 2)
-        game.player2.point();
-      if (game.isEndGame())
-        game.status = Status.Finish;
+      game.updateStatus(Status.Starting);
+      if (e.playerNumber == 1) game.player1.point(e.score);
+      else game.player2.point(e.score);
     }
   })
-
   socket.on("end_game", (e: any) => {
-
-    game.status = Status.Finish;
+    game.updateStatus(Status.Finish);
     game.endMessage = e.result;
   })
 

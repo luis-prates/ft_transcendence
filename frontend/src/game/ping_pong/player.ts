@@ -9,7 +9,7 @@ export class Player {
   player: number;
   y: number;
   x: number = 0;
-  speed: number = 10;
+  //speed: number = 10;
   score: number = 0;
   nickname: string;
   avatar = new Image();
@@ -18,8 +18,8 @@ export class Player {
     this.game = game;
     this.player = player_n;
     this.y = game.height / 2 - this.height / 2 + this.game.offSet;
-    if (this.player === 1) this.x = 50;
-    else if (this.player === 2) this.x = game.width - this.width - 50;
+    if (this.player == 1) this.x = 50;
+    else if (this.player == 2) this.x = game.width - this.width - 50;
     this.nickname = nickname;
     this.avatar.src = avatar;
   }
@@ -28,38 +28,59 @@ export class Player {
     socket.emit("game_move", {
       objectId: this.game.data.objectId,
       playerNumber: this.game.playerNumber,
-      x: this.x,
-      y: this.y,
-      score: this.score,
+      // x: this.x,
+      // y: this.y - this.game.offSet,
+      move: "up",
     });
   }
 
   moveUp() {
-    if (this.y > this.game.offSet) this.y -= this.speed;
-  }
-
-  moveDown() {
-    if (this.y < this.game.height - this.height + this.game.offSet) this.y += this.speed;
-  }
-
-  point() {
-    this.score++;
-  }
-
-  update(input: string[]) {
-    if (this.game.playerNumber === 1 || this.game.playerNumber === 2) {
-      if (input.includes("w")) this.moveUp();
-      if (input.includes("s")) this.moveDown();
-      if (input.includes("w") || input.includes("s")) this.emitMove();
+    //Emit UP
+    if (this.y > this.game.offSet) {
+      socket.emit("game_move", {
+        objectId: this.game.data.objectId,
+        playerNumber: this.game.playerNumber,
+        // x: this.x,
+        // y: this.y - this.game.offSet,
+        move: "up",
+      });
     }
   }
 
+  moveDown() {
+    //Emit DOWN
+    if (this.y < this.game.height - this.height + this.game.offSet) {
+      socket.emit("game_move", {
+        objectId: this.game.data.objectId,
+        playerNumber: this.game.playerNumber,
+        move: "down",
+      });
+    }
+  }
+
+  point(score: number) {
+    if (this.score != score)
+      this.score = score;
+  }
+
+  update(input: string[]) {
+    if (this.game.playerNumber == 1 || this.game.playerNumber == 2) {
+      if (input.includes("w")) this.moveUp();
+      if (input.includes("s")) this.moveDown();
+    }
+  }
+
+  updatePlayer(x: number, y: number) {
+    this.x = x;
+    this.y = y + this.game.offSet;
+  }
+
   draw(context: CanvasRenderingContext2D) {
-    if (this.player === 1) {
+    if (this.player == 1) {
       this.drawPhoto(context);
       this.drawNickName(context);
       this.drawPlayer(context, "red");
-    } else if (this.player === 2) {
+    } else if (this.player == 2) {
       this.drawPhoto(context, this.game.width - 50);
       this.drawNickName(context);
       this.drawPlayer(context, "blue");
@@ -68,7 +89,7 @@ export class Player {
   drawNickName(ctx: CanvasRenderingContext2D) {
     let pos_x = 100;
     let collor = "red";
-    if (this.player === 2) {
+    if (this.player == 2) {
       pos_x = this.game.width - 100 - 200;
       collor = "blue";
     }

@@ -1,6 +1,6 @@
 export class Table {
-  width: number = 30;
-  height: number = 100;
+  width: number = 1000;
+  height: number = 750;
   background: string;
   color: string;
 
@@ -31,12 +31,13 @@ export class Table {
   drawTableColor(context: CanvasRenderingContext2D) {
     context.fillStyle = this.color;
     context.fillRect(78, 174, this.width - 158, this.height - 248);
+    //context.fillRect(0, 164, 1000, 522); 
   }
 
   drawBackGround(context: CanvasRenderingContext2D) {
     context.fillStyle = this.background;
     context.fillRect(0, 0, this.width, this.height);
     context.fillStyle = "white";
-    context.fillRect(68, 164, this.width - 137, this.height - 228);
+    context.fillRect(68, 164, this.width - 138, this.height - 228);
   }
 }
