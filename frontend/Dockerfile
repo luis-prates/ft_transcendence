@@ -1,5 +1,5 @@
 # Base image
-FROM node
+FROM node:alpine
 
 # Make folder to hold the application code inside the image
 RUN mkdir -p /usr/src/app

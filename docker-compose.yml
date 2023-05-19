@@ -4,26 +4,32 @@ services:
   frontend: # Name of our service
     build: ./frontend # path to dockerfile
     ports: # Port binding to host from docker container
-      - "3377:8080" # Bind port 3000 of host to 3000 of container
+      - "3377:8080" # Bind port 3377 of host to 8080 of container
     container_name: frontend-docker
     restart: always # What to do if container crashes
     depends_on:
       - backend
     networks:
-      - freecodecamp
+      - transcendence
   # Create backend container
   backend:
     # Create backend container  
     build: ./backend
+    expose:
+      - BACKEND_PORT # Expose port 3370 to other containers
     ports:
-      - "3370:3370"
-      - "5555:5555"
+      - "3370:3370" # For debugging - Bind port 3370 of host to 3370 of container
+      - "5555:5555" # For debugging - access to prisma studio
+    environment:
+      - DATABASE_URL
+      - JWT_SECRET
+      - BACKEND_PORT
     container_name: backend-docker
     restart: always
     depends_on:
       - dev-db
     networks:
-      - freecodecamp
+      - transcendence
   # Create database container
   dev-db:
     image: postgres:13
@@ -31,10 +37,10 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123
-      POSTGRES_DB: nest
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
     networks:
-      - freecodecamp
+      - transcendence
 networks:
-  freecodecamp:
+  transcendence:

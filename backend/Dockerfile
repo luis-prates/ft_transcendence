@@ -16,7 +16,7 @@ RUN npm install
 COPY . .
 
 # Expose the port the app runs in
-EXPOSE 3370
+# EXPOSE 3370
 
 RUN chmod +x ./docker-entrypoint.sh
 
