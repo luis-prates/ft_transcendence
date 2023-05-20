@@ -8,8 +8,6 @@ async function bootstrap() {
 	app.useGlobalPipes(new ValidationPipe({
 		whitelist: true,
 	})); // This is a security feature that validates the data sent to the backend.
-	console.log(`Listening on port ${process.env.BACKEND_PORT || 3380}`);
-	console.log(`DATABASE_URL: ${process.env.DATABASE_URL}`);
 	await app.listen(process.env.BACKEND_PORT || 3380);
 }
 bootstrap();

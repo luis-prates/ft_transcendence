@@ -23,7 +23,7 @@ services:
     expose:
       - BACKEND_PORT # Expose port 3370 to other containers
     ports:
-      - "3370:3370" # For debugging - Bind port 3370 of host to 3370 of container
+      - ${BACKEND_PORT}:3370 # For debugging - Bind port 3370 of host to 3370 of container
       - "5555:5555" # For debugging - access to prisma studio
     environment:
       - DATABASE_URL
@@ -38,9 +38,9 @@ services:
   # Create database container
   dev-db:
     image: postgres:13
-    container_name: postgres-docker
+    container_name: ${POSTGRES_CONTAINER_NAME}
     ports:
-      - 5432:5432
+      - ${POSTGRES_PORT}:5432
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
