@@ -47,3 +47,6 @@ frontend/src/env.ts
 
 /cypress/videos/
 /cypress/screenshots/
+
+.env
+frontend/src/env
