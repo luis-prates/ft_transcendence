@@ -6,29 +6,28 @@ import * as path from 'path';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+	constructor(private readonly appService: AppService) {}
 
-  @Get('v2/hello')
-  getHello(): string {
-    return this.appService.getHello();
-  }
+	@Get('v2/hello')
+	getHello(): string {
+		return this.appService.getHello();
+	}
 
-  @Get('v2/hello/sd')
-  getdfdHello(): string {
-    return this.appService.getHello();
-  }
+	@Get('v2/hello/sd')
+	getdfdHello(): string {
+		return this.appService.getHello();
+	}
 
-  @Post('v2/hello/sd/dsd')
-  d(as): string {
-    return this.appService.getHello();
-  }
+	@Post('v2/hello/sd/dsd')
+	d(as): string {
+		return this.appService.getHello();
+	}
 
-  @Get('v2/image/:imageName')
-  getImage(@Param('imageName') imageName: string, @Res() res: Response): void {
-    console.log(imageName);
-    const imagePath = path.join(__dirname, './', 'public', 'images', imageName);
-    const imageStream = fs.createReadStream(imagePath);
+	@Get('v2/image/:imageName')
+	getImage(@Param('imageName') imageName: string, @Res() res: Response): void {
+		const imagePath = path.join(__dirname, './', 'public', 'images', imageName);
+		const imageStream = fs.createReadStream(imagePath);
 
-    imageStream.pipe(res);
-  }
+		imageStream.pipe(res);
+	}
 }

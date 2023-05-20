@@ -1,4 +1,4 @@
-export type GameObjectType = "map" | "character" | "npc" | "item" | "player" | "camera" | "table" | "door";
+export type GameObjectType = "map" | "character" | "npc" | "item" | "player" | "camera" | "table" | "door" | "tree";
 
 export interface GameObject {
   type: GameObjectType;
@@ -19,6 +19,7 @@ export interface GameObject {
   destroy?(): void;
   setData(data: any): void;
   interaction?(gameObject: GameObject): void;
+  isCollision?(gameObject: GameObject): boolean;
 }
 
 function SocketObject(config: { type: string }) {

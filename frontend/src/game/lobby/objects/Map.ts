@@ -14,8 +14,10 @@ export class Map implements GameObject {
   public static SIZE = 32;
   public grid: number[][] = [];
   objectId = 0;
-  private isLoaded = false;
+  protected isLoaded = false;
   public gameObjects: GameObject[] = [];
+  public layer: number = 0;
+  public layers: HTMLImageElement[] = [];
 
   // Definindo as configurações do grid
   numLinhas = 10; // Número de linhas do grid
@@ -26,6 +28,7 @@ export class Map implements GameObject {
     // this.imagem.src = map;
     // this.w = 544;
     // this.h = 672;
+
     this.setData(data);
 
     // this.grid = [];
@@ -40,7 +43,6 @@ export class Map implements GameObject {
   draw(contex: CanvasRenderingContext2D): void {
     if (this.isLoaded === false) return;
     contex.strokeStyle = "blue";
-
     contex.drawImage(this.imagem, 0, 0, this.w, this.h);
     for (let x = 0; x < this.w; x += Map.SIZE) {
       for (let y = 0; y < this.h; y += Map.SIZE) {
@@ -98,22 +100,22 @@ export class Map implements GameObject {
   }
 
   async saveMap() {
-    // const data = {
-    //   grid: this.grid,
-    //   width: this.w,
-    //   height: this.h,
-    //   size: Map.SIZE,
-    //   img: "8c9c64e0b3fcf049435ca7adc5350507.png",
-    //   start_position: { x: 0, y: 0 },
-    // };
-    // const jsonStr = JSON.stringify(data);
-    // const blob = new Blob([jsonStr], { type: "application/json" });
-    // const url = URL.createObjectURL(blob);
+    const data = {
+      grid: this.grid,
+      width: this.w,
+      height: this.h,
+      size: Map.SIZE,
+      img: "8c9c64e0b3fcf049435ca7adc5350507.png",
+      start_position: { x: 0, y: 0 },
+    };
+    const jsonStr = JSON.stringify(data);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
 
-    // const link = document.createElement("a");
-    // link.href = url;
-    // link.download = "desenho.json";
-    // link.click();
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "desenho.json";
+    link.click();
     console.log("Salvando mapa...\n", this.gameObjects);
   }
 }

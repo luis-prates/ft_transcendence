@@ -14,7 +14,7 @@ export interface TableData {
 
 export default class Lobby {
 	private gameMaps: Map<string, GameMap> = new Map<string, GameMap>();
-	// public static players: Map<string, Player> = new Map<string, Player>();
+	public static players: Player[] = [];
 
 	constructor(io: Server) {
 		console.log('lobby created');
@@ -30,12 +30,8 @@ export default class Lobby {
 
 	public connection(socket: Socket): void {
 		socket.on('join_map', (data) => {
-			const player = new Player(socket, data.objectId);
-			this.gameMaps.get(data.mapName)?.join(player);
-			console.log('join_map', data.objectId, 'mapName: ', data.mapName, ' isInclude: ', this.gameMaps.has(data.mapName));
-			this.gameMaps.forEach((map) => {
-				console.log('test: ', map.objectId);
-			});
+			const player = Lobby.players.find((e) => e.objectId == data.objectId) || new Player(socket, data.objectId);
+			this.gameMaps.get(data.map.name)?.join(player, data.map?.position);
 		});
 	}
 }

@@ -3,7 +3,7 @@ import type { GameObjectType } from "@/game/base/GameObject";
 import table from "@/assets/images/lobby/table0.png";
 
 interface TableOnline {
-  objectId?: string;
+  objectId?: any;
   x: number;
   y: number;
   color: string;
@@ -16,7 +16,7 @@ export class Table implements GameObject {
   w: number;
   h: number;
   isSelect: boolean;
-  objectId: string;
+  objectId: number = 0;
   private _data: TableOnline;
 
   constructor(data: TableOnline) {
@@ -45,6 +45,8 @@ export class Table implements GameObject {
     //   contex.fillRect(this.x + ponto.x, this.y + ponto.y, 6, 6);
     // });
   }
+
+  setData(data: any): void {}
 
   update(deltaTime: number): void {}
 

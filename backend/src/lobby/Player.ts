@@ -20,11 +20,7 @@ export interface PlayerData {
 export class Player {
 	private _socket: Socket;
 	avatar: string = '';
-	map: {
-		current: GameMap | null;
-		preveiw: GameMap | null;
-		position_preveiw: { x: number; y: number };
-	} = { current: null, preveiw: null, position_preveiw: { x: 0, y: 0 } };
+	map: GameMap | null = null;
 	data: PlayerData = {
 		className: 'Character',
 		name: '',
@@ -39,6 +35,8 @@ export class Player {
 		this.socket = socket;
 		this.data.objectId = objectId;
 		this.time = Date.now();
+		console.log('player created: ' + this.objectId);
+		Lobby.players.push(this);
 	}
 
 	get objectId(): number {
@@ -55,9 +53,9 @@ export class Player {
 			this.time = Date.now();
 			setTimeout(() => {
 				console.log('disconnect: ' + this.objectId);
-				if (this.time && this.map.current) {
-					this.map.current.removePlayer(this);
-					this.map.current.emitAll('remove_gameobject', this.data);
+				if (this.time && this.map) {
+					this.map.removePlayer(this);
+					Lobby.players = Lobby.players.splice(Lobby.players.indexOf(this), 1);
 				}
 			}, 30000);
 		});

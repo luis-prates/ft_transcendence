@@ -34,7 +34,7 @@ let lobby: Lobby | null = null;
 const isConcted = ref(false);
 
 onMounted(() => {
-  socket.emit("join_map", { objectId: store.user.id, mapName: "lobby" });
+  socket.emit("join_map", { objectId: store.user.id, map: { name: "lobby" } });
   socket.on("load_map", (data: any) => {
     console.log("load_map", data);
     if (lobby) lobby.destructor();

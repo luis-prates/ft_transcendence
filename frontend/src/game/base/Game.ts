@@ -18,8 +18,8 @@ export class Game {
 
   constructor(map: Map, player: Player) {
     this.camera = new Camera(player, map);
-    this.canvas.width = 2000;
-    this.canvas.height = 2000;
+    this.canvas.width = map.w;
+    this.canvas.height = map.h;
     this.map = map;
     this.player = player;
     this.addGameObject(map);
@@ -28,7 +28,6 @@ export class Game {
     this.canvas.addEventListener("click", this.mouseClick.bind(this));
     this.canvas.addEventListener("contextmenu", this.mouseClick.bind(this));
     Game.instance = this;
-
     // Adicione os event listeners para os eventos de drag e drop
     this.canvas.addEventListener("dragover", (event) => event.preventDefault());
     this.canvas.addEventListener("drop", (event) => {
@@ -45,7 +44,7 @@ export class Game {
     this.isRunning = true;
   }
 
-  private mouseClick(event: MouseEvent) {
+  protected mouseClick(event: MouseEvent) {
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left + this.camera.x;
     const mouseY = event.clientY - rect.top + this.camera.y;
@@ -89,6 +88,7 @@ export class Game {
     this.gameObjets = this.gameObjets.filter((obj) => obj != gameObject);
     if (gameObject.mouseClick) this.mouseEvents = this.mouseEvents.filter((action) => action != gameObject.mouseClick);
     if (gameObject.update) this.gameObjetsUpdate = this.gameObjetsUpdate.filter((obj) => obj != gameObject);
+    if (gameObject.destroy) gameObject.destroy();
   }
 
   destructor() {
@@ -109,7 +109,10 @@ export class Game {
     return undefined;
   }
 
-  public isColision(gameObject1: GameObject, gameObjec2: GameObject): boolean {
+  public static isColision(gameObject1: GameObject, gameObjec2: GameObject): boolean {
+    if (gameObject1.isCollision && gameObjec2.isCollision) return gameObject1.isCollision(gameObjec2) || gameObjec2.isCollision(gameObject1);
+    if (gameObject1.isCollision) return gameObject1.isCollision(gameObjec2);
+    if (gameObjec2.isCollision) return gameObjec2.isCollision(gameObject1);
     if (gameObject1.x + gameObject1.w < gameObjec2.x) return false;
     if (gameObject1.x > gameObjec2.x + gameObjec2.w) return false;
     if (gameObject1.y + gameObject1.h < gameObjec2.y) return false;
@@ -123,5 +126,15 @@ export class Game {
 
   public static getPlayer(): Player {
     return Game.instance.player;
+  }
+
+  public static async loadImage(url: any) {
+    const ur = await import(url);
+    const image = new Image();
+    if (ur && ur.default) {
+      image.src = ur.default;
+      return image;
+    }
+    return null;
   }
 }

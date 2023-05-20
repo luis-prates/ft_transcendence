@@ -7,8 +7,9 @@ import { Character } from "./base/Character";
 import { type GameObject } from "./base/GameObject";
 import { Lobby } from "./lobby/Lobby";
 import { Table } from "./lobby/objects/Table";
+import { Tree } from "./lobby/objects/Tree";
 
-export { Player, Camera, Map, Npc, Game, Character, Lobby, Table };
+export { Player, Camera, Map, Npc, Game, Character, Lobby, Table, Tree };
 export type { GameObject };
 
 export const listClass: { [key: string]: any } = {

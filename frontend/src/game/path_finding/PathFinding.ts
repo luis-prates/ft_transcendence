@@ -94,6 +94,8 @@ export class PathFinding {
       this.createPathNodes(node, node.preview);
       node = node.preview;
     }
+    this._isPathFinding = this.path.length > 0;
+    if (!this._isPathFinding) this.character.animation.setStop(true);
   }
 
   public createNodes(map: number[][], node: PathFindingNode | null, dx: number, dy: number): void {
@@ -102,7 +104,7 @@ export class PathFinding {
     if (node != null) {
       this.close.push(node);
       this.open = this.open.filter((n) => n != node);
-      if (node.x == dx && node.y == dy) this.createPath(node);
+      if (Math.floor(node.x) == dx && Math.floor(node.y) == dy) this.createPath(node);
       else {
         //LEFT
         this.addNode(node, map, -1, 0, dx, dy, PathFinding.LEFT);
@@ -126,6 +128,9 @@ export class PathFinding {
         for (let l of this.open) {
           if (lowerCost == null || lowerCost.g > l.g) lowerCost = l;
         }
+        // Game.instance.draw();
+        console.log("open: ", this.open.length, " close: ", this.close.length);
+        // requestAnimationFrame(() => this.createNodes(map, lowerCost, dx, dy));
         this.createNodes(map, lowerCost, dx, dy);
       }
     }
@@ -137,7 +142,7 @@ export class PathFinding {
     x = Math.floor(x);
     y = Math.floor(y);
     if (this.isPossible(map, x, y)) {
-      if (!(x != preview.x && y != preview.y) || (this.isEmpty(map, preview.x, y) && this.isEmpty(map, x, preview.y))) {
+      if (!(x != preview.x && y != preview.y) || (this.isPossible(map, preview.x, y) && this.isPossible(map, x, preview.y))) {
         this.open.push({ x, y, g: this.getG(x, y, dx, dy), preview, direction });
       }
     }
@@ -162,7 +167,10 @@ export class PathFinding {
   private isPossible(map: number[][], x: number, y: number): boolean {
     if (this.isEmpty(map, x, y)) {
       for (let e of this.close) {
-        if (x == e.x && y == e.y) return false;
+        if (Math.floor(x) == Math.floor(e.x) && Math.floor(y) == Math.floor(e.y)) return false;
+      }
+      for (let e of this.open) {
+        if (Math.floor(x) == Math.floor(e.x) && Math.floor(y) == Math.floor(e.y)) return false;
       }
       return true;
     }

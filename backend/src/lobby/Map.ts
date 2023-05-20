@@ -15,20 +15,14 @@ export class GameMap {
 		this.map = jsonObject;
 	}
 
-	public join(player: Player): void {
-		if (player.map.current) {
-			player.map.current.removePlayer(player);
-			player.map.current.emitAll('remove_gameobject', player.data);
-			player.map.position_preveiw = { x: player.data.x, y: player.data.y };
-			player.map.preveiw = player.map.current;
-			player.map.current = this;
-		}
+	public join(player: Player, position?: { x: number; y: number }): void {
+		if (player.map) player.map.removePlayer(player);
+		player.map = this;
 		const clientSocket = this.players.find((clientSocket) => clientSocket.objectId === player.objectId);
 		const data: any[] = this.players.filter((e) => e.objectId != player.objectId).map((e) => e.data);
 		data.push(...this.gameObjets);
-		console.log('load load_map: ', data);
-		player.data.x = this.map.start_position.x;
-		player.data.y = this.map.start_position.y;
+		player.data.x = position?.x || this.map.start_position.x;
+		player.data.y = position?.y || this.map.start_position.y;
 		player.emit('load_map', {
 			map: this.map,
 			player: clientSocket ? clientSocket.data : player.data,
@@ -36,11 +30,11 @@ export class GameMap {
 		});
 		if (clientSocket) {
 			clientSocket.socket = player.socket;
-			console.log('re-connected socket: ', player.objectId);
+			// console.log('re-connected socket: ', player.objectId);
 		} else {
 			this.players.push(player);
 			this.emitAll('new_gameobject', player.data, player);
-			console.log('new player: ', player.objectId);
+			// console.log('new player: ', player.objectId);
 		}
 		player.socket.on('new_gameobject', (data) => {
 			this.gameObjets.push(data);
@@ -60,8 +54,10 @@ export class GameMap {
 
 	public removePlayer(player: Player): void {
 		this.players = this.players.filter((clientSocket) => {
-			return clientSocket.socket.id !== player.socket.id;
+			return clientSocket.objectId !== player.objectId;
 		});
+		console.log('remove player: ', player.objectId);
+		this.emitAll('remove_gameobject', player.data, player);
 	}
 
 	public get objectId(): string {

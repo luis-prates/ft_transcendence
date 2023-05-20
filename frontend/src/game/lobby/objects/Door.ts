@@ -35,7 +35,7 @@ export class Door implements GameObject {
 
   interaction(gameObject: GameObject): void {
     console.log("door -> interaction", gameObject);
-    socket.emit("join_map", { objectId: gameObject.objectId, mapName: "house" });
+    socket.emit("join_map", { objectId: gameObject.objectId, map: { name: "house", position: { x: 300, y: 300 } } });
   }
 
   public getPointEvent(): { x: number; y: number } {
