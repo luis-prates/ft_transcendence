@@ -102,14 +102,14 @@ export class Game {
     this.context.strokeText(this.endMessage, 95, 380, this.width - 180);
     this.context.strokeText("_".repeat(this.endMessage.length), 95, 405, this.width - 180);
 
-    this.context.fillStyle = "yellow";
+    this.context.fillStyle = this.playerNumber == 2 ? this.player2.color : this.player1.color;
     this.context.fillText(this.endMessage, 95, 380, this.width - 180);
     this.context.fillText("_".repeat(this.endMessage.length), 95, 405, this.width - 180);
   }
   //Draw Counting
   countingGame(counting: number) {
     this.context.font = "100px 'Press Start 2P', cursive";
-    this.context.fillStyle = this.ball.dir == 1 ? "red" : "blue";
+    this.context.fillStyle = this.ball.dir == 1 ? this.player1.color : this.player2.color;
 
     this.context.strokeStyle = "black";
     this.context.lineWidth = 10;

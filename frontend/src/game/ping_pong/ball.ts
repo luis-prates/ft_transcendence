@@ -22,8 +22,8 @@ export class Ball {
   }
 
   draw(context: CanvasRenderingContext2D) {
-    if (this.dir === 1) context.fillStyle = "red";
-    else if (this.dir === 2) context.fillStyle = "blue";
+    if (this.dir === 1) context.fillStyle = this.game.player1.color;
+    else if (this.dir === 2) context.fillStyle = this.game.player2.color;
 
     context.beginPath();
     context.arc(this.x + this.width / 2, this.y + this.height / 2 + this.game.offSet, this.width / 2, 0, 360);

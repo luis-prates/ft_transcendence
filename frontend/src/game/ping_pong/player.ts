@@ -13,6 +13,7 @@ export class Player {
   score: number = 0;
   nickname: string;
   avatar = new Image();
+  color: string;
 
   constructor(game: Game, player_n: number, nickname: string, avatar: any) {
     this.game = game;
@@ -22,6 +23,7 @@ export class Player {
     else if (this.player == 2) this.x = game.width - this.width - 50;
     this.nickname = nickname;
     this.avatar.src = avatar;
+    this.color = player_n == 1 ? "red" : "blue";
   }
 
   emitMove() {
@@ -77,22 +79,16 @@ export class Player {
   }
 
   draw(context: CanvasRenderingContext2D) {
-    if (this.player == 1) {
-      this.drawPhoto(context);
-      this.drawNickName(context);
-      this.drawPlayer(context, "red");
-    } else if (this.player == 2) {
-      this.drawPhoto(context, this.game.width - 50);
-      this.drawNickName(context);
-      this.drawPlayer(context, "blue");
-    }
+    this.drawNickName(context);
+    this.drawPlayer(context, this.color);
+    this.drawPhoto(context);
   }
   drawNickName(ctx: CanvasRenderingContext2D) {
     let pos_x = 100;
-    let collor = "red";
+    let collor = this.color;
     if (this.player == 2) {
       pos_x = this.game.width - 100 - 200;
-      collor = "blue";
+      collor = this.color;
     }
 
     ctx.font = "50px 'Press Start 2P', cursive";
@@ -106,11 +102,14 @@ export class Player {
     ctx.fillText(nickname, pos_x, 89, 200);
   }
 
-  drawPhoto(context: CanvasRenderingContext2D, whidth?: number) {
-    context.drawImage(this.avatar, whidth ? whidth - 25 : 25, 35, 50, 50);
+  drawPhoto(context: CanvasRenderingContext2D) {
+    let width: number = 0; 
+    if (this.player == 2) 
+      width = this.game.width - 50;
+    context.drawImage(this.avatar, width != 0 ? width - 25 : 25, 35, 50, 50);
     context.strokeStyle = "black";
     context.lineWidth = 3;
-    context.strokeRect(whidth ? whidth - 25 : 25, 35, 50, 50);
+    context.strokeRect(width ? width - 25 : 25, 35, 50, 50);
   }
 
   drawPlayer(context: CanvasRenderingContext2D, color: string) {

@@ -6,7 +6,7 @@ import { Player } from './lobby/Lobby';
 import {
   type updatePlayer,
   type updateBall,
-  type gamePoint,
+  type gameResquest,
 } from './ping_pong/SocketInterface';
 
 async function bootstrap() {
@@ -30,7 +30,7 @@ async function bootstrap() {
       console.log(e);
       const game = games.find((g) => g.data.objectId == e.objectId);
       if (game) {
-        game.addUsers(socket as Player);
+        game.addUsers(socket as Player, e);
         console.log(games);
       }
       console.log('entry_game: ', e);
@@ -38,7 +38,7 @@ async function bootstrap() {
     socket.on('watch_game', (e: any) => {
       //Ver Jogo
       const game = games.find((g) => g.data.objectId == e.objectId);
-      if (game) game.addUsers(socket as Player);
+      if (game) game.addUsers(socket as Player, e);
       console.log('watch_game: ', e);
     });
 

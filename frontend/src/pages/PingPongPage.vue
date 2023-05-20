@@ -18,6 +18,7 @@ const props = defineProps({
   maxScore: Number,
   avatar: String,
   nickname: String,
+  color: String,
 });
 
 
@@ -38,6 +39,13 @@ onMounted(function () {
 
     console.log(e);
     console.log(game);
+    game.player1.nickname = e.nickname1;
+    game.player1.color = e.color1;
+    game.player2.nickname = e.nickname2;
+    game.player2.color = e.color2;
+/*  Verificar foto
+    game.player1.avatar.src = e.avatar1 ? e.avatar1 : game.player1.avatar.src;
+    game.player2.avatar.src = e.avatar2 ? e.avatar2 : game.player2.avatar.src;*/
     if (e.player === 1) {
       game.playerNumber = 1;
       game.status = e.status;

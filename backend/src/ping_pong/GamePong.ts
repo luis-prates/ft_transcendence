@@ -44,26 +44,46 @@ export class Game {
     }, 1000 / 60); 
   }
   //Create Players and Watchers
-  addUsers(user: Player) {
+  addUsers(user: Player, playerInfo?: gameResquest) {
       if (!this.player1) {
-        this.player1 = new Player_Pong(this, 1, user);
+        this.player1 = new Player_Pong(this, 1, user, playerInfo);
         //this.ball.emitBall();
-        console.log('player1 connect');
+        console.log('player1 connect', this.player1.color);
       } else if (!this.player2) {
-        this.player2 = new Player_Pong(this, 2, user);
+        this.player2 = new Player_Pong(this, 2, user, playerInfo);
         console.log('player2 connect');
         this.player1.socket.emit('start_game', {
           player: 1,
           status: Status.Starting,
+          nickname1: this.player1.nickname,
+          avatar1: this.player1.avatar,
+          color1: this.player1.color,
+          nickname2: this.player2.nickname,
+          avatar2: this.player2.avatar,
+          color2: this.player2.color,
         });
         this.player2.socket.emit('start_game', {
           player: 2,
           status: Status.Starting,
+          nickname1: this.player1.nickname,
+          avatar1: this.player1.avatar,
+          color1: this.player1.color,
+          nickname2: this.player2.nickname,
+          avatar2: this.player2.avatar,
+          color2: this.player2.color,
         });
         console.log('emit_start_game');
         this.startGame();
         this.gameLoop();
       } else if (!this.watchers.includes(user)) {
+        user.emit('start_game', {
+          nickname1: this.player1.nickname,
+          avatar1: this.player1.avatar,
+          color1: this.player1.color,
+          nickname2: this.player2.nickname,
+          avatar2: this.player2.avatar,
+          color2: this.player2.color,
+        })
         this.watchers.push(user);
       }
       //console.log("p1: ", this.player1, " p2: ", this.player2, " ws: ", this.whatchers);

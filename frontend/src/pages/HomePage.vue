@@ -24,11 +24,11 @@ console.log(store.user);
 function newGame() {
   console.log("createGame")
   socket.emit("new_game", { objectId: "gameteste", maxScore: 3, status: 0 })
-  Router.push("/game?objectId=gameteste&maxScore=3&avatar=&nickname=rteles");
+  Router.push("/game?objectId=gameteste&maxScore=3&avatar=&nickname=rteles&color=red");
 }
 
 function entryGame() {
-  Router.push("/game?objectId=gameteste&maxScore=3&avatar=&nickname=edos-san");
+  Router.push("/game?objectId=gameteste&maxScore=3&avatar=aa&nickname=edos-san&color=yellow");
 }
 
 

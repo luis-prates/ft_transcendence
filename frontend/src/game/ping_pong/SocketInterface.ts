@@ -1,8 +1,9 @@
 export interface gameResquest {
-  objectId: String,
+  objectId: string,
   maxScore: Number,
-  avatar: String,
-  nickname: String,
+  avatar: string,
+  nickname: string,
+  color: string,
 }
 
 export interface updatePlayer {
@@ -11,6 +12,9 @@ export interface updatePlayer {
   x: number;
   y: number;
   score: number;
+  nickname: string,
+  avatar: string,
+  color: string,
 }
 
 export interface updateBall {
@@ -21,12 +25,12 @@ export interface updateBall {
   speed: number;
   dir: number;
 }
-
+/*
 export interface gamePoint {
   objectId: string;
   playerNumber: number;
 }
-
+*/
 export interface gamePoint {
   objectId: string;
   playerNumber: number;
