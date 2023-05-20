@@ -5,6 +5,11 @@ services:
     build: ./frontend # path to dockerfile
     ports: # Port binding to host from docker container
       - "3377:8080" # Bind port 3377 of host to 8080 of container
+    environment:
+      - CLIENT_ID
+      - CLIENT_SECRET
+      - REDIRECT_URI
+      - SERVER_API_URL
     container_name: frontend-docker
     restart: always # What to do if container crashes
     depends_on:
