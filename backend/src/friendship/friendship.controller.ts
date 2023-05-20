@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { FriendshipService } from './friendship.service';
 import { GetUser } from '../auth/decorator';
 import { User } from '@prisma/client';
@@ -14,7 +14,7 @@ export class FriendshipController {
 		return (this.friendshipService.acceptFriendRequest(user.id, friend));
 	}
 
-	@Post('reject/:id')
+	@Delete('reject/:id')
 	rejectFriendRequest(@GetUser() user: User, @Param('id', ParseIntPipe) friend: number) {
 		return (this.friendshipService.rejectFriendRequest(user.id, friend));
 	}
@@ -29,7 +29,7 @@ export class FriendshipController {
 		return (this.friendshipService.cancelFriendRequest(user.id, friend));
 	}
 
-	@Post('unfriend/:id')
+	@Delete('unfriend/:id')
 	deleteFriend(@GetUser() user: User, @Param('id', ParseIntPipe) friend: number) {
 		return (this.friendshipService.deleteFriend(user.id, friend));
 	}

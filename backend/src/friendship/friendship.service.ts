@@ -104,7 +104,7 @@ export class FriendshipService {
 			},
 		});
 		
-		const friendship = this.prisma.friendRequest.update({
+		const friendship = await this.prisma.friendRequest.update({
 			where: {
 				requestorId_requesteeId: {
 					requestorId: requestorId,
@@ -131,18 +131,28 @@ export class FriendshipService {
 	}
 
 	async deleteFriend(user: number, friend: number) {
-		const deletedFriend = this.prisma.friend.delete({
-			where: {
-				userId_friendId: {
-					userId: user,
-					friendId: friend,
+		const [deleteFriend1, deleteFriend2] = await this.prisma.$transaction([
+			this.prisma.friend.delete({
+				where: {
+					userId_friendId: {
+						userId: user,
+						friendId: friend,
+					},
 				},
-			},
-		});
+			}),
+			this.prisma.friend.delete({
+				where: {
+					userId_friendId: {
+						userId: friend,
+						friendId: user,
+					},
+				},
+			}),
+		]);
 
-		console.log(`${(await deletedFriend).userName} and ${(await deletedFriend).friendName} are no longer friends.`);
+		console.log(`${(await deleteFriend1).userName} and ${(await deleteFriend2).userName} are no longer friends.`);
 
-		return (deletedFriend);
+		return (deleteFriend1);
 	}
 
 	async getFriendRequests(user: number) {
