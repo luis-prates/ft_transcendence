@@ -4,7 +4,7 @@ services:
   frontend: # Name of our service
     build: ./frontend # path to dockerfile
     ports: # Port binding to host from docker container
-      - "3377:8080" # Bind port 3377 of host to 8080 of container
+      - "80:80" # Bind port 80 of host to 80 of container
     environment:
       - CLIENT_ID
       - CLIENT_SECRET

@@ -1,26 +1,40 @@
-# Base image
-FROM node
+# ---- Base Node ----
+FROM node:alpine AS base
 
-#M Make directory to hold the application code inside the image
-RUN mkdir -p /usr/src/app
-RUN mkdir -p /usr/src/app/backend
+WORKDIR /app
 
-# Set the working directory so that all following commands run in this directory
-WORKDIR /usr/src/app/backend
-
-# Copy package.json and install dependencies
 COPY package*.json ./
+
 RUN npm install
 
-# Copy the rest of the application code
+# ---- Copy Files/Build ----
+FROM base AS build
+
+WORKDIR /app
+
 COPY . .
 
-# Expose the port the app runs in
-# EXPOSE 3370
+RUN npm run build
+
+# --- Release ----
+FROM node:alpine AS release
+
+WORKDIR /app
+
+# Copy script and make it executable
+COPY docker-entrypoint.sh .
 
 RUN chmod +x ./docker-entrypoint.sh
 
+# Set the entry point to our script
 ENTRYPOINT [ "./docker-entrypoint.sh" ]
 
-# Command to run the app
-CMD [ "npm", "start" ]
+COPY --from=build /app/dist ./dist
+
+COPY --from=base /app/node_modules ./node_modules
+
+COPY --from=build /app/prisma ./prisma
+
+COPY package*.json ./
+
+CMD [ "npm", "run", "start:prod" ]
