@@ -6,9 +6,10 @@
     <button @click="action(2)" :class="MapObject.action.value == 2 ? 'buttonSelect' : ''">Player</button>
     <button @click="action(3)" :class="MapObject.action.value == 3 ? 'buttonSelect' : ''">Tree</button>
     <button @click="action(4)" :class="MapObject.action.value == 4 ? 'buttonSelect' : ''">Water Font</button>
-    <input  @input="(e: any) => MapObject.typefont.value = e.target.value" type="number" style="width: 100%;  margin-top: 5px;" />
+    <input @input="(e: any) => MapObject.typefont.value = e.target.value" value="0" type="number" />
+    <button @click="action(5)" :class="MapObject.action.value == 5 ? 'buttonSelect' : ''">Opacity</button>
     <button @click="Game.Map.saveMap">Save Map</button>
-    <input type="file" ref="file" @change="loadMap" style="display: none" accept=".json" />
+    <input type="file" ref="file" @change="loadMap" style="display: none" accept=".json,.png,.jpg" />
     <button @click="file?.click">Load Map</button>
 
     <br />
@@ -19,11 +20,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, onUpdated, computed } from "vue";
-import { Player, Map, Lobby, Game } from "@/game";
-import { userStore } from "@/stores/userStore";
+import { ref, onMounted } from "vue";
+import { Game } from "@/game";
 import img from "@/assets/images/lobby/layer_1.png";
-import { MapEdit, MapObject } from "@/game/base/MapEdit";
+import { MapEdit } from "@/game/base/editor/MapEdit.js";
+import { MapObject } from "@/game/base/editor/MapObject.js";
 
 const game = ref<HTMLDivElement>();
 const file = ref<HTMLInputElement>();
@@ -49,12 +50,11 @@ function startPossition() {
 }
 
 function action(n: number) {
+  MapObject.selection = null;
   MapObject.action.value = n;
 }
 
-
 function loadMap(event: any) {
-  
   const file = event.target.files[0];
   if (file.type === "application/json") {
     const reader: any = new FileReader();
@@ -64,8 +64,8 @@ function loadMap(event: any) {
       Game.Map.setData(j);
     };
     reader.readAsText(file);
-  }
-  
+  } else console.log("file: ", file.type);
+  //
 }
 </script>
 
@@ -122,7 +122,8 @@ function loadMap(event: any) {
   border: 2px solid rgb(178, 120, 120);
   padding: 10px;
   border-radius: 15px;
-  h3 {
+  h3,
+  input {
     margin-top: 5px;
     text-align: center;
     width: 100%;

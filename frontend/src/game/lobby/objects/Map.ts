@@ -1,7 +1,20 @@
 import type { GameObject, GameObjectType } from "../../base/GameObject";
-import map from "@/assets/images/lobby/8c9c64e0b3fcf049435ca7adc5350507.png";
 import { Door } from "./Door";
-import { Game } from "@/game";
+import { Game, Player } from "@/game";
+import imgLayer from "@/assets/images/lobby/layer_3.png";
+
+export interface retanglulo {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface layer {
+  image: any;
+  opacity: number;
+  objects: retanglulo[];
+  colision(): retanglulo | undefined;
+}
 
 export class Map implements GameObject {
   imagem: any = new Image();
@@ -16,48 +29,59 @@ export class Map implements GameObject {
   objectId = 0;
   protected isLoaded = false;
   public gameObjects: GameObject[] = [];
-  public layer: number = 0;
-  public layers: HTMLImageElement[] = [];
+  public layer: CanvasRenderingContext2D;
 
-  // Definindo as configurações do grid
-  numLinhas = 10; // Número de linhas do grid
-  numColunas = 10; // Número de colunas do grid
+  public layer_3: layer = {
+    image: new Image(),
+    opacity: 0.5,
+    objects: [],
+    colision(): retanglulo | undefined {
+      return this.objects.find((obj) => obj.x <= Game.getPlayer().x && obj.x + obj.w >= Game.getPlayer().x && obj.y <= Game.getPlayer().y && obj.y + obj.h >= Game.getPlayer().y);
+    },
+  };
 
   constructor(data: any) {
     this.type = "map";
-    // this.imagem.src = map;
-    // this.w = 544;
-    // this.h = 672;
-
+    this.layer_3.image.src = imgLayer;
+    const canva = document.createElement("canvas") as HTMLCanvasElement;
+    this.layer = canva.getContext("2d") as CanvasRenderingContext2D;
+    this.layer_3.image.onload = () => {
+      canva.width = this.layer_3.image.width;
+      canva.height = this.layer_3.image.height;
+    };
     this.setData(data);
-
-    // this.grid = [];
-    // for (let x = 0; x < this.w; x += Map.SIZE) {
-    //   this.grid[Math.floor(x / Map.SIZE)] = [];
-    //   for (let y = 0; y < this.h; y += Map.SIZE) {
-    //     this.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] = 0;
-    //   }
-    // }
   }
 
   draw(contex: CanvasRenderingContext2D): void {
     if (this.isLoaded === false) return;
     contex.strokeStyle = "blue";
     contex.drawImage(this.imagem, 0, 0, this.w, this.h);
-    for (let x = 0; x < this.w; x += Map.SIZE) {
-      for (let y = 0; y < this.h; y += Map.SIZE) {
-        contex.fillStyle = "rgba(255, 0, 0, 0.5)";
-        // contex.fillRect(x, y, Map.SIZE, Map.SIZE);
-        if (this.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] === 1) {
-          contex.fillStyle = "rgba(255, 0, 0, 0.5)";
-          contex.fillRect(x, y, Map.SIZE, Map.SIZE);
+  }
+
+  drawLayer_3(contex: CanvasRenderingContext2D): void {
+    const rect = this.layer_3.colision();
+    // contex.fillStyle = `rgba(0, 0, 0, 0.5)`;
+    this.layer.drawImage(this.layer_3.image, 0, 0);
+    if (rect) {
+      const imageData = this.layer.getImageData(0, 0, this.layer.canvas.width, this.layer.canvas.height);
+      const data = imageData.data;
+      // Percorrer os pixels e aplicar a opacidade desejada
+      for (let row = rect.y; row < rect.y + rect.h; row++) {
+        for (let col = rect.x; col < rect.x + rect.w; col++) {
+          const index = (row * this.layer.canvas.width + col) * 4;
+          const alpha = data[index + 3];
+
+          // Aplicar a opacidade desejada (valor entre 0 e 255)
+          const opacity = 128; // Opacidade de 50%
+          data[index + 3] = (alpha * opacity) / 255;
         }
       }
+
+      // Atualizar os dados da imagem no canvas
+      this.layer.putImageData(imageData, 0, 0);
     }
-    // this.gameObjects.forEach((gameObject) => {
-    //   gameObject.draw(contex);
-    // });
-    // contex.fillRect(this.x, this.y, this.w, this.h);
+    contex.drawImage(this.layer.canvas, 0, 0);
+    //  else contex.drawImage(this.layer_3.image, 0, 0, this.w, this.h);
   }
 
   setData(data: any): void {
@@ -66,13 +90,16 @@ export class Map implements GameObject {
     this.imagem.src = data.img;
     this.grid = data.grid;
     this.imagem.onload = () => {
+      this.w = this.imagem.width;
+      this.h = this.imagem.height;
       console.log("Map: Imagem carregada");
+      console.log("Map_: ", data.img);
       this.isLoaded = true;
     };
     this.imagem.onerror = () => {
       console.log("Map: Erro ao carregar a imagem");
     };
-    console.log("Map_: ", data.img);
+
     // this.grid = data.grid;
   }
 

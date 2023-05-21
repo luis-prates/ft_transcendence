@@ -18,25 +18,15 @@ export class Npc extends Character {
 
   draw(context: CanvasRenderingContext2D): void {
     super.draw(context);
-    // this.pontoEvento.forEach((p) => {
-    //   let ponto: any = { x: this.x + p.x, y: this.y + p.y };
-    //   context.beginPath();
-    //   context.arc(ponto.x, ponto.y, 5, 0, 2 * Math.PI);
-    //   context.fillStyle = "red";
-    //   context.fill();
-    //   context.closePath();
-    // });
   }
 
   public getPointEvent(): { x: number; y: number } {
     const pontoRomdom = Math.floor(Math.random() * this.pontoEvento.length);
     const ponto = this.pontoEvento[pontoRomdom];
-    console.log("Npc -> getPointEvent -> ponto", ponto);
     return { x: this.x + ponto.x, y: this.y + ponto.y };
   }
 
   public interaction(gameObject: Character): void {
-    console.log("Npc -> interaction -> gameObject", gameObject);
     this.setLookAt(gameObject);
   }
 }

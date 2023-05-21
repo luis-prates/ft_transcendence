@@ -128,9 +128,6 @@ export class PathFinding {
         for (let l of this.open) {
           if (lowerCost == null || lowerCost.g > l.g) lowerCost = l;
         }
-        // Game.instance.draw();
-        console.log("open: ", this.open.length, " close: ", this.close.length);
-        // requestAnimationFrame(() => this.createNodes(map, lowerCost, dx, dy));
         this.createNodes(map, lowerCost, dx, dy);
       }
     }
@@ -186,7 +183,6 @@ export class PathFinding {
     this.path = path;
     if (this.path.length > 0) this._isPathFinding = true;
     this.time = 0;
-    console.log("setPath: ", this.path);
   }
 
   time: number = 0;

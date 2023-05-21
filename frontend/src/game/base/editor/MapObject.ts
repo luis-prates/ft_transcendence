@@ -1,11 +1,13 @@
-import { Game, Map, Tree, WaterFont } from "@/game";
+import { Game, Map, WaterFont } from "@/game";
+import type { retanglulo } from "@/game/lobby/objects/Map";
 
-import { Player } from "..";
 import { ref } from "vue";
 
 export class MapObject extends Map {
   public static action = ref(0);
   public static typefont = ref(0);
+  public static selection: retanglulo | null = null;
+  public static debugView = ref(true);
 
   public static startPossition: { x: number; y: number } = { x: 153, y: 738 };
   constructor(data: any) {
@@ -41,38 +43,75 @@ export class MapObject extends Map {
     this.isLoaded = true;
   }
 
-  draw(contex: CanvasRenderingContext2D): void {
-    super.draw(contex);
-    contex.fillStyle = "blue";
-    contex.beginPath();
-    contex.arc(MapObject.startPossition.x + 16, MapObject.startPossition.y + 30, 16, 0, Math.PI * 2);
-    contex.fill();
+  draw(context: CanvasRenderingContext2D): void {
+    super.draw(context);
+
+    if (MapObject.debugView.value) {
+      for (let x = 0; x < this.w; x += Map.SIZE) {
+        for (let y = 0; y < this.h; y += Map.SIZE) {
+          context.fillStyle = "rgba(255, 0, 0, 0.5)";
+          if (this.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] === 1) {
+            context.fillStyle = "rgba(255, 0, 0, 0.5)";
+            context.fillRect(x, y, Map.SIZE, Map.SIZE);
+          }
+        }
+      }
+      context.fillStyle = "blue";
+      context.beginPath();
+      context.arc(MapObject.startPossition.x + 16, MapObject.startPossition.y + 30, 16, 0, Math.PI * 2);
+      context.fill();
+    }
+  }
+
+  drawLayer_3(context: CanvasRenderingContext2D): void {
+    super.drawLayer_3(context);
+    if (MapObject.debugView.value) {
+      const objColison = this.layer_3.colision();
+      this.layer_3.objects.forEach((obj) => {
+        if (obj != objColison) {
+          context.fillStyle = `rgba(0, 0, 255, 0.5)`;
+          context.fillRect(obj.x, obj.y, obj.w, obj.h);
+        }
+      });
+    }
   }
 
   mouseClick(x: number, y: number, button: number): void {
-    if (MapObject.action.value === 0) {
-      if (button === 0) {
-        this.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] = 1;
-      } else if (button === 2) {
-        this.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] = 0;
+    if (MapObject.action.value === 0 || MapObject.action.value === 5) {
+      if (MapObject.selection === null) MapObject.selection = { x: x, y: y, w: Map.SIZE, h: Map.SIZE };
+      MapObject.selection.w = MapObject.selection?.w == 0 ? Map.SIZE : MapObject.selection?.w;
+      MapObject.selection.h = MapObject.selection?.h == 0 ? Map.SIZE : MapObject.selection?.h;
+
+      if (MapObject.action.value === 0) {
+        for (let x = MapObject.selection.x; x < MapObject.selection.x + MapObject.selection.w; x += Map.SIZE) {
+          for (let y = MapObject.selection.y; y < MapObject.selection.y + MapObject.selection.h; y += Map.SIZE) {
+            this.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] = button === 0 ? 1 : 0;
+          }
+        }
+      } else {
+        if (button === 0) this.layer_3.objects.push({ x: MapObject.selection.x, y: MapObject.selection.y, w: MapObject.selection.w, h: MapObject.selection.h });
+        else if (button === 2) {
+          this.layer_3.objects = this.layer_3.objects.filter((obj) => !(x >= obj.x && x <= obj.x + obj.w && y >= obj.y && y <= obj.y + obj.h));
+        }
       }
     } else if (MapObject.action.value === 1) {
       this.setStartPossition(x, y);
       console.log(MapObject.startPossition);
     } else if (MapObject.action.value === 3) {
-      this.setGameObjects(Math.floor(x / Map.SIZE) * Map.SIZE, Math.floor(y / Map.SIZE) * Map.SIZE, button);
+      this.setGameObjects(x, y, button, { className: "Tree" });
     } else if (MapObject.action.value === 4) {
       this.setGameObjectss(Math.floor(x / Map.SIZE) * Map.SIZE, Math.floor(y / Map.SIZE) * Map.SIZE, button);
     }
   }
 
-  public setGameObjects(x: number, y: number, button: number) {
-    if (button == 0) Game.instance.addGameObject(new Tree({ x: x, y: y }));
+  public setGameObjects(x: number, y: number, button: number, data: any) {
+    x = Math.floor(x / Map.SIZE) * Map.SIZE;
+    y = Math.floor(y / Map.SIZE) * Map.SIZE;
+    data.x = x;
+    data.y = y;
+    const gameObject = Game.MouseColision(x, y);
+    if (button == 0 && !gameObject) Game.instance.addGameObjectData(data);
     else if (button == 2) {
-      console.log("x: ", x, "y: ", y);
-      console.log(Game.instance.gameObjets);
-      const gameObject = Game.instance.gameObjets.find((obj) => obj.x == x && obj.y == y);
-      console.log(gameObject);
       if (gameObject && gameObject.type != "player") Game.instance.removeGameObject(gameObject);
     }
   }
@@ -80,43 +119,39 @@ export class MapObject extends Map {
   public setGameObjectss(x: number, y: number, button: number) {
     const font_1: any[] = [
       {
-        x: x, 
+        x: x,
         y: y,
         w: 96,
         h: 64,
         sx: -32,
-        sy: -32, 
+        sy: -32,
         frames: [
-          {x: 0 , y: 0},
-          {x: 1 , y: 0},
-          {x: 2 , y: 0},
-          ],
-        },
-        {
-          x: x, 
-          y: y,
-          w: 64,
-          h: 96,
-          sx: 0,
-          sy: -32, 
-          frames: [
-            {x: 0 , y: 0},
-            {x: 1 , y: 0},
-            {x: 2 , y: 0},
-            ],
-            aimation_sx: 0,
-            aimation_sy: 65,
-          },
-        
-    ]
-    
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+          { x: 2, y: 0 },
+        ],
+      },
+      {
+        x: x,
+        y: y,
+        w: 64,
+        h: 96,
+        sx: 0,
+        sy: -32,
+        frames: [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+          { x: 2, y: 0 },
+        ],
+        aimation_sx: 0,
+        aimation_sy: 65,
+      },
+    ];
+
     const type: number = MapObject.typefont.value;
     if (button == 0 && type < font_1.length) Game.instance.addGameObject(new WaterFont(font_1[type]));
     else if (button == 2) {
-      console.log("x: ", x, "y: ", y);
-      console.log(Game.instance.gameObjets);
       const gameObject = Game.instance.gameObjets.find((obj) => obj.x == x && obj.y == y);
-      console.log(gameObject);
       if (gameObject && gameObject.type != "player") Game.instance.removeGameObject(gameObject);
     }
   }
@@ -146,23 +181,5 @@ export class MapObject extends Map {
     link.download = "desenho.json";
     link.click();
     console.log("Salvando mapa...\n", this.gameObjects);
-  }
-}
-
-export class MapEdit extends Game {
-  constructor(image: any) {
-    super(new MapObject({ image: image }), new Player(ref(undefined), MapObject.startPossition));
-    this.canvas.addEventListener("keydown", (e) => {});
-  }
-
-  draw(): void {
-    super.draw();
-    // this.map.draw(this.context);
-  }
-
-  protected mouseClick(event: MouseEvent) {
-    if (MapObject.action.value == 2) super.mouseClick(event);
-    else Game.Map.mouseClick(event.offsetX, event.offsetY, event.button);
-    // this.map.mouseClick(event.offsetX, event.offsetY, event.button);
   }
 }

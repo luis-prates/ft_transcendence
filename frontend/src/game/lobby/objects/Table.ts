@@ -48,10 +48,7 @@ export class Table implements GameObject {
 
   setData(data: any): void {}
 
-  update(deltaTime: number): void {}
-
   getPointEvent(): { x: number; y: number } {
-    console.log("getPointEvent: ", this.pontoEvento);
     let _ponto = { x: this.x, y: this.y };
 
     for (let ponto of this.pontoEvento) {

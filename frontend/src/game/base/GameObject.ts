@@ -21,14 +21,3 @@ export interface GameObject {
   interaction?(gameObject: GameObject): void;
   isCollision?(gameObject: GameObject): boolean;
 }
-
-function SocketObject(config: { type: string }) {
-  return function (target: any) {
-    // Aqui você pode adicionar a lógica desejada para o decorador
-    console.log(`Criando um objeto do tipo ${config.type}`);
-    // Outras operações relacionadas ao decorador...
-
-    // Retorna a classe modificada ou adiciona propriedades/funções a ela
-    return target;
-  };
-}

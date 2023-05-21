@@ -29,8 +29,6 @@ export class Tree implements GameObject {
 
   draw(contex: CanvasRenderingContext2D): void {
     if (this.isCollision(Game.getPlayer())) contex.globalAlpha = 0.5;
-    contex.fillStyle = "red";
-    contex.fillRect(this.x, this.y, Map.SIZE, Map.SIZE);
     contex.drawImage(this.imagem, this.positionDraw.x, this.positionDraw.y);
     contex.globalAlpha = 1;
     contex.strokeStyle = "blue";
@@ -42,8 +40,8 @@ export class Tree implements GameObject {
     this.y = data.y;
   }
 
-  public getPointEvent(): { x: number; y: number } {
-    return { x: this.x, y: this.y };
+  getPointEvent(): { x: number; y: number } {
+    return { x: this.x - 32, y: this.y - 15 };
   }
 
   destroy(): void {
@@ -57,5 +55,9 @@ export class Tree implements GameObject {
       this.collisionBox.y < gameObject.y + gameObject.h &&
       this.collisionBox.y + this.collisionBox.h > gameObject.y
     );
+  }
+
+  interaction(gameObject: GameObject): void {
+    console.log("tree -> interaction", gameObject);
   }
 }

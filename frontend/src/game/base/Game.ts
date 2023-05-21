@@ -3,8 +3,10 @@ import socket from "@/socket/Socket";
 
 export class Game {
   public static instance: Game;
-  canvas = document.createElement("canvas") as HTMLCanvasElement;
-  context: CanvasRenderingContext2D;
+  public canvas = document.createElement("canvas") as HTMLCanvasElement;
+  protected context: CanvasRenderingContext2D;
+  private bufferCanvas = document.createElement("canvas");
+  protected buffer: CanvasRenderingContext2D;
   gameObjets: GameObject[] = [];
   private gameObjetsUpdate: GameObject[] = [];
   private static lastFrameTime = performance.now();
@@ -20,11 +22,14 @@ export class Game {
     this.camera = new Camera(player, map);
     this.canvas.width = map.w;
     this.canvas.height = map.h;
+    this.bufferCanvas.width = map.w;
+    this.bufferCanvas.height = map.h;
     this.map = map;
     this.player = player;
     this.addGameObject(map);
     this.addGameObject(player);
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+    this.buffer = this.bufferCanvas.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D;
     this.canvas.addEventListener("click", this.mouseClick.bind(this));
     this.canvas.addEventListener("contextmenu", this.mouseClick.bind(this));
     Game.instance = this;
@@ -53,7 +58,8 @@ export class Game {
 
   draw() {
     this.camera.update();
-    this.camera.render(this.context, this.gameObjets);
+    this.camera.render(this.buffer, this.gameObjets);
+    this.context.drawImage(this.bufferCanvas, 0, 0);
   }
 
   update() {
