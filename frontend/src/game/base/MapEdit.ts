@@ -1,10 +1,12 @@
-import { Game, Map, Tree } from "@/game";
+import { Game, Map, Tree, WaterFont } from "@/game";
 
 import { Player } from "..";
 import { ref } from "vue";
 
 export class MapObject extends Map {
   public static action = ref(0);
+  public static typefont = ref(0);
+
   public static startPossition: { x: number; y: number } = { x: 153, y: 738 };
   constructor(data: any) {
     super(data);
@@ -59,11 +61,57 @@ export class MapObject extends Map {
       console.log(MapObject.startPossition);
     } else if (MapObject.action.value === 3) {
       this.setGameObjects(Math.floor(x / Map.SIZE) * Map.SIZE, Math.floor(y / Map.SIZE) * Map.SIZE, button);
+    } else if (MapObject.action.value === 4) {
+      this.setGameObjectss(Math.floor(x / Map.SIZE) * Map.SIZE, Math.floor(y / Map.SIZE) * Map.SIZE, button);
     }
   }
 
   public setGameObjects(x: number, y: number, button: number) {
     if (button == 0) Game.instance.addGameObject(new Tree({ x: x, y: y }));
+    else if (button == 2) {
+      console.log("x: ", x, "y: ", y);
+      console.log(Game.instance.gameObjets);
+      const gameObject = Game.instance.gameObjets.find((obj) => obj.x == x && obj.y == y);
+      console.log(gameObject);
+      if (gameObject && gameObject.type != "player") Game.instance.removeGameObject(gameObject);
+    }
+  }
+
+  public setGameObjectss(x: number, y: number, button: number) {
+    const font_1: any[] = [
+      {
+        x: x, 
+        y: y,
+        w: 96,
+        h: 64,
+        sx: -32,
+        sy: -32, 
+        frames: [
+          {x: 0 , y: 0},
+          {x: 1 , y: 0},
+          {x: 2 , y: 0},
+          ],
+        },
+        {
+          x: x, 
+          y: y,
+          w: 64,
+          h: 96,
+          sx: 0,
+          sy: -32, 
+          frames: [
+            {x: 0 , y: 0},
+            {x: 1 , y: 0},
+            {x: 2 , y: 0},
+            ],
+            aimation_sx: 0,
+            aimation_sy: 65,
+          },
+        
+    ]
+    
+    const type: number = MapObject.typefont.value;
+    if (button == 0 && type < font_1.length) Game.instance.addGameObject(new WaterFont(font_1[type]));
     else if (button == 2) {
       console.log("x: ", x, "y: ", y);
       console.log(Game.instance.gameObjets);

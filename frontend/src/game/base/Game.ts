@@ -129,12 +129,12 @@ export class Game {
   }
 
   public static async loadImage(url: any) {
-    const ur = await import(url);
-    const image = new Image();
-    if (ur && ur.default) {
-      image.src = ur.default;
-      return image;
-    }
+    // const ur = await import(url);
+    // const image = new Image();
+    // if (ur && ur.default) {
+    //   image.src = ur.default;
+    //   return image;
+    // }
     return null;
   }
 }

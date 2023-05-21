@@ -5,7 +5,8 @@
     <button @click="action(1)" :class="MapObject.action.value == 1 ? 'buttonSelect' : ''">Start Possition</button>
     <button @click="action(2)" :class="MapObject.action.value == 2 ? 'buttonSelect' : ''">Player</button>
     <button @click="action(3)" :class="MapObject.action.value == 3 ? 'buttonSelect' : ''">Tree</button>
-
+    <button @click="action(4)" :class="MapObject.action.value == 4 ? 'buttonSelect' : ''">Water Font</button>
+    <input  @input="(e: any) => MapObject.typefont.value = e.target.value" type="number" style="width: 100%;  margin-top: 5px;" />
     <button @click="Game.Map.saveMap">Save Map</button>
     <input type="file" ref="file" @change="loadMap" style="display: none" accept=".json" />
     <button @click="file?.click">Load Map</button>
@@ -51,7 +52,9 @@ function action(n: number) {
   MapObject.action.value = n;
 }
 
+
 function loadMap(event: any) {
+  
   const file = event.target.files[0];
   if (file.type === "application/json") {
     const reader: any = new FileReader();
@@ -62,7 +65,7 @@ function loadMap(event: any) {
     };
     reader.readAsText(file);
   }
-  //
+  
 }
 </script>
 
