@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
   # Create frontend container
   frontend: # Name of our service
@@ -37,7 +37,7 @@ services:
       - transcendence
   # Create database container
   dev-db:
-    image: postgres:13
+    image: postgres:alpine
     container_name: ${POSTGRES_CONTAINER_NAME}
     ports:
       - ${POSTGRES_PORT}:5432
@@ -47,5 +47,15 @@ services:
       - POSTGRES_DB
     networks:
       - transcendence
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 networks:
   transcendence:
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/${USER}/data/postgres
+      o: bind
