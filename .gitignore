@@ -49,4 +49,3 @@ frontend/src/env.ts
 /cypress/screenshots/
 
 .env
-frontend/src/env
