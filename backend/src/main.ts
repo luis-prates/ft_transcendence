@@ -24,7 +24,7 @@ async function bootstrap() {
   io.on('connection', (socket) => {
     socket.on('new_game', (e) => {
       console.log('PLAYER: ', e);
-      games.push(new Game(e));
+      games.push(new Game(e, games));
     });
     socket.on('entry_game', (e: any) => {
       console.log(e);
@@ -44,7 +44,7 @@ async function bootstrap() {
 
     socket.on('game_move', (e: any) => {
       const game = games.find((g) => g.data.objectId == e.objectId);
-      if (game) {
+      if (game && game.status == Status.InGame) {
         if (e.playerNumber == 1) {
           if (e.move == "up")
             game.player1.moveUp();
@@ -62,6 +62,7 @@ async function bootstrap() {
         }
       }
     });
+
     //Disconect
     socket.on('disconnect', () => {
       

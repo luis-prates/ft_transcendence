@@ -16,9 +16,11 @@ import { type gameResquest, type updatePlayer, type updateBall, type gamePoint }
 const props = defineProps({
   objectId: String,
   maxScore: Number,
+  table: String,
   avatar: String,
   nickname: String,
   color: String,
+  skinPlayer: String,
 });
 
 
@@ -31,31 +33,32 @@ onMounted(function () {
   socket.emit("entry_game", props );
   console.log("pros: ", props)
 
+  const tableColor:string = props.table ? props.table : "#1e8c2f";
+
   const game = new Game(canvas.width, canvas.height - 228, 164, ctx, props as gameResquest);
   console.log(props);
-  const tableBoard = new Table(canvas.width, canvas.height, "DarkSlateBlue", "#1e8c2f");
+  const tableBoard = new Table(canvas.width, canvas.height, "DarkSlateBlue", tableColor);
 
   socket.on("start_game", (e: any) => {
 
     console.log(e);
     console.log(game);
+
     game.player1.nickname = e.nickname1;
     game.player1.color = e.color1;
+    game.player1.avatar.src = e.avatar1 ? e.avatar1 : game.player1.avatar.src;
+    
     game.player2.nickname = e.nickname2;
     game.player2.color = e.color2;
-/*  Verificar foto
-    game.player1.avatar.src = e.avatar1 ? e.avatar1 : game.player1.avatar.src;
-    game.player2.avatar.src = e.avatar2 ? e.avatar2 : game.player2.avatar.src;*/
-    if (e.player === 1) {
-      game.playerNumber = 1;
-      game.status = e.status;
-      //console.log("start game, player 1, Game Status: ", game.status)
-    }
-    else if (e.player === 2) {
-      game.playerNumber = 2;
-      game.status = e.status;
-      //console.log("start game, player 2, Game Status: ", game.status)
-    }
+    game.player2.avatar.src = e.avatar2 ? e.avatar2 : game.player2.avatar.src;
+
+    e.skin1 ? game.player1.updateSkin(e.skin1) : "";
+    e.skin2 ? game.player2.updateSkin(e.skin2) : "";
+
+    game.status = e.status;
+    
+    if (e.player === 1) { game.playerNumber = 1; }
+    else if (e.player === 2) { game.playerNumber = 2; }
   })
   socket.on("game_update_status", (status: any) => {
     if (game.status != Status.Finish) {

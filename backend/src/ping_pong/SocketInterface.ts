@@ -1,9 +1,12 @@
 export interface gameResquest {
   objectId: string,
-  maxScore: Number,
+  maxScore: number,
+  table: string,
+  bot: boolean,
   avatar: string,
   nickname: string,
   color: string,
+  skinPlayer: string,
 }
 
 export interface updatePlayer {

@@ -12,6 +12,7 @@ export enum Status {
 }
 
 export class Game {
+  games: Game[];
   width: number = 1000;
   height: number = 522;
   status: number = Status.Waiting;
@@ -21,15 +22,22 @@ export class Game {
   maxPoint = 3;
   watchers: Player[] = [];
   data: gameResquest;
+  bot: boolean = false;
 
-  constructor(gameResquest: gameResquest) {
+  constructor(gameResquest: gameResquest, games: Game[]) {
+    this.games = games;
     this.data = gameResquest;
-    // this.maxPoint = gameResquest.maxPoint;
-    // this.player1 = new Player_Pong(1, gameResquest.player1);
-    // this.player2 = new Player_Pong(2, gameResquest.player2);
-    //this.ball = new Ball(0, 0, 0, 0, 0);
+    this.maxPoint = gameResquest.maxScore;
     this.ball = new Ball(this);
+    this.bot = gameResquest.bot ? gameResquest.bot : this.bot;
 
+  }
+  removeGame() {
+    const index = this.games.findIndex((g) => g.data.objectId == this.data.objectId);
+    if (index !== -1) {
+      this.games.splice(index, 1);
+      console.log('Game is removed!');
+    }
   }
   //Game Loop 1000 milesecond (1second) for 60 fps
   gameLoop() {
@@ -45,22 +53,27 @@ export class Game {
   }
   //Create Players and Watchers
   addUsers(user: Player, playerInfo?: gameResquest) {
+
+    // DATA BASE VERIFICATION
+
       if (!this.player1) {
         this.player1 = new Player_Pong(this, 1, user, playerInfo);
         //this.ball.emitBall();
-        console.log('player1 connect', this.player1.color);
+        console.log('player1 connect', playerInfo);
       } else if (!this.player2) {
         this.player2 = new Player_Pong(this, 2, user, playerInfo);
-        console.log('player2 connect');
+        console.log('player2 connect', playerInfo);
         this.player1.socket.emit('start_game', {
           player: 1,
           status: Status.Starting,
           nickname1: this.player1.nickname,
           avatar1: this.player1.avatar,
           color1: this.player1.color,
+          skin1: this.player1.skin,
           nickname2: this.player2.nickname,
           avatar2: this.player2.avatar,
           color2: this.player2.color,
+          skin2: this.player2.skin,
         });
         this.player2.socket.emit('start_game', {
           player: 2,
@@ -68,23 +81,30 @@ export class Game {
           nickname1: this.player1.nickname,
           avatar1: this.player1.avatar,
           color1: this.player1.color,
+          skin1: this.player1.skin,
           nickname2: this.player2.nickname,
           avatar2: this.player2.avatar,
           color2: this.player2.color,
+          skin2: this.player2.skin,
         });
         console.log('emit_start_game');
         this.startGame();
         this.gameLoop();
       } else if (!this.watchers.includes(user)) {
+        this.watchers.push(user);
         user.emit('start_game', {
+          //Game
+          status: this.status,
           nickname1: this.player1.nickname,
           avatar1: this.player1.avatar,
           color1: this.player1.color,
+          skin1: this.player1.skin,
           nickname2: this.player2.nickname,
           avatar2: this.player2.avatar,
           color2: this.player2.color,
+          skin2: this.player2.skin,
         })
-        this.watchers.push(user);
+        
       }
       //console.log("p1: ", this.player1, " p2: ", this.player2, " ws: ", this.whatchers);
   }
@@ -117,7 +137,7 @@ export class Game {
         });
         this.player2.socket.emit('end_game', {
           objectId: this.data.objectId,
-          result: 'You Loose!',
+          result: 'You Lose!',
         });
         this.emitWatchers('end_game', {
           objectId: this.data.objectId,
@@ -126,7 +146,7 @@ export class Game {
       } else if (player_n === 2) {
         this.player1.socket.emit('end_game', {
           objectId: this.data.objectId,
-          result: 'You Loose!',
+          result: 'You Lose!',
         });
         this.player2.socket.emit('end_game', {
           objectId: this.data.objectId,
@@ -138,6 +158,7 @@ export class Game {
         });
       }
       //INSERT IN DATABASE
+      this.removeGame();
     }
   }
   //Update Status and Emit for ALL  

@@ -16,8 +16,9 @@ export class Player_Pong {
   avatar: string;
   fpsUpdate: number = 0;
   color: string;
+  skin: string;
 
-  constructor(game: Game, player_n: number, playerLobby: Player, info?: gameResquest) {
+  constructor(game: Game, player_n: number, playerLobby: Player, info: gameResquest) {
     this.game = game;
     this.player_n = player_n;
     this.y = game.height / 2 - this.height / 2;
@@ -27,6 +28,7 @@ export class Player_Pong {
     this.nickname = info.nickname;
     this.avatar = info.avatar;
     this.color = info.color;
+    this.skin = info.skinPlayer;
   }
 
   moveUp() {

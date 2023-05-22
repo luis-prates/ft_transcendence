@@ -1,6 +1,13 @@
 import { Game } from "./PingPong";
 import { type updatePlayer } from "./SocketInterface";
 import socket from "@/socket/Socket";
+import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
+
+//Skins
+import skinPacman from "@/assets/images/skin/line/skin_Pac-Man.png";
+import skinMario from "@/assets/images/skin/line/skin_mario.jpeg";
+import skinOnePiece from "@/assets/images/skin/line/skin_OnePiece.png";
+
 
 export class Player {
   game: Game;
@@ -14,6 +21,7 @@ export class Player {
   nickname: string;
   avatar = new Image();
   color: string;
+  skin = new Image();
 
   constructor(game: Game, player_n: number, nickname: string, avatar: any) {
     this.game = game;
@@ -24,6 +32,7 @@ export class Player {
     this.nickname = nickname;
     this.avatar.src = avatar;
     this.color = player_n == 1 ? "red" : "blue";
+    this.skin.src = "";
   }
 
   emitMove() {
@@ -34,6 +43,17 @@ export class Player {
       // y: this.y - this.game.offSet,
       move: "up",
     });
+  }
+
+  updateSkin(skin: string)
+  {
+    if (skin == "pacman")
+      this.skin.src = skinPacman;
+    else if (skin == "mario")
+      this.skin.src = skinMario;
+    else if (skin == "onepiece")
+      this.skin.src = skinOnePiece;
+
   }
 
   moveUp() {
@@ -106,19 +126,53 @@ export class Player {
     let width: number = 0; 
     if (this.player == 2) 
       width = this.game.width - 50;
-    context.drawImage(this.avatar, width != 0 ? width - 25 : 25, 35, 50, 50);
+    try {
+      context.drawImage(this.avatar, width != 0 ? width - 25 : 25, 35, 50, 50);
+    }
+    catch {
+      this.avatar.src = avatarDefault;
+      context.drawImage(this.avatar, width != 0 ? width - 25 : 25, 35, 50, 50);
+    }
     context.strokeStyle = "black";
     context.lineWidth = 3;
     context.strokeRect(width ? width - 25 : 25, 35, 50, 50);
   }
 
+  drawSkin(context: CanvasRenderingContext2D) {
+
+
+    if (this.x > this.game.width / 2) {
+      context.drawImage(this.skin, this.x, this.y, this.width, this.height);
+    } else {
+      context.save();
+  
+      const rotationAngle = (180 * Math.PI) / 180;
+  
+      const centerX = this.x + this.width / 2;
+      const centerY = this.y + this.height / 2;
+      context.translate(centerX, centerY);
+  
+      context.rotate(rotationAngle);
+  
+      context.drawImage(this.skin, -this.width / 2, -this.height / 2, this.width, this.height);
+  
+      context.restore(); 
+    }
+    
+  }
+  
   drawPlayer(context: CanvasRenderingContext2D, color: string) {
+    
     context.fillStyle = color;
-    context.fillRect(this.x, this.y, this.width, this.height);
-
-    context.strokeStyle = "black";
+   
     context.lineWidth = 3;
+    context.fillRect(this.x, this.y, this.width, this.height);
+    
+    if (this.skin.src)
+      this.drawSkin(context);
+    
+    context.strokeStyle = "black";
 
-    context.strokeRect(this.x, this.y, this.width, this.height);
+    context.strokeRect(this.x, this.y, this.width, this.height);    
   }
 }

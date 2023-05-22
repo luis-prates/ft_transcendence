@@ -26,9 +26,12 @@ const routes = [
     props: (route: any) => ({ 
       objectId: route.query.objectId, 
       maxScore: route.query.maxScore, 
+      table: route.query.table,
+      bot: route.query.bot,
       avatar: route.query.avatar, 
       nickname: route.query.nickname,
-      color: route.query.color
+      color: route.query.color,
+      skinPlayer: route.query.skinPlayer,
     }),
   },
 ];
