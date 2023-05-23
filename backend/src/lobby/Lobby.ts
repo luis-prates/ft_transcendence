@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { Player } from './Player';
-import { GameMap } from './Map';
+import { GameMap } from './GameMap';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Games } from 'src/ping_pong/Games';
@@ -36,5 +36,32 @@ export class Lobby {
 			this.game.connection(player);
 			this.gameMaps.get(data.map.name)?.join(player, data.map?.position);
 		});
+	}
+}
+
+export class SocketSingleton {
+	private socket: Socket;
+	private events: string[] = [];
+
+	constructor(socket: Socket) {
+		this.socket = socket;
+	}
+
+	on(event: string, listener: (...args: any[]) => void) {
+		if (this.events.includes(event)) return;
+		this.socket.on(event, listener);
+		this.events.push(event);
+	}
+
+	emit(event: string, ...args: any[]) {
+		this.socket.emit(event, ...args);
+	}
+	off(event: string) {
+		this.socket.off(event, () => {});
+		this.events = this.events.filter((e) => e !== event);
+	}
+
+	get id(): string {
+		return this.socket.id;
 	}
 }

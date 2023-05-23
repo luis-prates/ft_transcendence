@@ -33,21 +33,15 @@ export class Game {
 	bot: boolean = false;
 	onRemove: Function = () => {};
 
-	constructor(gameResquest: gameRequest, games: Game[], onRemove: Function) {
-		this.games = games;
+	constructor(gameResquest: gameRequest, onRemove: Function) {
+		// this.games = games;
 		this.data = gameResquest;
 		this.maxPoint = gameResquest.maxScore;
 		this.ball = new Ball(this);
 		this.bot = gameResquest.bot ? gameResquest.bot : this.bot;
+		this.onRemove = onRemove;
 	}
-	removeGame() {
-		const index = this.games.findIndex((g) => g.data.objectId == this.data.objectId);
-		if (index !== -1) {
-			this.games.splice(index, 1);
-			console.log('Game is removed!');
-		}
-		this.onRemove();
-	}
+
 	//Game Loop 1000 milesecond (1second) for 60 fps
 	gameLoop() {
 		if (!this.isEndGame() && this.status == Status.InGame) {
@@ -175,7 +169,7 @@ export class Game {
 				});
 			}
 			//INSERT IN DATABASE
-			this.removeGame();
+			this.onRemove();
 		}
 	}
 	//Update Status and Emit for ALL

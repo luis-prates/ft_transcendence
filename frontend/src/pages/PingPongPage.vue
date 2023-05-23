@@ -3,15 +3,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
   <div class="box" href>
     <canvas id="canvas1"></canvas>
+    <router-link v-if="status == Status.Finish" class="exitGame" to="/">
+      <h4>Exit</h4>
+    </router-link>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Game, Status } from "@/game/ping_pong/pingPong.js";
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import { Table } from "@/game/ping_pong/table.js";
 import socket from "@/socket/Socket";
 import { type gameRequest, type updatePlayer, type updateBall, type gamePoint } from "@/game/ping_pong/SocketInterface";
+// import Router from "@/router";
 
 const props = defineProps({
   objectId: String,
@@ -20,6 +24,8 @@ const props = defineProps({
   color: String,
   skinPlayer: String,
 });
+
+const status = ref(Status.Waiting);
 
 onMounted(function () {
   const canvas = document.getElementById("canvas1") as HTMLCanvasElement;
@@ -54,6 +60,7 @@ onMounted(function () {
     e.skin2 ? game.player2.updateSkin(e.skin2) : "";
 
     game.status = e.status;
+    status.value = e.status;
 
     if (e.player === 1) {
       game.playerNumber = 1;
@@ -96,7 +103,9 @@ onMounted(function () {
   });
   
   socket.on("end_game", (e: any) => {
+    status.value = Status.Finish;
     game.updateStatus(Status.Finish);
+    console.log(e);
     game.endMessage = e.result;
     game.audio("music_stop");
   });
@@ -112,7 +121,7 @@ onMounted(function () {
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .box {
   margin: 0;
   padding: 0;
@@ -129,5 +138,19 @@ onMounted(function () {
   transform: translate(-50%, 5%);
   max-width: 100%;
   max-height: 100%;
+}
+.exitGame {
+  position: absolute;
+  top: 65%;
+  left: 40%;
+  width: 20%;
+  height: 30px;
+  border-radius: 5px;
+  border-color: blue;
+  background-color: aqua;
+  * {
+    align-items: center;
+    text-align: center;
+  }
 }
 </style>

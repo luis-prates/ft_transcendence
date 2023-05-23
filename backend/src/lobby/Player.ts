@@ -1,6 +1,7 @@
-import { Socket } from 'socket.io';
+import { SocketSingleton } from './Lobby';
 import { Lobby } from './Lobby';
-import { GameMap } from './Map';
+import { GameMap } from './GameMap';
+import { Socket } from 'socket.io';
 
 export interface PathNode {
 	x: number;
@@ -18,7 +19,7 @@ export interface PlayerData {
 }
 
 export class Player {
-	private _socket: Socket;
+	private _socket: SocketSingleton;
 	avatar: string = '';
 	map: GameMap | null = null;
 	data: PlayerData = {
@@ -32,7 +33,7 @@ export class Player {
 	time: number = 0;
 
 	constructor(socket: Socket, objectId: number) {
-		this.socket = socket;
+		this.socket = new SocketSingleton(socket);
 		this.data.objectId = objectId;
 		this.time = Date.now();
 		console.log('player created: ' + this.objectId);
@@ -43,11 +44,11 @@ export class Player {
 		return this.data.objectId;
 	}
 
-	get socket(): Socket {
+	get socket(): SocketSingleton {
 		return this._socket;
 	}
 
-	set socket(value: Socket) {
+	set socket(value: SocketSingleton) {
 		this.time = 0;
 		value.on('disconnect', () => {
 			this.time = Date.now();

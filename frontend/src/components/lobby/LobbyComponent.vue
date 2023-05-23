@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div ref="game" class="game"></div>
+    <div id="game_lobby" class="game"></div>
     <div ref="menu" class="menu">
       <button style="left: 10px">Test</button>
       <button style="right: 0px">Test</button>
@@ -11,6 +11,7 @@
       <img src="@/assets/images/lobby/table_de1bda.png" />
       <button @click="test">Test</button>
     </div>
+    <img class="laod" src="@/assets/images/load/load_3.gif" v-if="!isConcted" />
   </div>
 </template>
 
@@ -28,34 +29,38 @@ import { userStore } from "@/stores/userStore";
 // const className = "MyClass";
 
 const store = userStore();
-const game = ref<HTMLDivElement>();
+// const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 let lobby: Lobby | null = null;
 const isConcted = ref(false);
 
 onMounted(() => {
+  isConcted.value = false;
   socket.emit("join_map", { objectId: store.user.id, map: { name: "lobby" } });
   socket.on("load_map", (data: any) => {
-    console.log("load_map", data);
-    if (lobby) lobby.destructor();
-    const map = new Map();
-    map.setData(data.map).then(() => {
-      lobby = new Lobby(map, new Player(menu, data.player));
-      if (game.value !== undefined) {
-        game.value.appendChild(lobby.canvas);
+    setTimeout(() => {
+      console.log("load_map_4444");
+      console.log("load_map", data);
+      if (lobby) lobby.destructor();
+      const map = new Map();
+      map.setData(data.map).then(() => {
+        lobby = new Lobby(map, new Player(menu, data.player));
+        document.getElementById("game_lobby")?.appendChild(lobby.canvas);
         data.data.forEach((d: any) => {
           lobby?.addGameObjectData(d);
         });
+        isConcted.value = true;
         lobby.update();
-      }
-      isConcted.value = true;
-    });
+        console.log("isConcted.value : ", isConcted.value);
+      });
+    }, 1000);
   });
 });
 
 onUnmounted(() => {
   console.log("unmounted");
   lobby?.destructor();
+  lobby = null;
 });
 
 function salvarDesenhoComoImagem() {
@@ -76,9 +81,16 @@ function test() {
 </script>
 
 <style scoped lang="scss">
+.laod {
+  width: 100%; /* 100% da largura da janela */
+  height: 100%;
+  position: fixed;
+  margin: 0;
+  padding: 0;
+}
 .game {
-  width: 2000px; /* 100% da largura da janela */
-  height: 1000px; /* 100% da altura da janela */
+  width: 100%; /* 100% da largura da janela */
+  height: 100%; /* 100% da altura da janela */
   margin: 0;
   padding: 0;
   background-color: rgb(30, 39, 210);

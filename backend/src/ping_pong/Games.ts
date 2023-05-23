@@ -7,14 +7,27 @@ export class Games {
 
 	public connection(player: Player) {
 		player.on('new_game', (e: gameRequest) => this.new_game(player, e));
+		player.on('new_game', (e: gameRequest) => this.new_game(player, e));
+		player.on('new_game', (e: gameRequest) => this.new_game(player, e));
+
 		player.on('entry_game', (e: playerInfo) => this.entry_game(player, e));
 		player.on('game_move', (e: any) => this.game_move(e));
-		player.on('disconnect', () => this.disconnect(player));
+		// player.on('disconnect', () => this.disconnect(player));
 	}
 
+	// public desconect(player: Player) {
+	// 	player.socket.off('new_game');
+	// }
+
 	new_game(player: Player, e: gameRequest) {
-		console.log('PLAYER: ', e);
-		this.games.push(new Game(e, this.games, () => player?.map.removeGameObject(e.objectId)));
+		console.log('PLAYER_1: ', e);
+		this.games.push(
+			new Game(e, () => {
+				this.games = this.games.filter((g) => g.data.objectId != e.objectId);
+				console.log('remove game: ', this.games.length);
+				player?.map.removeGameObject(e.objectId);
+			}),
+		);
 	}
 
 	entry_game(player: Player, info: playerInfo) {

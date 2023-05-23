@@ -61,6 +61,7 @@ export class GameMap {
 	}
 
 	public removeGameObject(objectId: string): void {
+		this.gameObjets = this.gameObjets.filter((e) => e.objectId != objectId);
 		this.emitAll('remove_gameobject', { objectId: objectId });
 	}
 

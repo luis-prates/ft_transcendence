@@ -25,6 +25,7 @@ export class Lobby extends Game {
     });
 
     socket.on("remove_gameobject", (data: any) => {
+      console.log("remove_gameobject", data);
       for (let gameObject of this.gameObjets) {
         if (gameObject.objectId === data.objectId) {
           if (gameObject.destroy) gameObject.destroy();
