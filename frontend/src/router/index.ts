@@ -31,11 +31,16 @@ const routes = [
       skinPlayer: route.query.skinPlayer,
     }),
   },
+  //   {
+  //     path: "/about",
+  //     name: "About",
+  //     component: About,
+  //   },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: routes,
+  routes: routes_login,
 });
 
 class Router {

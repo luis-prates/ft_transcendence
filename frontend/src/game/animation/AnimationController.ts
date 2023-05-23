@@ -1,4 +1,4 @@
-import { Game } from "../base/Game";
+import { Game } from "@/game";
 
 export interface framePosition {
   x: number;
@@ -21,18 +21,36 @@ export class AnimationController {
   private frameY: number = 0;
   private animation: animations = {};
   private currentAnimation: string = "";
+  sx: number;
+  sy: number;
   private size_w: number;
   private size_h: number;
   isStop = true;
   name: string = "";
 
-  constructor(image: HTMLImageElement, size_w: number, size_h: number, speed: number) {
+  constructor(image: HTMLImageElement, size_w: number, size_h: number, speed: number, sx: number = 0, sy: number = 0) {
     this.image = image;
     this.size_w = size_w;
     this.size_h = size_h;
     this.speed = speed;
+    this.sx = sx;
+    this.sy = sy;
   }
 
+  public init(image: HTMLImageElement, size_w: number, size_h: number, speed: number, sx: number = 0, sy: number = 0) {
+    this.image = image;
+    this.size_w = size_w;
+    this.size_h = size_h;
+    this.speed = speed;
+    this.sx = sx;
+    this.sy = sy;
+    this.image = image;
+    this.size_w = size_w;
+    this.size_h = size_h;
+    this.speed = speed;
+    this.sx = sx;
+    this.sy = sy;
+  }
 
   public createAnimation(name: string, frames: animationList) {
     frames.frames = frames.frames.map((frame) => {
@@ -56,14 +74,13 @@ export class AnimationController {
         this.frame = 0;
       }
     }
-    this.frameX = this.animation[this.currentAnimation]?.frames[Math.floor(this.frame)].x;
-    this.frameY = this.animation[this.currentAnimation]?.frames[Math.floor(this.frame)].y;
+    this.frameX = this.animation[this.currentAnimation]?.frames[Math.floor(this.frame)].x + this.sx;
+    this.frameY = this.animation[this.currentAnimation]?.frames[Math.floor(this.frame)].y + this.sy;
     contex.drawImage(this.image, this.frameX, this.frameY, this.size_w, this.size_h, x, y, w, h);
   }
 
   public setStop(isStop: boolean) {
-    if (isStop)
-      this.frame  = 1;
+    if (isStop) this.frame = 1;
     this.isStop = isStop;
   }
 }

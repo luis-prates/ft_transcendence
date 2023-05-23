@@ -1,41 +1,34 @@
 import socket from "@/socket/Socket";
-import { Game } from "../base/Game";
-import type { GameObject } from "../base/GameObject";
-import { Map } from "../base/Map";
-import { Character, type CharacterOnline } from "../base/Character";
+import { Game } from "@/game";
+import { Map } from "./objects/Map";
 
-interface eventsUpdate {
-  data: CharacterOnline;
-  character: Character;
-}
+import { Character, type CharacterOnline } from "../base/Character";
+import { Npc } from "./objects/Npc";
+import { Table, type Player } from "..";
 
 export class Lobby extends Game {
-  private characterOnline: Character[] = [];
+  constructor(map: Map, player: Player) {
+    super(map, player);
+    this.addGameObject(new Npc());
 
-  constructor() {
-    super();
-    this.addGameObject(new Map());
-    socket.on("new_player", (data: CharacterOnline) => {
-      console.log("lobby -> new_playe: ", data);
-      this.characterOnline.push(this.addGameObject(new Character(data)) as Character);
-      console.log(this.gameObjets.length);
+    socket.on("new_gameobject", (data: any) => {
+      this.addGameObjectData(data);
     });
 
-    socket.on("player_disconnect", (data: CharacterOnline) => {
-        console.log("player_disconnect: ", data);
-      for (let gameObject of this.characterOnline) {
+    socket.on("update_gameobject", (data: any) => {
+      for (let gameObject of this.gameObjets) {
         if (gameObject.objectId === data.objectId) {
-          this, this.removeGameObject(gameObject);
+          gameObject.setData(data);
           break;
         }
       }
     });
 
-    socket.on("player_move", (data: CharacterOnline) => {
-      console.log("player_move: ", data);
-      for (let gameObject of this.characterOnline) {
+    socket.on("remove_gameobject", (data: any) => {
+      for (let gameObject of this.gameObjets) {
         if (gameObject.objectId === data.objectId) {
-            gameObject.setDados(data);
+          if (gameObject.destroy) gameObject.destroy();
+          this.removeGameObject(gameObject);
           break;
         }
       }

@@ -1,23 +1,33 @@
 <template>
   <div class="box" href>
     <!-- <ProfileComponent class="profile" />     -->
-    <!-- <LobbyComponent /> -->
-    <div class="menu">
-      <button @click="newGame">New game</button>
-      <button @click="entryGame">Enter</button>
-    </div>
+    <LobbyComponent />
 
-    <!-- <ProfileComponent class="profile" />    -->
+    <!-- <ProfileComponent class="profile" /> -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { userStore } from "@/stores/userStore";
 import { ProfileComponent, LobbyComponent } from "@/components";
-import Router from "@/router";
-import socket from "@/socket/Socket";
+
+import { onBeforeRouteLeave } from "vue-router";
 
 const store = userStore();
+onBeforeRouteLeave((to, from, next) => {
+  console.log("to", to);
+  // Aqui você pode executar a lógica desejada quando o usuário tenta sair da página
+
+  // Por exemplo, exibir uma mensagem de confirmação
+  const shouldLeave = window.confirm("Deseja sair desta página?");
+  if (shouldLeave) {
+    // Se o usuário confirmar, permita a saída
+    next();
+  } else {
+    // Caso contrário, cancele a navegação
+    next(false);
+  }
+});
 
 console.log(store.user);
 
@@ -34,7 +44,6 @@ function entryGame() {
 
 </script>
 
-
 <style scoped>
 .box {
   height: 100%;
@@ -42,18 +51,10 @@ function entryGame() {
   padding: 0;
   margin: 0;
   background-color: chocolate;
+  /* z-index: 0; */
 }
 
 .profile {
   width: 30%;
-}
-
-.menu {
-  top: 0px;
-  left: 0px;
-  background-color: chocolate;
-  position: absolute;
-  width: 100px;
-  height: 100px;
 }
 </style>

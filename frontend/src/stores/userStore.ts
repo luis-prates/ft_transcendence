@@ -106,14 +106,14 @@ export const userStore = defineStore("user", () => {
     if (user.image != userUpdate.image) body.image = userUpdate.image;
     console.log("body\n", body, "\nuser\n", user.access_token_server);
     const options = {
-      method: 'PATCH',
-      headers: {Authorization: `Bearer ${user.access_token_server}`},
-      body: new URLSearchParams(body)
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+      body: new URLSearchParams(body),
     };
-    
-    await fetch('https://unbecoming-fact-production.up.railway.app/users', options)
-      .then(async (response )=>  console.log(await response.json()))
-      .catch(err => console.error(err));
+
+    await fetch("https://unbecoming-fact-production.up.railway.app/users", options)
+      .then(async (response) => console.log(await response.json()))
+      .catch((err) => console.error(err));
   }
 
   return { user, login, update };
