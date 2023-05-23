@@ -46,9 +46,8 @@ model FriendRequest {
 	requesteeName			String
 	status					FriendReqStatus @default(PENDING) // Pending, Accepted, Rejected, Blocked
 
-	requestor				User @relation(fields: [requestorId, requestorName], references: [id, nickname], name: "FriendShipRequestor")
-	requestee				User @relation(fields: [requesteeId, requesteeName], references: [id, nickname], name: "FriendShipRequestee")
-
+	requestor				User @relation(fields: [requestorId, requestorName], references: [id, nickname], name: "FriendShipRequestor", onDelete: Cascade)
+	requestee				User @relation(fields: [requesteeId, requesteeName], references: [id, nickname], name: "FriendShipRequestee", onDelete: Cascade)
 
 	@@id([requestorId, requesteeId])
 	@@index([requestorId, requesteeId], name: "friendship_index")
@@ -64,8 +63,8 @@ model Friend {
 	friendName				String
 
 	//user					User @relation(fields: [userId], references: [id], name: "Users")
-	user					User @relation(fields: [userId, userName], references: [id, nickname], name: "Friends")
-	friend					User @relation(fields: [friendId, friendName], references: [id, nickname], name: "FriendsOf")
+	user					User @relation(fields: [userId, userName], references: [id, nickname], name: "Friends", onDelete: Cascade)
+	friend					User @relation(fields: [friendId, friendName], references: [id, nickname], name: "FriendsOf", onDelete: Cascade)
 
 	@@id([userId, friendId])
 	@@index([userId, friendId], name: "friend_index")
@@ -94,7 +93,7 @@ enum UserStatus {
 // 	status Int @default(0)
 // 	player1Id Int
 // 	player1 User @relation("matchHistory", fields: [player1Id], references: [id])
-	
+
 // 	player2Id Int
 // 	player2 User @relation("matchHistory", fields: [player2Id], references: [id])
 
@@ -115,7 +114,7 @@ enum UserStatus {
 // 	channelName String @unique
 // 	// channel mode may be in front end (public, private, protected by password)
 // 	password String? // if protected
-	
+
 // 	channelOwnerId Int
 // 	channelOwner User[] @relation("channelOwner", fields: [channelOwnerId], references: [id])
 // 	channelAdminId Int
