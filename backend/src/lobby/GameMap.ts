@@ -29,18 +29,18 @@ export class GameMap {
 			data: data,
 		});
 		if (clientSocket) {
-			clientSocket.socket = player.socket;
+			clientSocket.setSocket(player.getSocket());
 			// console.log('re-connected socket: ', player.objectId);
 		} else {
 			this.players.push(player);
 			this.emitAll('new_gameobject', player.data, player);
 			// console.log('new player: ', player.objectId);
 		}
-		player.socket.on('new_gameobject', (data) => {
+		player.on('new_gameobject', (data) => {
 			this.gameObjets.push(data);
 			this.emitAll('new_gameobject', data);
 		});
-		player.socket.on('update_gameobject', (data) => {
+		player.on('update_gameobject', (data) => {
 			player.data = data;
 			this.emitAll('update_gameobject', data, player);
 		});

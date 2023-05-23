@@ -10,8 +10,9 @@ export class Lobby extends Game {
   constructor(map: Map, player: Player) {
     super(map, player);
     this.addGameObject(new Npc());
-
+    console.log("Lobby", " SOCKET ON");
     socket.on("new_gameobject", (data: any) => {
+      console.log("new_gameobject", data);
       this.addGameObjectData(data);
     });
 
@@ -38,5 +39,12 @@ export class Lobby extends Game {
 
   draw(): void {
     super.draw();
+  }
+
+  destructor(): void {
+    super.destructor();
+    socket.off("new_gameobject");
+    socket.off("update_gameobject");
+    socket.off("remove_gameobject");
   }
 }

@@ -183,7 +183,7 @@ export class Game {
 	//Make the Countdown and Emit for ALL
 	countdown(seconds: number) {
 		console.log(seconds);
-		
+
 		if (seconds > 0) {
 			this.emitAll('game_counting', seconds);
 
@@ -209,7 +209,7 @@ export class Game {
 	//Emit for Watchers
 	emitWatchers(event: string, data: any): void {
 		this.watchers.forEach((clientSocket) => {
-			if (clientSocket.socket.id !== this.player1.socket.socket.id || clientSocket.socket.id !== this.player2.socket.socket.id) clientSocket.emit(event, data);
+			if (clientSocket.id !== this.player1.socket.id || clientSocket.id !== this.player2.socket.id) clientSocket.emit(event, data);
 		});
 	}
 	//Emit for Players and Watchers
