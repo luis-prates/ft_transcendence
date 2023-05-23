@@ -2,7 +2,7 @@ import { Player } from "./Player";
 import { InputHandler } from "./Input";
 import { Ball } from "./Ball";
 import socket from "@/socket/Socket";
-import { type gameResquest } from "./SocketInterface";
+import { type gameRequest } from "./SocketInterface";
 
 //Images
 import tableImage from "@/assets/images/pingpong/table_1.png";
@@ -25,13 +25,13 @@ export class Game {
   player1: Player;
   player2: Player;
   ball: Ball;
-  data: gameResquest;
+  data: gameRequest;
   playerNumber: number = 0;
   counting: number = 0;
   context: CanvasRenderingContext2D;
   endMessage: string = "";
 
-  constructor(width: number, height: number, offSet: number, context: CanvasRenderingContext2D, data: gameResquest) {
+  constructor(width: number, height: number, offSet: number, context: CanvasRenderingContext2D, data: gameRequest) {
     this.width = width;
     this.height = height;
     this.offSet = offSet;

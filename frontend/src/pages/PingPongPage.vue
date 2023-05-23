@@ -11,12 +11,10 @@ import { Game, Status } from "@/game/ping_pong/PingPong.js";
 import { onMounted } from "vue";
 import { Table } from "@/game/ping_pong/Table.js";
 import socket from "@/socket/Socket";
-import { type gameResquest, type updatePlayer, type updateBall, type gamePoint } from "@/game/ping_pong/SocketInterface";
+import { type gameRequest, type updatePlayer, type updateBall, type gamePoint } from "@/game/ping_pong/SocketInterface";
 
 const props = defineProps({
   objectId: String,
-  maxScore: Number,
-  table: String,
   avatar: String,
   nickname: String,
   color: String,
@@ -33,9 +31,10 @@ onMounted(function () {
   socket.emit("entry_game", props );
   console.log("pros: ", props)
 
-  const tableColor:string = props.table ? props.table : "#1e8c2f";
+  //TODO
+  const tableColor:string = "#1e8c2f";
 
-  const game = new Game(canvas.width, canvas.height - 228, 164, ctx, props as gameResquest);
+  const game = new Game(canvas.width, canvas.height - 228, 164, ctx, props as gameRequest);
   console.log(props);
   const tableBoard = new Table(canvas.width, canvas.height, "DarkSlateBlue", tableColor);
 

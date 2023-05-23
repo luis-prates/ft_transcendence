@@ -24,10 +24,7 @@ const routes = [
     name: "Ping Pong Game",
     component: PingPongPage,
     props: (route: any) => ({ 
-      objectId: route.query.objectId, 
-      maxScore: route.query.maxScore, 
-      table: route.query.table,
-      bot: route.query.bot,
+      objectId: route.query.objectId,
       avatar: route.query.avatar, 
       nickname: route.query.nickname,
       color: route.query.color,

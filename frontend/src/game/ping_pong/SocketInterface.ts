@@ -1,8 +1,13 @@
-export interface gameResquest {
+export interface gameRequest {
   objectId: string,
   maxScore: number,
   table: string,
+  tableSkin: string,
   bot: boolean,
+}
+
+export interface playerInfo {
+  objectId: string,
   avatar: string,
   nickname: string,
   color: string,

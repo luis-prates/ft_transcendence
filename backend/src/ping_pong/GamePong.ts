@@ -2,13 +2,21 @@ import { Player } from 'src/lobby/Lobby';
 import { Ball } from './Ball';
 import { Player_Pong } from './PlayerPong';
 import { Socket } from 'socket.io';
-import { type gameResquest, type gamePoint } from './SocketInterface';
+import { type gameRequest, type playerInfo } from './SocketInterface';
 
 export enum Status {
   Waiting,
   Starting,
   InGame,
   Finish,
+}
+
+const infoBot: playerInfo = {
+  objectId: "",
+  nickname: "marvin",
+  avatar: "marvin",
+  color: "grey",
+  skinPlayer: "",
 }
 
 export class Game {
@@ -21,10 +29,11 @@ export class Game {
   player2: Player_Pong;
   maxPoint = 3;
   watchers: Player[] = [];
-  data: gameResquest;
+  data: gameRequest;
   bot: boolean = false;
 
-  constructor(gameResquest: gameResquest, games: Game[]) {
+  constructor(gameResquest: gameRequest, games: Game[]) {
+
     this.games = games;
     this.data = gameResquest;
     this.maxPoint = gameResquest.maxScore;
@@ -51,45 +60,56 @@ export class Game {
       this.gameLoop();
     }, 1000 / 60); 
   }
+
+  emitStartGame() {
+    this.player1.socket.emit('start_game', {
+      player: 1,
+      status: Status.Starting,
+      nickname1: this.player1.nickname,
+      avatar1: this.player1.avatar,
+      color1: this.player1.color,
+      skin1: this.player1.skin,
+      nickname2: this.player2.nickname,
+      avatar2: this.player2.avatar,
+      color2: this.player2.color,
+      skin2: this.player2.skin,
+    });
+    if (this.bot == false)
+    {
+      this.player2.socket.emit('start_game', {
+        player: 2,
+        status: Status.Starting,
+        nickname1: this.player1.nickname,
+        avatar1: this.player1.avatar,
+        color1: this.player1.color,
+        skin1: this.player1.skin,
+        nickname2: this.player2.nickname,
+        avatar2: this.player2.avatar,
+        color2: this.player2.color,
+        skin2: this.player2.skin,
+      });
+    }
+    console.log('emit_start_game');
+    this.startGame();
+    this.gameLoop();
+  }
+
   //Create Players and Watchers
-  addUsers(user: Player, playerInfo?: gameResquest) {
+  addUsers(user: Player, playerInfo?: playerInfo) {
 
     // DATA BASE VERIFICATION
 
       if (!this.player1) {
         this.player1 = new Player_Pong(this, 1, user, playerInfo);
-        //this.ball.emitBall();
-        console.log('player1 connect', playerInfo);
+        //console.log('player1 connect', playerInfo);
+        if (this.bot == true) {
+          this.player2 = new Player_Pong(this, 3, user, infoBot);
+          this.emitStartGame();
+        }
       } else if (!this.player2) {
         this.player2 = new Player_Pong(this, 2, user, playerInfo);
         console.log('player2 connect', playerInfo);
-        this.player1.socket.emit('start_game', {
-          player: 1,
-          status: Status.Starting,
-          nickname1: this.player1.nickname,
-          avatar1: this.player1.avatar,
-          color1: this.player1.color,
-          skin1: this.player1.skin,
-          nickname2: this.player2.nickname,
-          avatar2: this.player2.avatar,
-          color2: this.player2.color,
-          skin2: this.player2.skin,
-        });
-        this.player2.socket.emit('start_game', {
-          player: 2,
-          status: Status.Starting,
-          nickname1: this.player1.nickname,
-          avatar1: this.player1.avatar,
-          color1: this.player1.color,
-          skin1: this.player1.skin,
-          nickname2: this.player2.nickname,
-          avatar2: this.player2.avatar,
-          color2: this.player2.color,
-          skin2: this.player2.skin,
-        });
-        console.log('emit_start_game');
-        this.startGame();
-        this.gameLoop();
+        this.emitStartGame();
       } else if (!this.watchers.includes(user)) {
         this.watchers.push(user);
         user.emit('start_game', {
@@ -135,10 +155,12 @@ export class Game {
           objectId: this.data.objectId,
           result: 'You Win!',
         });
-        this.player2.socket.emit('end_game', {
-          objectId: this.data.objectId,
-          result: 'You Lose!',
-        });
+        if (this.player2 && this.bot == false) {
+          this.player2.socket.emit('end_game', {
+            objectId: this.data.objectId,
+            result: 'You Lose!',
+          });
+        }
         this.emitWatchers('end_game', {
           objectId: this.data.objectId,
           result: this.player1.nickname + ' Win!',
@@ -148,10 +170,12 @@ export class Game {
           objectId: this.data.objectId,
           result: 'You Lose!',
         });
-        this.player2.socket.emit('end_game', {
-          objectId: this.data.objectId,
-          result: 'You Win!',
-        });
+        if (this.player2 && this.bot == false) {
+          this.player2.socket.emit('end_game', {
+            objectId: this.data.objectId,
+            result: 'You Win!',
+          });
+        }
         this.emitWatchers('end_game', {
           objectId: this.data.objectId,
           result: this.player2.nickname + ' Win!',
@@ -199,7 +223,7 @@ export class Game {
   emitPlayers(event: string, data: any): void {
     if (this.player1)
       this.player1.socket.emit(event, data);
-    if (this.player2)
+    if (this.player2 && !this.bot)
       this.player2.socket.emit(event, data);
   }
   //Emit for Watchers

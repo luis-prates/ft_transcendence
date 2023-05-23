@@ -1,6 +1,6 @@
 import { Player } from 'src/lobby/Lobby';
 import { Game } from './GamePong';
-import { gameResquest } from './SocketInterface';
+import { playerInfo } from './SocketInterface';
 
 export class Player_Pong {
   game: Game;
@@ -18,13 +18,14 @@ export class Player_Pong {
   color: string;
   skin: string;
 
-  constructor(game: Game, player_n: number, playerLobby: Player, info: gameResquest) {
+  constructor(game: Game, player_n: number, playerLobby: Player, info?: playerInfo) {
     this.game = game;
     this.player_n = player_n;
     this.y = game.height / 2 - this.height / 2;
-    if (this.player_n === 1) this.x = 50;
-    else if (this.player_n === 2) this.x = game.width - this.width - 50;
-    this.socket = playerLobby;
+    if (this.player_n == 1) this.x = 50;
+    else if (this.player_n == 2 || this.player_n == 3) this.x = game.width - this.width - 50;
+    if (this.player_n != 3)
+      this.socket = playerLobby;
     this.nickname = info.nickname;
     this.avatar = info.avatar;
     this.color = info.color;
@@ -51,6 +52,16 @@ export class Player_Pong {
   }
 
   update() {
+    if (this.player_n == 3)
+    {
+      //up or down
+      const ballUporDown = (this.game.ball.y) - ( this.game.ball.y += this.game.ball.speed * Math.sin(this.game.ball.angle));
+      //posiçao em relaçao a bola
+      const move = (this.game.ball.y + this.game.ball.height / 2) - (this.y + this.height / 2);
+     // console.log("REsult:", move);
+      if (ballUporDown > 0 && move < this.speed) this.moveUp();
+      else if (ballUporDown < 0 && move > this.speed) this.moveDown();
+    }
     this.emitPlayer();
   }
   

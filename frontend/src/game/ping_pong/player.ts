@@ -139,8 +139,6 @@ export class Player {
   }
 
   drawSkin(context: CanvasRenderingContext2D) {
-
-
     if (this.x > this.game.width / 2) {
       context.drawImage(this.skin, this.x, this.y, this.width, this.height);
     } else {
@@ -158,7 +156,6 @@ export class Player {
   
       context.restore(); 
     }
-    
   }
   
   drawPlayer(context: CanvasRenderingContext2D, color: string) {
