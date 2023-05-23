@@ -7,7 +7,7 @@ export interface GameObject {
   y: number;
   w: number;
   h: number;
-  objectId: number;
+  objectId: any;
   isSelect: boolean;
 
   draw(contex: CanvasRenderingContext2D): void;

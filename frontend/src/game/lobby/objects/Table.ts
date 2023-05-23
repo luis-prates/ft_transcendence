@@ -1,6 +1,7 @@
 import { Game, type GameObject, Map } from "@/game";
 import type { GameObjectType } from "@/game/base/GameObject";
 import table from "@/assets/images/lobby/table0.png";
+import Router from "@/router";
 
 interface TableOnline {
   objectId?: any;
@@ -16,12 +17,12 @@ export class Table implements GameObject {
   w: number;
   h: number;
   isSelect: boolean;
-  objectId: number = 0;
+  objectId: string;
   private _data: TableOnline;
 
   constructor(data: TableOnline) {
     this._data = data;
-    this.data.objectId = Game.getPlayer().objectId + "_" + Date.now();
+    this.data.objectId = data.objectId;
     this.objectId = this.data.objectId;
     this.data.type = "type";
     this.w = 32;
@@ -79,5 +80,11 @@ export class Table implements GameObject {
 
   public get data(): TableOnline {
     return this._data;
+  }
+
+  interaction(gameObject: GameObject): void {
+    Router.push(
+      `/game?objectId=${this.objectId}&maxScore=3&table=green&bot=true&avatar=https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/bc9ffd43-db87-475c-a8f0-0e57fc3d5c43/d7piatk-383ae681-e8c5-4580-a77a-96e856cd1c3c.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2JjOWZmZDQzLWRiODctNDc1Yy1hOGYwLTBlNTdmYzNkNWM0M1wvZDdwaWF0ay0zODNhZTY4MS1lOGM1LTQ1ODAtYTc3YS05NmU4NTZjZDFjM2MucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.poDHxDZ5KSHu4L-CsyOcCoR_m3krSLS_otv-VgXLvMM&nickname=rteles&color=blue&skinPlayer=mario`
+    );
   }
 }

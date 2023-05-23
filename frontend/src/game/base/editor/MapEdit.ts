@@ -1,10 +1,10 @@
-import { Game, Map, Tree, WaterFont, type GameObject } from "@/game";
+import { Game, Map, Tree, WaterFont, type GameObject, Lobby } from "@/game";
 
 import { Player } from "../..";
 import { ref } from "vue";
 import { MapObject } from "./MapObject";
 
-export class MapEdit extends Game {
+export class MapEdit extends Lobby {
   constructor(map: Map) {
     super(map, new Player(ref(undefined), MapObject.startPossition));
     window.addEventListener("keydown", (e) => {
@@ -14,6 +14,8 @@ export class MapEdit extends Game {
     this.canvas.addEventListener("mousedown", this.handleMouseDown.bind(this));
     this.canvas.addEventListener("mousemove", this.handleMouseMove.bind(this));
     this.canvas.addEventListener("mouseup", this.handleMouseUp.bind(this));
+    this.camera.width = this.map.w;
+    this.camera.height = this.map.h;
   }
 
   draw(): void {

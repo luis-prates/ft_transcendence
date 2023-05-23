@@ -13,7 +13,7 @@ export class Game {
   public static deltaTime: number = 0;
   private mouseEvents: any[] = [];
   private static gameObjectSelected: GameObject | undefined;
-  private camera: Camera;
+  protected camera: Camera;
   protected map: Map;
   protected player: Player;
   public isRunning;
@@ -38,12 +38,20 @@ export class Game {
     this.canvas.addEventListener("dragover", (event) => event.preventDefault());
     this.canvas.addEventListener("drop", (event) => {
       if (event.dataTransfer && event.dataTransfer.types.includes("text/uri-list")) {
+        console.log("Drop");
         // Get the ID of the dragged component
         const componentId = event.dataTransfer.getData("text/uri-list");
         const color = componentId.includes("assets/images/lobby/table_") ? "#" + componentId.substring(componentId.indexOf("_") + 1, componentId.indexOf(".")) : "green";
         const rect = this.canvas.getBoundingClientRect();
-        const data = { className: "Table", color, x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE, y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE };
-        socket.emit("new_table", data);
+        const data = {
+          className: "Table",
+          objectId: "gametest",
+          color,
+          x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE,
+          y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,
+        };
+        socket.emit("new_gameobject", data);
+        socket.emit("new_game", { objectId: data.objectId, maxScore: 3, table: "green", tableSkin: "", bot: true });
       }
       event.preventDefault();
     });

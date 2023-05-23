@@ -1,6 +1,6 @@
-import { Player } from "./Player";
-import { InputHandler } from "./Input";
-import { Ball } from "./Ball";
+import { Player } from "./player";
+import { InputHandler } from "./input";
+import { Ball } from "./ball";
 import socket from "@/socket/Socket";
 import { type gameRequest } from "./SocketInterface";
 
@@ -50,10 +50,9 @@ export class Game {
     if (this.playerNumber == 1) this.player1.update(this.inputKey.keys);
     else if (this.playerNumber == 2) this.player2.update(this.inputKey.keys);
   }
-  //Update Status and Emit for ALL  
+  //Update Status and Emit for ALL
   updateStatus(status: number) {
-    if (this.status != status)
-      this.status = status;
+    if (this.status != status) this.status = status;
   }
   //Draw Controller
   draw() {
@@ -67,13 +66,12 @@ export class Game {
   }
   //Draw Score
   drawScore() {
-    
     this.context.font = "50px 'Press Start 2P', cursive";
     this.context.fillStyle = "black";
 
     this.context.strokeStyle = "black";
     this.context.lineWidth = 10;
-    this.context.strokeText(this.player1.score + " : " + this.player2.score,this.width / 2 - 120, 90, this.width - 750);
+    this.context.strokeText(this.player1.score + " : " + this.player2.score, this.width / 2 - 120, 90, this.width - 750);
 
     this.context.fillStyle = "white";
     this.context.fillText(this.player1.score + " : " + this.player2.score, this.width / 2 - 120, 90, this.width - 750);

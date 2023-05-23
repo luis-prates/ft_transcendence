@@ -1,6 +1,6 @@
 <template>
   <div ref="game" class="game"></div>
-  <div class="table">
+  <div class="table" style="top: 110px">
     <button @click="action(0)" :class="MapObject.action.value == 0 ? 'buttonSelect' : ''">Colission</button>
     <button @click="action(1)" :class="MapObject.action.value == 1 ? 'buttonSelect' : ''">Start Possition</button>
     <button @click="action(2)" :class="MapObject.action.value == 2 ? 'buttonSelect' : ''">Player</button>
@@ -16,6 +16,11 @@
     <h3>Action: {{ MapObject.action }}</h3>
 
     <!-- <button @click="test">Test</button> -->
+  </div>
+  <div class="table">
+    <img src="@/assets/images/lobby/table_2aaa15.png" />
+    <img src="@/assets/images/lobby/table_efc120.png" />
+    <img src="@/assets/images/lobby/table_de1bda.png" />
   </div>
 </template>
 

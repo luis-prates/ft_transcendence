@@ -38,15 +38,18 @@ onMounted(() => {
   socket.on("load_map", (data: any) => {
     console.log("load_map", data);
     if (lobby) lobby.destructor();
-    lobby = new Lobby(new Map(data.map), new Player(menu, data.player));
-    if (game.value !== undefined) {
-      game.value.appendChild(lobby.canvas);
-      data.data.forEach((d: any) => {
-        lobby?.addGameObjectData(d);
-      });
-      lobby.update();
-    }
-    isConcted.value = true;
+    const map = new Map();
+    map.setData(data.map).then(() => {
+      lobby = new Lobby(map, new Player(menu, data.player));
+      if (game.value !== undefined) {
+        game.value.appendChild(lobby.canvas);
+        data.data.forEach((d: any) => {
+          lobby?.addGameObjectData(d);
+        });
+        lobby.update();
+      }
+      isConcted.value = true;
+    });
   });
 });
 

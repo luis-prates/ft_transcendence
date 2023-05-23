@@ -1,6 +1,6 @@
 <template>
-  <!-- <router-view /> -->
-  <MapEditComponent />
+  <router-view />
+  <!-- <MapEditComponent /> -->
 </template>
 
 <script setup lang="ts">

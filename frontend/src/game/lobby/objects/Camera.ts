@@ -16,8 +16,8 @@ export class Camera {
     this.player = player;
     this.x = 0;
     this.y = 0;
-    this.width = map.w;
-    this.height = map.h;
+    // this.width = map.w;
+    // this.height = map.h;
   }
 
   leftEdge() {

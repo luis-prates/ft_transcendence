@@ -3,6 +3,7 @@ import { Player } from './Player';
 import { GameMap } from './Map';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Games } from 'src/ping_pong/Games';
 
 export interface TableData {
 	className: string;
@@ -12,7 +13,8 @@ export interface TableData {
 	pontoEvento: { x: number; y: number; isFree: boolean }[];
 }
 
-export default class Lobby {
+export class Lobby {
+	public game: Games = new Games();
 	private gameMaps: Map<string, GameMap> = new Map<string, GameMap>();
 	public static players: Player[] = [];
 
@@ -31,6 +33,7 @@ export default class Lobby {
 	public connection(socket: Socket): void {
 		socket.on('join_map', (data) => {
 			const player = Lobby.players.find((e) => e.objectId == data.objectId) || new Player(socket, data.objectId);
+			this.game.connection(player);
 			this.gameMaps.get(data.map.name)?.join(player, data.map?.position);
 		});
 	}

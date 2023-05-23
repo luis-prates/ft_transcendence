@@ -147,6 +147,7 @@ export class Map implements GameObject {
       height: this.h,
       size: Map.SIZE,
       start_position: { x: 0, y: 0 },
+      objectId: this.objectId.toString(),
     };
     const jsonStr = JSON.stringify(data);
     const blob = new Blob([jsonStr], { type: "application/json" });

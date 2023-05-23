@@ -38,7 +38,7 @@ export class GameMap {
 		}
 		player.socket.on('new_gameobject', (data) => {
 			this.gameObjets.push(data);
-			this.emitAll('new_gameobject', data, player);
+			this.emitAll('new_gameobject', data);
 		});
 		player.socket.on('update_gameobject', (data) => {
 			player.data = data;
@@ -58,6 +58,10 @@ export class GameMap {
 		});
 		console.log('remove player: ', player.objectId);
 		this.emitAll('remove_gameobject', player.data, player);
+	}
+
+	public removeGameObject(objectId: string): void {
+		this.emitAll('remove_gameobject', { objectId: objectId });
 	}
 
 	public get objectId(): string {

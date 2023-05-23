@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import Lobby from './Lobby';
+import { Lobby } from './Lobby';
 import { GameMap } from './Map';
 
 export interface PathNode {
