@@ -28,7 +28,7 @@ export class Table implements GameObject {
     this.h = 64;
     this.isSelect = false;
     this.imagem.src = table;
-    Game.Map.grid[this.x / Map.SIZE][this.y / Map.SIZE] = 1;
+    Game.grid[this.x / Map.SIZE][this.y / Map.SIZE] = 1;
   }
 
   private pontoEvento = [
@@ -44,6 +44,10 @@ export class Table implements GameObject {
     //   contex.fillStyle = ponto.isFree ? "yellow" : "red";
     //   contex.fillRect(this.x + ponto.x, this.y + ponto.y, 6, 6);
     // });
+  }
+
+  destroy(): void {
+    Game.grid[this.x / Map.SIZE][this.y / Map.SIZE] = 0;
   }
 
   setData(data: any): void {}

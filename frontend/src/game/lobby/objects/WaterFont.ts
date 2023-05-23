@@ -19,7 +19,7 @@ export class WaterFont implements GameObject {
   constructor(data: { x: number; y: number; w: number; h: number; sx: number; sy: number; frames: { x: number; y: number }[] }) {
     this.setData(data);
     this.imagem.src = waterfont;
-    Game.Map.grid[Math.floor(this.x / Map.SIZE)][Math.floor(this.y / Map.SIZE)] = 1;
+    Game.grid[Math.floor(this.x / Map.SIZE)][Math.floor(this.y / Map.SIZE)] = 1;
   }
 
   draw(contex: CanvasRenderingContext2D): void {
@@ -45,6 +45,6 @@ export class WaterFont implements GameObject {
   }
 
   destroy(): void {
-    Game.Map.grid[Math.floor(this.x / Map.SIZE)][Math.floor(this.y / Map.SIZE)] = 0;
+    Game.grid[Math.floor(this.x / Map.SIZE)][Math.floor(this.y / Map.SIZE)] = 0;
   }
 }

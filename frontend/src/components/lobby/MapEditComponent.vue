@@ -21,24 +21,20 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { Game } from "@/game";
+import { Game, Map } from "@/game";
 import img from "@/assets/images/lobby/layer_1.png";
 import { MapEdit } from "@/game/base/editor/MapEdit.js";
 import { MapObject } from "@/game/base/editor/MapObject.js";
 
 const game = ref<HTMLDivElement>();
 const file = ref<HTMLInputElement>();
+let lobby: MapEdit | null = null;
 
 onMounted(() => {
-  const imagem = new Image();
-  imagem.src = img;
-  imagem.onload = () => {
-    const lobby = new MapEdit(imagem);
-    console.log("Map: Imagem carregada");
-    if (game.value === undefined) return;
-    game.value.appendChild(lobby.canvas);
-    lobby.update();
-  };
+  // const imagem = new Image();
+  // imagem.src = img;
+  // imagem.onload = () => {
+  // };
 });
 
 function Colission() {
@@ -60,12 +56,25 @@ function loadMap(event: any) {
     const reader: any = new FileReader();
     reader.onload = () => {
       const j = JSON.parse(reader.result);
-      console.log("json: ", j);
-      Game.Map.setData(j);
+      loadLobby(j);
     };
     reader.readAsText(file);
-  } else console.log("file: ", file.type);
-  //
+  } else {
+    console.log("file: ", file);
+  }
+}
+
+function loadLobby(data: any) {
+  console.log("json: ", data);
+  if (lobby) lobby.destructor();
+  const map = new MapObject();
+  map.setData(data).then(() => {
+    console.log("Map: Dados carregados");
+    lobby = new MapEdit(map);
+    if (game.value === undefined) return;
+    game.value.appendChild(lobby.canvas);
+    lobby.update();
+  });
 }
 </script>
 

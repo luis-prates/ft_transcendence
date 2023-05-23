@@ -1,4 +1,4 @@
-import { Game, Map, WaterFont } from "@/game";
+import { Game, Map, WaterFont, type GameObject } from "@/game";
 import type { retanglulo } from "@/game/lobby/objects/Map";
 
 import { ref } from "vue";
@@ -8,9 +8,10 @@ export class MapObject extends Map {
   public static typefont = ref(0);
   public static selection: retanglulo | null = null;
   public static debugView = ref(true);
+  public static datas: { gamaObject: GameObject; data: any }[] = [];
 
   public static startPossition: { x: number; y: number } = { x: 153, y: 738 };
-  constructor(data: any) {
+  constructor(data?: any) {
     super(data);
     this.createLayers();
   }
@@ -24,33 +25,25 @@ export class MapObject extends Map {
     // if (layer_3) this.layers.push(layer_3);
   }
 
-  setData(data: any): void {
-    this.w = data?.image?.width || data.w;
-    this.h = data?.image?.height || data.h;
-    if (data?.image?.width) this.imagem = data.image;
-    if (data.start_position) MapObject.startPossition = data.start_position;
-    if (data.grid) this.grid = data.grid;
-    else {
-      this.grid = [];
-      for (let x = 0; x < this.w; x += Map.SIZE) {
-        this.grid[Math.floor(x / Map.SIZE)] = [];
-        for (let y = 0; y < this.h; y += Map.SIZE) {
-          this.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] = 0;
-        }
-      }
-    }
-    if (data?.start_position) this.setStartPossition(data.start_position.x, data.start_position.y);
-    this.isLoaded = true;
+  setData(data: any): any {
+    this.isLoaded = false;
+    MapObject.datas = [];
+    return super.setData(data).then(() => {
+      console.log(data.start_position);
+      if (data.start_position) MapObject.startPossition = data.start_position;
+      // this.setStartPossition(MapObject.startPossition.x, MapObject.startPossition.y);
+    });
   }
 
   draw(context: CanvasRenderingContext2D): void {
+    if (!this.isLoaded) return;
     super.draw(context);
 
     if (MapObject.debugView.value) {
       for (let x = 0; x < this.w; x += Map.SIZE) {
         for (let y = 0; y < this.h; y += Map.SIZE) {
           context.fillStyle = "rgba(255, 0, 0, 0.5)";
-          if (this.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] === 1) {
+          if (this.layer_2.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] === 1) {
             context.fillStyle = "rgba(255, 0, 0, 0.5)";
             context.fillRect(x, y, Map.SIZE, Map.SIZE);
           }
@@ -77,6 +70,7 @@ export class MapObject extends Map {
   }
 
   mouseClick(x: number, y: number, button: number): void {
+    console.log("event.offsetX, event.offsetY, event.button");
     if (MapObject.action.value === 0 || MapObject.action.value === 5) {
       if (MapObject.selection === null) MapObject.selection = { x: x, y: y, w: Map.SIZE, h: Map.SIZE };
       MapObject.selection.w = MapObject.selection?.w == 0 ? Map.SIZE : MapObject.selection?.w;
@@ -85,7 +79,7 @@ export class MapObject extends Map {
       if (MapObject.action.value === 0) {
         for (let x = MapObject.selection.x; x < MapObject.selection.x + MapObject.selection.w; x += Map.SIZE) {
           for (let y = MapObject.selection.y; y < MapObject.selection.y + MapObject.selection.h; y += Map.SIZE) {
-            this.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] = button === 0 ? 1 : 0;
+            this.layer_2.grid[Math.floor(x / Map.SIZE)][Math.floor(y / Map.SIZE)] = button === 0 ? 1 : 0;
           }
         }
       } else {
@@ -149,7 +143,7 @@ export class MapObject extends Map {
     ];
 
     const type: number = MapObject.typefont.value;
-    if (button == 0 && type < font_1.length) Game.instance.addGameObject(new WaterFont(font_1[type]));
+    if (button == 0 && type < font_1.length) Game.instance.addGameObjectData({ className: "WaterFont", ...font_1[type] });
     else if (button == 2) {
       const gameObject = Game.instance.gameObjets.find((obj) => obj.x == x && obj.y == y);
       if (gameObject && gameObject.type != "player") Game.instance.removeGameObject(gameObject);
@@ -165,12 +159,27 @@ export class MapObject extends Map {
 
   async saveMap() {
     const data = {
-      grid: this.grid,
-      w: this.w,
-      h: this.h,
+      grid: this.layer_2.grid,
+      layer_1: {
+        image: this.layer_1.image.src,
+        opacity: this.layer_1.opacity,
+      },
+      layer_2: {
+        image: this.layer_2.image.src,
+        opacity: this.layer_2.opacity,
+      },
+      layer_3: {
+        image: this.layer_3.image.src,
+        opacity: this.layer_3.opacity,
+        objects: this.layer_3.objects,
+      },
+      width: this.w,
+      height: this.h,
       size: Map.SIZE,
-      img: "8c9c64e0b3fcf049435ca7adc5350507.png",
       start_position: MapObject.startPossition,
+      datas: MapObject.datas.map((data) => {
+        return { className: data.gamaObject.constructor.name, ...data.data };
+      }),
     };
     const jsonStr = JSON.stringify(data);
     const blob = new Blob([jsonStr], { type: "application/json" });
@@ -180,6 +189,6 @@ export class MapObject extends Map {
     link.href = url;
     link.download = "desenho.json";
     link.click();
-    console.log("Salvando mapa...\n", this.gameObjects);
+    console.log("Salvando mapa...\n");
   }
 }

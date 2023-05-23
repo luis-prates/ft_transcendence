@@ -76,8 +76,8 @@ export class PathFinding {
     y /= Map.SIZE;
     dx /= Map.SIZE;
     dy /= Map.SIZE;
-    if (this.isEmpty(Game.Map.grid, dx, dy)) {
-      this.createNodes(Game.Map.grid, { x, y, g: 0, preview: null, direction }, dx, dy);
+    if (this.isEmpty(Game.grid, dx, dy)) {
+      this.createNodes(Game.grid, { x, y, g: 0, preview: null, direction }, dx, dy);
       this.open = [];
       this.close = [];
     }

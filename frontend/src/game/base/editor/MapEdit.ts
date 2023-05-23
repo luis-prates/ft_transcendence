@@ -1,12 +1,12 @@
-import { Game, Map, Tree, WaterFont } from "@/game";
+import { Game, Map, Tree, WaterFont, type GameObject } from "@/game";
 
 import { Player } from "../..";
 import { ref } from "vue";
 import { MapObject } from "./MapObject";
 
 export class MapEdit extends Game {
-  constructor(image: any) {
-    super(new MapObject({ image: image }), new Player(ref(undefined), MapObject.startPossition));
+  constructor(map: Map) {
+    super(map, new Player(ref(undefined), MapObject.startPossition));
     window.addEventListener("keydown", (e) => {
       if (e.key === "p") MapObject.debugView.value = !MapObject.debugView.value;
       e.preventDefault();
@@ -76,11 +76,24 @@ export class MapEdit extends Game {
       // MapObject.selection = { x, y, w: w - x, h: h - y };
       // console.log(MapObject.selection);
     }
+
     Game.Map.mouseClick(event.offsetX, event.offsetY, event.button);
     MapObject.selection = null;
   }
 
   protected mouseClick(event: MouseEvent) {
     if (MapObject.action.value == 2) super.mouseClick(event);
+  }
+
+  addGameObjectData(data: any): GameObject {
+    const gamaObject: GameObject = super.addGameObjectData(data);
+    MapObject.datas.push({ gamaObject, data });
+    return gamaObject;
+  }
+
+  removeGameObject(gameObject: GameObject): void {
+    super.removeGameObject(gameObject);
+    const index = MapObject.datas.findIndex((data) => data.gamaObject === gameObject);
+    if (index >= 0) MapObject.datas.splice(index, 1);
   }
 }

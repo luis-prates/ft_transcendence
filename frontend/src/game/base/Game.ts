@@ -19,6 +19,7 @@ export class Game {
   public isRunning;
 
   constructor(map: Map, player: Player) {
+    console.log("Map: ", map.w, " / ", map.h);
     this.camera = new Camera(player, map);
     this.canvas.width = map.w;
     this.canvas.height = map.h;
@@ -46,6 +47,8 @@ export class Game {
       }
       event.preventDefault();
     });
+    map.datas.forEach((data: any) => Game.instance.addGameObjectData(data));
+    map.datas = [];
     this.isRunning = true;
   }
 
@@ -132,6 +135,10 @@ export class Game {
 
   public static getPlayer(): Player {
     return Game.instance.player;
+  }
+
+  public static get grid(): number[][] {
+    return Game.Map.layer_2.grid;
   }
 
   public static async loadImage(url: any) {

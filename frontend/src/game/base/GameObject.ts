@@ -17,7 +17,7 @@ export interface GameObject {
   onDeselected?(): void;
   getPointEvent?(): { x: number; y: number };
   destroy?(): void;
-  setData(data: any): void;
+  setData(data: any): any;
   interaction?(gameObject: GameObject): void;
   isCollision?(gameObject: GameObject): boolean;
 }

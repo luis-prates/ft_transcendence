@@ -7,8 +7,6 @@ import { Npc } from "./objects/Npc";
 import { Table, type Player } from "..";
 
 export class Lobby extends Game {
-  private characterOnline: Character[] = [];
-
   constructor(map: Map, player: Player) {
     super(map, player);
     this.addGameObject(new Npc());

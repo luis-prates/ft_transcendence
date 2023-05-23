@@ -24,7 +24,7 @@ export class Tree implements GameObject {
       this.positionDraw = { x: this.x - this.w / 2 + Map.SIZE / 2, y: this.y - this.h + Map.SIZE };
       this.collisionBox = { x: this.positionDraw.x, y: this.positionDraw.y, w: this.w, h: this.h - Map.SIZE };
     };
-    Game.Map.grid[Math.floor(this.x / Map.SIZE)][Math.floor(this.y / Map.SIZE)] = 1;
+    Game.grid[Math.floor(this.x / Map.SIZE)][Math.floor(this.y / Map.SIZE)] = 1;
   }
 
   draw(contex: CanvasRenderingContext2D): void {
@@ -45,7 +45,7 @@ export class Tree implements GameObject {
   }
 
   destroy(): void {
-    Game.Map.grid[Math.floor(this.x / Map.SIZE)][Math.floor(this.y / Map.SIZE)] = 0;
+    Game.grid[Math.floor(this.x / Map.SIZE)][Math.floor(this.y / Map.SIZE)] = 0;
   }
 
   isCollision(gameObject: GameObject): boolean {
