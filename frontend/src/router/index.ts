@@ -1,6 +1,7 @@
 import { createWebHistory, createRouter, type RouteRecordNormalized, type RouteRecordRaw } from "vue-router";
 import LoginPage from "@/pages/LoginPage.vue";
 import HomePage from "@/pages/HomePage.vue";
+import PingPongPage from "@/pages/PingPongPage.vue";
 // import About from "@/views/About.vue";
 
 const routes_login = [
@@ -17,6 +18,18 @@ const routes = [
     path: "/",
     name: "home",
     component: HomePage,
+  },
+  {
+    path: "/game",
+    name: "Ping Pong Game",
+    component: PingPongPage,
+    props: (route: any) => ({ 
+      objectId: route.query.objectId,
+      avatar: route.query.avatar, 
+      nickname: route.query.nickname,
+      color: route.query.color,
+      skinPlayer: route.query.skinPlayer,
+    }),
   },
   //   {
   //     path: "/about",

@@ -21,6 +21,7 @@
     "setup:build:unix": "npm run db:dev:restart:unix && npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start --watch",
+
     "on": "lt --port 3000",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
