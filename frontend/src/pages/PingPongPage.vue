@@ -40,6 +40,7 @@ onMounted(function () {
   socket.on("start_game", (e: any) => {
     console.log(e);
     console.log(game);
+    game.audio("music_play");
 
     game.player1.nickname = e.nickname1;
     game.player1.color = e.color1;
@@ -68,6 +69,9 @@ onMounted(function () {
   socket.on("game_counting", (seconds: any) => {
     if (game.status == Status.Starting) {
       game.counting = seconds;
+      
+      if (seconds == 4)
+        game.audio("counting");
     }
   });
 
@@ -86,9 +90,15 @@ onMounted(function () {
       else game.player2.point(e.score);
     }
   });
+  
+  socket.on("game_sound", (e: any) => {
+      game.audio(e.sound);
+  });
+  
   socket.on("end_game", (e: any) => {
     game.updateStatus(Status.Finish);
     game.endMessage = e.result;
+    game.audio("music_stop");
   });
 
   function animate() {

@@ -189,7 +189,7 @@ export class Game {
 	//Make the Countdown and Emit for ALL
 	countdown(seconds: number) {
 		console.log(seconds);
-
+		
 		if (seconds > 0) {
 			this.emitAll('game_counting', seconds);
 

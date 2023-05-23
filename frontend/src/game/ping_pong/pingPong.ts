@@ -9,6 +9,13 @@ import tableImage from "@/assets/images/pingpong/table_1.png";
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import marvin from "@/assets/images/pingpong/marvin.png";
 
+//Audio
+import sound_player from '@/assets/audio/paddle_hit.wav';
+import sound_wall from '@/assets/audio/wall_hit.wav';
+import sound_score from '@/assets/audio/score.wav';
+import sound_counting from '@/assets/audio/counting.mp3';
+import music from '@/assets/audio/music_game.mp3';
+
 export enum Status {
   Waiting,
   Starting,
@@ -30,6 +37,7 @@ export class Game {
   counting: number = 0;
   context: CanvasRenderingContext2D;
   endMessage: string = "";
+  backgroundMusic = new Audio(music);
 
   constructor(width: number, height: number, offSet: number, context: CanvasRenderingContext2D, data: gameRequest) {
     this.width = width;
@@ -53,6 +61,16 @@ export class Game {
   //Update Status and Emit for ALL
   updateStatus(status: number) {
     if (this.status != status) this.status = status;
+  }
+  //Audio Controller
+  audio(sound: string)
+  {
+    if (sound == "player") new Audio(sound_player).play();
+    else if (sound == "wall") new Audio(sound_wall).play();
+    else if (sound == "score") new Audio(sound_score).play();
+    else if (sound == "counting") new Audio(sound_counting).play();
+    else if (sound == "music_play") this.backgroundMusic.play();
+    else if (sound == "music_stop") this.backgroundMusic.pause();
   }
   //Draw Controller
   draw() {

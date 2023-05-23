@@ -35,6 +35,7 @@ export class Ball {
   ballColide()
   {
     const random = this.generateRandomAngle(-1, 1);
+    
     // Verifica se a bola colidiu com a raquete do jogador 1
     if (this.dir == 1) {
       if (
@@ -58,7 +59,7 @@ export class Ball {
         this.dir = 2;
         this.speed += this.speedIncrement;
 
-        this.emitBall();
+        this.emitSound("player");
       }
     }
     // Verifica se a bola colidiu com a raquete do jogador 2
@@ -84,7 +85,7 @@ export class Ball {
         this.dir = 1;
         this.speed += this.speedIncrement;
 
-        this.emitBall();
+        this.emitSound("player");
       }
     }
 
@@ -94,6 +95,7 @@ export class Ball {
       this.angle = -this.angle;
       if (this.dir == 1) this.emitBall();
       else if (this.dir === 2) this.emitBall();
+      this.emitSound("wall");
     }
   }
 
@@ -131,6 +133,8 @@ export class Ball {
     this.x = this.game.width / 2 - this.width / 2;
     this.y = this.game.height / 2 - this.height / 2;
     this.speed = this.speedStart;
+
+    this.emitSound("score");
   }
 
   update() {
@@ -154,6 +158,12 @@ export class Ball {
       dir: this.dir,
       // speed: this.speed,
       // angle: this.angle,
+    });
+  }
+  emitSound(sound: string) {
+    this.game.emitAll("game_sound", {
+      objectId: this.game.data.objectId,
+      sound: sound,
     });
   }
 }
