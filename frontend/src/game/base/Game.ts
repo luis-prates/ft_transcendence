@@ -51,7 +51,7 @@ export class Game {
           y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,
         };
         socket.emit("new_gameobject", data);
-        socket.emit("new_game", { objectId: data.objectId, maxScore: 3, table: "green", tableSkin: "", bot: true });
+        socket.emit("new_game", { objectId: data.objectId, maxScore: 3, table: data.color, tableSkin: "", bot: true });
       }
       event.preventDefault();
     });

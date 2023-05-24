@@ -62,6 +62,7 @@ export class Games {
 			if (index !== -1) {
 				game.watchers.splice(index, 1);
 				console.log('Socket removido da lista de watchers');
+				this.emitAll('game_view', this.watchers.length );
 			}
 		}
 

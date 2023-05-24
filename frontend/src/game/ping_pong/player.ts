@@ -1,4 +1,4 @@
-import { Game } from "./pingPong";
+import { Game } from "./PingPong";
 import { type updatePlayer } from "./SocketInterface";
 import socket from "@/socket/Socket";
 

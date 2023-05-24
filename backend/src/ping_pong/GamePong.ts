@@ -113,6 +113,7 @@ export class Game {
 				color2: this.player2.color,
 				skin2: this.player2.skin,
 			});
+			this.emitAll('game_view', this.watchers.length );
 		}
 		//console.log("p1: ", this.player1, " p2: ", this.player2, " ws: ", this.whatchers);
 	}

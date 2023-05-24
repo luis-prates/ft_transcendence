@@ -16,7 +16,7 @@ export class Table {
     this.height = height;
     this.background = background;
     this.color = color;
-    this.skin.src = skin ? skin : skinOnePiece;
+    this.skin.src = skin ? skin : "";
   }
 
   draw(context: CanvasRenderingContext2D) {
@@ -26,7 +26,6 @@ export class Table {
     {
       try {
         context.drawImage(this.skin, 78, 174, this.width - 158, this.height - 248);
-
       }
       catch {
         "";

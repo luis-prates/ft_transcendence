@@ -1,11 +1,11 @@
-import { Player } from "./player";
-import { InputHandler } from "./input";
-import { Ball } from "./ball";
+import { Player } from "./Player";
+import { InputHandler } from "./Input";
+import { Ball } from "./Ball";
 import socket from "@/socket/Socket";
 import { type gameRequest } from "./SocketInterface";
 
 //Images
-import tableImage from "@/assets/images/pingpong/table_1.png";
+import viewGame from "@/assets/images/pingpong/view.png";
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 
 //Audio
@@ -37,6 +37,7 @@ export class Game {
   context: CanvasRenderingContext2D;
   endMessage: string = "";
   backgroundMusic = new Audio(music);
+  watchersNumber: number = 0;
 
   constructor(width: number, height: number, offSet: number, context: CanvasRenderingContext2D, data: gameRequest) {
     this.width = width;
@@ -61,6 +62,11 @@ export class Game {
   updateStatus(status: number) {
     if (this.status != status) this.status = status;
   }
+  //Update Watchers
+  updateWatchers(watchers: number) {
+    if (this.watchersNumber != watchers)
+      this.watchersNumber = watchers;
+  }
   //Audio Controller
   audio(sound: string)
   {
@@ -77,6 +83,7 @@ export class Game {
     this.player2.draw(this.context);
     this.ball.draw(this.context);
     this.drawScore();
+    this.drawViews();
     if (this.status == Status.Waiting) this.waitingGame();
     else if (this.status == Status.Starting) this.countingGame(this.counting - 1);
     else if (this.status == Status.Finish) this.drawEndGame();
@@ -92,6 +99,30 @@ export class Game {
 
     this.context.fillStyle = "white";
     this.context.fillText(this.player1.score + " : " + this.player2.score, this.width / 2 - 120, 90, this.width - 750);
+  }
+  //Views
+  drawViews() {
+    this.context.font = "20px 'Press Start 2P', cursive";
+    this.context.fillStyle = "black";
+
+    this.context.strokeStyle = "black";
+    this.context.fillStyle = "white";
+    this.context.lineWidth = 1;
+
+    const viewImage = new Image();
+    viewImage.src = viewGame;
+    try 
+    {
+      this.context.drawImage(viewImage, 65, this.height + this.offSet + 9, 50, 50);
+    }
+    catch {
+      this.context.fillText("Viewrs:", 10, this.height + this.offSet + 45, 100);
+      this.context.strokeText("Viewrs:", 10, this.height + this.offSet + 45, 100);
+    }
+
+    this.context.fillText(this.watchersNumber.toString(), 120, this.height + this.offSet + 45, 50);
+    this.context.strokeText(this.watchersNumber.toString(), 120, this.height + this.offSet + 45, 50);
+
   }
   //Draw Waiting Game
   waitingGame() {

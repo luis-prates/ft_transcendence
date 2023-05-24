@@ -72,11 +72,13 @@ onMounted(function () {
       game.playerNumber = 2;
     }
   });
+  
   socket.on("game_update_status", (status: any) => {
     if (game.status != Status.Finish) {
       game.updateStatus(status);
     }
   });
+
   socket.on("game_counting", (seconds: any) => {
     if (game.status == Status.Starting) {
       game.counting = seconds;
@@ -105,6 +107,10 @@ onMounted(function () {
     game.audio(e.sound);
   });
 
+  socket.on("game_view", (e: number) => {
+    game.updateWatchers(e);
+  });
+
   socket.on("end_game", (e: any) => {
     status.value = Status.Finish;
     game.updateStatus(Status.Finish);
@@ -121,6 +127,7 @@ onMounted(function () {
     socket.off("game_update_ball");
     socket.off("game_update_point");
     socket.off("game_sound");
+    socket.off("game_view");
     socket.off("end_game");
   });
 
