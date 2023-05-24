@@ -1,4 +1,4 @@
-import { Game } from "./PingPong";
+import { Game } from "./pingPong";
 import { type updatePlayer } from "./SocketInterface";
 import socket from "@/socket/Socket";
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
@@ -33,16 +33,6 @@ export class Player {
     this.avatar.src = avatar;
     this.color = player_n == 1 ? "red" : "blue";
     this.skin.src = "";
-  }
-
-  emitMove() {
-    socket.emit("game_move", {
-      objectId: this.game.data.objectId,
-      playerNumber: this.game.playerNumber,
-      // x: this.x,
-      // y: this.y - this.game.offSet,
-      move: "up",
-    });
   }
 
   updateSkin(skin: string)
@@ -140,7 +130,13 @@ export class Player {
 
   drawSkin(context: CanvasRenderingContext2D) {
     if (this.x > this.game.width / 2) {
-      context.drawImage(this.skin, this.x, this.y, this.width, this.height);
+      try {
+        context.drawImage(this.skin, this.x, this.y, this.width, this.height);
+
+      }
+      catch {
+        return;
+      }
     } else {
       context.save();
   
@@ -151,10 +147,16 @@ export class Player {
       context.translate(centerX, centerY);
   
       context.rotate(rotationAngle);
+      
+      try {
+        context.drawImage(this.skin, -this.width / 2, -this.height / 2, this.width, this.height);
+
+      }
+      catch {
+        "";
+      }
   
-      context.drawImage(this.skin, -this.width / 2, -this.height / 2, this.width, this.height);
-  
-      context.restore(); 
+      context.restore();
     }
   }
   

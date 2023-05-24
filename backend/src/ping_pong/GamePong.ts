@@ -1,7 +1,6 @@
 import { Player } from '../lobby';
 import { Ball } from './Ball';
 import { Player_Pong } from './PlayerPong';
-import { Socket } from 'socket.io';
 import { type gameRequest, type playerInfo } from './SocketInterface';
 
 export enum Status {
@@ -183,7 +182,7 @@ export class Game {
 	//Make the Countdown and Emit for ALL
 	countdown(seconds: number) {
 		console.log(seconds);
-		
+
 		if (seconds > 0) {
 			this.emitAll('game_counting', seconds);
 
