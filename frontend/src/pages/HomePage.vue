@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { userStore } from "@/stores/userStore";
-import { ProfileComponent, LobbyComponent } from "@/components";
+import {  ChatComponent} from "@/components";
 
 import { onBeforeRouteLeave } from "vue-router";
 
