@@ -1,9 +1,8 @@
 
+//Skins
 import skinGame from "@/assets/images/skin/table/skin_Game-Over.png";
 import skinSwag from "@/assets/images/skin/table/skin_swag.png";
 import skinOnePiece from "@/assets/images/skin/table/skin_onepiece.jpg";
-
-
 
 export class Table {
   width: number = 1000;
@@ -17,14 +16,21 @@ export class Table {
     this.height = height;
     this.background = background;
     this.color = color;
-    this.skin.src = skin ? skin : skinOnePiece;
+    this.skin.src = skin ? skin : "";
   }
 
   draw(context: CanvasRenderingContext2D) {
     this.drawBackGround(context);
     this.drawTableColor(context);
     if (this.skin.src)
-      context.drawImage(this.skin, 78, 174, this.width - 158, this.height - 248);
+    {
+      try {
+        context.drawImage(this.skin, 78, 174, this.width - 158, this.height - 248);
+      }
+      catch {
+        "";
+      }
+    }
     this.drawLines(context);
   }
 

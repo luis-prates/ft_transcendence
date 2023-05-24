@@ -39,7 +39,7 @@ export class Games {
 
 	game_move(e: any) {
 		const game = this.games.find((g) => g.data.objectId == e.objectId);
-		if (game && game.status == Status.InGame) {
+		if (game && (game.status == Status.InGame)) {
 			if (e.playerNumber == 1) {
 				if (e.move == 'up') game.player1.moveUp();
 				else if (e.move == 'down') game.player1.moveDown();
@@ -62,6 +62,7 @@ export class Games {
 			if (index !== -1) {
 				game.watchers.splice(index, 1);
 				console.log('Socket removido da lista de watchers');
+				this.emitAll('game_view', this.watchers.length );
 			}
 		}
 

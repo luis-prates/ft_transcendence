@@ -1,4 +1,4 @@
-import type { Game } from "./pingPong";
+import type { Game } from "./PingPong";
 
 export class Ball {
   game: Game;

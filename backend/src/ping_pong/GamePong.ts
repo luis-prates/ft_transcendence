@@ -1,7 +1,6 @@
 import { Player } from '../lobby';
 import { Ball } from './Ball';
 import { Player_Pong } from './PlayerPong';
-import { Socket } from 'socket.io';
 import { type gameRequest, type playerInfo } from './SocketInterface';
 
 export enum Status {
@@ -13,10 +12,10 @@ export enum Status {
 
 const infoBot: playerInfo = {
 	objectId: '',
-	nickname: 'marvin',
+	nickname: 'Marvin',
 	avatar: 'marvin',
-	color: 'grey',
-	skinPlayer: '',
+	color: '#12bab9',
+	skinPlayer: '42Lisboa',
 };
 
 export class Game {
@@ -34,7 +33,6 @@ export class Game {
 	onRemove: Function = () => {};
 
 	constructor(gameResquest: gameRequest, onRemove: Function) {
-		// this.games = games;
 		this.data = gameResquest;
 		this.maxPoint = gameResquest.maxScore;
 		this.ball = new Ball(this);
@@ -44,8 +42,8 @@ export class Game {
 
 	//Game Loop 1000 milesecond (1second) for 60 fps
 	gameLoop() {
-		if (!this.isEndGame() && this.status == Status.InGame) {
-			this.ball.update();
+		if (!this.isEndGame()) {
+			if (this.status == Status.InGame) this.ball.update();
 			this.player1.update();
 			this.player2.update();
 		}
@@ -115,6 +113,7 @@ export class Game {
 				color2: this.player2.color,
 				skin2: this.player2.skin,
 			});
+			this.emitAll('game_view', this.watchers.length );
 		}
 		//console.log("p1: ", this.player1, " p2: ", this.player2, " ws: ", this.whatchers);
 	}
@@ -208,6 +207,8 @@ export class Game {
 	}
 	//Emit for Watchers
 	emitWatchers(event: string, data: any): void {
+		if (this.watchers.length <= 0)
+			return ;
 		this.watchers.forEach((clientSocket) => {
 			if (clientSocket.id !== this.player1.socket.id || clientSocket.id !== this.player2.socket.id) clientSocket.emit(event, data);
 		});

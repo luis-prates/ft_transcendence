@@ -1,5 +1,5 @@
 import { Player } from '../lobby';
-import { Game } from './GamePong';
+import { Game, Status } from './GamePong';
 import { playerInfo } from './SocketInterface';
 
 export class Player_Pong {
@@ -48,14 +48,16 @@ export class Player_Pong {
 	}
 
 	update() {
-		if (this.player_n == 3) {
-			//up or down
-			const ballUporDown = this.game.ball.y - (this.game.ball.y += this.game.ball.speed * Math.sin(this.game.ball.angle));
-			//posiçao em relaçao a bola
+		if (this.player_n == 3 || this.game.status != Status.InGame) {
+			const ballUporDown = this.game.ball.y - (this.game.ball.y + this.game.ball.speed * Math.sin(this.game.ball.angle));
 			const move = this.game.ball.y + this.game.ball.height / 2 - (this.y + this.height / 2);
-			// console.log("REsult:", move);
 			if (ballUporDown > 0 && move < this.speed) this.moveUp();
 			else if (ballUporDown < 0 && move > this.speed) this.moveDown();
+			if (this.game.status != Status.InGame)
+			{
+				if (ballUporDown < 0 && move < this.speed) this.moveUp();
+				else if (ballUporDown > 0 && move > this.speed) this.moveDown();
+			}
 		}
 		this.emitPlayer();
 	}
