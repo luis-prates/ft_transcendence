@@ -22,6 +22,7 @@ export interface PlayerData {
 export class Player {
 	private _socket: SocketSingleton;
 	avatar: string = '';
+	name: string = 'name_' + Date.now();
 	map: GameMap | null = null;
 	data: PlayerData = {
 		className: 'Character',

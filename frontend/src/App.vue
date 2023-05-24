@@ -1,6 +1,6 @@
 <template>
-  <!-- <router-view /> -->
-  <MapEditComponent />
+  <router-view />
+  <!-- <MapEditComponent /> -->
   <!-- <PingPongPage /> -->
 
   <!-- <Characterpage /> -->

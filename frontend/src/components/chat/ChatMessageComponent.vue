@@ -1,14 +1,14 @@
 <template>
   <div class="chat">
     <div class="header">
-        <img class="avatar" :src="selected?.avatar || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541'">
+      <img class="avatar" :src="selected?.avatar || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541'" />
       <div class="info">
         <div class="name">{{ selected?.name }}</div>
-        <div class="status">{{ selected?.status }}</div>
+        <!-- <div class="status">{{ selected?.status }}</div> -->
       </div>
       <div class="options">
-        <button style="background-color: transparent; color: #525252; font-size: x-large;">⋮</button>
-        <button @click="store.showChannel(undefined)" style="background-color: transparent; color: #525252; font-size: x-large;">⨯</button>
+        <button style="background-color: transparent; color: #525252; font-size: x-large">⋮</button>
+        <button @click="store.showChannel(undefined)" style="background-color: transparent; color: #525252; font-size: x-large">⨯</button>
       </div>
     </div>
     <div class="messages" ref="scroll">
@@ -21,19 +21,21 @@
       </div>
     </div>
     <div class="input">
-      <input  @change ="sendMessage" v-model="messageText" placeholder="Say something..." />
+      <input @change="sendMessage" v-model="messageText" placeholder="Say something..." />
       <button @click="sendMessage" style="background-color: transparent; color: #525252; font-size: x-large">➤</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { chatStore } from "@/stores/chatStore";
+import { onMounted, onUnmounted, ref } from "vue";
+import { chatStore, type ChatMessage } from "@/stores/chatStore";
+import { userStore } from "@/stores/userStore";
 import { storeToRefs } from "pinia";
-import { $ } from "vue/macros";
+import socket from "@/socket/Socket";
 
 const store = chatStore();
+const user = userStore();
 const messageText = ref("");
 const { selected } = storeToRefs(store);
 const scroll = ref<HTMLDivElement>();
@@ -41,15 +43,29 @@ const scroll = ref<HTMLDivElement>();
 function sendMessage() {
   console.log(messageText.value);
   if (messageText.value) {
-    store.sendMessage({nickname: "dfdf", id: 10, message: messageText.value});
+    const mensagem: ChatMessage = { objectId: user.user.id, id: user.user.id + "_" + Date.now(), message: messageText.value.trim(), nickname: "user_" + user.user.id };
+    store.addMessage(selected.value?.objectId, mensagem);
+    socket.emit("send_message", { message: mensagem, objectId: selected.value?.objectId });
     setTimeout(function () {
-        if (scroll.value)
-        scroll.value.scrollTop = scroll.value.scrollHeight - scroll.value.clientHeight;
-        console.log("Mexeu o scroll");
+      if (scroll.value) scroll.value.scrollTop = scroll.value.scrollHeight - scroll.value.clientHeight;
     }, 10);
   }
   messageText.value = "";
 }
+
+onMounted(() => {
+  socket.on("send_message", (data: any) => {
+    console.log("send_message", data);
+    store.addMessage(data.objectId, data.message);
+    setTimeout(function () {
+      if (scroll.value) scroll.value.scrollTop = scroll.value.scrollHeight - scroll.value.clientHeight;
+    }, 10);
+  });
+});
+
+onUnmounted(() => {
+  socket.off("send_message");
+});
 </script>
 
 <style scoped lang="scss">
@@ -78,8 +94,7 @@ function sendMessage() {
   background-color: #ececec;
   border-radius: 10px 0px 0px 0px;
 }
-.options
-{
+.options {
   position: absolute;
   right: 1%;
 }
@@ -98,11 +113,11 @@ function sendMessage() {
 }
 
 .name {
-  color:#444653;
+  color: #444653;
   font-size: 18px;
   font-weight: bold;
   text-overflow: ellipsis;
-  overflow: hidden; 
+  overflow: hidden;
   white-space: nowrap;
   width: 70%;
 }
@@ -129,8 +144,6 @@ function sendMessage() {
     height: 100%;
   }
 }
-
-
 
 .name {
   font-size: 14px;
@@ -173,5 +186,4 @@ button {
   padding: 10px;
   cursor: pointer;
 }
-
 </style>

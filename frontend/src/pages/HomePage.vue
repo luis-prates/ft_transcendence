@@ -2,14 +2,15 @@
   <div class="box" href>
     <!-- <ProfileComponent class="profile" />     -->
     <LobbyComponent />
-
+    <ChatComponent />
     <!-- <ProfileComponent class="profile" /> -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { userStore } from "@/stores/userStore";
-import {  ChatComponent} from "@/components";
+import { ChatComponent } from "@/components";
+import LobbyComponent from "@/components/lobby/LobbyComponent.vue";
 
 import { onBeforeRouteLeave } from "vue-router";
 

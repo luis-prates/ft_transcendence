@@ -4,6 +4,7 @@ import { GameMap } from './GameMap';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Games } from 'src/ping_pong/Games';
+import { ChatController } from 'src/chat/ChatController';
 
 export interface TableData {
 	className: string;
@@ -17,6 +18,7 @@ export class Lobby {
 	public game: Games = new Games();
 	private gameMaps: Map<string, GameMap> = new Map<string, GameMap>();
 	public static players: Player[] = [];
+	public chatController: ChatController = new ChatController();
 
 	constructor(io: Server) {
 		console.log('lobby created');
@@ -34,6 +36,7 @@ export class Lobby {
 		socket.on('join_map', (data) => {
 			const player = Lobby.players.find((e) => e.objectId == data.objectId) || new Player(socket, data.objectId);
 			this.game.connection(player);
+			this.chatController.connection(player);
 			this.gameMaps.get(data.map.name)?.join(player, data.map?.position);
 		});
 	}
