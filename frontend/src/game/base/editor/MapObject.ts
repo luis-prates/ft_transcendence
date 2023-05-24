@@ -1,12 +1,11 @@
-import { Game, Map, WaterFont, type GameObject } from "@/game";
-import type { retanglulo } from "@/game/lobby/objects/Map";
+import { Game, Map, type GameObject, type Rectangle } from "@/game";
 
 import { ref } from "vue";
 
 export class MapObject extends Map {
   public static action = ref(0);
   public static typefont = ref(0);
-  public static selection: retanglulo | null = null;
+  public static selection: Rectangle | null = null;
   public static debugView = ref(true);
   public static datas: { gamaObject: GameObject; data: any }[] = [];
 

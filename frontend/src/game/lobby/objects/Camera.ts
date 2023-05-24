@@ -1,6 +1,6 @@
 import type { GameObject, GameObjectType } from "@/game/base/GameObject";
 import { ref } from "vue";
-import { Player, Map } from "@/game";
+import { Player, Map, Game } from "@/game";
 
 export class Camera {
   x = 0;
@@ -43,6 +43,7 @@ export class Camera {
       gameObjec.draw(context);
     }
     this.map.drawLayer_3(context);
+    Game.instance.drawMenuLocal(context);
     context.restore();
   }
 

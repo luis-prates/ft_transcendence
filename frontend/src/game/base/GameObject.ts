@@ -1,4 +1,11 @@
-export type GameObjectType = "map" | "character" | "npc" | "item" | "player" | "camera" | "table" | "door" | "tree" | "water_font";
+export type GameObjectType = "map" | "character" | "npc" | "item" | "player" | "camera" | "table" | "door" | "tree" | "water_font" | "menu";
+
+export interface Rectangle {
+  x: any;
+  y: any;
+  w: any;
+  h: any;
+}
 
 export interface GameObject {
   type: GameObjectType;
@@ -12,7 +19,7 @@ export interface GameObject {
 
   draw(contex: CanvasRenderingContext2D): void;
   update?(deltaTime: number): void;
-  mouseClick?(x: number, y: number, button: number): void;
+  mouseClick?(x: number, y: number, button: number): any;
   onSelected?(): void;
   onDeselected?(): void;
   getPointEvent?(): { x: number; y: number };

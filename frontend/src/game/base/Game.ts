@@ -1,4 +1,4 @@
-import { Camera, Player, type GameObject, Map, listClass } from "@/game";
+import { Camera, Player, Menu, type GameObject, Map, listClass } from "@/game";
 import socket from "@/socket/Socket";
 
 export class Game {
@@ -8,6 +8,8 @@ export class Game {
   private bufferCanvas = document.createElement("canvas");
   protected buffer: CanvasRenderingContext2D;
   gameObjets: GameObject[] = [];
+  private menusLocal: Menu[] = [];
+  private menusGlobal: Menu[] = [];
   private gameObjetsUpdate: GameObject[] = [];
   private static lastFrameTime = performance.now();
   public static deltaTime: number = 0;
@@ -58,19 +60,46 @@ export class Game {
     map.datas.forEach((data: any) => Game.instance.addGameObjectData(data));
     map.datas = [];
     this.isRunning = true;
+    window.addEventListener("resize", this.onResize.bind(this));
   }
 
-  protected mouseClick(event: MouseEvent) {
+  public addMenu(menu: Menu) {
+    if (menu.layer == "Local") this.menusLocal.push(menu);
+    else this.menusGlobal.push(menu);
+  }
+
+  protected onResize() {
+    this.menusLocal.forEach((menu) => menu.onResize(window.innerWidth, window.innerHeight));
+    this.menusGlobal.forEach((menu) => menu.onResize(window.innerWidth, window.innerHeight));
+  }
+
+  protected async mouseClick(event: MouseEvent) {
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left + this.camera.x;
     const mouseY = event.clientY - rect.top + this.camera.y;
-    this.mouseEvents.forEach((action: any) => action(mouseX, mouseY, event.button));
+    let isSelect = false;
+    for await (let menu of this.menusLocal) {
+      isSelect = menu.mouseClick(mouseX, mouseY, event.button);
+      if (isSelect) break;
+    }
+    if (!isSelect) {
+      for await (let menu of this.menusGlobal) {
+        isSelect = menu.mouseClick(event.clientX, event.clientY, event.button);
+        if (isSelect) break;
+      }
+    }
+    if (!isSelect) this.mouseEvents.forEach((action: any) => action(mouseX, mouseY, event.button));
   }
 
   draw() {
     this.camera.update();
     this.camera.render(this.buffer, this.gameObjets);
+    this.menusGlobal.forEach((menu) => menu.draw(this.buffer));
     this.context.drawImage(this.bufferCanvas, 0, 0);
+  }
+
+  public drawMenuLocal(context: CanvasRenderingContext2D) {
+    this.menusLocal.forEach((menu) => menu.draw(context));
   }
 
   update() {
@@ -111,6 +140,7 @@ export class Game {
   destructor() {
     this.isRunning = false;
     this.canvas.remove();
+    window.removeEventListener("resize", this.onResize);
   }
 
   public static MouseColision(x: number, y: number): GameObject | undefined {

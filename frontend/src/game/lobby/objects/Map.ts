@@ -1,13 +1,5 @@
 import type { GameObject, GameObjectType } from "../../base/GameObject";
-import { Door } from "./Door";
-import { Game } from "@/game";
-
-export interface retanglulo {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
+import { Game, type Rectangle } from "@/game";
 
 export interface layer_1 {
   image: HTMLImageElement;
@@ -23,9 +15,9 @@ export interface layer_2 {
 export interface layer_3 {
   image: HTMLImageElement;
   opacity: number;
-  objects: retanglulo[];
+  objects: Rectangle[];
   context: CanvasRenderingContext2D;
-  colision(): retanglulo | undefined;
+  colision(): Rectangle | undefined;
 }
 
 export class Map implements GameObject {
@@ -52,7 +44,7 @@ export class Map implements GameObject {
       opacity: 0.5,
       objects: [],
       context: canva.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D,
-      colision(): retanglulo | undefined {
+      colision(): Rectangle | undefined {
         return this.objects.find((obj) => obj.x <= Game.getPlayer().x && obj.x + obj.w >= Game.getPlayer().x && obj.y <= Game.getPlayer().y && obj.y + obj.h >= Game.getPlayer().y);
       },
     };
