@@ -10,9 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import { Game, Status } from "@/game/ping_pong/PingPong.js";
+import { Game, Status } from "@/game/ping_pong/pingPong.js";
 import { onMounted, onUnmounted, ref } from "vue";
-import { Table } from "@/game/ping_pong/Table.js";
+import { Table } from "@/game/ping_pong/table.js";
 import socket from "@/socket/Socket";
 import { type gameRequest, type updatePlayer, type updateBall, type gamePoint } from "@/game/ping_pong/SocketInterface";
 

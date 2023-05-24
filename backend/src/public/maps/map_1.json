@@ -514,12 +514,12 @@
 		]
 	],
 	"layer_1": {
-		"image": "http://localhost:5173/src/assets/images/lobby/layer_0.png",
+		"image": "http://18.203.180.6:5173/src/assets/images/lobby/layer_0.png",
 		"opacity": 1
 	},
 	"layer_2": { "image": "", "opacity": 1 },
 	"layer_3": {
-		"image": "http://localhost:5173/src/assets/images/lobby/layer_3.png",
+		"image": "http://18.203.180.6:5173/src/assets/images/lobby/layer_3.png",
 		"opacity": 0.5,
 		"objects": []
 	},
