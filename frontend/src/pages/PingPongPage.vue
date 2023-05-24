@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { Game, Status } from "@/game/ping_pong/pingPong.js";
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { Table } from "@/game/ping_pong/table.js";
 import socket from "@/socket/Socket";
 import { type gameRequest, type updatePlayer, type updateBall, type gamePoint } from "@/game/ping_pong/SocketInterface";
@@ -76,9 +76,8 @@ onMounted(function () {
   socket.on("game_counting", (seconds: any) => {
     if (game.status == Status.Starting) {
       game.counting = seconds;
-      
-      if (seconds == 4)
-        game.audio("counting");
+
+      if (seconds == 4) game.audio("counting");
     }
   });
 
@@ -97,17 +96,28 @@ onMounted(function () {
       else game.player2.point(e.score);
     }
   });
-  
+
   socket.on("game_sound", (e: any) => {
-      game.audio(e.sound);
+    game.audio(e.sound);
   });
-  
+
   socket.on("end_game", (e: any) => {
     status.value = Status.Finish;
     game.updateStatus(Status.Finish);
     console.log(e);
     game.endMessage = e.result;
     game.audio("music_stop");
+  });
+
+  onUnmounted(() => {
+    socket.off("start_game");
+    socket.off("game_update_status");
+    socket.off("game_counting");
+    socket.off("game_update_player");
+    socket.off("game_update_ball");
+    socket.off("game_update_point");
+    socket.off("game_sound");
+    socket.off("end_game");
   });
 
   function animate() {

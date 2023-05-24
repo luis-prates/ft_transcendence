@@ -208,7 +208,7 @@ export class Game {
 	//Emit for Watchers
 	emitWatchers(event: string, data: any): void {
 		this.watchers.forEach((clientSocket) => {
-			if (clientSocket.socket.id !== this.player1.socket.socket.id || clientSocket.socket.id !== this.player2.socket.socket.id) clientSocket.emit(event, data);
+			if (clientSocket.id !== this.player1.socket.id || clientSocket.id !== this.player2.socket.id) clientSocket.emit(event, data);
 		});
 	}
 	//Emit for Players and Watchers

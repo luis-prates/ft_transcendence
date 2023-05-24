@@ -1,6 +1,7 @@
 <template>
   <div>
-    <div id="game_lobby" class="game"></div>
+    <div ref="game" class="game"></div>
+
     <div ref="menu" class="menu">
       <button style="left: 10px">Test</button>
       <button style="right: 0px">Test</button>
@@ -11,7 +12,7 @@
       <img src="@/assets/images/lobby/table_de1bda.png" />
       <button @click="test">Test</button>
     </div>
-    <img class="laod" src="@/assets/images/load/load_3.gif" v-if="!isConcted" />
+    <img class="laod" src="@/assets/images/load/load_3.gif" v-if="!isLoad" />
   </div>
 </template>
 
@@ -20,38 +21,32 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
 import socket from "@/socket/Socket";
 import { userStore } from "@/stores/userStore";
-// class MyClass {
-//   constructor(a: any[]) {
-//     console.log("Uma instância de MyClass foi criada.: ", a);
-//   }
-// }
-
-// const className = "MyClass";
 
 const store = userStore();
-// const game = ref<HTMLDivElement>();
+const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 let lobby: Lobby | null = null;
-const isConcted = ref(false);
+const isLoad = ref(false);
 
 onMounted(() => {
-  isConcted.value = false;
+  isLoad.value = false;
   socket.emit("join_map", { objectId: store.user.id, map: { name: "lobby" } });
   socket.on("load_map", (data: any) => {
     setTimeout(() => {
       console.log("load_map_4444");
-      console.log("load_map", data);
       if (lobby) lobby.destructor();
       const map = new Map();
       map.setData(data.map).then(() => {
         lobby = new Lobby(map, new Player(menu, data.player));
-        document.getElementById("game_lobby")?.appendChild(lobby.canvas);
-        data.data.forEach((d: any) => {
-          lobby?.addGameObjectData(d);
-        });
-        isConcted.value = true;
-        lobby.update();
-        console.log("isConcted.value : ", isConcted.value);
+        if (game.value !== undefined) {
+          game.value.appendChild(lobby.canvas);
+          data.data.forEach((d: any) => {
+            lobby?.addGameObjectData(d);
+          });
+          isLoad.value = true;
+          lobby.update();
+        }
+        console.log("isConcted.value : ", isLoad.value);
       });
     }, 1000);
   });
@@ -59,8 +54,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   console.log("unmounted");
-  lobby?.destructor();
-  lobby = null;
+  socket.off("load_map");
+  if (lobby) lobby.destructor();
 });
 
 function salvarDesenhoComoImagem() {

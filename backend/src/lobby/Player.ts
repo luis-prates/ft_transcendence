@@ -2,6 +2,7 @@ import { SocketSingleton } from './Lobby';
 import { Lobby } from './Lobby';
 import { GameMap } from './GameMap';
 import { Socket } from 'socket.io';
+import { off } from 'process';
 
 export interface PathNode {
 	x: number;
@@ -33,7 +34,7 @@ export class Player {
 	time: number = 0;
 
 	constructor(socket: Socket, objectId: number) {
-		this.socket = new SocketSingleton(socket);
+		this.setSocket(new SocketSingleton(socket));
 		this.data.objectId = objectId;
 		this.time = Date.now();
 		console.log('player created: ' + this.objectId);
@@ -44,11 +45,11 @@ export class Player {
 		return this.data.objectId;
 	}
 
-	get socket(): SocketSingleton {
+	getSocket(): SocketSingleton {
 		return this._socket;
 	}
 
-	set socket(value: SocketSingleton) {
+	setSocket(value: SocketSingleton) {
 		this.time = 0;
 		value.on('disconnect', () => {
 			this.time = Date.now();
@@ -63,11 +64,23 @@ export class Player {
 		this._socket = value;
 	}
 
+	public get id(): string {
+		return this._socket.id;
+	}
+
 	public emit(event: string, data: any): void {
 		this._socket.emit(event, data);
 	}
 
 	public on(event: string, callback: (...args: any[]) => void): void {
 		this._socket.on(event, callback);
+	}
+
+	public off(event: string): void {
+		this._socket.off(event);
+	}
+
+	public offAll(): void {
+		// this._socket.offAll();
 	}
 }

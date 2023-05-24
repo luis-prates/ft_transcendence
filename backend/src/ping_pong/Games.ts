@@ -7,9 +7,6 @@ export class Games {
 
 	public connection(player: Player) {
 		player.on('new_game', (e: gameRequest) => this.new_game(player, e));
-		player.on('new_game', (e: gameRequest) => this.new_game(player, e));
-		player.on('new_game', (e: gameRequest) => this.new_game(player, e));
-
 		player.on('entry_game', (e: playerInfo) => this.entry_game(player, e));
 		player.on('game_move', (e: any) => this.game_move(e));
 		// player.on('disconnect', () => this.disconnect(player));
@@ -54,13 +51,13 @@ export class Games {
 	}
 
 	disconnect(player: Player) {
-		console.log('Socket desconectado:', player.socket.id);
+		console.log('Socket desconectado:', player.id);
 
 		function isInGame(game: Game) {
-			const disconect = player.socket.id;
+			const disconect = player.id;
 			if (game.status == Status.Finish) return;
-			if (game.player1.socket.socket.id == disconect) game.endGame(2);
-			else if (game.player2.socket.socket.id == player.socket.id) game.endGame(1);
+			if (game.player1.socket.id == disconect) game.endGame(2);
+			else if (game.player2.socket.id == player.id) game.endGame(1);
 			const index = game.watchers.findIndex((socket: any) => socket.socket.id === disconect);
 			if (index !== -1) {
 				game.watchers.splice(index, 1);
