@@ -49,7 +49,6 @@ model FriendRequest {
 	requestor				User @relation(fields: [requestorId, requestorName], references: [id, nickname], name: "FriendShipRequestor")
 	requestee				User @relation(fields: [requesteeId, requesteeName], references: [id, nickname], name: "FriendShipRequestee")
 
-
 	@@id([requestorId, requesteeId])
 	@@index([requestorId, requesteeId], name: "friendship_index")
 	@@map("friend_requests")
@@ -94,7 +93,7 @@ enum UserStatus {
 // 	status Int @default(0)
 // 	player1Id Int
 // 	player1 User @relation("matchHistory", fields: [player1Id], references: [id])
-	
+
 // 	player2Id Int
 // 	player2 User @relation("matchHistory", fields: [player2Id], references: [id])
 
@@ -115,7 +114,7 @@ enum UserStatus {
 // 	channelName String @unique
 // 	// channel mode may be in front end (public, private, protected by password)
 // 	password String? // if protected
-	
+
 // 	channelOwnerId Int
 // 	channelOwner User[] @relation("channelOwner", fields: [channelOwnerId], references: [id])
 // 	channelAdminId Int

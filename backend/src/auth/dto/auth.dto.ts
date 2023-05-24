@@ -8,7 +8,6 @@ export class AuthDto {
 	id: number;
 
 	@IsString()
-	@IsNotEmpty()
 	name: string;
 
 	@IsString()
@@ -20,6 +19,5 @@ export class AuthDto {
 	email: string;
 
 	@IsString()
-	@IsNotEmpty()
 	image: string;
 }
