@@ -19,14 +19,14 @@ export class FriendshipService {
 			},
 		});
 
-		
+
 		await this.prisma.friend.create({
 			data: {
 				user: { connect: { id: (await updatedFriendship).requestorId } },
 				friend: { connect: { id: (await updatedFriendship).requesteeId } },
 			}
 		});
-		
+
 		await this.prisma.friend.create({
 			data: {
 				user: { connect: { id: (await updatedFriendship).requesteeId } },
@@ -34,7 +34,7 @@ export class FriendshipService {
 			}
 		});
 		console.log(`${(await updatedFriendship).requestorName} and ${(await updatedFriendship).requesteeName} are now friends.`);
-		
+
 		await this.prisma.friendRequest.delete({
 			where: {
 				requestorId_requesteeId: {
@@ -71,7 +71,7 @@ export class FriendshipService {
 				},
 			},
 		});
-		
+
 		return (request);
 	}
 
@@ -81,7 +81,7 @@ export class FriendshipService {
 				id: requesteeId,
 			},
 		});
-		
+
 		const friendship = this.prisma.friendRequest.create({
 			data: {
 				requestorId: requestor.id,
@@ -93,7 +93,7 @@ export class FriendshipService {
 		});
 
 		console.log(`${requestor.nickname} sent a friend request to ${targetFriend.nickname}.`);
-		
+
 		return (friendship);
 	}
 
@@ -103,7 +103,7 @@ export class FriendshipService {
 				id: requesteeId,
 			},
 		});
-		
+
 		const friendship = await this.prisma.friendRequest.update({
 			where: {
 				requestorId_requesteeId: {
@@ -126,7 +126,7 @@ export class FriendshipService {
 		});
 
 		console.log(`${(await friendship).requestorName} cancelled the friend request sent to ${targetFriend.nickname}.`);
-		
+
 		return (friendship);
 	}
 
@@ -158,8 +158,16 @@ export class FriendshipService {
 	async getFriendRequests(user: number) {
 		const friendRequests = this.prisma.friendRequest.findMany({
 			where: {
-				requesteeId: user,
-				status: FriendReqStatus.PENDING,
+                OR: [
+                    {
+                        requesteeId: user,
+                        status: FriendReqStatus.PENDING,
+                    },
+                    {
+                        requestorId: user,
+                        status: FriendReqStatus.PENDING,
+                    }
+                ]
 			},
 		});
 
