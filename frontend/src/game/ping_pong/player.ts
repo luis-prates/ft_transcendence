@@ -1,12 +1,16 @@
 import { Game } from "./pingPong";
 import { type updatePlayer } from "./SocketInterface";
 import socket from "@/socket/Socket";
+
+//Avatar
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
+import avatarMarvin from "@/assets/images/pingpong/marvin.jpg";
 
 //Skins
 import skinPacman from "@/assets/images/skin/line/skin_Pac-Man.png";
 import skinMario from "@/assets/images/skin/line/skin_mario.jpeg";
 import skinOnePiece from "@/assets/images/skin/line/skin_OnePiece.png";
+import skin42Lisboa from "@/assets/images/skin/line/42-Lisboa.png";
 
 
 export class Player {
@@ -16,7 +20,6 @@ export class Player {
   player: number;
   y: number;
   x: number = 0;
-  //speed: number = 10;
   score: number = 0;
   nickname: string;
   avatar = new Image();
@@ -37,13 +40,10 @@ export class Player {
 
   updateSkin(skin: string)
   {
-    if (skin == "pacman")
-      this.skin.src = skinPacman;
-    else if (skin == "mario")
-      this.skin.src = skinMario;
-    else if (skin == "onepiece")
-      this.skin.src = skinOnePiece;
-
+    if (skin == "pacman") this.skin.src = skinPacman;
+    else if (skin == "mario") this.skin.src = skinMario;
+    else if (skin == "onepiece") this.skin.src = skinOnePiece;
+    else if (skin == "42Lisboa") this.skin.src = skin42Lisboa;
   }
 
   moveUp() {
@@ -52,8 +52,6 @@ export class Player {
       socket.emit("game_move", {
         objectId: this.game.data.objectId,
         playerNumber: this.game.playerNumber,
-        // x: this.x,
-        // y: this.y - this.game.offSet,
         move: "up",
       });
     }
@@ -150,7 +148,6 @@ export class Player {
       
       try {
         context.drawImage(this.skin, -this.width / 2, -this.height / 2, this.width, this.height);
-
       }
       catch {
         "";

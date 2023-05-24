@@ -1,9 +1,8 @@
 
+//Skins
 import skinGame from "@/assets/images/skin/table/skin_Game-Over.png";
 import skinSwag from "@/assets/images/skin/table/skin_swag.png";
 import skinOnePiece from "@/assets/images/skin/table/skin_onepiece.jpg";
-
-
 
 export class Table {
   width: number = 1000;

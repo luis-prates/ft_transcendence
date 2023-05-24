@@ -7,7 +7,6 @@ import { type gameRequest } from "./SocketInterface";
 //Images
 import tableImage from "@/assets/images/pingpong/table_1.png";
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
-import marvin from "@/assets/images/pingpong/marvin.png";
 
 //Audio
 import sound_player from '@/assets/audio/paddle_hit.wav';
@@ -45,8 +44,8 @@ export class Game {
     this.offSet = offSet;
     this.context = context;
     this.inputKey = new InputHandler();
-    this.player1 = new Player(this, 1, "Player 1", marvin);
-    this.player2 = new Player(this, 2, "Player 2", marvin);
+    this.player1 = new Player(this, 1, "Player 1", avatarDefault);
+    this.player2 = new Player(this, 2, "Player 2", avatarDefault);
     this.ball = new Ball(this);
     this.data = data;
   }

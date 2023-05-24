@@ -10,12 +10,13 @@
 </template>
 
 <script setup lang="ts">
-import { Game, Status } from "@/game/ping_pong/pingPong.js";
+import { Game, Status } from "@/game/ping_pong/PingPong.js";
 import { onMounted, onUnmounted, ref } from "vue";
-import { Table } from "@/game/ping_pong/table.js";
+import { Table } from "@/game/ping_pong/Table.js";
 import socket from "@/socket/Socket";
 import { type gameRequest, type updatePlayer, type updateBall, type gamePoint } from "@/game/ping_pong/SocketInterface";
-// import Router from "@/router";
+
+import avatar_marvin from "@/assets/images/pingpong/marvin.jpg";
 
 const props = defineProps({
   objectId: String,
@@ -55,6 +56,9 @@ onMounted(function () {
     game.player2.nickname = e.nickname2;
     game.player2.color = e.color2;
     game.player2.avatar.src = e.avatar2 ? e.avatar2 : game.player2.avatar.src;
+    
+    if (game.player2.nickname == "Marvin" && e.avatar2 == "marvin")
+      game.player2.avatar.src = avatar_marvin;
 
     e.skin1 ? game.player1.updateSkin(e.skin1) : "";
     e.skin2 ? game.player2.updateSkin(e.skin2) : "";
