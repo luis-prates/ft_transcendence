@@ -1,11 +1,9 @@
+import { env } from "@/env";
+import { Socket, io } from "socket.io-client";
 
-import { io } from "socket.io-client";
+const socket: Socket = io(env.SERVER_URL);
 
-const socket = null;
-// io("ws://localhost:3000");
-
-// console.log("socket connected to ws://localhost:3000 ");
-
-
+console.log("socket connected to ", env.SERVER_URL);
 
 export default socket;
+

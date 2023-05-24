@@ -4,13 +4,19 @@ import { Map } from "./Map";
 import { Game } from "@/game/base/Game";
 import type { GameObject } from "@/game/base/GameObject";
 import { type Ref } from "vue";
+import { userStore } from "@/stores/userStore";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
   private menu: Ref<HTMLDivElement | undefined>;
+  private store: any;
 
-  constructor(menu: Ref<HTMLDivElement | undefined>) {
+  constructor(menu: Ref<HTMLDivElement | undefined>, data: any) {
     super();
+    this.store = userStore();
+    this.objectId = this.store.user.id;
+    this.x = data.x;
+    this.y = data.y;
     this.menu = menu;
     this.menu.value?.setAttribute("style", "display: none");
     this.type = "player";
@@ -19,33 +25,39 @@ export class Player extends Character {
   }
 
   draw(contex: CanvasRenderingContext2D): void {
-    super.draw(contex);
-    contex.fillStyle = "yellow";
-    this.agent.getPath().forEach((node) => {
-      contex.fillStyle = "green";
-      // no centro do grid
-      contex.fillRect(node.x * Map.SIZE + 10, node.y * Map.SIZE + 10, 6, 6);
-      //   contex.fillRect(node.x * Map.SIZE, node.y * Map.SIZE, Map.SIZE, Map.SIZE);
-    });
     if (this.agent.getPath().length > 0) {
-      contex.fillStyle = "blue";
-      contex.fillRect(this.agent.getPath()[this.agent.getPath().length - 1].x * Map.SIZE + 10, this.agent.getPath()[this.agent.getPath().length - 1].y * Map.SIZE + 10, 6, 6);
+      contex.lineWidth = 2;
+      contex.strokeStyle = "blue";
+      contex.beginPath();
+
+      const sx = this.w / 2;
+      const sy = this.h / 2 - 10;
+      contex.moveTo(this.x + sx, this.y + sy);
+      for (let i = 0; i < this.agent.getPath().length; i++) {
+        contex.lineTo(this.agent.getPath()[i].x * Map.SIZE + sx, this.agent.getPath()[i].y * Map.SIZE + sy);
+      }
+      contex.stroke();
+      const ultimoPonto = this.agent.getPath()[this.agent.getPath().length - 1];
+      contex.beginPath();
+      contex.arc(ultimoPonto.x * Map.SIZE + sx, ultimoPonto.y * Map.SIZE + sy, 5, 0, Math.PI * 2);
+      contex.fillStyle = "red";
+      contex.fill();
     }
+    super.draw(contex);
   }
   mouseClick?(x: number, y: number, button: number): void {
     this.menu.value?.setAttribute("style", "display: none");
     if (button == 0) {
       this.select = Game.MouseColision(x, y);
-      if (this.select && this.select != this) {
-        console.log(this.select);
+      if (this.select == this) {
+        console.log(this.store.user);
+      } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {
-          if (gameObject instanceof Character) (gameObject as Character).setLookAt(this);
-          this.menu.value?.setAttribute("style", "top: " + y + "px; left: " + x + "px; display: block");
+          if (gameObject && gameObject.interaction) gameObject.interaction(this);
         });
       } else {
         this.agent.setDistinction(x, y, 0);
       }
-      socket.emit("player_move", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, pathFinding: this.agent.getPath() });
     }
   }
 
@@ -55,4 +67,13 @@ export class Player extends Character {
     super.setLookAt(gameObject);
     // socket.emit("player_animation", { animation: this.animation.name , });
   }
+
+  public clearPath(): void {
+    this.agent.setPath([]);
+  }
+
+  // public move(x: number, y: number, animation: string): void {
+  //   super.move(x, y, animation);
+  //   socket.emit("update_gameobject", { className: "Character", objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: animation, isStop: this.animation.isStop } });
+  // }
 }

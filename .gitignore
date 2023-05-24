@@ -1,15 +1,14 @@
-<<<<<<< HEAD
 # compiled output
 dist
 node_modules
+dist-ssr
+*.local
 
-=======
->>>>>>> dev
 # Logs
 logs
 *.log
 npm-debug.log*
-<<<<<<< HEAD
+
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -22,7 +21,7 @@ lerna-debug.log*
 coverage
 .nyc_output
 
-# IDEs and editors
+# IDEs and editors - backend
 .idea
 .project
 .classpath
@@ -31,36 +30,20 @@ coverage
 .settings/
 *.sublime-workspace
 
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-=======
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-.DS_Store
-dist
-dist-ssr
-coverage
-*.local
-
-/cypress/videos/
-/cypress/screenshots/
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# IDEs and editors - frontend
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 frontend/src/env.ts
->>>>>>> dev
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+/cypress/videos/
+/cypress/screenshots/

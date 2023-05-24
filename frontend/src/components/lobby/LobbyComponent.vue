@@ -1,39 +1,91 @@
 <template>
-  <div ref="game" class="game"></div>
-  <div ref="menu" class="menu">
-    <button style="left: 10px">Test</button>
-    <button style="right: 0px">Test</button>
+  <div>
+    <div ref="game" class="game"></div>
+
+    <div ref="menu" class="menu">
+      <button style="left: 10px">Test</button>
+      <button style="right: 0px">Test</button>
+    </div>
+    <div class="table">
+      <img src="@/assets/images/lobby/table_2aaa15.png" />
+      <img src="@/assets/images/lobby/table_efc120.png" />
+      <img src="@/assets/images/lobby/table_de1bda.png" />
+      <button @click="test">Test</button>
+    </div>
+    <img class="laod" src="@/assets/images/load/load_3.gif" v-if="!isLoad" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { Lobby } from "@/game/lobby/Lobby";
-import { Player, Camera } from "@/game/lobby/objects/Player";
-import { Map } from "@/game/lobby/objects/Map";
+import { Player, Map, Lobby, Game } from "@/game";
+import socket from "@/socket/Socket";
+import { userStore } from "@/stores/userStore";
 
+const store = userStore();
 const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
-const lobby = new Lobby(new Map());
+let lobby: Lobby | null = null;
+const isLoad = ref(false);
 
 onMounted(() => {
-  if (game.value !== undefined) {
-    game.value.appendChild(lobby.canvas);
-    lobby.addGameObject(new Player(menu));
-    lobby.update();
-  }
+  isLoad.value = false;
+  socket.emit("join_map", { objectId: store.user.id, map: { name: "lobby" } });
+  socket.on("load_map", (data: any) => {
+    setTimeout(() => {
+      console.log("load_map_4444");
+      if (lobby) lobby.destructor();
+      const map = new Map();
+      map.setData(data.map).then(() => {
+        lobby = new Lobby(map, new Player(menu, data.player));
+        if (game.value !== undefined) {
+          game.value.appendChild(lobby.canvas);
+          data.data.forEach((d: any) => {
+            lobby?.addGameObjectData(d);
+          });
+          isLoad.value = true;
+          lobby.update();
+        }
+        console.log("isConcted.value : ", isLoad.value);
+      });
+    }, 1000);
+  });
 });
 
 onUnmounted(() => {
   console.log("unmounted");
-  lobby.destructor();
+  socket.off("load_map");
+  if (lobby) lobby.destructor();
 });
+
+function salvarDesenhoComoImagem() {
+  // const canvaElement = lobby?.canvas as HTMLCanvasElement;
+  // const imgData = canvaElement.toDataURL("image/png");
+  // const link = document.createElement("a");
+  // link.href = imgData;
+  // link.download = "desenho.png";
+  // link.click();
+  Game.Map.saveMap();
+  console.log("salvarDesenhoComoImagem");
+}
+
+function test() {
+  salvarDesenhoComoImagem();
+  // const dynamicInstance = eval(`new ${className}('${a}')`);
+}
 </script>
 
 <style scoped lang="scss">
+.laod {
+  width: 100%; /* 100% da largura da janela */
+  height: 100%;
+  position: fixed;
+  margin: 0;
+  padding: 0;
+}
 .game {
-  width: 2000px; /* 100% da largura da janela */
-  height: 1000px; /* 100% da altura da janela */
+  width: 100%; /* 100% da largura da janela */
+  height: 100%; /* 100% da altura da janela */
   margin: 0;
   padding: 0;
   background-color: rgb(30, 39, 210);
@@ -51,6 +103,7 @@ onUnmounted(() => {
   padding: 5px;
   border-radius: 15px;
   box-shadow: 0px 0px 10px 0px rgba(59, 217, 15, 0.75);
+  display: none;
   button {
     width: 40%;
     height: 100%;
@@ -63,6 +116,26 @@ onUnmounted(() => {
     background-color: rgb(200, 213, 23);
     border: 2px solid rgb(59, 217, 15);
     box-shadow: 0px 0px 10px 0px rgba(59, 217, 15, 0.75);
+  }
+}
+
+.table {
+  /* left: 0px; */
+  top: 70px;
+  /* z-index: -1; */
+  position: absolute;
+  width: 150px;
+  height: 90px;
+  right: 5px;
+  top: 5px;
+  background-color: rgb(179, 103, 95);
+  border: 2px solid rgb(178, 120, 120);
+  padding: 10px;
+  border-radius: 15px;
+  img {
+    width: 32px;
+    height: 64px;
+    margin-right: 10px;
   }
 }
 </style>

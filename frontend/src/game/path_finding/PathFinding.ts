@@ -1,6 +1,8 @@
 import { Character } from "@/game/base/Character";
 import { Map } from "@/game/lobby/objects/Map";
 import type { GameObject } from "../base/GameObject";
+import { Game } from "..";
+import socket from "@/socket/Socket";
 
 export type eventCompleted = (objectDestination: GameObject | undefined) => void;
 
@@ -56,7 +58,7 @@ export class PathFinding {
     if (objectDestination.getPointEvent) {
       destination = objectDestination.getPointEvent();
     }
-    this.setDistinction(destination.x, objectDestination.y, 0, objectDestination, onCompleted);
+    this.setDistinction(destination.x, destination.y, 0, objectDestination, onCompleted);
   }
   /**
    * the event onCompleted is executed only once, when the object reaches the destination
@@ -74,8 +76,8 @@ export class PathFinding {
     y /= Map.SIZE;
     dx /= Map.SIZE;
     dy /= Map.SIZE;
-    if (this.isEmpty(Map.map, dx, dy)) {
-      this.createNodes(Map.map, { x, y, g: 0, preview: null, direction }, dx, dy);
+    if (this.isEmpty(Game.grid, dx, dy)) {
+      this.createNodes(Game.grid, { x, y, g: 0, preview: null, direction }, dx, dy);
       this.open = [];
       this.close = [];
     }
@@ -92,6 +94,8 @@ export class PathFinding {
       this.createPathNodes(node, node.preview);
       node = node.preview;
     }
+    this._isPathFinding = this.path.length > 0;
+    if (!this._isPathFinding) this.character.animation.setStop(true);
   }
 
   public createNodes(map: number[][], node: PathFindingNode | null, dx: number, dy: number): void {
@@ -100,7 +104,7 @@ export class PathFinding {
     if (node != null) {
       this.close.push(node);
       this.open = this.open.filter((n) => n != node);
-      if (node.x == dx && node.y == dy) this.createPath(node);
+      if (Math.floor(node.x) == dx && Math.floor(node.y) == dy) this.createPath(node);
       else {
         //LEFT
         this.addNode(node, map, -1, 0, dx, dy, PathFinding.LEFT);
@@ -135,7 +139,7 @@ export class PathFinding {
     x = Math.floor(x);
     y = Math.floor(y);
     if (this.isPossible(map, x, y)) {
-      if (!(x != preview.x && y != preview.y) || (this.isEmpty(map, preview.x, y) && this.isEmpty(map, x, preview.y))) {
+      if (!(x != preview.x && y != preview.y) || (this.isPossible(map, preview.x, y) && this.isPossible(map, x, preview.y))) {
         this.open.push({ x, y, g: this.getG(x, y, dx, dy), preview, direction });
       }
     }
@@ -154,13 +158,16 @@ export class PathFinding {
   private isEmpty(map: number[][], x: number, y: number): boolean {
     x = Math.floor(x);
     y = Math.floor(y);
-    return y >= 0 && y < map.length && x >= 0 && x < map[0].length && map[x][y] == 0;
+    return x >= 0 && x < map.length && y >= 0 && y < map[x].length && map[x][y] == 0;
   }
 
   private isPossible(map: number[][], x: number, y: number): boolean {
     if (this.isEmpty(map, x, y)) {
       for (let e of this.close) {
-        if (x == e.x && y == e.y) return false;
+        if (Math.floor(x) == Math.floor(e.x) && Math.floor(y) == Math.floor(e.y)) return false;
+      }
+      for (let e of this.open) {
+        if (Math.floor(x) == Math.floor(e.x) && Math.floor(y) == Math.floor(e.y)) return false;
       }
       return true;
     }
@@ -176,7 +183,6 @@ export class PathFinding {
     this.path = path;
     if (this.path.length > 0) this._isPathFinding = true;
     this.time = 0;
-    console.log("setPath: ", this.path);
   }
 
   time: number = 0;
@@ -204,6 +210,17 @@ export class PathFinding {
     return "idle";
   }
 
+  private updateSocket(): void {
+    socket.emit("update_gameobject", {
+      className: "Character",
+      objectId: this.character.objectId,
+      name: this.character.name,
+      x: this.character.x,
+      y: this.character.y,
+      animation: { name: this.character.animation.name, isStop: this.character.animation.isStop },
+    });
+  }
+
   public update(deltaTime: number): void {
     if (this._isPathFinding) {
       if (this.path.length > 0) {
@@ -213,6 +230,7 @@ export class PathFinding {
           this.time = 0;
           if (node != null) {
             this.character.move(node.x * Map.SIZE, node.y * Map.SIZE, this.getAnimation(node.direction));
+            this.updateSocket();
             this.path.shift();
           }
         }
@@ -221,8 +239,9 @@ export class PathFinding {
         if (this.objectDestination != null) {
           this.character.setLookAt(this.objectDestination);
         }
-        if (this.onCompleted != undefined) this.onCompleted(this.objectDestination);
         this.character.animation.setStop(true);
+        if (this.onCompleted) this.onCompleted(this.objectDestination);
+        this.updateSocket();
       }
     }
   }
