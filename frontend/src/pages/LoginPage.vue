@@ -10,7 +10,7 @@
 import { onMounted } from "vue";
 import { userStore } from "../stores/userStore";
 import Router from "../router/index";
-import { ref } from "vue";
+import { ref, defineProps } from "vue";
 
 const props = defineProps({
   code: String,
