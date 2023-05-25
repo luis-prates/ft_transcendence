@@ -1,5 +1,6 @@
 import { Camera, Player, Menu, type GameObject, Map, listClass } from "@/game";
 import socket from "@/socket/Socket";
+import { userStore } from "@/stores/userStore";
 
 export class Game {
   public static instance: Game;
@@ -47,7 +48,7 @@ export class Game {
         const rect = this.canvas.getBoundingClientRect();
         const data = {
           className: "Table",
-          objectId: "gametest",
+          objectId: "gametest_" + userStore().user.nickname,
           color,
           x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE,
           y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,

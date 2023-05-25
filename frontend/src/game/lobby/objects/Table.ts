@@ -83,7 +83,7 @@ export class Table implements GameObject {
   }
 
   interaction(gameObject: GameObject): void {
-
+    console.log(this.objectId)
     Router.push(
       `/game?objectId=${this.objectId}`
     );

@@ -25,10 +25,6 @@ const routes = [
     component: PingPongPage,
     props: (route: any) => ({ 
       objectId: route.query.objectId,
-      avatar: route.query.avatar, 
-      nickname: route.query.nickname,
-      color: route.query.color,
-      skinPlayer: route.query.skinPlayer,
     }),
   },
   //   {

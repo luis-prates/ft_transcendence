@@ -33,6 +33,7 @@ function redirect_uri() {
 function tes() {
   console.log("objecId.value: ", objecId.value);
   store.user.id = parseInt(objecId.value);
+  store.user.nickname = "user_" + objecId.value;
   setTimeout(() => {
     Router.setRoute(Router.ROUTE_ALL);
     Router.push("/");
