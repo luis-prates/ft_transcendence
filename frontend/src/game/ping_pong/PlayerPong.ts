@@ -1,4 +1,4 @@
-import { Game } from "./PingPong";
+import { GamePong } from "@/game/ping_pong/";
 import { type updatePlayer } from "./SocketInterface";
 import socket from "@/socket/Socket";
 
@@ -12,9 +12,8 @@ import skinMario from "@/assets/images/skin/line/skin_mario.jpeg";
 import skinOnePiece from "@/assets/images/skin/line/skin_OnePiece.png";
 import skin42Lisboa from "@/assets/images/skin/line/42-Lisboa.png";
 
-
-export class Player {
-  game: Game;
+export class PlayerPong {
+  game: GamePong;
   width: number = 30;
   height: number = 100;
   player: number;
@@ -26,7 +25,7 @@ export class Player {
   color: string;
   skin = new Image();
 
-  constructor(game: Game, player_n: number, nickname: string, avatar: any) {
+  constructor(game: GamePong, player_n: number, nickname: string, avatar: any) {
     this.game = game;
     this.player = player_n;
     this.y = game.height / 2 - this.height / 2 + this.game.offSet;
@@ -38,8 +37,7 @@ export class Player {
     this.skin.src = "";
   }
 
-  updateSkin(skin: string)
-  {
+  updateSkin(skin: string) {
     if (skin == "pacman") this.skin.src = skinPacman;
     else if (skin == "mario") this.skin.src = skinMario;
     else if (skin == "onepiece") this.skin.src = skinOnePiece;
@@ -69,8 +67,7 @@ export class Player {
   }
 
   point(score: number) {
-    if (this.score != score)
-      this.score = score;
+    if (this.score != score) this.score = score;
   }
 
   update(input: string[]) {
@@ -111,13 +108,11 @@ export class Player {
   }
 
   drawPhoto(context: CanvasRenderingContext2D) {
-    let width: number = 0; 
-    if (this.player == 2) 
-      width = this.game.width - 50;
+    let width: number = 0;
+    if (this.player == 2) width = this.game.width - 50;
     try {
       context.drawImage(this.avatar, width != 0 ? width - 25 : 25, 35, 50, 50);
-    }
-    catch {
+    } catch {
       this.avatar.src = avatarDefault;
       context.drawImage(this.avatar, width != 0 ? width - 25 : 25, 35, 50, 50);
     }
@@ -130,45 +125,40 @@ export class Player {
     if (this.x > this.game.width / 2) {
       try {
         context.drawImage(this.skin, this.x, this.y, this.width, this.height);
-
-      }
-      catch {
+      } catch {
         return;
       }
     } else {
       context.save();
-  
+
       const rotationAngle = (180 * Math.PI) / 180;
-  
+
       const centerX = this.x + this.width / 2;
       const centerY = this.y + this.height / 2;
       context.translate(centerX, centerY);
-  
+
       context.rotate(rotationAngle);
-      
+
       try {
         context.drawImage(this.skin, -this.width / 2, -this.height / 2, this.width, this.height);
+      } catch {
+        ("");
       }
-      catch {
-        "";
-      }
-  
+
       context.restore();
     }
   }
-  
+
   drawPlayer(context: CanvasRenderingContext2D, color: string) {
-    
     context.fillStyle = color;
-   
+
     context.lineWidth = 3;
     context.fillRect(this.x, this.y, this.width, this.height);
-    
-    if (this.skin.src)
-      this.drawSkin(context);
-    
+
+    if (this.skin.src) this.drawSkin(context);
+
     context.strokeStyle = "black";
 
-    context.strokeRect(this.x, this.y, this.width, this.height);    
+    context.strokeRect(this.x, this.y, this.width, this.height);
   }
 }
