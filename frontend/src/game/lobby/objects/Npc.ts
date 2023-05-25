@@ -1,11 +1,10 @@
 import { Character } from "@/game/base/Character";
 import oie_transparent from "@/assets/images/lobby/oie_transparent.png";
 import { Game, Menu } from "@/game";
-import { SpeechBubble } from "../../Menu/SpeechBubble"; 
+import { SpeechBubble } from "../../Menu/SpeechBubble";
 import { Shop } from "../../Menu/Shop";
 
 export class Npc extends Character {
-  
   constructor() {
     super();
     this.type = "npc";
@@ -37,7 +36,7 @@ export class Npc extends Character {
     const image = new Image();
     image.src = oie_transparent;
     image.onload = () => {
-     /* const menu = new Menu({ timeOut: 5000 });
+      /* const menu = new Menu({ timeOut: 5000 });
       const element = {
         type: "image",
         rectangle: SpeechBubble.rectangleDimesion("Ola!", this.x, this.y),
