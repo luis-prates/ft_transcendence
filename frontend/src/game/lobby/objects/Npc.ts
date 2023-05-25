@@ -1,8 +1,10 @@
 import { Character } from "@/game/base/Character";
 import oie_transparent from "@/assets/images/lobby/oie_transparent.png";
 import { Game, Menu } from "@/game";
+import { SpeechBubble } from "./SpeechBubble"; 
 
 export class Npc extends Character {
+  
   constructor() {
     super();
     this.type = "npc";
@@ -37,21 +39,13 @@ export class Npc extends Character {
       const menu = new Menu({ timeOut: 5000 });
       const element = {
         type: "image",
-        retanglulo: { x: this.x + 5, y: this.y - (this.h + 40), w: 100, h: 100 },
+        rectangle: SpeechBubble.rectangleDimesion("ola!", this.x, this.y),
         draw: (context: any) => {
-          context.drawImage(image, element.retanglulo.x, element.retanglulo.y, element.retanglulo.w, element.retanglulo.h);
+          SpeechBubble.draw(context, element.rectangle, "ola!");
         },
       };
-      const element2 = {
-        type: "text",
-        retanglulo: { x: this.x + 5, y: this.y - (this.h + 40), w: 100, h: 100 },
-        draw: (context: any) => {
-          context.font = "20px Arial";
-          context.fillStyle = "red";
-          context.fillText("Ola", element.retanglulo.x + 10, element.retanglulo.y + 20);
-        },
-      };
-      menu.add(element, element2);
+      
+      menu.add(element);
       menu.onClose = () => {
         console.log("fechou");
         this.isSelect = false;
