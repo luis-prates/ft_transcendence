@@ -2,7 +2,6 @@ import { reactive } from "vue";
 import { defineStore } from "pinia";
 import { env } from "../env";
 import axios from "axios";
-// import HomePage from "@/pages/HomePage.vue";
 
 export interface User {
   access_token_server: string;
@@ -15,19 +14,6 @@ export interface User {
   nickname: string;
   image: string;
 }
-
-// const routes = [
-//   {
-//     path: "/home",
-//     name: "home",
-//     component: HomePage,
-//   },
-// //   {
-// //     path: "/about",
-// //     name: "About",
-// //     component: About,
-// //   },
-// ];
 
 export const userStore = defineStore("user", () => {
   const user = reactive({

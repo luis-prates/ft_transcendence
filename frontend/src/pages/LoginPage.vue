@@ -11,6 +11,7 @@ import { onMounted } from "vue";
 import { userStore } from "../stores/userStore";
 import Router from "../router/index";
 import { ref, defineProps } from "vue";
+import { socketClass } from "@/socket/Socket";
 
 const props = defineProps({
   code: String,
@@ -32,8 +33,10 @@ function redirect_uri() {
 function tes() {
   console.log("objecId.value: ", objecId.value);
   store.user.id = parseInt(objecId.value);
-  Router.setRoute(Router.ROUTE_ALL);
-  Router.push("/");
+  setTimeout(() => {
+    Router.setRoute(Router.ROUTE_ALL);
+    Router.push("/");
+  }, 1000);
 }
 
 onMounted(() => {
@@ -42,8 +45,10 @@ onMounted(() => {
       .login(props.code)
       .then(() => {
         store.user.id = parseInt(objecId.value);
-        Router.setRoute(Router.ROUTE_ALL);
-        Router.push("/");
+        setTimeout(() => {
+          Router.setRoute(Router.ROUTE_ALL);
+          Router.push("/");
+        }, 1000);
         console.log(store.user.isLogin);
       })
       .catch((err) => {

@@ -10,9 +10,8 @@
 </template>
 
 <script setup lang="ts">
-import { Game, Status } from "@/game/ping_pong/pingPong.js";
+import { GamePong, TablePong, Status } from "@/game/ping_pong";
 import { onMounted, onUnmounted, ref, defineProps } from "vue";
-import { Table } from "@/game/ping_pong/table.js";
 import socket from "@/socket/Socket";
 import { type gameRequest, type updatePlayer, type updateBall, type gamePoint } from "@/game/ping_pong/SocketInterface";
 
@@ -40,9 +39,9 @@ onMounted(function () {
   //TODO
   const tableColor: string = "#1e8c2f";
 
-  const game = new Game(canvas.width, canvas.height - 228, 164, ctx, props as gameRequest);
+  const game = new GamePong(canvas.width, canvas.height - 228, 164, ctx, props as gameRequest);
   console.log(props);
-  const tableBoard = new Table(canvas.width, canvas.height, "DarkSlateBlue", tableColor);
+  const tableBoard = new TablePong(canvas.width, canvas.height, "DarkSlateBlue", tableColor);
 
   socket.on("start_game", (e: any) => {
     console.log(e);
