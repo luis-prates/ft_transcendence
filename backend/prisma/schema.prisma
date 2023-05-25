@@ -31,6 +31,9 @@ model User {
 	friends					Friend[] @relation("Friends")
 	friendsOf				Friend[] @relation("FriendsOf")
 
+    messages                Message[]
+    channels                ChannelUser[]
+    ownedChannels           Channel[] @relation("ChannelOwner")
 	@@unique([id, nickname])
 	@@map("users")
 }
@@ -69,6 +72,37 @@ model Friend {
 	@@id([userId, friendId])
 	@@index([userId, friendId], name: "friend_index")
 	@@map("friends")
+}
+
+model Message {
+    id                      Int @id @default(autoincrement())
+    content                 String
+    userId                  Int
+    user                    User @relation(fields: [userId], references: [id])
+    channelId               Int
+    channel                 Channel @relation(fields: [channelId], references: [id])
+    createdAt               DateTime @default(now())
+}
+
+model Channel {
+    id                      Int @id @default(autoincrement())
+    name                    String
+    messages                Message[]
+    users                   ChannelUser[]
+    ownerId                 Int?
+    owner                   User? @relation("ChannelOwner", fields: [ownerId], references: [id]) // Owner can be null when channel is private
+    isPrivate               Boolean @default(false) // Private channels will be DMs
+}
+
+model ChannelUser {
+    userId                  Int
+    user                    User @relation(fields: [userId], references: [id])
+    channelId               Int
+    channel                 Channel @relation(fields: [channelId], references: [id])
+    isMuted                 Boolean @default(false)
+    isAdmin                 Boolean @default(false)
+
+    @@id([userId, channelId])
 }
 
 enum FriendReqStatus {
