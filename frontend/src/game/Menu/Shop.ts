@@ -1,13 +1,91 @@
-import type { Rectangle } from "@/game";
+import type { ElementUI, Rectangle } from "@/game";
+
 import avatarMarvin from "@/assets/images/pingpong/marvin.jpg";
 
 
 export class Shop {
 
-	static radius: number = 10;
-	static arrowHeight: number = 20;
+	radius: number = 10;
+	arrowHeight: number = 20;
+	background: ElementUI = this.createBackground();
+	products: ElementUI[] = [
+		this.background,
+	];
 
-	public static draw(ctx: CanvasRenderingContext2D, pos: Rectangle) {
+	constructor() {
+		this.createAll();
+	}
+
+	private createBackground() : ElementUI {
+		const background: ElementUI = {
+			type: "image",
+        	rectangle: { x: "10%", y: "10%", w: "80%", h: "80%"},
+        	draw: (context: any) => {
+          	this.draw(context, background.rectangle);
+        	}
+		}
+
+		return background;
+	}
+
+	private createAll() {
+		// Configurações para desenhar os quadrados de produtos
+		const squareW = 10;
+		const squareH = 15;
+		const paddingX = 6;
+		const paddingY = 9;
+	   
+		// Loop para desenhar os quadrados de produtos
+		for (let i = 0; i < 15; i++) {
+		  const squareX = 10 + 3 + (i % 5) * (squareW + paddingX);
+		  const squareY = 10 + paddingY + Math.floor(i / 5) * (squareH + paddingY);
+
+		  this.products.push(this.createProduct("Text " + i, "", avatarMarvin, squareX, squareY));
+		}
+	}
+
+	
+
+	private createProduct(name: string, type: string, image_src: string, x: number, y: number) : ElementUI {
+		const photo = new Image();
+		photo.src = image_src;
+		const product: ElementUI = {
+			type: "image",
+			rectangle: { x: x + "%", y:  y + "%", w: "10%", h: "15%" },
+			draw: (ctx: CanvasRenderingContext2D) => {
+				const offSetTittle = this.background.rectangle.y * 0.05;
+				const offSetPrice = this.background.rectangle.y * 0.20;
+				
+		  		// Desenha o quadrado com borda
+		  		ctx.fillStyle = '#fff';
+		  		ctx.strokeStyle = '#000';
+		  		ctx.lineWidth = 2;
+		  		ctx.fillRect(product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h);
+		  		ctx.strokeRect(product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h);
+
+				if (photo.complete)
+				  ctx.drawImage(photo, product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h);
+
+		  		// Desenha o título do produto acima do quadrado
+		  		ctx.fillStyle = '#000';
+		  		ctx.font = '12px Arial';
+		  		ctx.textAlign = 'center';
+		  		ctx.fillText(name, product.rectangle.x + product.rectangle.w / 2, product.rectangle.y - offSetTittle);
+			
+		  		// Desenha o preço do produto abaixo do quadrado
+		  		ctx.fillStyle = '#000';
+		  		ctx.font = '12px Arial';
+		  		ctx.textAlign = 'center';
+		  		ctx.fillText("0,01€", product.rectangle.x + product.rectangle.w / 2, product.rectangle.y + product.rectangle.h + offSetPrice);
+			},
+			onClick: () => { console.log(name)}
+		}
+		return product;
+	}
+
+	
+
+	public draw(ctx: CanvasRenderingContext2D, pos: Rectangle) {
 		const backgroundColor = '#D2B48C'; // Cor de fundo castanho
 		const borderColor = '#8B4513'; // Cor de contorno mais escuro
 	  
@@ -46,19 +124,23 @@ export class Shop {
 		ctx.stroke();
 
 		// Configurações para desenhar os quadrados de produtos
-		const squareSize = pos.w / 10;
-		const paddingX = pos.w / 12;
-		const paddingY = pos.h / 10;
+		const squareSize = 8;
+		const paddingX = 9.6;
+		const paddingY = 8;
 		const titleOffsetY = 20;
 		const priceOffsetY = 40;
 		const buttonOffsetY = 60;
 		const buttonWidth = 40;
 		const buttonHeight = 20;
+
+
 	   
 		// Loop para desenhar os quadrados de produtos
-		for (let i = 0; i < 15; i++) {
-		  const squareX = pos.x + paddingX + (i % 5) * (squareSize + paddingX);
+		/*for (let i = 0; i < 15; i++) {
+		  const squareX = paddingX + (i % 5) * (squareSize + paddingX);
 		  const squareY = pos.y + paddingY + Math.floor(i / 5) * (squareSize + paddingY);
+
+		  this.products.push(this.createProduct("", "", "", 20 + 9.6 + squareX, squareY));
 	   
 		  // Desenha o quadrado com borda
 		  ctx.fillStyle = '#fff';
@@ -91,7 +173,7 @@ export class Shop {
 		  ctx.font = '10px Arial';
 		  ctx.textAlign = 'center';
 		  ctx.fillText('BUY', squareX + squareSize / 2, squareY + buttonOffsetY + 12);
-		}
+		}*/
 		
 	}
 

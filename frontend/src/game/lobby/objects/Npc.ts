@@ -46,15 +46,8 @@ export class Npc extends Character {
         },
       };*/
       const menu = new Menu({ layer: "Global", isFocus: true });
-      const element = {
-        type: "image",
-        rectangle: { x: window.innerWidth * 0.10, y: window.innerHeight * 0.10, w: window.innerWidth - window.innerWidth * 0.20, h: window.innerHeight - window.innerHeight * 0.20},
-        draw: (context: any) => {
-          Shop.draw(context, element.rectangle);
-        },
-      };
-      
-      menu.add(element);
+      const slop = new Shop();
+      menu.add(...slop.products);
       menu.onClose = () => {
         console.log("fechou");
         this.isSelect = false;
