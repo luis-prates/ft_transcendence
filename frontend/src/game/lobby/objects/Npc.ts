@@ -1,7 +1,8 @@
 import { Character } from "@/game/base/Character";
 import oie_transparent from "@/assets/images/lobby/oie_transparent.png";
 import { Game, Menu } from "@/game";
-import { SpeechBubble } from "./SpeechBubble"; 
+import { SpeechBubble } from "../../Menu/SpeechBubble"; 
+import { Shop } from "../../Menu/Shop";
 
 export class Npc extends Character {
   
@@ -10,7 +11,7 @@ export class Npc extends Character {
     this.type = "npc";
     this.animation.sx = 144;
     this.x = 320;
-    this.y = 320;
+    this.y = 680;
   }
 
   private pontoEvento = [
@@ -36,12 +37,20 @@ export class Npc extends Character {
     const image = new Image();
     image.src = oie_transparent;
     image.onload = () => {
-      const menu = new Menu({ timeOut: 5000 });
+     /* const menu = new Menu({ timeOut: 5000 });
       const element = {
         type: "image",
-        rectangle: SpeechBubble.rectangleDimesion("ola!", this.x, this.y),
+        rectangle: SpeechBubble.rectangleDimesion("Ola!", this.x, this.y),
         draw: (context: any) => {
           SpeechBubble.draw(context, element.rectangle, "ola!");
+        },
+      };*/
+      const menu = new Menu({ layer: "Global", isFocus: true });
+      const element = {
+        type: "image",
+        rectangle: { x: window.innerWidth * 0.10, y: window.innerHeight * 0.10, w: window.innerWidth - window.innerWidth * 0.20, h: window.innerHeight - window.innerHeight * 0.20},
+        draw: (context: any) => {
+          Shop.draw(context, element.rectangle);
         },
       };
       

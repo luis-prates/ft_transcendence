@@ -30,8 +30,6 @@ export class SpeechBubble {
 	}
 
   	public static draw(ctx: CanvasRenderingContext2D, pos: Rectangle, message: string) {
-
-		//ctx.clearRect(0, 0, 400, 200);
 	
 		// Desenha o corpo do balão
 		ctx.beginPath();

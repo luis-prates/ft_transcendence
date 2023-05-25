@@ -37,6 +37,15 @@ export interface User {
 }
 
 export const userStore = defineStore("user", () => {
+  const randomColor = () => {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+
   const user = reactive({
     access_token_server: "",
     accessToken: "",
@@ -49,7 +58,7 @@ export const userStore = defineStore("user", () => {
     image: "",
     infoPong: {
       avatar: "",
-      color: "blue",
+      color: randomColor(),
       skin:{
         default: {
           tableColor: "#1e8c2f",
