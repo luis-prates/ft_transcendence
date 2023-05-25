@@ -29,9 +29,9 @@ export class Menu implements GameObject {
       rectangle: { x: "0%", y: "0%", w: "100%", h: "100%" },
       draw: (contex: CanvasRenderingContext2D) => {},
     };
-    if (data && data.isFocus) this.background.onClick = () => {};
-    this.elements.push(this._background);
+    this.add(this._background);
     if (!data) return;
+    if (data.isFocus) this.background.onClick = () => {};
     if (data.timeOut) {
       setTimeout(() => {
         Game.instance.removeMenu(this);
@@ -51,6 +51,7 @@ export class Menu implements GameObject {
   mouseClick(x: number, y: number, button: number): boolean {
     for (let i = this.elements.length - 1; i >= 0; i--) {
       const element = this.elements[i];
+      console.log("element: ", element, " isClick: ", x >= element.rectangle.x && x <= element.rectangle.x + element.rectangle.w && y >= element.rectangle.y && y <= element.rectangle.y + element.rectangle.h);
       if (element.onClick && x >= element.rectangle.x && x <= element.rectangle.x + element.rectangle.w && y >= element.rectangle.y && y <= element.rectangle.y + element.rectangle.h) {
         element.onClick();
         return true;

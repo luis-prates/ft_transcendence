@@ -84,18 +84,13 @@ export class Game {
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left + this.camera.x;
     const mouseY = event.clientY - rect.top + this.camera.y;
-    let isSelect = false;
+    for await (let menu of this.menusGlobal) {
+      if (menu.mouseClick(event.clientX, event.clientY, event.button)) return;
+    }
     for await (let menu of this.menusLocal) {
-      isSelect = menu.mouseClick(mouseX, mouseY, event.button);
-      if (isSelect) break;
+      if (menu.mouseClick(mouseX, mouseY, event.button)) return;
     }
-    if (!isSelect) {
-      for await (let menu of this.menusGlobal) {
-        isSelect = menu.mouseClick(event.clientX, event.clientY, event.button);
-        if (isSelect) break;
-      }
-    }
-    if (!isSelect) this.mouseEvents.forEach((action: any) => action(mouseX, mouseY, event.button));
+    this.mouseEvents.forEach((action: any) => action(mouseX, mouseY, event.button));
   }
 
   draw() {
