@@ -1,9 +1,6 @@
-import { SocketSingleton } from './Lobby';
 import { Lobby } from './Lobby';
 import { GameMap } from './GameMap';
 import { Socket } from 'socket.io';
-import { off } from 'process';
-
 export interface PathNode {
 	x: number;
 	y: number;
@@ -20,7 +17,7 @@ export interface PlayerData {
 }
 
 export class Player {
-	private _socket: SocketSingleton;
+	private _socket: Socket;
 	avatar: string = '';
 	name: string = 'name_' + Date.now();
 	map: GameMap | null = null;
@@ -35,10 +32,9 @@ export class Player {
 	time: number = 0;
 
 	constructor(socket: Socket, objectId: number) {
-		this.setSocket(new SocketSingleton(socket));
+		this.setSocket(socket);
 		this.data.objectId = objectId;
 		this.time = Date.now();
-		console.log('player created: ' + this.objectId);
 		Lobby.players.push(this);
 	}
 
@@ -46,11 +42,11 @@ export class Player {
 		return this.data.objectId;
 	}
 
-	getSocket(): SocketSingleton {
+	getSocket(): Socket {
 		return this._socket;
 	}
 
-	setSocket(value: SocketSingleton) {
+	setSocket(value: Socket) {
 		this.time = 0;
 		value.on('disconnect', () => {
 			this.time = Date.now();
@@ -78,10 +74,17 @@ export class Player {
 	}
 
 	public off(event: string): void {
-		this._socket.off(event);
+		this._socket.off(event, () => {});
 	}
 
 	public offAll(): void {
 		// this._socket.offAll();
+	}
+
+	public destroy(): void {
+		this.offAll();
+		this._socket.disconnect();
+		Lobby.players = Lobby.players.splice(Lobby.players.indexOf(this), 1);
+		this.map?.removePlayer(this);
 	}
 }

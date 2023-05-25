@@ -8,7 +8,6 @@ export class Games {
 	public connection(player: Player) {
 		player.on('new_game', (e: gameRequest) => this.new_game(player, e));
 		player.on('entry_game', (e: playerInfo) => this.entry_game(player, e));
-		player.on('game_move', (e: any) => this.game_move(e));
 	}
 
 	new_game(player: Player, e: gameRequest) {
@@ -26,21 +25,8 @@ export class Games {
 		console.log(info);
 		const game = this.games.find((g) => g.data.objectId == info.objectId);
 		if (game) {
-			game.addUsers(player, info);
+			game.entry_game(player, info);
 			console.log(this.games);
-		}
-	}
-
-	game_move(e: any) {
-		const game = this.games.find((g) => g.data.objectId == e.objectId);
-		if (game && game.status == Status.InGame) {
-			if (e.playerNumber == 1) {
-				if (e.move == 'up') game.player1.moveUp();
-				else if (e.move == 'down') game.player1.moveDown();
-			} else if (e.playerNumber == 2) {
-				if (e.move == 'up') game.player2.moveUp();
-				else if (e.move == 'down') game.player2.moveDown();
-			}
 		}
 	}
 

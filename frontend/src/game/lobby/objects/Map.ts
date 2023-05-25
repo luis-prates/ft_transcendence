@@ -63,11 +63,11 @@ export class Map implements GameObject {
       this.layer_3.image.src = data.layer_3.image;
       this.layer_3.opacity = data.layer_3.opacity;
       this.layer_3.objects = data.layer_3.objects;
-      this.layer_1.image.onerror = () => console.log("error 1 ", data.layer_1.image);
-      this.layer_2.image.onerror = () => console.log("error 2 ", data.layer_2.image);
-      this.layer_3.image.onerror = () => console.log("error 3 ", data.layer_3.image);
-      this.layer_3.image.onload = () => console.log("layer_3");
-      this.layer_2.image.onload = () => console.log("layer_2");
+      // this.layer_1.image.onerror = () => console.log("error 1 ", data.layer_1.image);
+      // this.layer_2.image.onerror = () => console.log("error 2 ", data.layer_2.image);
+      // this.layer_3.image.onerror = () => console.log("error 3 ", data.layer_3.image);
+      // this.layer_3.image.onload = () => console.log("layer_3");
+      // this.layer_2.image.onload = () => console.log("layer_2");
       this.layer_1.image.onload = () => {
         this.w = data?.width || this.layer_1.image.width;
         this.h = data?.height || this.layer_1.image.height;
@@ -84,7 +84,6 @@ export class Map implements GameObject {
         }
         setTimeout(() => {
           this.isLoaded = true;
-          console.log("layer_1. ", this.isLoaded);
           resolve(this.isLoaded);
         }, 1000);
       };
@@ -98,6 +97,7 @@ export class Map implements GameObject {
   }
 
   drawLayer_3(contex: CanvasRenderingContext2D): void {
+    if (this.layer_3.image.complete === false) return;
     const rect = this.layer_3.colision();
     this.layer_3.context.clearRect(0, 0, this.layer_3.context.canvas.width, this.layer_3.context.canvas.height);
     this.layer_3.context.drawImage(this.layer_3.image, 0, 0);

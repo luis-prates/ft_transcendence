@@ -54,7 +54,7 @@ export class Game {
           y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,
         };
         socket.emit("new_gameobject", data);
-        socket.emit("new_game", { objectId: data.objectId, maxScore: 3, table: data.color, tableSkin: "", bot: true });
+        socket.emit("new_game", { objectId: data.objectId, maxScore: 3, table: data.color, tableSkin: "", bot: color == "#2aaa15" });
       }
       event.preventDefault();
     });
@@ -128,6 +128,7 @@ export class Game {
 
   addGameObject(gameObject: GameObject): GameObject {
     this.gameObjets.push(gameObject);
+    console.log("Add: ", gameObject.objectId);
     if (gameObject.mouseClick) this.mouseEvents.push(gameObject.mouseClick.bind(gameObject));
     if (gameObject.update) this.gameObjetsUpdate.push(gameObject);
     return gameObject;

@@ -11,7 +11,7 @@ import { onMounted } from "vue";
 import { userStore } from "../stores/userStore";
 import Router from "../router/index";
 import { ref, defineProps } from "vue";
-import { socketClass } from "@/socket/Socket";
+import socket from "@/socket/Socket";
 
 const props = defineProps({
   code: String,
@@ -34,6 +34,7 @@ function tes() {
   console.log("objecId.value: ", objecId.value);
   store.user.id = parseInt(objecId.value);
   store.user.nickname = "user_" + objecId.value;
+  socket.emit("connection_lobby", { objectId: objecId.value.toString() });
   setTimeout(() => {
     Router.setRoute(Router.ROUTE_ALL);
     Router.push("/");
@@ -46,6 +47,7 @@ onMounted(() => {
       .login(props.code)
       .then(() => {
         store.user.id = parseInt(objecId.value);
+        socket.emit("connection_lobby", { objectId: objecId.value.toString() });
         setTimeout(() => {
           Router.setRoute(Router.ROUTE_ALL);
           Router.push("/");

@@ -2,6 +2,7 @@ import { Socket } from 'socket.io';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Player } from './Player';
+import { off } from 'process';
 
 export class GameMap {
 	public players: Player[] = [];
@@ -16,6 +17,8 @@ export class GameMap {
 	}
 
 	public join(player: Player, position?: { x: number; y: number }): void {
+		GameMap.offAll(player);
+		console.log('join_map: ', player.objectId, this.map.name);
 		if (player.map) player.map.removePlayer(player);
 		player.map = this;
 		const clientSocket = this.players.find((clientSocket) => clientSocket.objectId === player.objectId);
@@ -34,16 +37,22 @@ export class GameMap {
 		} else {
 			this.players.push(player);
 			this.emitAll('new_gameobject', player.data, player);
-			// console.log('new player: ', player.objectId);
+			console.log('_new player: ', player.objectId);
 		}
-		player.on('new_gameobject', (data) => {
-			this.gameObjets.push(data);
-			this.emitAll('new_gameobject', data);
-		});
-		player.on('update_gameobject', (data) => {
-			player.data = data;
-			this.emitAll('update_gameobject', data, player);
-		});
+		player.on(
+			'new_gameobject',
+			function (data: any) {
+				this.gameObjets.push(data);
+				this.emitAll('new_gameobject', data);
+			}.bind(this),
+		);
+		player.on(
+			'update_gameobject',
+			function (data) {
+				player.data = data;
+				this.emitAll('update_gameobject', data, player);
+			}.bind(this),
+		);
 	}
 
 	public emitAll(event: string, data: any, ignorerPlayer?: Player): void {
@@ -53,10 +62,10 @@ export class GameMap {
 	}
 
 	public removePlayer(player: Player): void {
+		GameMap.offAll(player);
 		this.players = this.players.filter((clientSocket) => {
 			return clientSocket.objectId !== player.objectId;
 		});
-		console.log('remove player: ', player.objectId);
 		this.emitAll('remove_gameobject', player.data, player);
 	}
 
@@ -67,5 +76,12 @@ export class GameMap {
 
 	public get objectId(): string {
 		return this.map.objectId;
+	}
+
+	public static offAll(player: Player): void {
+		player.off('new_gameobject');
+		player.off('update_gameobject');
+		player.off('remove_gameobject');
+		console.log('off all: ' + player.objectId);
 	}
 }

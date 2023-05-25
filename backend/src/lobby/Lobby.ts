@@ -33,12 +33,23 @@ export class Lobby {
 	}
 
 	public connection(socket: Socket): void {
-		socket.on('join_map', (data) => {
-			const player = Lobby.players.find((e) => e.objectId == data.objectId) || new Player(socket, data.objectId);
+		socket.once('connection_lobby', (data) => {
+			let player = Lobby.players.find((e) => e.objectId == data.objectId);
+
+			if (player) player.setSocket(socket);
+			else player = new Player(socket, data.objectId);
 			this.game.connection(player);
 			this.chatController.connection(player);
-			this.gameMaps.get(data.map.name)?.join(player, data.map?.position);
+			console.log('new connection: ', player.objectId);
 		});
+		socket.on(
+			'join_map',
+			function (data: any) {
+				const player = Lobby.players.find((e) => e.objectId == data.objectId);
+				if (!player) return;
+				this.gameMaps.get(data.map.name)?.join(player, data.map?.position);
+			}.bind(this),
+		);
 	}
 }
 
