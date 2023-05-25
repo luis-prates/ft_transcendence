@@ -62,6 +62,13 @@ export class Game {
     map.datas = [];
     this.isRunning = true;
     window.addEventListener("resize", this.onResize.bind(this));
+    window.addEventListener("keyup", this.keyUp.bind(this));
+  }
+
+  public keyUp(event: KeyboardEvent) {
+    this.menusGlobal.forEach((menu) => {
+      if (menu.KeyClose && menu.KeyClose == event.key) this.removeMenu(menu);
+    });
   }
 
   public addMenu(menu: Menu) {
@@ -144,6 +151,7 @@ export class Game {
     this.isRunning = false;
     this.canvas.remove();
     window.removeEventListener("resize", this.onResize);
+    window.removeEventListener("keyup", this.keyUp);
   }
 
   public static MouseColision(x: number, y: number): GameObject | undefined {

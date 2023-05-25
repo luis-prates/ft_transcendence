@@ -1,11 +1,10 @@
 import { Character } from "@/game/base/Character";
 import oie_transparent from "@/assets/images/lobby/oie_transparent.png";
 import { Game, Menu } from "@/game";
-import { SpeechBubble } from "../../Menu/SpeechBubble"; 
+import { SpeechBubble } from "../../Menu/SpeechBubble";
 import { Shop } from "../../Menu/Shop";
 
 export class Npc extends Character {
-  
   constructor() {
     super();
     this.type = "npc";
@@ -37,7 +36,7 @@ export class Npc extends Character {
     const image = new Image();
     image.src = oie_transparent;
     image.onload = () => {
-     /* const menu = new Menu({ timeOut: 5000 });
+      /* const menu = new Menu({ timeOut: 5000 });
       const element = {
         type: "image",
         rectangle: SpeechBubble.rectangleDimesion("Ola!", this.x, this.y),
@@ -45,16 +44,27 @@ export class Npc extends Character {
           SpeechBubble.draw(context, element.rectangle, "ola!");
         },
       };*/
-      const menu = new Menu({ layer: "Global", isFocus: true });
+      const menu = new Menu({ layer: "Global", isFocus: true, KeyClose: "Escape" });
       const element = {
         type: "image",
-        rectangle: { x: window.innerWidth * 0.10, y: window.innerHeight * 0.10, w: window.innerWidth - window.innerWidth * 0.20, h: window.innerHeight - window.innerHeight * 0.20},
+        rectangle: { x: "10%", y: "10%", w: "80%", h: "80%" },
         draw: (context: any) => {
-          Shop.draw(context, element.rectangle);
+          context.fillStyle = "rgba(0, 0, 0, 0.5)";
+          context.fillRect(element.rectangle.x, element.rectangle.y, element.rectangle.w, element.rectangle.h);
         },
       };
-      
-      menu.add(element);
+
+      const element2 = {
+        type: "image",
+        parent: element,
+        rectangle: { x: "10%", y: "10%", w: "80%", h: "80%" },
+        draw: (context: any) => {
+          context.fillStyle = "red";
+          context.fillRect(element2.rectangle.x, element2.rectangle.y, element2.rectangle.w, element2.rectangle.h);
+        },
+      };
+
+      menu.add(element, element2);
       menu.onClose = () => {
         console.log("fechou");
         this.isSelect = false;

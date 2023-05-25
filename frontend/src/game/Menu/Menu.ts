@@ -1,4 +1,4 @@
-import { Game } from "..";
+import { Game } from "../base/Game";
 import { type GameObject, type GameObjectType, type Rectangle } from "../base/GameObject";
 
 export interface ElementUI {
@@ -6,6 +6,7 @@ export interface ElementUI {
   rectangle: Rectangle;
   draw(contex: CanvasRenderingContext2D): void;
   onClick?(): void;
+  parent?: ElementUI;
 }
 
 export type ElementUIType = "button" | "text" | "image";
@@ -22,8 +23,9 @@ export class Menu implements GameObject {
   private _background: ElementUI;
   private elements: ElementUI[] = [];
   private _onClose: () => void = () => {};
+  public KeyClose: string = "";
 
-  constructor(data?: { timeOut?: number; layer?: MenuLayer; onClose?: () => void; isFocus?: boolean }) {
+  constructor(data?: { timeOut?: number; layer?: MenuLayer; onClose?: () => void; isFocus?: boolean; KeyClose?: string }) {
     this._background = {
       type: "background",
       rectangle: { x: "0%", y: "0%", w: "100%", h: "100%" },
@@ -40,6 +42,7 @@ export class Menu implements GameObject {
     if (data.layer) {
       this.layer = data.layer;
     }
+    if (data.KeyClose) this.KeyClose = data.KeyClose;
   }
 
   draw(contex: CanvasRenderingContext2D): void {
@@ -66,7 +69,6 @@ export class Menu implements GameObject {
     if (elements === null || elements === undefined) return;
     elements.forEach((element) => {
       (element as any)["resizing"] = { x: element.rectangle.x, y: element.rectangle.y, w: element.rectangle.w, h: element.rectangle.h };
-      console.log("element: ", element);
       this.resizing(element, this.w, this.h);
       this.elements.push(element);
     });
@@ -97,10 +99,19 @@ export class Menu implements GameObject {
   }
 
   private resizing(element: ElementUI & any, width: number, height: number): void {
+    // if (element.parent) {
+    //   width = element.parent.rectangle.w;
+    //   height = element.parent.rectangle.h;
+    // }
     if (typeof element.resizing.x == "string" && element.resizing.x.includes("%")) element.rectangle.x = (parseFloat(element.resizing.x) * width) / 100;
     if (typeof element.resizing.y == "string" && element.resizing.y.includes("%")) element.rectangle.y = (parseFloat(element.resizing.y) * height) / 100;
     if (typeof element.resizing.w == "string" && element.resizing.w.includes("%")) element.rectangle.w = (parseFloat(element.resizing.w) * width) / 100;
     if (typeof element.resizing.h == "string" && element.resizing.h.includes("%")) element.rectangle.h = (parseFloat(element.resizing.h) * height) / 100;
+
+    // if (element.parent) {
+    //   element.rectangle.x += element.parent.rectangle.x;
+    //   element.rectangle.y += element.parent.rectangle.y;
+    // }
   }
 
   public get onClose(): () => void {
