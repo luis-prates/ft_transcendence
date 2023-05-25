@@ -19,10 +19,18 @@ export class Menu implements GameObject {
   y: number = 0;
   objectId: any;
   isSelect: boolean = false;
+  private _background: ElementUI;
   private elements: ElementUI[] = [];
   private _onClose: () => void = () => {};
 
-  constructor(data?: { timeOut?: number; layer?: MenuLayer }) {
+  constructor(data?: { timeOut?: number; layer?: MenuLayer; onClose?: () => void; isFocus?: boolean }) {
+    this._background = {
+      type: "background",
+      rectangle: { x: "0%", y: "0%", w: "100%", h: "100%" },
+      draw: (contex: CanvasRenderingContext2D) => {},
+    };
+    if (data && data.isFocus) this.background.onClick = () => {};
+    this.elements.push(this._background);
     if (!data) return;
     if (data.timeOut) {
       setTimeout(() => {
@@ -41,11 +49,14 @@ export class Menu implements GameObject {
   }
 
   mouseClick(x: number, y: number, button: number): boolean {
-    const select: ElementUI = this.elements.find(
-      (element) => element.onClick && x >= element.rectangle.x && x <= element.rectangle.x + element.rectangle.w && y >= element.rectangle.y && y <= element.rectangle.y + element.rectangle.h
-    ) as ElementUI;
-    if (select && select.onClick) select.onClick();
-    return select ? true : false;
+    for (let i = this.elements.length - 1; i >= 0; i--) {
+      const element = this.elements[i];
+      if (element.onClick && x >= element.rectangle.x && x <= element.rectangle.x + element.rectangle.w && y >= element.rectangle.y && y <= element.rectangle.y + element.rectangle.h) {
+        element.onClick();
+        return true;
+      }
+    }
+    return false;
   }
 
   setData(data: any) {}
@@ -72,6 +83,10 @@ export class Menu implements GameObject {
 
   get h() {
     return window.innerHeight;
+  }
+
+  get background(): ElementUI {
+    return this._background;
   }
 
   onResize(width: number, height: number): void {
