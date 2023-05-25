@@ -81,11 +81,10 @@ export class Menu implements GameObject {
   }
 
   private resizing(element: ElementUI & any, width: number, height: number): void {
-    if (typeof element.resizing.x == "string" && element.resizing.x.includes("%")) element.retanglulo.x = (parseFloat(element.resizing.x) * width) / 100;
-    if (typeof element.resizing.y == "string" && element.resizing.y.includes("%")) element.retanglulo.y = (parseFloat(element.resizing.y) * height) / 100;
-    if (typeof element.resizing.w == "string" && element.resizing.w.includes("%")) element.retanglulo.w = (parseFloat(element.resizing.w) * width) / 100;
-    if (typeof element.resizing.h == "string" && element.resizing.h.includes("%")) element.retanglulo.h = (parseFloat(element.resizing.h) * height) / 100;
-    console.log("element: ", element);
+    if (typeof element.resizing.x == "string" && element.resizing.x.includes("%")) element.rectangle.x = (parseFloat(element.resizing.x) * width) / 100;
+    if (typeof element.resizing.y == "string" && element.resizing.y.includes("%")) element.rectangle.y = (parseFloat(element.resizing.y) * height) / 100;
+    if (typeof element.resizing.w == "string" && element.resizing.w.includes("%")) element.rectangle.w = (parseFloat(element.resizing.w) * width) / 100;
+    if (typeof element.resizing.h == "string" && element.resizing.h.includes("%")) element.rectangle.h = (parseFloat(element.resizing.h) * height) / 100;
   }
 
   public get onClose(): () => void {
