@@ -15,7 +15,7 @@ const infoBot: playerInfo = {
 	nickname: 'Marvin',
 	avatar: 'marvin',
 	color: '#12bab9',
-	skinPlayer: '42Lisboa',
+	skin: '42Lisboa',
 };
 
 export class Game {

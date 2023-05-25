@@ -3,6 +3,26 @@ import { defineStore } from "pinia";
 import { env } from "../env";
 import axios from "axios";
 
+export interface Historic {
+  winner: string,
+  loser: string,
+}
+
+export interface InfoPong {
+  avatar: string,
+  color: string,
+  skin:{
+    default: {
+      tableColor: string,
+      tableSkin: string,
+      paddle: string,
+    },
+    tables: string[],
+    paddles: string[],
+  },
+  historic: Historic[],
+}
+
 export interface User {
   access_token_server: string;
   accessToken: string;
@@ -13,6 +33,7 @@ export interface User {
   email: string;
   nickname: string;
   image: string;
+  infoPong: InfoPong;
 }
 
 export const userStore = defineStore("user", () => {
@@ -26,6 +47,20 @@ export const userStore = defineStore("user", () => {
     nickname: "",
     isLogin: false,
     image: "",
+    infoPong: {
+      avatar: "",
+      color: "blue",
+      skin:{
+        default: {
+          tableColor: "#1e8c2f",
+          tableSkin: "",
+          paddle: "",
+        },
+        tables: [],
+        paddles: [],
+      },
+      historic: [],
+    },
   });
 
   async function login(authorizationCode: string | undefined) {

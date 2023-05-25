@@ -8,10 +8,10 @@ export interface gameRequest {
 
 export interface playerInfo {
   objectId: string,
-  avatar: string,
   nickname: string,
+  avatar: string,
   color: string,
-  skinPlayer: string,
+  skin: string,
 }
 
 export interface updatePlayer {
