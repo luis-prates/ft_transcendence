@@ -23,8 +23,6 @@ export class Door implements GameObject {
     contex.fillRect(this.x, this.y, Map.SIZE, Map.SIZE);
   }
 
-  update(deltaTime: number): void {}
-
   setData(data: any): void {
     this.x = data.x;
     this.y = data.y;

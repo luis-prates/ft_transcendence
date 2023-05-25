@@ -34,26 +34,6 @@ export class Lobby extends Game {
         }
       }
     });
-
-    const menu = new Menu();
-    const element: ElementUI & any = {
-      type: "button",
-      retanglulo: {
-        x: 10,
-        y: "10%",
-        w: "10%",
-        h: "10%",
-      },
-      onClick: () => console.log("Criar NPC"),
-      draw(contex: any) {
-        contex.fillStyle = "red";
-        contex.fillRect(this.retanglulo.x, this.retanglulo.y, this.retanglulo.w, this.retanglulo.h);
-      },
-      imagem: null,
-    };
-    // menu.layer = "Global";
-    menu.add(element);
-    this.addMenu(menu);
   }
 
   draw(): void {

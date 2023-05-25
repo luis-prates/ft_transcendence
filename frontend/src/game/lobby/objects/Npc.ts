@@ -1,4 +1,6 @@
 import { Character } from "@/game/base/Character";
+import oie_transparent from "@/assets/images/lobby/oie_transparent.png";
+import { Game, Menu } from "@/game";
 
 export class Npc extends Character {
   constructor() {
@@ -28,5 +30,33 @@ export class Npc extends Character {
 
   public interaction(gameObject: Character): void {
     this.setLookAt(gameObject);
+
+    const image = new Image();
+    image.src = oie_transparent;
+    image.onload = () => {
+      const menu = new Menu({ timeOut: 5000 });
+      const element = {
+        type: "image",
+        retanglulo: { x: this.x + 5, y: this.y - (this.h + 40), w: 100, h: 100 },
+        draw: (context: any) => {
+          context.drawImage(image, element.retanglulo.x, element.retanglulo.y, element.retanglulo.w, element.retanglulo.h);
+        },
+      };
+      const element2 = {
+        type: "text",
+        retanglulo: { x: this.x + 5, y: this.y - (this.h + 40), w: 100, h: 100 },
+        draw: (context: any) => {
+          context.font = "20px Arial";
+          context.fillStyle = "red";
+          context.fillText("Ola", element.retanglulo.x + 10, element.retanglulo.y + 20);
+        },
+      };
+      menu.add(element, element2);
+      menu.onClose = () => {
+        console.log("fechou");
+        this.isSelect = false;
+      };
+      Game.instance.addMenu(menu);
+    };
   }
 }

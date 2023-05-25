@@ -69,6 +69,12 @@ export class Game {
     else this.menusGlobal.push(menu);
   }
 
+  public removeMenu(menu: Menu) {
+    if (menu.layer == "Local") this.menusLocal.splice(this.menusLocal.indexOf(menu), 1);
+    else this.menusGlobal.splice(this.menusGlobal.indexOf(menu), 1);
+    if (menu.onClose) menu.onClose();
+  }
+
   protected onResize() {
     this.menusLocal.forEach((menu) => menu.onResize(window.innerWidth, window.innerHeight));
     this.menusGlobal.forEach((menu) => menu.onResize(window.innerWidth, window.innerHeight));
