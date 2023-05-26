@@ -8,13 +8,7 @@ export class Games {
 	public connection(player: Player) {
 		player.on('new_game', (e: gameRequest) => this.new_game(player, e));
 		player.on('entry_game', (e: playerInfo) => this.entry_game(player, e));
-		player.on('game_move', (e: any) => this.game_move(e));
-		// player.on('disconnect', () => this.disconnect(player));
 	}
-
-	// public desconect(player: Player) {
-	// 	player.socket.off('new_game');
-	// }
 
 	new_game(player: Player, e: gameRequest) {
 		console.log('PLAYER_1: ', e);
@@ -31,28 +25,13 @@ export class Games {
 		console.log(info);
 		const game = this.games.find((g) => g.data.objectId == info.objectId);
 		if (game) {
-			game.addUsers(player, info);
+			game.entry_game(player, info);
 			console.log(this.games);
-		}
-		console.log('entry_game: ', info);
-	}
-
-	game_move(e: any) {
-		const game = this.games.find((g) => g.data.objectId == e.objectId);
-		if (game && (game.status == Status.InGame)) {
-			if (e.playerNumber == 1) {
-				if (e.move == 'up') game.player1.moveUp();
-				else if (e.move == 'down') game.player1.moveDown();
-			} else if (e.playerNumber == 2) {
-				if (e.move == 'up') game.player2.moveUp();
-				else if (e.move == 'down') game.player2.moveDown();
-			}
 		}
 	}
 
 	disconnect(player: Player) {
 		console.log('Socket desconectado:', player.id);
-
 		function isInGame(game: Game) {
 			const disconect = player.id;
 			if (game.status == Status.Finish) return;
@@ -62,10 +41,9 @@ export class Games {
 			if (index !== -1) {
 				game.watchers.splice(index, 1);
 				console.log('Socket removido da lista de watchers');
-				this.emitAll('game_view', this.watchers.length );
+				this.emitAll('game_view', this.watchers.length);
 			}
 		}
-
 		this.games.forEach((game) => isInGame(game));
 	}
 }

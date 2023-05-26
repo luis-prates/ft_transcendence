@@ -10,20 +10,16 @@
 </template>
 
 <script setup lang="ts">
-import { Game, Status } from "@/game/ping_pong/pingPong.js";
-import { onMounted, onUnmounted, ref } from "vue";
-import { Table } from "@/game/ping_pong/table.js";
+import { GamePong, TablePong, Status } from "@/game/ping_pong";
+import { onMounted, onUnmounted, ref, defineProps } from "vue";
 import socket from "@/socket/Socket";
 import { type gameRequest, type updatePlayer, type updateBall, type gamePoint } from "@/game/ping_pong/SocketInterface";
+import { userStore } from "@/stores/userStore";
 
 import avatar_marvin from "@/assets/images/pingpong/marvin.jpg";
 
 const props = defineProps({
   objectId: String,
-  avatar: String,
-  nickname: String,
-  color: String,
-  skinPlayer: String,
 });
 
 const status = ref(Status.Waiting);
@@ -34,31 +30,38 @@ onMounted(function () {
   canvas.width = 1000;
   canvas.height = 750;
 
-  socket.emit("entry_game", props);
+  const user = userStore().user;
+  socket.emit("entry_game", { 
+    objectId: props.objectId, 
+    nickname: user.nickname,
+    avatar: user.infoPong.avatar,
+    color: user.infoPong.color,
+    skin: user.infoPong.skin.default.paddle,
+  });
+
   console.log("pros: ", props);
 
   //TODO
   const tableColor: string = "#1e8c2f";
 
-  const game = new Game(canvas.width, canvas.height - 228, 164, ctx, props as gameRequest);
+  const game = new GamePong(canvas.width, canvas.height - 228, 164, ctx, props as gameRequest);
   console.log(props);
-  const tableBoard = new Table(canvas.width, canvas.height, "DarkSlateBlue", tableColor);
+  const tableBoard = new TablePong(canvas.width, canvas.height, "DarkSlateBlue", tableColor);
 
   socket.on("start_game", (e: any) => {
     console.log(e);
     console.log(game);
     game.audio("music_play");
 
-    game.player1.nickname = e.nickname1;
+    game.player1.nickname = e.nickname1 ? e.nickname1 : game.player1.nickname;
     game.player1.color = e.color1;
     game.player1.avatar.src = e.avatar1 ? e.avatar1 : game.player1.avatar.src;
 
-    game.player2.nickname = e.nickname2;
+    game.player2.nickname = e.nickname2 ? e.nickname2 : game.player1.nickname;;
     game.player2.color = e.color2;
     game.player2.avatar.src = e.avatar2 ? e.avatar2 : game.player2.avatar.src;
-    
-    if (game.player2.nickname == "Marvin" && e.avatar2 == "marvin")
-      game.player2.avatar.src = avatar_marvin;
+
+    if (game.player2.nickname == "Marvin" && e.avatar2 == "marvin") game.player2.avatar.src = avatar_marvin;
 
     e.skin1 ? game.player1.updateSkin(e.skin1) : "";
     e.skin2 ? game.player2.updateSkin(e.skin2) : "";
@@ -72,7 +75,7 @@ onMounted(function () {
       game.playerNumber = 2;
     }
   });
-  
+
   socket.on("game_update_status", (status: any) => {
     if (game.status != Status.Finish) {
       game.updateStatus(status);

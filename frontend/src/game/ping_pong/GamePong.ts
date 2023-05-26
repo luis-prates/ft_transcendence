@@ -1,7 +1,4 @@
-import { Player } from "./Player";
-import { InputHandler } from "./Input";
-import { Ball } from "./Ball";
-import socket from "@/socket/Socket";
+import { PlayerPong, InputHandler, Ball } from "@/game/ping_pong";
 import { type gameRequest } from "./SocketInterface";
 
 //Images
@@ -9,11 +6,11 @@ import viewGame from "@/assets/images/pingpong/view.png";
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 
 //Audio
-import sound_player from '@/assets/audio/paddle_hit.wav';
-import sound_wall from '@/assets/audio/wall_hit.wav';
-import sound_score from '@/assets/audio/score.wav';
-import sound_counting from '@/assets/audio/counting.mp3';
-import music from '@/assets/audio/music_game.mp3';
+import sound_player from "@/assets/audio/paddle_hit.wav";
+import sound_wall from "@/assets/audio/wall_hit.wav";
+import sound_score from "@/assets/audio/score.wav";
+import sound_counting from "@/assets/audio/counting.mp3";
+import music from "@/assets/audio/music_game.mp3";
 
 export enum Status {
   Waiting,
@@ -22,14 +19,14 @@ export enum Status {
   Finish,
 }
 
-export class Game {
+export class GamePong {
   status: number = Status.Waiting;
   width: number;
   height: number;
   offSet: number = 0;
   inputKey: InputHandler;
-  player1: Player;
-  player2: Player;
+  player1: PlayerPong;
+  player2: PlayerPong;
   ball: Ball;
   data: gameRequest;
   playerNumber: number = 0;
@@ -45,8 +42,8 @@ export class Game {
     this.offSet = offSet;
     this.context = context;
     this.inputKey = new InputHandler();
-    this.player1 = new Player(this, 1, "Player 1", avatarDefault);
-    this.player2 = new Player(this, 2, "Player 2", avatarDefault);
+    this.player1 = new PlayerPong(this, 1, "Player 1", avatarDefault);
+    this.player2 = new PlayerPong(this, 2, "Player 2", avatarDefault);
     this.ball = new Ball(this);
     this.data = data;
   }
@@ -64,12 +61,10 @@ export class Game {
   }
   //Update Watchers
   updateWatchers(watchers: number) {
-    if (this.watchersNumber != watchers)
-      this.watchersNumber = watchers;
+    if (this.watchersNumber != watchers) this.watchersNumber = watchers;
   }
   //Audio Controller
-  audio(sound: string)
-  {
+  audio(sound: string) {
     if (sound == "player") new Audio(sound_player).play();
     else if (sound == "wall") new Audio(sound_wall).play();
     else if (sound == "score") new Audio(sound_score).play();
@@ -111,18 +106,15 @@ export class Game {
 
     const viewImage = new Image();
     viewImage.src = viewGame;
-    try 
-    {
+    try {
       this.context.drawImage(viewImage, 65, this.height + this.offSet + 9, 50, 50);
-    }
-    catch {
+    } catch {
       this.context.fillText("Viewrs:", 10, this.height + this.offSet + 45, 100);
       this.context.strokeText("Viewrs:", 10, this.height + this.offSet + 45, 100);
     }
 
     this.context.fillText(this.watchersNumber.toString(), 120, this.height + this.offSet + 45, 50);
     this.context.strokeText(this.watchersNumber.toString(), 120, this.height + this.offSet + 45, 50);
-
   }
   //Draw Waiting Game
   waitingGame() {

@@ -21,7 +21,7 @@
 	"width": 544,
 	"height": 672,
 	"size": 32,
-	"img": "http://localhost:3000/v2/image/8c9c64e0b3fcf049435ca7adc5350507.png",
+	"img": "src/assets/images/lobby/8c9c64e0b3fcf049435ca7adc5350507.png",
 	"start_position": { "x": 320, "y": 320 },
 	"objectId": "house"
 }

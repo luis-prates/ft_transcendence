@@ -1,5 +1,6 @@
 import { Camera, Player, Menu, type GameObject, Map, listClass } from "@/game";
 import socket from "@/socket/Socket";
+import { userStore } from "@/stores/userStore";
 
 export class Game {
   public static instance: Game;
@@ -47,13 +48,13 @@ export class Game {
         const rect = this.canvas.getBoundingClientRect();
         const data = {
           className: "Table",
-          objectId: "gametest",
+          objectId: "gametest_" + userStore().user.nickname,
           color,
           x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE,
           y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,
         };
         socket.emit("new_gameobject", data);
-        socket.emit("new_game", { objectId: data.objectId, maxScore: 3, table: data.color, tableSkin: "", bot: true });
+        socket.emit("new_game", { objectId: data.objectId, maxScore: 3, table: data.color, tableSkin: "", bot: color == "#2aaa15" });
       }
       event.preventDefault();
     });
@@ -61,11 +62,24 @@ export class Game {
     map.datas = [];
     this.isRunning = true;
     window.addEventListener("resize", this.onResize.bind(this));
+    window.addEventListener("keyup", this.keyUp.bind(this));
+  }
+
+  public keyUp(event: KeyboardEvent) {
+    this.menusGlobal.forEach((menu) => {
+      if (menu.KeyClose && menu.KeyClose == event.key) this.removeMenu(menu);
+    });
   }
 
   public addMenu(menu: Menu) {
     if (menu.layer == "Local") this.menusLocal.push(menu);
     else this.menusGlobal.push(menu);
+  }
+
+  public removeMenu(menu: Menu) {
+    if (menu.layer == "Local") this.menusLocal.splice(this.menusLocal.indexOf(menu), 1);
+    else this.menusGlobal.splice(this.menusGlobal.indexOf(menu), 1);
+    if (menu.onClose) menu.onClose();
   }
 
   protected onResize() {
@@ -77,18 +91,13 @@ export class Game {
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left + this.camera.x;
     const mouseY = event.clientY - rect.top + this.camera.y;
-    let isSelect = false;
+    for await (let menu of this.menusGlobal) {
+      if (menu.mouseClick(event.clientX, event.clientY, event.button)) return;
+    }
     for await (let menu of this.menusLocal) {
-      isSelect = menu.mouseClick(mouseX, mouseY, event.button);
-      if (isSelect) break;
+      if (menu.mouseClick(mouseX, mouseY, event.button)) return;
     }
-    if (!isSelect) {
-      for await (let menu of this.menusGlobal) {
-        isSelect = menu.mouseClick(event.clientX, event.clientY, event.button);
-        if (isSelect) break;
-      }
-    }
-    if (!isSelect) this.mouseEvents.forEach((action: any) => action(mouseX, mouseY, event.button));
+    this.mouseEvents.forEach((action: any) => action(mouseX, mouseY, event.button));
   }
 
   draw() {
@@ -121,6 +130,7 @@ export class Game {
 
   addGameObject(gameObject: GameObject): GameObject {
     this.gameObjets.push(gameObject);
+    console.log("Add: ", gameObject.objectId);
     if (gameObject.mouseClick) this.mouseEvents.push(gameObject.mouseClick.bind(gameObject));
     if (gameObject.update) this.gameObjetsUpdate.push(gameObject);
     return gameObject;
@@ -141,6 +151,7 @@ export class Game {
     this.isRunning = false;
     this.canvas.remove();
     window.removeEventListener("resize", this.onResize);
+    window.removeEventListener("keyup", this.keyUp);
   }
 
   public static MouseColision(x: number, y: number): GameObject | undefined {

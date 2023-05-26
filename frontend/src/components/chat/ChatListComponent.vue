@@ -1,8 +1,8 @@
 <template>
   <div class="box2">
     <div class="search">
-      <input placeholder="Search"/>
-      <button style="border-style: hidden;" @click="sendMessage">+</button>
+      <input placeholder="Search" />
+      <button style="border-style: hidden" @click="sendMessage">+</button>
     </div>
     <div class="buttom">
       <button>🗨</button>
@@ -10,7 +10,7 @@
     </div>
     <li class="list">
       <u v-for="channel in store.channels">
-        <ChatItemComponent :channel="channel" @click="selectChannel(channel)"/>
+        <ChatItemComponent :channel="channel" @click="selectChannel(channel)" />
       </u>
     </li>
   </div>
@@ -22,34 +22,28 @@ import { chatStore, type channel } from "@/stores/chatStore";
 
 const store = chatStore();
 
-function selectChannel(channel:channel) {
+function selectChannel(channel: channel) {
   console.log("Carregou no channel!\n", channel);
-  store.showChannel(channel)
+  store.showChannel(channel);
 }
 
 function sendMessage() {
   console.log("sendMessage");
-  store.addChannel({
-    name: "Zé Manuel da silva ahaha lo sdfsf sdfsl asdasda asdasdasd asdasdasda sdasdasd",
-    status: "online",
-    avatar: "https://cdn.intra.42.fr/users/a99e8dd9d772038a6765065e3ac5187f/ede-alme.jpg",
-    messages: [],
-  });
 }
 </script>
 
 <style scoped lang="scss">
 .box2 {
-  background-color: #444653; 
+  background-color: #444653;
 
   .buttom {
-    button{
+    button {
       width: 50%;
       font-size: x-large;
       background-color: transparent;
       border-color: transparent;
       color: #f1f1f1;
-      }
+    }
   }
   .search {
     height: 20%;
@@ -81,10 +75,9 @@ function sendMessage() {
       padding: 0px;
     }
   }
-  .search::after
-  {
+  .search::after {
     //content: icon;
-    color:#d8d8d8;
+    color: #d8d8d8;
     content: "⌕";
     //margin-right: 50px;
     font-size: 20px;
@@ -101,33 +94,32 @@ function sendMessage() {
     list-style-type: none;
     /* overflow: scroll; */
     overflow-y: auto;
-   
   }
 
-   /* SCROLL CONFIGURATION */
-   ::-webkit-scrollbar {
-      width: 10px;
-    }
+  /* SCROLL CONFIGURATION */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
 
-    /* Track */
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 10px;
-    }
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
 
-    /* Handle */
-    ::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 10px;
-    }
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
 
-    /* Handle on hover */
-    ::-webkit-scrollbar-thumb:hover {
-      background: #555;
-    }
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 
-    ::placeholder {
-      color: aliceblue;
-    }
+  ::placeholder {
+    color: aliceblue;
+  }
 }
 </style>

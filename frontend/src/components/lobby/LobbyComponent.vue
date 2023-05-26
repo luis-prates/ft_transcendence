@@ -32,8 +32,8 @@ onMounted(() => {
   isLoad.value = false;
   socket.emit("join_map", { objectId: store.user.id, map: { name: "lobby" } });
   socket.on("load_map", (data: any) => {
+    console.log("load_map", data.data);
     setTimeout(() => {
-      console.log("load_map_4444");
       if (lobby) lobby.destructor();
       const map = new Map();
       map.setData(data.map).then(() => {

@@ -2,7 +2,26 @@ import { reactive } from "vue";
 import { defineStore } from "pinia";
 import { env } from "../env";
 import axios from "axios";
-// import HomePage from "@/pages/HomePage.vue";
+
+export interface Historic {
+  winner: string,
+  loser: string,
+}
+
+export interface InfoPong {
+  avatar: string,
+  color: string,
+  skin:{
+    default: {
+      tableColor: string,
+      tableSkin: string,
+      paddle: string,
+    },
+    tables: string[],
+    paddles: string[],
+  },
+  historic: Historic[],
+}
 
 export interface User {
   access_token_server: string;
@@ -14,22 +33,19 @@ export interface User {
   email: string;
   nickname: string;
   image: string;
+  infoPong: InfoPong;
 }
 
-// const routes = [
-//   {
-//     path: "/home",
-//     name: "home",
-//     component: HomePage,
-//   },
-// //   {
-// //     path: "/about",
-// //     name: "About",
-// //     component: About,
-// //   },
-// ];
-
 export const userStore = defineStore("user", () => {
+  const randomColor = () => {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+
   const user = reactive({
     access_token_server: "",
     accessToken: "",
@@ -40,6 +56,20 @@ export const userStore = defineStore("user", () => {
     nickname: "",
     isLogin: false,
     image: "",
+    infoPong: {
+      avatar: "",
+      color: randomColor(),
+      skin:{
+        default: {
+          tableColor: "#1e8c2f",
+          tableSkin: "",
+          paddle: "",
+        },
+        tables: [],
+        paddles: [],
+      },
+      historic: [],
+    },
   });
 
   async function login(authorizationCode: string | undefined) {

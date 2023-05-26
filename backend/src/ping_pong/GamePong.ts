@@ -15,7 +15,7 @@ const infoBot: playerInfo = {
 	nickname: 'Marvin',
 	avatar: 'marvin',
 	color: '#12bab9',
-	skinPlayer: '42Lisboa',
+	skin: '42Lisboa',
 };
 
 export class Game {
@@ -24,8 +24,8 @@ export class Game {
 	height: number = 522;
 	status: number = Status.Waiting;
 	ball: Ball;
-	player1: Player_Pong;
-	player2: Player_Pong;
+	player1: Player_Pong | null = null;
+	player2: Player_Pong | null = null;
 	maxPoint = 3;
 	watchers: Player[] = [];
 	data: gameRequest;
@@ -44,8 +44,8 @@ export class Game {
 	gameLoop() {
 		if (!this.isEndGame()) {
 			if (this.status == Status.InGame) this.ball.update();
-			this.player1.update();
-			this.player2.update();
+			if (this.player1) this.player1.update();
+			if (this.player2) this.player2.update();
 		}
 		setTimeout(() => {
 			this.gameLoop();
@@ -88,14 +88,14 @@ export class Game {
 	addUsers(user: Player, playerInfo?: playerInfo) {
 		// DATA BASE VERIFICATION
 
-		if (!this.player1) {
+		if (this.player1 == null) {
 			this.player1 = new Player_Pong(this, 1, user, playerInfo);
 			//console.log('player1 connect', playerInfo);
 			if (this.bot == true) {
 				this.player2 = new Player_Pong(this, 3, user, infoBot);
 				this.emitStartGame();
 			}
-		} else if (!this.player2) {
+		} else if (this.player2 == null) {
 			this.player2 = new Player_Pong(this, 2, user, playerInfo);
 			console.log('player2 connect', playerInfo);
 			this.emitStartGame();
@@ -113,7 +113,7 @@ export class Game {
 				color2: this.player2.color,
 				skin2: this.player2.skin,
 			});
-			this.emitAll('game_view', this.watchers.length );
+			this.emitAll('game_view', this.watchers.length);
 		}
 		//console.log("p1: ", this.player1, " p2: ", this.player2, " ws: ", this.whatchers);
 	}
@@ -168,6 +168,9 @@ export class Game {
 				});
 			}
 			//INSERT IN DATABASE
+			this.player1?.socket.off('game_move');
+			if (this.player2 != null && this.bot == false) this.player2?.socket.off('game_move');
+			this.watchers.forEach((watcher) => watcher.off('game_move'));
 			this.onRemove();
 		}
 	}
@@ -207,8 +210,7 @@ export class Game {
 	}
 	//Emit for Watchers
 	emitWatchers(event: string, data: any): void {
-		if (this.watchers.length <= 0)
-			return ;
+		if (this.watchers.length <= 0) return;
 		this.watchers.forEach((clientSocket) => {
 			if (clientSocket.id !== this.player1.socket.id || clientSocket.id !== this.player2.socket.id) clientSocket.emit(event, data);
 		});
@@ -217,5 +219,23 @@ export class Game {
 	emitAll(event: string, data: any): void {
 		this.emitPlayers(event, data);
 		this.emitWatchers(event, data);
+	}
+
+	entry_game(player: Player, info: playerInfo) {
+		if (this.player1 == null || (this.player2 == null && this.bot == false)) player.on('game_move', (e: any) => this.game_move(e));
+		this.addUsers(player, info);
+		console.log(this.games);
+	}
+
+	private game_move(e: any) {
+		if (this.status == Status.InGame) {
+			if (e.playerNumber == 1) {
+				if (e.move == 'up') this.player1.moveUp();
+				else if (e.move == 'down') this.player1.moveDown();
+			} else if (e.playerNumber == 2) {
+				if (e.move == 'up') this.player2.moveUp();
+				else if (e.move == 'down') this.player2.moveDown();
+			}
+		}
 	}
 }

@@ -28,7 +28,7 @@ export class Player_Pong {
 		this.nickname = info.nickname;
 		this.avatar = info.avatar;
 		this.color = info.color;
-		this.skin = info.skinPlayer;
+		this.skin = info.skin;
 	}
 
 	moveUp() {
