@@ -74,6 +74,10 @@ export class Menu implements GameObject {
     });
   }
 
+  public close() {
+    Game.instance.removeMenu(this);
+  }
+
   public remove(element: ElementUI): boolean {
     const size = this.elements.length;
     this.elements = this.elements.filter((e) => e !== element);
