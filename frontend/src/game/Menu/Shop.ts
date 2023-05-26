@@ -9,6 +9,7 @@ import skin_onepiece from "@/assets/images/skin/table/skin_onepiece.jpg";
 //Sound
 import sound_caching from "@/assets/audio/caching.mp3";
 import sound_close_tab from "@/assets/audio/close.mp3";
+import { ConfirmButton } from "./ConfirmButton";
 
 export class Shop {
 
@@ -57,8 +58,11 @@ export class Shop {
 
 	private createProduct(name: string, type: string, image_src: string, x: number, y: number) : ElementUI {
 		const photo = new Image();
-		const buy_sound = new Audio(sound_caching);
 		photo.src = image_src;
+		const buy_sound = new Audio(sound_caching);
+
+		//const confirmButton = new ConfirmButton();
+
 		const product: ElementUI = {
 			type: "image",
 			rectangle: { x: x + "%", y:  y + "%", w: "10%", h: "15%" },
@@ -69,19 +73,9 @@ export class Shop {
 		  		ctx.fillStyle = 'DarkSlateBlue';
 		  		ctx.strokeStyle = '#000';
 		  		ctx.lineWidth = 2;
-				const r = product.rectangle.x + product.rectangle.w;
-				const b = product.rectangle.y + product.rectangle.h;
-				ctx.beginPath();
-				ctx.moveTo(product.rectangle.x + this.radius, product.rectangle.y);
-				ctx.lineTo(r - this.radius, product.rectangle.y);
-				ctx.quadraticCurveTo(r, product.rectangle.y, r, product.rectangle.y + this.radius);
-				ctx.lineTo(r, product.rectangle.y + product.rectangle.h - this.radius);
-				ctx.quadraticCurveTo(r, b, r - this.radius, b);
-				ctx.lineTo(product.rectangle.x + this.radius, b);
-				ctx.quadraticCurveTo(product.rectangle.x, b, product.rectangle.x, b - this.radius);
-				ctx.lineTo(product.rectangle.x, product.rectangle.y + this.radius);
-				ctx.quadraticCurveTo(product.rectangle.x, product.rectangle.y, product.rectangle.x + this.radius, product.rectangle.y);
-				ctx.closePath();
+
+				this.roundRect(ctx, product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h, this.radius);
+
 				ctx.fill();
 				ctx.stroke();
 
@@ -136,7 +130,11 @@ export class Shop {
 				//548₳
 		  		ctx.fillText("FREE", product.rectangle.x + product.rectangle.w / 2, product.rectangle.y + product.rectangle.h + offSetPrice);
 			},
-			onClick: () => { buy_sound.play();  }
+			onClick: () => { 
+				this.menu.close();
+				//this.menu.add(...confirmButton.elements);
+				buy_sound.play();
+			}
 		}
 		return product;
 	}
@@ -174,18 +172,8 @@ export class Shop {
 		const borderColor = '#8B4513'; // Cor de contorno mais escuro
 	  
 		// Desenha o corpo do balão com cor de fundo castanho
-		ctx.beginPath();
-		ctx.moveTo(pos.x + this.radius, pos.y);
-		ctx.lineTo(pos.x + pos.w - this.radius, pos.y);
-		ctx.quadraticCurveTo(pos.x + pos.w, pos.y, pos.x + pos.w, pos.y + this.radius);
-		ctx.lineTo(pos.x + pos.w, pos.y + pos.h - this.radius);
-		ctx.quadraticCurveTo(pos.x + pos.w, pos.y + pos.h, pos.x + pos.w - this.radius, pos.y + pos.h);
-		ctx.lineTo(pos.x + this.radius, pos.y + pos.h);
-		ctx.quadraticCurveTo(pos.x, pos.y + pos.h, pos.x, pos.y + pos.h - this.radius);
-		ctx.lineTo(pos.x, pos.y + this.radius);
-		ctx.quadraticCurveTo(pos.x, pos.y, pos.x + this.radius, pos.y);
-		ctx.closePath();
 		ctx.fillStyle = backgroundColor;
+		this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
 		ctx.fill();
 	  
 		// Desenha o contorno do balão com cor mais escura
@@ -202,47 +190,52 @@ export class Shop {
 
 
 		// Adiciona sublinhado ao título
-		//ctx.strokeStyle = '#000';
 		ctx.lineWidth = 2;
 		ctx.beginPath();
 		ctx.moveTo(pos.x + pos.w / 2 - 30, pos.y + pos.h * 0.06); // Posição inicial do sublinhado
 		ctx.lineTo(pos.x + pos.w / 2 + 30, pos.y + pos.h * 0.06); // Posição final do sublinhado
-		ctx.stroke();
+		ctx.stroke();		
+	}
 
-		// Configurações para desenhar os quadrados de produtos
-		const squareSize = 8;
-		const paddingX = 9.6;
-		const paddingY = 8;
-		const titleOffsetY = 20;
-		const priceOffsetY = 40;
-		const buttonOffsetY = 60;
-		const buttonWidth = 40;
-		const buttonHeight = 20;
+  	private static drawMessage(ctx: CanvasRenderingContext2D, pos: Rectangle, message: string) {
+		ctx.font = "12px Arial";
+		ctx.fillStyle = "black";
 		
+		const words = message.split(" ");
+		const lineLength = 46; // Comprimento máximo da linha
+		
+		let line = 0;
+		let currentLine = "";
+		for (let i = 0; i < words.length; i++) {
+		  const word = words[i];
+		  const testLine = currentLine + word + " ";
+		
+		  if (testLine.length > lineLength) {
+			ctx.fillText(currentLine, pos.x + 10, pos.y + 20 + line);
+			currentLine = word + " ";
+			line += 16; // Ajuste a altura da nova linha conforme necessário
+		  } else {
+			currentLine = testLine;
+		  }
+		}
+	
+		ctx.fillText(currentLine, pos.x + 10, pos.y + 20 + line);
+ 	}
+
+	roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
+		const r = x + width;
+		const b = y + height;
+		ctx.beginPath();
+		ctx.moveTo(x + radius, y);
+		ctx.lineTo(r - radius, y);
+		ctx.quadraticCurveTo(r, y, r, y + radius);
+		ctx.lineTo(r, y + height - radius);
+		ctx.quadraticCurveTo(r, b, r - radius, b);
+		ctx.lineTo(x + radius, b);
+		ctx.quadraticCurveTo(x, b, x, b - radius);
+		ctx.lineTo(x, y + radius);
+		ctx.quadraticCurveTo(x, y, x + radius, y);
+		ctx.closePath();
 	}
 
-  private static drawMessage(ctx: CanvasRenderingContext2D, pos: Rectangle, message: string) {
-	ctx.font = "12px Arial";
-	ctx.fillStyle = "black";
-  
-	const words = message.split(" ");
-	const lineLength = 46; // Comprimento máximo da linha
-  
-	let line = 0;
-	let currentLine = "";
-	for (let i = 0; i < words.length; i++) {
-	  const word = words[i];
-	  const testLine = currentLine + word + " ";
-  
-	  if (testLine.length > lineLength) {
-		ctx.fillText(currentLine, pos.x + 10, pos.y + 20 + line);
-		currentLine = word + " ";
-		line += 16; // Ajuste a altura da nova linha conforme necessário
-	  } else {
-		currentLine = testLine;
-	  }
-	}
-  
-	ctx.fillText(currentLine, pos.x + 10, pos.y + 20 + line);
-  }
 }
