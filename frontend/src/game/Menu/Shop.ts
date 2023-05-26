@@ -33,7 +33,6 @@ export class Shop {
           	this.draw(context, background.rectangle);
         	}
 		}
-
 		return background;
 	}
 
@@ -46,10 +45,13 @@ export class Shop {
 	   
 		// Loop para desenhar os quadrados de produtos
 		for (let i = 0; i < 15; i++) {
-		  const squareX = 10 + 3 + (i % 5) * (squareW + paddingX);
-		  const squareY = 10 + paddingY + Math.floor(i / 5) * (squareH + paddingY);
+		  	const squareX = 10 + 3 + (i % 5) * (squareW + paddingX);
+		  	const squareY = 10 + paddingY + Math.floor(i / 5) * (squareH + paddingY);
 
-		  this.products.push(this.createProduct("Text " + i, "table", skin_onepiece, squareX, squareY));
+		  	if (i % 2)
+			  	this.products.push(this.createProduct("Text " + i, "table", skin_onepiece, squareX, squareY));
+			else
+				this.products.push(this.createProduct("Text " + i, "paddle", skin_mario, squareX, squareY));
 		}
 	}
 
@@ -64,12 +66,27 @@ export class Shop {
 				const offSetTittle = this.background.rectangle.y * 0.05;
 				const offSetPrice = this.background.rectangle.y * 0.20;
 				
-		  		// Desenha o quadrado com borda
 		  		ctx.fillStyle = 'DarkSlateBlue';
 		  		ctx.strokeStyle = '#000';
 		  		ctx.lineWidth = 2;
-		  		ctx.fillRect(product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h);
-		  		ctx.strokeRect(product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h);
+				const r = product.rectangle.x + product.rectangle.w;
+				const b = product.rectangle.y + product.rectangle.h;
+				ctx.beginPath();
+				ctx.moveTo(product.rectangle.x + this.radius, product.rectangle.y);
+				ctx.lineTo(r - this.radius, product.rectangle.y);
+				ctx.quadraticCurveTo(r, product.rectangle.y, r, product.rectangle.y + this.radius);
+				ctx.lineTo(r, product.rectangle.y + product.rectangle.h - this.radius);
+				ctx.quadraticCurveTo(r, b, r - this.radius, b);
+				ctx.lineTo(product.rectangle.x + this.radius, b);
+				ctx.quadraticCurveTo(product.rectangle.x, b, product.rectangle.x, b - this.radius);
+				ctx.lineTo(product.rectangle.x, product.rectangle.y + this.radius);
+				ctx.quadraticCurveTo(product.rectangle.x, product.rectangle.y, product.rectangle.x + this.radius, product.rectangle.y);
+				ctx.closePath();
+				ctx.fill();
+				ctx.stroke();
+
+		  		/*ctx.fillRect(product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h);
+		  		ctx.strokeRect(product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h);*/
 
 				if (type == "table" && photo.complete)
 				{
@@ -116,7 +133,8 @@ export class Shop {
 		  		ctx.fillStyle = '#000';
 		  		ctx.font = '12px Arial';
 		  		ctx.textAlign = 'center';
-		  		ctx.fillText("0,01€", product.rectangle.x + product.rectangle.w / 2, product.rectangle.y + product.rectangle.h + offSetPrice);
+				//548₳
+		  		ctx.fillText("FREE", product.rectangle.x + product.rectangle.w / 2, product.rectangle.y + product.rectangle.h + offSetPrice);
 			},
 			onClick: () => { buy_sound.play();  }
 		}
@@ -176,17 +194,19 @@ export class Shop {
 		ctx.stroke();
 	  
 		// Escreve "Shop" no topo do balão
-		ctx.fillStyle = '#000';
-		ctx.font = 'bold 20px Arial';
+		//2ctx.fillStyle = '#000';
+		ctx.font = 'bold 22px Arial';
 		ctx.textAlign = 'center';
-		ctx.fillText('Shop', pos.x + pos.w / 2, pos.y + 20);
+		ctx.fillText('Shop', pos.x + pos.w / 2, pos.y + pos.h * 0.05);
+		ctx.strokeText('Shop', pos.x + pos.w / 2, pos.y + pos.h * 0.05);
+
 
 		// Adiciona sublinhado ao título
-		ctx.strokeStyle = '#000';
-		ctx.lineWidth = 1;
+		//ctx.strokeStyle = '#000';
+		ctx.lineWidth = 2;
 		ctx.beginPath();
-		ctx.moveTo(pos.x + pos.w / 2 - 30, pos.y + 28); // Posição inicial do sublinhado
-		ctx.lineTo(pos.x + pos.w / 2 + 30, pos.y + 28); // Posição final do sublinhado
+		ctx.moveTo(pos.x + pos.w / 2 - 30, pos.y + pos.h * 0.06); // Posição inicial do sublinhado
+		ctx.lineTo(pos.x + pos.w / 2 + 30, pos.y + pos.h * 0.06); // Posição final do sublinhado
 		ctx.stroke();
 
 		// Configurações para desenhar os quadrados de produtos
@@ -198,48 +218,6 @@ export class Shop {
 		const buttonOffsetY = 60;
 		const buttonWidth = 40;
 		const buttonHeight = 20;
-
-
-	   
-		// Loop para desenhar os quadrados de produtos
-		/*for (let i = 0; i < 15; i++) {
-		  const squareX = paddingX + (i % 5) * (squareSize + paddingX);
-		  const squareY = pos.y + paddingY + Math.floor(i / 5) * (squareSize + paddingY);
-
-		  this.products.push(this.createProduct("", "", "", 20 + 9.6 + squareX, squareY));
-	   
-		  // Desenha o quadrado com borda
-		  ctx.fillStyle = '#fff';
-		  ctx.strokeStyle = '#000';
-		  ctx.lineWidth = 2;
-		  ctx.fillRect(squareX, squareY, squareSize, squareSize);
-		  ctx.strokeRect(squareX, squareY, squareSize, squareSize);
-	   
-		  // Desenha o título do produto acima do quadrado
-		  ctx.fillStyle = '#000';
-		  ctx.font = '12px Arial';
-		  ctx.textAlign = 'center';
-		  ctx.fillText(`Title ${i + 1}`, squareX + squareSize / 2, squareY + titleOffsetY);
-	   
-		  // Desenha o preço do produto abaixo do quadrado
-		  ctx.fillStyle = '#000';
-		  ctx.font = '12px Arial';
-		  ctx.textAlign = 'center';
-		  ctx.fillText(`Price: $${i + 1}`, squareX + squareSize / 2, squareY + priceOffsetY);
-	   
-		  // Desenha o botão "Buy" abaixo do preço do produto
-		  ctx.fillStyle = '#000';
-		  ctx.fillRect(
-		 squareX + squareSize / 2 - buttonWidth / 2,
-		 squareY + buttonOffsetY,
-		 buttonWidth,
-		 buttonHeight
-		  );
-		  ctx.fillStyle = '#fff';
-		  ctx.font = '10px Arial';
-		  ctx.textAlign = 'center';
-		  ctx.fillText('BUY', squareX + squareSize / 2, squareY + buttonOffsetY + 12);
-		}*/
 		
 	}
 
