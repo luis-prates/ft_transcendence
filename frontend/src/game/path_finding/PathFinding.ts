@@ -241,7 +241,7 @@ export class PathFinding {
         }
         // this.character.animation.setStop(true);
         if (this.onCompleted) this.onCompleted(this.objectDestination);
-        this.updateSocket(this.character.x, this.character.y, this.character.animation.name, true);
+        // this.updateSocket(this.character.x, this.character.y, this.character.animation.name, true);
       }
     }
   }
