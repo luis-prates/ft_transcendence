@@ -1,15 +1,24 @@
-import type { ElementUI, Rectangle } from "@/game";
+import { Menu, type ElementUI, type Rectangle } from "@/game";
 
-import avatarMarvin from "@/assets/images/pingpong/marvin.jpg";
+//Paddle Skin
+import skin_mario from "@/assets/images/skin/line/skin_Mario.jpeg";
 
+//Table Skin
+import skin_onepiece from "@/assets/images/skin/table/skin_onepiece.jpg";
+
+//Sound
+import sound_caching from "@/assets/audio/caching.mp3";
+import sound_close_tab from "@/assets/audio/close.mp3";
 
 export class Shop {
 
+	menu = new Menu({ layer: "Global", isFocus: true });
 	radius: number = 10;
 	arrowHeight: number = 20;
 	background: ElementUI = this.createBackground();
 	products: ElementUI[] = [
 		this.background,
+		this.createButtonExit(10.5, 11),
 	];
 
 	constructor() {
@@ -40,14 +49,13 @@ export class Shop {
 		  const squareX = 10 + 3 + (i % 5) * (squareW + paddingX);
 		  const squareY = 10 + paddingY + Math.floor(i / 5) * (squareH + paddingY);
 
-		  this.products.push(this.createProduct("Text " + i, "", avatarMarvin, squareX, squareY));
+		  this.products.push(this.createProduct("Text " + i, "table", skin_onepiece, squareX, squareY));
 		}
 	}
 
-	
-
 	private createProduct(name: string, type: string, image_src: string, x: number, y: number) : ElementUI {
 		const photo = new Image();
+		const buy_sound = new Audio(sound_caching);
 		photo.src = image_src;
 		const product: ElementUI = {
 			type: "image",
@@ -57,14 +65,46 @@ export class Shop {
 				const offSetPrice = this.background.rectangle.y * 0.20;
 				
 		  		// Desenha o quadrado com borda
-		  		ctx.fillStyle = '#fff';
+		  		ctx.fillStyle = 'DarkSlateBlue';
 		  		ctx.strokeStyle = '#000';
 		  		ctx.lineWidth = 2;
 		  		ctx.fillRect(product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h);
 		  		ctx.strokeRect(product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h);
 
-				if (photo.complete)
-				  ctx.drawImage(photo, product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h);
+				if (type == "table" && photo.complete)
+				{
+					const scaledWidth = product.rectangle.w * 0.80;
+					const scaledHeight = product.rectangle.h * 0.78;
+					const pointx = (product.rectangle.w - scaledWidth) / 2;
+					const pointy = (product.rectangle.h - scaledHeight) / 2;
+
+					ctx.fillStyle = "white";
+					ctx.fillRect(product.rectangle.x + pointx - (this.background.rectangle.y * 0.78 * 0.015), product.rectangle.y + pointy - (this.background.rectangle.y * 0.78 * 0.015), scaledWidth + (this.background.rectangle.y * 0.78 * 0.03), scaledHeight + (this.background.rectangle.y * 0.78 * 0.03));
+					
+					if (photo.complete)
+					  ctx.drawImage(photo, product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth, scaledHeight);
+					
+					//Midle Line
+					ctx.fillRect(product.rectangle.x + pointx, product.rectangle.y + pointy + (scaledHeight / 2 - this.background.rectangle.y * 0.78 * 0.01), scaledWidth, this.background.rectangle.y * 0.78 * 0.02);
+					//Vertical
+					ctx.fillRect(product.rectangle.x + (product.rectangle.w / 2 - this.background.rectangle.y * 0.78 * 0.01), product.rectangle.y + pointy, this.background.rectangle.y * 0.78 * 0.02, scaledHeight);
+				}
+				else if (type == "paddle" && photo.complete)
+				{
+					const scale = 100 / 30;
+					const scaledWidth = product.rectangle.w * 0.15 * scale;
+					const scaledHeight = product.rectangle.h * 0.30 * scale;
+					const pointx = (product.rectangle.w - (scaledWidth * 0.5)) / 2;
+					const pointy = (product.rectangle.h - (scaledHeight * 0.9)) / 2;
+
+					if (photo.complete) {
+						ctx.drawImage(photo, product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
+					}
+
+					ctx.strokeStyle = 'black';
+					ctx.lineWidth = 3;
+					ctx.strokeRect(product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
+				}
 
 		  		// Desenha o título do produto acima do quadrado
 		  		ctx.fillStyle = '#000';
@@ -78,12 +118,38 @@ export class Shop {
 		  		ctx.textAlign = 'center';
 		  		ctx.fillText("0,01€", product.rectangle.x + product.rectangle.w / 2, product.rectangle.y + product.rectangle.h + offSetPrice);
 			},
-			onClick: () => { console.log(name)}
+			onClick: () => { buy_sound.play();  }
 		}
 		return product;
 	}
 
-	
+	private createButtonExit(x: number, y: number) : ElementUI {
+		const close_tab = new Audio(sound_close_tab);
+		const button: ElementUI = {
+			type: "exit",
+			rectangle: { x: x + "%", y:  y + "%", w: "3%", h: "3%" },
+			draw: (ctx: CanvasRenderingContext2D) => {
+				
+				ctx.strokeStyle = '#8B4513';
+		  		ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w , button.rectangle.h);
+
+  				ctx.lineWidth = 3;
+
+				ctx.beginPath();
+				ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
+				ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5 + button.rectangle.h - 10);
+				ctx.stroke();
+		  
+				ctx.beginPath();
+				ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5 + button.rectangle.h - 10);
+				ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5);
+				ctx.stroke();
+			},
+			onClick: () => { close_tab.play(); this.menu.close()/*Fechar o menu*/ },
+			
+		}
+		return button;
+	}
 
 	public draw(ctx: CanvasRenderingContext2D, pos: Rectangle) {
 		const backgroundColor = '#D2B48C'; // Cor de fundo castanho

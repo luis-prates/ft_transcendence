@@ -45,8 +45,8 @@ export class Npc extends Character {
         },
       };*/
       const menu = new Menu({ layer: "Global", isFocus: true });
-      const slop = new Shop();
-      menu.add(...slop.products);
+      const shop = new Shop();
+      menu.add(...shop.products);
       menu.onClose = () => {
         console.log("fechou");
         this.isSelect = false;
