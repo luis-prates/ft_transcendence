@@ -33,6 +33,7 @@ export class Character implements GameObject {
   constructor(data?: CharacterOnline) {
     this.imagem.src = imgUrl;
     this.animation.init(this.imagem, 48, 80, 8);
+    this.animation.isRepeat = false;
     this.animation.createAnimation("idle", {
       frames: [{ x: 0, y: 0 }],
     });
