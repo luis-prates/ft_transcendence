@@ -17,8 +17,8 @@ export class RolesGuard implements CanActivate {
         }
 
         const request = context.switchToHttp().getRequest();
-
-        const userId = request.headers['userId'];
+        console.log(request.headers);
+        const userId = request.user?.id;
         const channelId = Number(request.params['channelId']);
 
         const channelUser = await this.prisma.channelUser.findFirst({
@@ -28,9 +28,9 @@ export class RolesGuard implements CanActivate {
             },
         });
 
-        // if endpoint is a part of channel and user is not in this channel
-        if (!channelUser) {
-            throw new UnauthorizedException('You are not part of this channel!')
+        // if endpoint requires a member role
+        if (roles.includes('member') && channelUser) {
+            return true;
         }
 
         // if endpoint requires an admin role
@@ -49,5 +49,7 @@ export class RolesGuard implements CanActivate {
                 return true;
         }
 
+        // If the user is none of the above
+        throw new UnauthorizedException('You are not part of this channel!')
     }
 }

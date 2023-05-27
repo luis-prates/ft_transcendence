@@ -28,8 +28,10 @@ model User {
 
 	sentFriendRequests		FriendRequest[] @relation("FriendShipRequestor")
 	receivedFriendRequests	FriendRequest[] @relation("FriendShipRequestee")
-	friends					Friend[] @relation("Friends")
-	friendsOf				Friend[] @relation("FriendsOf")
+	friends					User[] @relation("Friends")
+	friendsOf				User[] @relation("Friends")
+
+    // TODO: Add blocklist
 
     messages                Message[]
     channels                ChannelUser[]
@@ -57,23 +59,6 @@ model FriendRequest {
 	@@map("friend_requests")
 }
 
-// Need to test like this
-model Friend {
-	id						Int @unique @default(autoincrement())
-	userId					Int
-	userName				String
-	friendId				Int
-	friendName				String
-
-	//user					User @relation(fields: [userId], references: [id], name: "Users")
-	user					User @relation(fields: [userId, userName], references: [id, nickname], name: "Friends")
-	friend					User @relation(fields: [friendId, friendName], references: [id, nickname], name: "FriendsOf")
-
-	@@id([userId, friendId])
-	@@index([userId, friendId], name: "friend_index")
-	@@map("friends")
-}
-
 model Message {
     id                      Int @id @default(autoincrement())
     content                 String
@@ -86,12 +71,13 @@ model Message {
 
 model Channel {
     id                      Int @id @default(autoincrement())
-    name                    String
+    name                    String? @unique
+    password                String?
     messages                Message[]
     users                   ChannelUser[]
     ownerId                 Int?
-    owner                   User? @relation("ChannelOwner", fields: [ownerId], references: [id]) // Owner can be null when channel is private
-    isPrivate               Boolean @default(false) // Private channels will be DMs
+    owner                   User? @relation("ChannelOwner", fields: [ownerId], references: [id])
+	type					ChannelType // Public, Private, Protected, DM
 }
 
 model ChannelUser {
@@ -101,7 +87,6 @@ model ChannelUser {
     channel                 Channel @relation(fields: [channelId], references: [id])
     isMuted                 Boolean @default(false)
     isAdmin                 Boolean @default(false)
-
     @@id([userId, channelId])
 }
 
@@ -117,6 +102,12 @@ enum UserStatus {
 	OFFLINE
 	IN_GAME
 	ONLINE
+}
+
+enum ChannelType {
+	PRIVATE
+	PUBLIC
+    DM
 }
 
 // model Game {
