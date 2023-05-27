@@ -21,7 +21,6 @@
     "setup:build:unix": "npm run db:dev:restart:unix && npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start --watch",
-
     "on": "lt --port 3000",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -47,6 +46,8 @@
     "argon2": "^0.30.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "dotenv": "^16.0.3",
+    "dotenv-cli": "^7.2.1",
     "passport-jwt": "^4.0.1",
     "redis": "^4.6.6",
     "reflect-metadata": "^0.1.13",

@@ -31,6 +31,10 @@ model User {
 	friends					Friend[] @relation("Friends")
 	friendsOf				Friend[] @relation("FriendsOf")
 
+	// Game
+	Games				Game[] //@relation("WonGames")
+	//lostGames				Game[] @relation("LostGames")
+
 	@@unique([id, nickname])
 	@@map("users")
 }
@@ -71,37 +75,26 @@ model Friend {
 	@@map("friends")
 }
 
-enum FriendReqStatus {
-	PENDING
-	ACCEPTED
-	REJECTED
-	BLOCKED
-	CANCELLED
+
+
+model Game {
+	id Int @id @unique @default(autoincrement())
+	createdAt DateTime @default(now())
+	updatedAt DateTime @updatedAt
+
+	status GameStatus @default(NOT_STARTED) // 0: not started, 1: started, 2: ended
+	//player1 User @relation("matchHistory", fields: [player1Id], references: [id])
+
+	//player2 User @relation("matchHistory", fields: [player2Id], references: [id])
+
+	//result User
+	players		User[] //@relation("WonGames", fields: [winnerId], references: [id])
+	
+	testJson	Json // winnerId, loserId, winnerScore, loserScore, gameTime, gameDate, gameType
+	
+	//loser	User //@relation("LostGames", fields: [loserId], references: [id])
+	@@map("games")
 }
-
-enum UserStatus {
-	OFFLINE
-	IN_GAME
-	ONLINE
-}
-
-// model Game {
-// 	id Int @id @unique @default(autoincrement())
-// 	createdAt DateTime @default(now())
-// 	updatedAt DateTime @updatedAt
-
-// 	status Int @default(0)
-// 	player1Id Int
-// 	player1 User @relation("matchHistory", fields: [player1Id], references: [id])
-
-// 	player2Id Int
-// 	player2 User @relation("matchHistory", fields: [player2Id], references: [id])
-
-// 	//result User
-// 	winner User
-// 	loser User
-
-// }
 
 // model Chat {
 // 	id Int @id @unique @default(autoincrement())
@@ -124,3 +117,46 @@ enum UserStatus {
 // 	channelBanId Int
 // 	channelBan User[] @relation("channelBan", fields: [channelBanId], references: [id])
 // }
+
+// name to be decided
+// TODO: work on it
+model Customization {
+	id Int @id @unique @default(autoincrement())
+	createdAt DateTime @default(now())
+	updatedAt DateTime @updatedAt
+
+	userId Int
+	object String
+
+	// avatar
+	category String // avatar, background, paddle
+
+	name String
+
+	type String
+
+	description String
+
+	price Int
+}
+
+
+enum FriendReqStatus {
+	PENDING
+	ACCEPTED
+	REJECTED
+	BLOCKED
+	CANCELLED
+}
+
+enum UserStatus {
+	OFFLINE
+	IN_GAME
+	ONLINE
+}
+
+enum GameStatus {
+	NOT_STARTED
+	STARTED
+	ENDED
+}

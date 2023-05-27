@@ -8,6 +8,9 @@ import { ConfigModule } from '@nestjs/config';
 import { FriendshipService } from './friendship/friendship.service';
 import { FriendshipController } from './friendship/friendship.controller';
 import { FriendshipModule } from './friendship/friendship.module';
+import { GameController } from './game/game.controller';
+import { GameService } from './game/game.service';
+import { GameModule } from './game/game.module';
 
 @Module({
 	imports: [
@@ -17,9 +20,10 @@ import { FriendshipModule } from './friendship/friendship.module';
 		ConfigModule.forRoot({
 			isGlobal: true,
 		}),
-		FriendshipModule
+		FriendshipModule,
+		GameModule
 	],
-	controllers: [AppController, FriendshipController],
-	providers: [AppService, FriendshipService],
+	controllers: [AppController, FriendshipController, GameController],
+	providers: [AppService, FriendshipService, GameService],
 })
 export class AppModule {}
