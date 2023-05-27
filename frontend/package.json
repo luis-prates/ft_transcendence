@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "npm run dev",
+    "start": "npm run dev -- --host",
+    "on": "lt --port 5174",
     "dev": "vite",
     "build": "run-p type-check build-only",
     "preview": "vite preview",
@@ -13,13 +14,15 @@
   "dependencies": {
     "axios": "^1.4.0",
     "pinia": "^2.0.35",
+    "sass": "^1.62.1",
+    "socket.io-client": "^4.6.1",
     "vue": "^3.2.47",
-    "vue-router": "^4.0.13"
+    "vue-router": "^4.0.13",
+    "vue3-circle-progress": "^1.0.7"
   },
   "devDependencies": {
     "@tsconfig/node18": "^2.0.0",
-    "@types/dotenv": "^8.2.0",
-    "@types/node": "^18.16.5",
+    "@types/node": "^18.16.13",
     "@vitejs/plugin-vue": "^4.2.1",
     "@vue/tsconfig": "^0.3.2",
     "npm-run-all": "^4.1.5",
