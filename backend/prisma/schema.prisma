@@ -40,7 +40,7 @@ model User {
 }
 
 model FriendRequest {
-	id						Int @unique @default(autoincrement())
+	id						String @unique @default(uuid())
 	createdAt				DateTime @default(now())
 	updatedAt				DateTime @updatedAt
 
@@ -60,7 +60,7 @@ model FriendRequest {
 
 // Need to test like this
 model Friend {
-	id						Int @unique @default(autoincrement())
+	id						String @unique @default(uuid())
 	userId					Int
 	userName				String
 	friendId				Int
@@ -78,21 +78,17 @@ model Friend {
 
 
 model Game {
-	id Int @id @unique @default(autoincrement())
-	createdAt DateTime @default(now())
-	updatedAt DateTime @updatedAt
+	id						String @id @unique @default(uuid())
+	createdAt				DateTime @default(now())
+	updatedAt				DateTime @updatedAt
 
-	status GameStatus @default(NOT_STARTED) // 0: not started, 1: started, 2: ended
-	//player1 User @relation("matchHistory", fields: [player1Id], references: [id])
-
-	//player2 User @relation("matchHistory", fields: [player2Id], references: [id])
-
-	//result User
-	players		User[] //@relation("WonGames", fields: [winnerId], references: [id])
+	status					GameStatus @default(NOT_STARTED) // 0: not started, 1: started, 2: ended
 	
-	testJson	Json // winnerId, loserId, winnerScore, loserScore, gameTime, gameDate, gameType
+	players					User[] //@relation("WonGames", fields: [winnerId], references: [id])
 	
-	//loser	User //@relation("LostGames", fields: [loserId], references: [id])
+	gameStats				Json? // winnerId, loserId, winnerScore, loserScore, gameTime, gameDate, gameType
+	gameType				GameType // Public, Private, Protected
+
 	@@map("games")
 }
 
@@ -121,7 +117,7 @@ model Game {
 // name to be decided
 // TODO: work on it
 model Customization {
-	id Int @id @unique @default(autoincrement())
+	id						String @unique @default(uuid())
 	createdAt DateTime @default(now())
 	updatedAt DateTime @updatedAt
 
@@ -159,4 +155,11 @@ enum GameStatus {
 	NOT_STARTED
 	STARTED
 	ENDED
+}
+
+// !TODO: needs confirmation
+enum GameType {
+	PUBLIC
+	PRIVATE
+	PROTECTED
 }

@@ -1,21 +1,50 @@
-import { GameStatus } from "@prisma/client";
-import { IsArray, IsEnum, IsJSON, IsNotEmpty, IsNumber, IsOptional } from "class-validator";
+import { GameStatus, GameType } from "@prisma/client";
+import { Type } from "class-transformer";
+import { ArrayMaxSize, IsArray, IsEnum, IsInt, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+
+class GameStatsDto {
+	@IsOptional()
+	@IsNotEmpty()
+	@IsInt()
+	winnerId: number;
+
+	@IsOptional()
+	@IsNotEmpty()
+	@IsInt()
+	loserId: number;
+
+	@IsOptional()
+	@IsNotEmpty()
+	@IsInt()
+	winnerScore: number;
+
+	@IsOptional()
+	@IsNotEmpty()
+	@IsInt()
+	loserScore: number;
+}
 
 export class GameDto {
 
 	@IsOptional()
 	@IsEnum(GameStatus)
-	status?: GameStatus;
+	status: GameStatus;
 
 	// could be just number, but array allows
 	// for more than 2 players
-	@IsNotEmpty()
 	@IsArray()
 	@IsNumber({}, { each: true })
+	@ArrayMaxSize(4)
 	players: number[];
 
+	@IsOptional()
 	@IsNotEmpty()
-	@IsJSON()
-	gameJson: JSON;
+	@ValidateNested()
+	@Type(() => GameStatsDto)
+	gameStats?: string;
+
+	@IsOptional()
+	@IsEnum(GameType)
+	gameType?: GameType;
 
 }

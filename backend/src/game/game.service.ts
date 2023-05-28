@@ -1,28 +1,97 @@
-import { Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { GameDto } from './dto';
 
 @Injectable()
 export class GameService {
 	constructor(private prisma: PrismaService) {}
 
-	async createGame(user: User, body: any) {
-		const game = await this.prisma.game.create({
+	async createGame(body: GameDto) {
+		const gameData: any = {
 			data: {
-				players: {
-					connect: {
-						id: user.id,
-					},
-					...body.players.map((player: number) => ({
-						connect: {
-							id: player,
-						},
-					})),
-				},
-				testJson: body.testJson,
+				gameType: body.gameType,
+				gameStats: Prisma.JsonNull
 			},
-		});
+			include: {
+				players: true,
+			},
+		};
+		if (body.players.length > 0) {
+			gameData.data.players = {
+				connect: body.players.map((player) => ({ id: player })),
+			};
+		}
+		const game = await this.prisma.game.create(gameData);
 
-		return game;
+		return (game);
+	}
+
+	// when the client receives the game object, it will have the players array
+	// if the players array is equal or greater than 2, the client
+	// will enable the start game button
+	// when the client clicks the start game button, it will send a request
+	// to the backend to call the start game function, which could be an event
+	async addGameUser(gameId: string, body: GameDto) {
+		try {
+			const game = await this.prisma.game.update({
+				where: {
+					id: gameId,
+				},
+				data: {
+					players: {
+						connect: body.players.map((player) => ({ id: player })),
+					},
+				},
+				include: {
+					players: true,
+				},
+			});
+			// delete the hash for all users from the players object
+			game.players.forEach((player: User) => {
+				delete player.hash;
+			});
+	
+			return (game);
+		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2016') {
+					throw new ForbiddenException('Game not found.');
+				}
+				throw error;
+			}
+		}
+	}
+
+	async endGame(gameId: string, body: GameDto) {
+		try {
+			const game = await this.prisma.game.update({
+				where: {
+					id: gameId,
+				},
+				data: {
+					players: {
+						connect: body.players.map((player) => ({ id: player })),
+					},
+					gameStats: body.gameStats,
+				},
+				include: {
+					players: true,
+				},
+			});
+			// delete the hash for all users from the players object
+			game.players.forEach((player: User) => {
+				delete player.hash;
+			});
+	
+			return (game);
+		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2016') {
+					throw new ForbiddenException('Game not found.');
+				}
+				throw error;
+			}
+		}
 	}
 }
