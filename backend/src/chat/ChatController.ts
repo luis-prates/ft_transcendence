@@ -24,7 +24,7 @@ export class Channel {
 	public join(player: Player): void {
 		this.players.push(player);
 		this.emitAll('join_chat', this.getData());
-
+		console.log('join_chat', this.getData());
 		//player.emit('list_chat', this.getData());
 	}
 

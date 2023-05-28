@@ -7,25 +7,29 @@ export interface ElementUI {
   draw(contex: CanvasRenderingContext2D): void;
   onClick?(): void;
   parent?: ElementUI;
+  enable?: boolean;
+  visible?: boolean;
 }
 
 export type ElementUIType = "button" | "text" | "image";
 export type MenuLayer = "Local" | "Global";
 
 export class Menu implements GameObject {
-  type: GameObjectType = "menu";
-  layer: MenuLayer = "Local";
-  imagem: any;
-  x: number = 0;
-  y: number = 0;
-  objectId: any;
-  isSelect: boolean = false;
+  public type: GameObjectType = "menu";
+  public layer: MenuLayer = "Local";
+  public imagem: any;
+  public x: number = 0;
+  public y: number = 0;
+  public objectId: any;
+  public visible: boolean = true;
+  public enable: boolean = true;
+  public isSelect: boolean = false;
   private _background: ElementUI;
   private elements: ElementUI[] = [];
   private _onClose: () => void = () => {};
   public KeyClose: string = "";
 
-  constructor(data?: { timeOut?: number; layer?: MenuLayer; onClose?: () => void; isFocus?: boolean; KeyClose?: string }) {
+  constructor(data?: { timeOut?: number; layer?: MenuLayer; onClose?: () => void; isFocus?: boolean; KeyClose?: string; enable?: boolean; visible?: boolean }) {
     this._background = {
       type: "background",
       rectangle: { x: "0%", y: "0%", w: "100%", h: "100%" },
@@ -42,20 +46,31 @@ export class Menu implements GameObject {
     if (data.layer) {
       this.layer = data.layer;
     }
+    if (data.enable) this.enable = data.enable;
+    if (data.visible) this.visible = data.visible;
     if (data.KeyClose) this.KeyClose = data.KeyClose;
   }
 
   draw(contex: CanvasRenderingContext2D): void {
+    if (!this.visible) return;
     this.elements.forEach((element) => {
-      element.draw(contex);
+      if (element.visible) element.draw(contex);
     });
   }
 
   mouseClick(x: number, y: number, button: number): boolean {
+    if (!this.enable) return false;
     for (let i = this.elements.length - 1; i >= 0; i--) {
       const element = this.elements[i];
-      console.log("element: ", element, " isClick: ", x >= element.rectangle.x && x <= element.rectangle.x + element.rectangle.w && y >= element.rectangle.y && y <= element.rectangle.y + element.rectangle.h);
-      if (element.onClick && x >= element.rectangle.x && x <= element.rectangle.x + element.rectangle.w && y >= element.rectangle.y && y <= element.rectangle.y + element.rectangle.h) {
+      if (
+        element.enable &&
+        element.visible &&
+        element.onClick &&
+        x >= element.rectangle.x &&
+        x <= element.rectangle.x + element.rectangle.w &&
+        y >= element.rectangle.y &&
+        y <= element.rectangle.y + element.rectangle.h
+      ) {
         element.onClick();
         return true;
       }
@@ -68,6 +83,8 @@ export class Menu implements GameObject {
   public add(...elements: ElementUI[]) {
     if (elements === null || elements === undefined) return;
     elements.forEach((element) => {
+      if (element.enable === undefined) element.enable = true;
+      if (element.visible === undefined) element.visible = true;
       (element as any)["resizing"] = { x: element.rectangle.x, y: element.rectangle.y, w: element.rectangle.w, h: element.rectangle.h };
       this.resizing(element, this.w, this.h);
       this.elements.push(element);

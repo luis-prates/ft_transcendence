@@ -33,28 +33,6 @@ export class Npc extends Character {
 
   public interaction(gameObject: Character): void {
     this.setLookAt(gameObject);
-
-    const image = new Image();
-    image.src = oie_transparent;
-    image.onload = () => {
-       /*const menu = new Menu({ timeOut: 5000 });
-      const element = {
-        type: "image",
-        rectangle: SpeechBubble.rectangleDimesion("Hello, the Green Table is Battle Player vs Marvin and the another ones is Player vs Player!", this.x, this.y),
-        draw: (context: any) => {
-          SpeechBubble.draw(context, element.rectangle, "Hello, the Green Table is Battle Player vs Marvin and the another ones is Player vs Player!");
-        },
-      };
-      menu.add(element);*/
-      const menu = new Menu({ layer: "Global", isFocus: true });
-      const shop = new Shop();
-      menu.add(...shop.products);
-     /* const confirmButton = new ConfirmButton("Skin Mario", 10);
-      menu.add(...confirmButton.elements);*/
-      menu.onClose = () => {
-        this.isSelect = false;
-      };
-      Game.instance.addMenu(menu);
-    };
+    Game.instance.addMenu(new Shop().menu);
   }
 }

@@ -91,11 +91,11 @@ export class Game {
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left + this.camera.x;
     const mouseY = event.clientY - rect.top + this.camera.y;
-    for await (let menu of this.menusGlobal) {
-      if (menu.mouseClick(event.clientX, event.clientY, event.button)) return;
+    for (let i = this.menusGlobal.length - 1; i >= 0; i--) {
+      if (this.menusGlobal[i].mouseClick(event.clientX, event.clientY, event.button)) return;
     }
-    for await (let menu of this.menusLocal) {
-      if (menu.mouseClick(mouseX, mouseY, event.button)) return;
+    for (let i = this.menusLocal.length - 1; i >= 0; i--) {
+      if (this.menusLocal[i].mouseClick(event.clientX, event.clientY, event.button)) return;
     }
     this.mouseEvents.forEach((action: any) => action(mouseX, mouseY, event.button));
   }
@@ -198,5 +198,13 @@ export class Game {
     //   return image;
     // }
     return null;
+  }
+
+  public static addMenu(menu: Menu) {
+    Game.instance.addMenu(menu);
+  }
+
+  public static removeMenu(menu: Menu) {
+    Game.instance.removeMenu(menu);
   }
 }

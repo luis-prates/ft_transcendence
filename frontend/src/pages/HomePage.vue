@@ -3,7 +3,6 @@
     <!-- <ProfileComponent class="profile" />     -->
     <!-- <MapEditComponent /> -->
     <LobbyComponent />
-    <ChatComponent />
     <!-- <ProfileComponent class="profile" /> -->
   </div>
 </template>
