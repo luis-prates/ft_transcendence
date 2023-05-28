@@ -21,6 +21,7 @@ export class Player extends Character {
     this.menu.value?.setAttribute("style", "display: none");
     this.type = "player";
     this.name = "Player_" + Date.now();
+    console.log("Player", data);
     socket.emit("new_player", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop } });
   }
 
@@ -45,6 +46,7 @@ export class Player extends Character {
     }
     super.draw(contex);
   }
+
   mouseClick?(x: number, y: number, button: number): void {
     this.menu.value?.setAttribute("style", "display: none");
     if (button == 0) {
