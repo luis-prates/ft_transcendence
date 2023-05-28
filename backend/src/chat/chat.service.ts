@@ -38,27 +38,44 @@ export class ChatService {
         try {
             // Logic for public channels
             if (createChannelDto.channelType == 'PUBLIC') {
+                console.log("LOL");
                 // Note: channel name has to be unique for open channels
                 newChannel = await this.prisma.channel.create({
                     data: {
                         name: createChannelDto.name,
                         type: createChannelDto.channelType,
-                        ownerId: user.id
+                        ownerId: user.id,
+                        users: {
+                            create: [
+                                {
+                                    user: {
+                                        connect: {
+                                            id: user.id,
+                                        }
+                                    },
+                                    isAdmin: true,
+                                },
+                                ...createChannelDto.usersToAdd.map((id) => ({
+                                    user: {
+                                        connect: {
+                                            id: id,
+                                        },
+                                    },
+                                }))
+                            ]
+                        }
                     },
-                });
-                await this.prisma.channelUser.create({
-                    data: {
-                        channelId: newChannel.id,
-                        userId: user.id,
-                        isAdmin: true,
+                    include: {
+                        users: true,
                     }
-                })
+                });
+                console.log("damn");
             }
 
             // Logic for public channels
             if (createChannelDto.channelType == 'PRIVATE') {
                 // Note: channel name has to be unique for open channels
-                let data : { name: string, type: ChannelType, ownerId: number, password?: string } = {
+                let data : { name: string, type: ChannelType, ownerId: number, password?: string, users?: any } = {
                     name: createChannelDto.name,
                     type: createChannelDto.channelType,
                     ownerId: user.id
@@ -69,51 +86,63 @@ export class ChatService {
                     data.password = createChannelDto.password;
                 }
 
+                // add users connection
+                data.users = {
+                    create: {
+                        user: {
+                            connect: {
+                                id: user.id,
+                            }
+                        },
+                        isAdmin: true,
+                    },
+                    ...createChannelDto.usersToAdd.map((id) => ({
+                        user: {
+                            connect: {
+                                id: id,
+                            },
+                        },
+                    }))
+                };
+
                 newChannel = await this.prisma.channel.create({
                     data: data,
                 });
-                await this.prisma.channelUser.create({
-                    data: {
-                        channelId: newChannel.id,
-                        userId: user.id,
-                        isAdmin: true,
-                    }
-                })
             }
 
             // Logic for DM
-            if (createChannelDto.channelType == 'DM' && createChannelDto.secondUserId) {
+            if (createChannelDto.channelType == 'DM' && createChannelDto.usersToAdd.length !== 1) {
+                throw new BadRequestException('DMs can only be created with one other user');
+            }
+            if (createChannelDto.channelType == 'DM') {
                 // check if there already is a private channel between users
-                const existingPrivateChannel = await this.prisma.channel.findFirst({
+                const existingDM = await this.prisma.channel.findFirst({
                     where: {
                         AND: [
                             { type : 'DM' },
                             { users: { some: { userId: user.id } } },
-                            { users: { some: { userId: createChannelDto.secondUserId } } }
+                            { users: { some: { userId: createChannelDto.usersToAdd[0] } } }
                         ]
                     },
                 });
-                if (existingPrivateChannel) {
-                    throw new ConflictException('Private channel between these users already exists');
+                if (existingDM) {
+                    throw new ConflictException('DM between these users already exists');
                 }
-                // Note: no need to set channel name when private
+                // Note: no need to set channel name when creating a DM
                 newChannel = await this.prisma.channel.create({
                     data: {
                         type: createChannelDto.channelType,
-                    },
-                });
-                // add sending user
-                await this.prisma.channelUser.create({
-                    data: {
-                        channelId: newChannel.id,
-                        userId: user.id,
-                    },
-                });
-                // add receiving user
-                await this.prisma.channelUser.create({
-                    data: {
-                        channelId: newChannel.id,
-                        userId: createChannelDto.secondUserId,
+                        users: {
+                            create: [
+                                {
+                                    user: {
+                                        connect: {
+                                            id: user.id,
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     },
                 });
             }

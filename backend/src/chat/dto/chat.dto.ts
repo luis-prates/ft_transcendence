@@ -5,10 +5,9 @@ export class CreateChannelDto {
     @IsOptional()
     name: string;
 
-    @IsOptional()
     @IsArray()
     @IsNumber({}, { each: true })
-    userIdsToAdd: number[];
+    usersToAdd: number[];
 
     @IsEnum(ChannelType)
     channelType: ChannelType;
@@ -18,9 +17,6 @@ export class CreateChannelDto {
         message: 'Password is too short. Minimum length is $constraint1 characters, but actual is $value',
     })
     password: string;
-
-    @IsOptional()
-    secondUserId: number;
 }
 
 export class JoinChannelDto {
