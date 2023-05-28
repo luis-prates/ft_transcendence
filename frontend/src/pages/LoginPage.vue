@@ -1,12 +1,8 @@
 <template>
   <div class="box" href>
-    <a
-      class="login"
-      href="https://api.intra.42.fr/oauth/authorize?
-client_id=u-s4t2ud-8985ddec657252ac6a80b66fd17077abd4e2e48b220557d48247edcf459c72fc&
-redirect_uri=http://localhost:5173%2F&response_type=code"
-      >Login</a
-    >
+    <a class="login" :href="redirect_uri()">Login</a>
+    <p>Message is: {{ objecId }}</p>
+    <input v-model="objecId" @change="tes()" />
   </div>
 </template>
 
@@ -14,21 +10,48 @@ redirect_uri=http://localhost:5173%2F&response_type=code"
 import { onMounted } from "vue";
 import { userStore } from "../stores/userStore";
 import Router from "../router/index";
+import { ref, defineProps } from "vue";
+import socket from "@/socket/Socket";
 
 const props = defineProps({
   code: String,
 });
 
+const name = "LoginPage";
+const objecId = ref("");
+
 const store = userStore();
 
+function redirect_uri() {
+  return (
+    "https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-8985ddec657252ac6a80b66fd17077abd4e2e48b220557d48247edcf459c72fc&redirect_uri=" +
+    window.location.href.substring(0, window.location.href.length - 1) +
+    "%2F&response_type=code"
+  );
+}
+
+function tes() {
+  console.log("objecId.value: ", objecId.value);
+  store.user.id = parseInt(objecId.value);
+  store.user.nickname = "user_" + objecId.value;
+  socket.emit("connection_lobby", { objectId: objecId.value.toString() });
+  setTimeout(() => {
+    Router.setRoute(Router.ROUTE_ALL);
+    Router.push("/");
+  }, 1000);
+}
+
 onMounted(() => {
-if (props.code || store.user.isLogin) {
-    console.log(props.code);
+  if (props.code || store.user.isLogin) {
     store
       .login(props.code)
       .then(() => {
-        Router.setRoute(Router.ROUTE_ALL);
-        Router.push("/");
+        store.user.id = parseInt(objecId.value);
+        socket.emit("connection_lobby", { objectId: objecId.value.toString() });
+        setTimeout(() => {
+          Router.setRoute(Router.ROUTE_ALL);
+          Router.push("/");
+        }, 1000);
         console.log(store.user.isLogin);
       })
       .catch((err) => {

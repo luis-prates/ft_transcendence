@@ -1,12 +1,16 @@
-import './assets/styles/main.css'
+import "./assets/styles/main.css";
+import { createApp } from "vue";
+import { createPinia } from "pinia";
+import App from "./App.vue";
+import Router from "./router";
 
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import App from './App.vue'
-import Router from './router'
+const app = createApp(App);
 
-const app = createApp(App)
+// Removendo o menu de contexto em toda a aplicação
+document.addEventListener("contextmenu", (event) => {
+  event.preventDefault();
+});
 
-app.use(createPinia())
-app.use(Router.getRouter())
-app.mount('#app')
+app.use(createPinia());
+app.use(Router.getRouter());
+app.mount("#app");
