@@ -54,7 +54,7 @@ export class Game {
           y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,
         };
         socket.emit("new_gameobject", data);
-        socket.emit("new_game", { objectId: data.objectId, maxScore: 3, table: data.color, tableSkin: "", bot: color == "#2aaa15" });
+        //socket.emit("new_game", { objectId: data.objectId, maxScore: 3, table: data.color, tableSkin: "", bot: color == "#2aaa15" });
       }
       event.preventDefault();
     });

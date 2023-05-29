@@ -45,28 +45,28 @@ export class ConfirmButton {
 
   private createButton(x: number, y: number, label: string): ElementUI {
     const button: ElementUI = {
-      type: "exit",
-      rectangle: { x: x + "%", y: y + "%", w: "5%", h: "6%" },
-      draw: (ctx: CanvasRenderingContext2D) => {
-        ctx.fillStyle = "white";
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 2;
-
-        this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
-
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = "black";
-        ctx.font = "12px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(label, button.rectangle.x + button.rectangle.w / 2, button.rectangle.y + button.rectangle.h / 2);
-      },
-      onClick: () => {
-        this.menu.close();
-        this.onResult(label);
-      },
+      	type: "exit",
+      	rectangle: { x: x + "%", y: y + "%", w: "5%", h: "6%" },
+      	draw: (ctx: CanvasRenderingContext2D) => {
+      	  	ctx.fillStyle = "white";
+      	  	ctx.strokeStyle = "black";
+      	  	ctx.lineWidth = 2;
+			
+      	  	this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+			
+      	  	ctx.fill();
+      	  	ctx.stroke();
+			
+      	  	ctx.fillStyle = "black";
+      	  	ctx.font = "12px Arial";
+      	  	ctx.textAlign = "center";
+      	  	ctx.textBaseline = "middle";
+      	  	ctx.fillText(label, button.rectangle.x + button.rectangle.w / 2, button.rectangle.y + button.rectangle.h / 2);
+      	},
+      	onClick: () => {
+      	  this.menu.close();
+      	  this.onResult(label);
+      	},
     };
     return button;
   }

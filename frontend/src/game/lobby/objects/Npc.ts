@@ -1,9 +1,10 @@
 import { Character } from "@/game/base/Character";
 import oie_transparent from "@/assets/images/lobby/oie_transparent.png";
-import { Game, Menu } from "@/game";
+import { Game, Menu, Player } from "@/game";
 import { SpeechBubble } from "../../Menu/SpeechBubble";
 import { Shop } from "../../Menu/Shop";
 import { ConfirmButton } from "@/game/Menu/ConfirmButton";
+import { CreateGame } from "@/game/Menu/CreateGame";
 
 export class Npc extends Character {
   constructor() {
