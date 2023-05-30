@@ -11,6 +11,7 @@ import { FriendshipModule } from './friendship/friendship.module';
 import { GameController } from './game/game.controller';
 import { GameService } from './game/game.service';
 import { GameModule } from './game/game.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
 	imports: [
@@ -21,7 +22,8 @@ import { GameModule } from './game/game.module';
 			isGlobal: true,
 		}),
 		FriendshipModule,
-		GameModule
+		GameModule,
+		ChatModule
 	],
 	controllers: [AppController, FriendshipController, GameController],
 	providers: [AppService, FriendshipService, GameService],
