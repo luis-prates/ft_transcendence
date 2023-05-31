@@ -9,7 +9,7 @@ export class ChatService {
     constructor(private prisma: PrismaService) {}
 
     async getChannels() {
-        // To be defined, what do we want to return here? Channel browsing list?
+        // TODO
     }
 
     async getMessagesByChannel(channelId: number) {
@@ -427,6 +427,30 @@ export class ChatService {
             where: {
                 id: channelId,
             },
+        });
+    }
+
+    // BELOW IS FOR WEBSOCKETS
+    async getUserChannels(userId: number): Promise<number[]> {
+        // Fetch the ChannelUser entities for this user
+        const userChannels = await this.prisma.channelUser.findMany({
+            where: { userId: userId },
+            select: {channelId: true },
+        });
+        // Extract the channel IDs from the ChannelUser
+        const channelIds = userChannels.map(channelUser => channelUser.channelId);
+        console.log(`check: ${channelIds}`);
+        console.log(`channelIds is an array: ${Array.isArray(channelIds)}`);
+        return channelIds;
+    }
+
+    async createMessage(senderId: number, message: string, channelId: number) {
+        return await this.prisma.message.create({
+            data: {
+                content: message,
+                userId: senderId,
+                channelId: channelId
+            }
         });
     }
 }
