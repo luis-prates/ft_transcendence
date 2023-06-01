@@ -19,11 +19,13 @@ export class Player extends Character {
     this.x = data.x;
     this.y = data.y;
     this.menu = menu;
+    this.animation.sx = 0;
+    this.animation.sy = 320;
     this.menu.value?.setAttribute("style", "display: none");
     this.type = "player";
     this.name = "Player_" + Date.now();
     console.log("Player", data);
-    socket.emit("new_player", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop } });
+    socket.emit("new_player", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop, sx: this.animation.sx, sy: this.animation.sy} });
   }
 
   draw(contex: CanvasRenderingContext2D): void {

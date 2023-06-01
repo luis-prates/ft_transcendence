@@ -156,11 +156,9 @@ export class MiniPerfil {
 	  ctx.fillText("Level: " + 5, pos.x + pos.w * 0.5, pos.y + pos.h * 0.31, pos.w - (pos.x + pos.w * 0.5));
 
     //Avatar
-    const pointx = pos.w * 0.01;
-    const pointy = pos.h * 0.01;
 
     ctx.fillStyle = "white";
-	ctx.strokeStyle = "black";
+	  ctx.strokeStyle = "black";
     ctx.strokeRect(
       pos.x + pos.w * 0.05, 
       pos.y + pos.h * 0.1,
@@ -168,6 +166,7 @@ export class MiniPerfil {
       pos.h * 0.85,
       );
 
+    //TODO AVATAR
     //if (photo.complete) ctx.drawImage(photo, pos.x + pointx, pos.y + pointy, scaledWidth, scaledHeight);
 
   }

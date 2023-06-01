@@ -2,6 +2,12 @@ import { Menu, type ElementUI, type Rectangle, Game } from "@/game";
 import Router from "@/router";
 import socket from "@/socket/Socket";
 
+//Skins
+import skinGame from "@/assets/images/skin/table/skin_Game-Over.png";
+import skinSwag from "@/assets/images/skin/table/skin_swag.png";
+import skinOnePiece from "@/assets/images/skin/table/skin_onepiece.jpg";
+
+
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";
 
@@ -19,14 +25,18 @@ export class CreateGame {
   private score: number = 3; // 3 6 9 12
   private view: string = "public"; //public or private
   private tableColor: string = "#1e8c2f";
-  //private tableSkin: string;
+  private tableSkin: string = "";
+
+  private skinImage = new Image();
+
+  private custom: boolean = false;
 
 //  constructor(player: Player) {
   constructor(objectId: string) {
     this.objectId = objectId;
 
     this.menu.add(this.background);
-    this.menu.add(this.createButtonExit(31, 7));
+    this.menu.add(this.createButtonExit(31, 7, "newGame"));
     //Type
     this.menu.add(this.createButton("type", 40 + 1 * (10 / 4), 20, "Solo", 8));
     this.menu.add(this.createButton("type", 40 + 5.25 * (10 / 4), 20, "Multiplayer", 10));
@@ -40,11 +50,30 @@ export class CreateGame {
     this.menu.add(this.createButton("view", 40 + 5.5 * (10 / 4), 40, "Private", 8));
     //Table
     this.menu.add(this.createButton("table", 40 + 3.25 * (10 / 4), 75, "Custom", 8));
-  
-
 
     //Start Game
     this.menu.add(this.createButtonStartGame(32.5 + (10 / 2), 85, "Start Game"));
+
+    //Custom Menu
+    this.menu.add(this.createCustomMenu());
+    this.menu.add(this.createButtonExit(26, 12, "custom"));
+
+    //Colors
+    this.menu.add(this.createColorButton(32 + 1 * (10 / 3), 28, "red"));
+    this.menu.add(this.createColorButton(32 + 2 * (10 / 3), 28, "#1e8c2f"));
+    this.menu.add(this.createColorButton(32 + 3 * (10 / 3), 28, "#efc120"));
+    this.menu.add(this.createColorButton(32 + 4 * (10 / 3), 28, "#de1bda"));
+    this.menu.add(this.createColorButton(32 + 5 * (10 / 3), 28, "blue"));
+    this.menu.add(this.createColorButton(32 + 6 * (10 / 3), 28, "black"));
+
+    //Skin
+    this.menu.add(this.createSkinButton(19 + 1 * (10 / 1.5), 46, ""));
+    this.menu.add(this.createSkinButton(19 + 2 * (10 / 1.5), 46, "onepiece"));
+    this.menu.add(this.createSkinButton(19 + 3 * (10 / 1.5), 46, "swag"));
+    this.menu.add(this.createSkinButton(19 + 4 * (10 / 1.5), 46, "game"));
+    this.menu.add(this.createSkinButton(19 + 5 * (10 / 1.5), 46, ""));
+    this.menu.add(this.createSkinButton(19 + 6 * (10 / 1.5), 46, ""));
+
   }
 
   private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
@@ -72,6 +101,42 @@ export class CreateGame {
       },
     };
     return background;
+  }
+
+  private createButtonExit(x: number, y: number, type: string): ElementUI {
+    const close_tab = new Audio(sound_close_tab);
+    const button: ElementUI = {
+      type: type,
+      rectangle: { x: x + "%", y: y + "%", w: "3%", h: "3%" },
+      draw: (ctx: CanvasRenderingContext2D) => {
+
+        if (button.type == "custom" && this.custom == false)
+          return;
+
+        ctx.strokeStyle = "black";
+        ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
+
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
+        ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5 + button.rectangle.h - 10);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5 + button.rectangle.h - 10);
+        ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5);
+        ctx.stroke();
+      },
+      onClick: () => {
+        close_tab.play();
+        if (button.type == "newGame")
+          this.menu.close();
+        else if (button.type == "custom")
+          this.custom = false;
+      },
+    };
+    return button;
   }
 
   private createButton(type: string, x: number, y: number, label: string, width: number): ElementUI {
@@ -111,6 +176,138 @@ export class CreateGame {
             this.score = parseInt(label);
           else if (button.type == "view") 
             this.view = label.toLowerCase();
+          else if (button.type == "table")
+            this.custom = true;
+      	},
+    };
+    return button;
+  }
+
+  private createCustomMenu(): ElementUI {
+    const background: ElementUI = {
+      type: "image",
+      rectangle: { x: "25%", y: "10%", w: "40%", h: "80%" },
+      draw: (context: any) => {
+        if (this.custom == true)
+          this.drawCustomMenu(context, background.rectangle);
+      },
+    };
+    return background;
+  }
+
+  private createColorButton(x: number, y: number, color: string): ElementUI {
+    const button: ElementUI = {
+      type: "color",
+      rectangle: { x: x + "%", y: y + "%", w: "2.5%", h: "6%" },
+      draw: (ctx: CanvasRenderingContext2D) => {
+
+          if (this.custom == false)
+            return ;
+
+          ctx.fillStyle = color;
+      	  ctx.strokeStyle = color == this.tableColor ? "red" : "black";
+      	  ctx.lineWidth = 2;
+        
+      	  this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+        
+      	  ctx.fill();
+      	  ctx.stroke();
+			
+      	},
+      	onClick: () => {
+          this.tableColor = color;
+      	},
+    };
+    return button;
+  }
+
+  private skinChoose(name: string): string {
+    if (name == "onepiece")
+      return skinOnePiece;
+    else if (name == "swag")
+      return skinSwag;
+    else if (name == "game")
+      return skinGame;
+    return "";
+  }
+
+  private createSkinButton(x: number, y: number, skin: string): ElementUI {
+    const skinImage = new Image();
+    const button: ElementUI = {
+      type: "skin",
+      rectangle: { x: x + "%", y: y + "%", w: "5%", h: "10%" },
+      draw: (ctx: CanvasRenderingContext2D) => {
+
+          if (this.custom == false)
+            return ;
+
+          skinImage.src = this.skinChoose(skin);
+
+      	  ctx.strokeStyle = skin == this.tableSkin ? "red" : "black";
+      	  ctx.lineWidth = 2;
+
+          ctx.lineWidth = 3;
+
+          if (skin == "")
+          {
+            ctx.beginPath();
+            ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
+            ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5 + button.rectangle.h - 10);
+            ctx.stroke();
+    
+            ctx.beginPath();
+            ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5 + button.rectangle.h - 10);
+            ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5);
+            ctx.stroke();
+          }
+          else if (skinImage.complete) {
+            //ctx.drawImage(skinImage, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
+            ctx.save();
+
+            // Criar um caminho retangular com cantos arredondados
+            ctx.beginPath();
+            ctx.moveTo(button.rectangle.x + this.radius, button.rectangle.y);
+            ctx.arcTo(
+              button.rectangle.x + button.rectangle.w, button.rectangle.y,
+              button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h,
+              this.radius
+            );
+            ctx.arcTo(
+              button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h,
+              button.rectangle.x, button.rectangle.y + button.rectangle.h,
+              this.radius
+            );
+            ctx.arcTo(
+              button.rectangle.x, button.rectangle.y + button.rectangle.h,
+              button.rectangle.x, button.rectangle.y,
+              this.radius
+            );
+            ctx.arcTo(
+              button.rectangle.x, button.rectangle.y,
+              button.rectangle.x + button.rectangle.w, button.rectangle.y,
+              this.radius
+            );
+            ctx.closePath();
+          
+            // Recortar o caminho do retângulo com cantos arredondados
+            ctx.clip();
+          
+            // Desenhar a imagem de skin com cantos arredondados
+            ctx.drawImage(skinImage, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
+          
+            // Restaurar o estado anterior do contexto
+            ctx.restore();
+          
+          }
+
+      	  this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+			
+      	 // ctx.fill();
+      	  ctx.stroke();
+      	},
+      	onClick: () => {
+          this.tableSkin = skin;
+          this.skinImage.src = this.skinChoose(skin);
       	},
     };
     return button;
@@ -138,8 +335,8 @@ export class CreateGame {
       },
       onClick: () => {
         this.menu.close();
-        console.log({objectId: this.objectId, maxScore: this.score, table: this.tableColor, tableSkin: "", bot: this.type == "solo" });
-        socket.emit("new_game", { objectId: this.objectId, maxScore: this.score, table: this.tableColor, tableSkin: "", bot: this.type == "solo" });
+        console.log({objectId: this.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
+        socket.emit("new_game", { objectId: this.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
         Router.push(
           `/game?objectId=${this.objectId}`
         );
@@ -182,74 +379,86 @@ export class CreateGame {
     //Table
 		ctx.fillText('Table:', pos.x + pos.w * 0.15, pos.y + pos.h * 0.52);
 
-    //Table
-    const pointx = pos.w * 0.01;
-    const pointy = pos.h * 0.01;
+    //Draw Table
+    this.drawTable(ctx, pos.x + pos.w * 0.30, pos.y + pos.h * 0.5, pos.w * 0.5, pos.h * 0.25, pos.w * 0.01, pos.h * 0.01);
 
+  }
+
+  private drawTable(ctx: CanvasRenderingContext2D, start_pos_x: number, start_pos_y: number, start_pos_w: number, start_pos_h: number, pointx: number, pointy: number) {
     ctx.fillStyle = "white";
     ctx.fillRect(
-      pos.x + pos.w * 0.30, 
-      pos.y + pos.h * 0.5,
-      pos.w * 0.5,
-      pos.h * 0.25,
+      start_pos_x, 
+      start_pos_y,
+      start_pos_w,
+      start_pos_h,
       );
     ctx.fillStyle = this.tableColor;
 
     ctx.fillRect(
-        pos.x + pos.w * 0.30 + pointx, 
-        pos.y + pos.h * 0.5 + pointy,
-        pos.w * 0.5 - 2 * pointx,
-        pos.h * 0.25 - 2 * pointy,
+        start_pos_x + pointx, 
+        start_pos_y + pointy,
+        start_pos_w - 2 * pointx,
+        start_pos_h - 2 * pointy,
     );
     ctx.fillStyle = "white";
 
-    //if (photo.complete) ctx.drawImage(photo, pos.x + pointx, pos.y + pointy, scaledWidth, scaledHeight);
+    if (this.skinImage.complete) {
+      ctx.drawImage(this.skinImage, 
+      start_pos_x + pointx, 
+      start_pos_y + pointy,
+      start_pos_w - 2 * pointx,
+      start_pos_h - 2 * pointy,);
+    }
 
     //Vertical Line
     ctx.fillRect(
-      pos.x + pos.w * 0.30 + pointx + ((pos.w * 0.5 - 2 * pointx) / 2), 
-      pos.y + pos.h * 0.5,
+      start_pos_x + pointx + ((start_pos_w - 2 * pointx) / 2), 
+      start_pos_y,
       pointx,
-      pos.h * 0.25,
+      start_pos_h,
     );
     //Horizontal Line
     ctx.fillRect(
-      pos.x + pos.w * 0.30, 
-      pos.y + pos.h * 0.5 + pointy + ((pos.h * 0.25 - 2 * pointy) / 2),
-      pos.w * 0.5,
+      start_pos_x, 
+      start_pos_y + pointy + ((start_pos_h - 2 * pointy) / 2),
+      start_pos_w,
       pointy,
     );
  
-  
   }
 
-  private createButtonExit(x: number, y: number): ElementUI {
-    const close_tab = new Audio(sound_close_tab);
-    const button: ElementUI = {
-      type: "exit",
-      rectangle: { x: x + "%", y: y + "%", w: "3%", h: "3%" },
-      draw: (ctx: CanvasRenderingContext2D) => {
-        ctx.strokeStyle = "black";
-        ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
+  private drawCustomMenu(ctx: CanvasRenderingContext2D, pos: Rectangle) {
+    const backgroundColor = "#FFC857";
+    const borderColor = "black";
 
-        ctx.lineWidth = 3;
+    ctx.fillStyle = backgroundColor;
+    this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
+    ctx.fill();
 
-        ctx.beginPath();
-        ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
-        ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5 + button.rectangle.h - 10);
-        ctx.stroke();
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
-        ctx.beginPath();
-        ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5 + button.rectangle.h - 10);
-        ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5);
-        ctx.stroke();
-      },
-      onClick: () => {
-        close_tab.play();
-        this.menu.close();
-      },
-    };
-    return button;
+    //Tittle
+    ctx.fillStyle = '#ffffff';
+    ctx.font = "30px 'Press Start 2P', cursive";
+		ctx.textAlign = 'center';
+		ctx.fillText('Custom', pos.x + pos.w / 2, pos.y + pos.h * 0.075);
+		ctx.strokeText('Custom', pos.x + pos.w / 2, pos.y + pos.h * 0.075);
+
+    //Type
+    ctx.fillStyle = 'black';
+    ctx.font = "18px 'Press Start 2P', cursive";
+		ctx.fillText('Color:', pos.x + pos.w * 0.5, pos.y + pos.h * 0.175);
+
+    //Skin
+		ctx.fillText('Skin:', pos.x + pos.w * 0.5, pos.y + pos.h * 0.40);
+
+    //Table
+		ctx.fillText('Table:', pos.x + pos.w * 0.5, pos.y + pos.h * 0.65, pos.w * 0.17);
+
+    this.drawTable(ctx, pos.x + pos.w * 0.25, pos.y + pos.h * 0.7, pos.w * 0.5, pos.h * 0.25, pos.w * 0.01, pos.h * 0.01);
+
   }
 
   get menu(): Menu {
