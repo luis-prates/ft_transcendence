@@ -4,10 +4,15 @@ import { CreateChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
 import { ChannelType } from 'src/types';
 import { Channel } from '@prisma/client';
+import { EventEmitter } from 'events';
 
 @Injectable()
 export class ChatService {
-    constructor(private prisma: PrismaService) {}
+    public events: EventEmitter;
+
+    constructor(private prisma: PrismaService) {
+        this.events = new EventEmitter();
+    }
 
     async getChannels() : Promise<Channel[]>{
         return this.prisma.channel.findMany();
@@ -54,11 +59,9 @@ export class ChatService {
         });
     }
 
-
     async createChannel(createChannelDto: CreateChannelDto, user: any) {
         let newChannel;
 
-        console.log(createChannelDto);
         if(createChannelDto.channelType !== 'DM' && (createChannelDto.name === null || createChannelDto.name === '')){
             throw new BadRequestException("Channels that are not DMs must have a name.");
         }
@@ -70,7 +73,6 @@ export class ChatService {
         try {
             // Logic for public channels
             if (createChannelDto.channelType == 'PUBLIC') {
-                console.log("LOL");
                 // Note: channel name has to be unique for open channels
                 newChannel = await this.prisma.channel.create({
                     data: {
@@ -101,10 +103,15 @@ export class ChatService {
                         users: true,
                     }
                 });
-                console.log("damn");
+                // emit event to creator for new channel
+                this.events.emit('user-added-to-channel', { channelId: newChannel.id, userId: user.id});
+                // emit event to all other users added to channel
+                for (user of createChannelDto.usersToAdd) {
+                    this.events.emit('user-added-to-channel', { channelId: newChannel.id, userId: user});
+                }
             }
 
-            // Logic for public channels
+            // Logic for private channels
             if (createChannelDto.channelType == 'PRIVATE') {
                 // Note: channel name has to be unique for open channels
                 let data : { name: string, type: ChannelType, ownerId: number, password?: string, users?: any } = {
@@ -207,6 +214,9 @@ export class ChatService {
             },
         });
 
+        // Emit an event when a user is added to a new channel
+        this.events.emit('user-added-to-channel', { channelId, userId });
+
         return newChannelUser;
     }
 
@@ -254,7 +264,7 @@ export class ChatService {
 
     async joinChannel(joinChannelDto: JoinChannelDto, channelId: number, user: any) {
         const { password } = joinChannelDto;
-
+        const userId = user.id;
         const channel = await this.prisma.channel.findUnique({
             where: {
                 id: channelId,
@@ -288,6 +298,9 @@ export class ChatService {
                 channelId: channelId,
             },
         });
+
+        // Emit an event when a user is added to a new channel
+        this.events.emit('user-added-to-channel', { channelId, userId });
     }
 
     async leaveChannel(channelId: number, user: any) {

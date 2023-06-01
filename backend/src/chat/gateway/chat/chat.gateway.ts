@@ -13,14 +13,34 @@ import { Namespace, Server, Socket } from 'socket.io';
 import { JwtGuard } from 'src/auth/guard';
 import { UseGuards } from '@nestjs/common';
 
-@WebSocketGateway(3001, {namespace: 'chat', cors: {origin: 'https://hoppscotch.io'}})
+@WebSocketGateway(3001, {namespace: 'chat', cors: {origin: '*'}})
 export class ChatGateway implements OnGatewayConnection {
+    private userIdToSocketId: Map<number, string> = new Map<number, string>();
+    private socketMap: Map<string, Socket> = new Map<string, Socket>;
+
     constructor(private chatService: ChatService) {}
 
     @WebSocketServer()
     server: Server;
 
     afterInit() {
+        this.chatService.events.on('user-added-to-channel', async ({ channelId, userId }) => {
+            const socketId : string = this.userIdToSocketId.get(userId);
+            if (!socketId) {
+                console.error(`No client socket found for user ${userId}`);
+                return;
+            }
+
+            const client: Socket = this.socketMap.get(socketId);
+            if (!client) {
+                console.error(`No client socket found for socketId ${socketId}`);
+                return;
+            }
+
+            client.join(`channel-${channelId}`);
+            console.log(`Client joined channel-${channelId}`);
+            client.emit('channel-added', { channelId, message: `You have been added to channel ${channelId}` });
+        });
         console.log('Chat Gateway Initialized!');
     }
 
@@ -28,13 +48,25 @@ export class ChatGateway implements OnGatewayConnection {
     async handleConnection(client: Socket, ...args: any[]) {
         // Extract variables from the handshake
         const { query } = client.handshake;
+
+        // TODO: check if the user exists. If not, disconnect the socket.
+
         console.log(`Client connected on /chat namespace with:
             socketId: ${client.id}
             userId: ${query.userId}
         `);
 
+        // For channel-added updates, we need to keep track of the socket
+        this.socketMap.set(client.id, client);
+
         // associate the socketId with the userId
-        client.data.userId = Number(query.userId);
+        const userId = Number(query.userId);
+        client.data.userId = userId;
+        this.userIdToSocketId.set(userId, client.id);
+
+        // Add the user to his own room for personal notifications and channel-added updates
+        client.join(`user-${client.data.userId}`);
+        console.log(`Client joined user-${client.data.userId}`);
 
         // Enter the user in the channels he belongs in
         const userChannels = await this.chatService.getUserChannels(Number(query.userId));
@@ -45,6 +77,8 @@ export class ChatGateway implements OnGatewayConnection {
     }
 
     async handleDisconnect(client: Socket) {
+        const userId: number = client.data.userId;
+        this.userIdToSocketId.delete(userId);
         console.log(`Client disconnected : ${client.id}`);
         const connectedRooms = Object.keys(client.rooms);
         connectedRooms.forEach((room) => client.leave(room));

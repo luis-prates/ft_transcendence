@@ -40,7 +40,6 @@ export class ChatController {
     @HttpCode(201)
     @Post()
     async createChannel(@Body() createChannelDto : CreateChannelDto, @Request() req ) {
-        console.log("lol");
         console.log(createChannelDto);
         return this.chatService.createChannel(createChannelDto, req.user);
     }
