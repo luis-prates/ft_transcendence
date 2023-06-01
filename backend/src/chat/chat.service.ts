@@ -3,13 +3,26 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
 import { ChannelType } from 'src/types';
+import { Channel } from '@prisma/client';
 
 @Injectable()
 export class ChatService {
     constructor(private prisma: PrismaService) {}
 
-    async getChannels() {
-        // TODO
+    async getChannels() : Promise<Channel[]>{
+        return this.prisma.channel.findMany();
+    }
+
+    async getChannelsByUser(user: any) {
+        return this.prisma.channel.findMany({
+            where: {
+                users: {
+                    some: {
+                        userId: user.id,
+                    }
+                }
+            }
+        });
     }
 
     async getMessagesByChannel(channelId: number) {
@@ -22,6 +35,25 @@ export class ChatService {
             },
         });
     }
+
+    async getMessagesByUser(user: any) {
+        const userChannels = await this.prisma.channelUser.findMany({
+            where: { userId: user.id },
+            select: {channelId: true },
+        });
+        const channelIds = userChannels.map(channelUser => channelUser.channelId);
+        return this.prisma.message.findMany({
+            where: {
+                channelId: {
+                    in: channelIds,
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+    }
+
 
     async createChannel(createChannelDto: CreateChannelDto, user: any) {
         let newChannel;

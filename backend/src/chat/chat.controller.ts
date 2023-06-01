@@ -10,12 +10,32 @@ import { CreateChannelDto, JoinChannelDto } from './dto';
 export class ChatController {
     constructor(private readonly chatService: ChatService) {}
 
+    // Get List of all channels
+    @Get()
+    @UseGuards(RolesGuard)
+    @Roles('admin', 'owner', 'member')
+    async getChannels() {
+        return this.chatService.getChannels();
+    }
+
+    // Get List of all channels which user is in
+    @Get('user')
+    async getChannelsByUser(@Request() req) {
+        return this.chatService.getChannelsByUser(req.user);
+    }
+
     // Get Messages of a channel
     @Get(':channelId/messages')
     @UseGuards(RolesGuard)
     @Roles('admin', 'owner', 'member')
-    async getMessages(@Param('channelId') channelId: string) {
+    async getMessagesByChannel(@Param('channelId') channelId: string) {
         return this.chatService.getMessagesByChannel(Number(channelId));
+    }
+
+    // Get all messages for a user's channels
+    @Get('user/messages')
+    async getMessagesByUser(@Request() req) {
+        return this.chatService.getMessagesByUser(req.user);
     }
 
     // Create a channel
@@ -32,12 +52,6 @@ export class ChatController {
     @Delete(':id')
     async deleteChannel(@Param('id') id: string, @Request() req) {
         return this.chatService.deleteChannel(Number(id), req.user);
-    }
-
-    //
-    @Get()
-    async getChannels() {
-        return this.chatService.getChannels();
     }
 
     // Add Users to channel, if you are admin/owner
