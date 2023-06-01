@@ -24,7 +24,7 @@ export class CreateGame {
   private type: string = "solo"; //Solo or Multiplayer
   private score: number = 3; // 3 6 9 12
   private view: string = "public"; //public or private
-  private tableColor: string = "#1e8c2f";
+  private tableColor: string = "#1e8c2f"; //
   private tableSkin: string = "";
 
   private skinImage = new Image();
@@ -66,6 +66,7 @@ export class CreateGame {
     this.menu.add(this.createColorButton(32 + 5 * (10 / 3), 28, "blue"));
     this.menu.add(this.createColorButton(32 + 6 * (10 / 3), 28, "black"));
 
+    //TODO FOREACH
     //Skin
     this.menu.add(this.createSkinButton(19 + 1 * (10 / 1.5), 46, ""));
     this.menu.add(this.createSkinButton(19 + 2 * (10 / 1.5), 46, "onepiece"));
@@ -74,6 +75,16 @@ export class CreateGame {
     this.menu.add(this.createSkinButton(19 + 5 * (10 / 1.5), 46, ""));
     this.menu.add(this.createSkinButton(19 + 6 * (10 / 1.5), 46, ""));
 
+  }
+
+  private skinChoose(name: string): string {
+    if (name == "onepiece")
+      return skinOnePiece;
+    else if (name == "swag")
+      return skinSwag;
+    else if (name == "game")
+      return skinGame;
+    return "";
   }
 
   private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
@@ -221,15 +232,6 @@ export class CreateGame {
     return button;
   }
 
-  private skinChoose(name: string): string {
-    if (name == "onepiece")
-      return skinOnePiece;
-    else if (name == "swag")
-      return skinSwag;
-    else if (name == "game")
-      return skinGame;
-    return "";
-  }
 
   private createSkinButton(x: number, y: number, skin: string): ElementUI {
     const skinImage = new Image();
@@ -261,10 +263,8 @@ export class CreateGame {
             ctx.stroke();
           }
           else if (skinImage.complete) {
-            //ctx.drawImage(skinImage, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
             ctx.save();
 
-            // Criar um caminho retangular com cantos arredondados
             ctx.beginPath();
             ctx.moveTo(button.rectangle.x + this.radius, button.rectangle.y);
             ctx.arcTo(
@@ -288,21 +288,14 @@ export class CreateGame {
               this.radius
             );
             ctx.closePath();
-          
-            // Recortar o caminho do retângulo com cantos arredondados
             ctx.clip();
-          
-            // Desenhar a imagem de skin com cantos arredondados
             ctx.drawImage(skinImage, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
           
-            // Restaurar o estado anterior do contexto
             ctx.restore();
-          
           }
 
       	  this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
 			
-      	 // ctx.fill();
       	  ctx.stroke();
       	},
       	onClick: () => {
@@ -381,7 +374,6 @@ export class CreateGame {
 
     //Draw Table
     this.drawTable(ctx, pos.x + pos.w * 0.30, pos.y + pos.h * 0.5, pos.w * 0.5, pos.h * 0.25, pos.w * 0.01, pos.h * 0.01);
-
   }
 
   private drawTable(ctx: CanvasRenderingContext2D, start_pos_x: number, start_pos_y: number, start_pos_w: number, start_pos_h: number, pointx: number, pointy: number) {
@@ -424,7 +416,6 @@ export class CreateGame {
       start_pos_w,
       pointy,
     );
- 
   }
 
   private drawCustomMenu(ctx: CanvasRenderingContext2D, pos: Rectangle) {
@@ -458,7 +449,6 @@ export class CreateGame {
 		ctx.fillText('Table:', pos.x + pos.w * 0.5, pos.y + pos.h * 0.65, pos.w * 0.17);
 
     this.drawTable(ctx, pos.x + pos.w * 0.25, pos.y + pos.h * 0.7, pos.w * 0.5, pos.h * 0.25, pos.w * 0.01, pos.h * 0.01);
-
   }
 
   get menu(): Menu {

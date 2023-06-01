@@ -20,7 +20,7 @@ export class Player extends Character {
     this.y = data.y;
     this.menu = menu;
     this.animation.sx = 0;
-    this.animation.sy = 320;
+    this.animation.sy = 0;
     this.menu.value?.setAttribute("style", "display: none");
     this.type = "player";
     this.name = "Player_" + Date.now();
