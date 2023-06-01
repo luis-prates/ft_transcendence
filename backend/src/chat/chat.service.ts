@@ -252,8 +252,8 @@ export class ChatService {
         });
     }
 
-    async joinChannel(joinChannelDto: JoinChannelDto, user: any) {
-        const { channelId, password } = joinChannelDto;
+    async joinChannel(joinChannelDto: JoinChannelDto, channelId: number, user: any) {
+        const { password } = joinChannelDto;
 
         const channel = await this.prisma.channel.findUnique({
             where: {
@@ -471,8 +471,6 @@ export class ChatService {
         });
         // Extract the channel IDs from the ChannelUser
         const channelIds = userChannels.map(channelUser => channelUser.channelId);
-        console.log(`check: ${channelIds}`);
-        console.log(`channelIds is an array: ${Array.isArray(channelIds)}`);
         return channelIds;
     }
 

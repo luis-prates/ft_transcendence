@@ -12,8 +12,6 @@ export class ChatController {
 
     // Get List of all channels
     @Get()
-    @UseGuards(RolesGuard)
-    @Roles('admin', 'owner', 'member')
     async getChannels() {
         return this.chatService.getChannels();
     }
@@ -24,18 +22,18 @@ export class ChatController {
         return this.chatService.getChannelsByUser(req.user);
     }
 
+    // Get all messages for a user's channels
+    @Get('user/messages')
+    async getMessagesByUser(@Request() req) {
+        return this.chatService.getMessagesByUser(req.user);
+    }
+
     // Get Messages of a channel
     @Get(':channelId/messages')
     @UseGuards(RolesGuard)
     @Roles('admin', 'owner', 'member')
     async getMessagesByChannel(@Param('channelId') channelId: string) {
         return this.chatService.getMessagesByChannel(Number(channelId));
-    }
-
-    // Get all messages for a user's channels
-    @Get('user/messages')
-    async getMessagesByUser(@Request() req) {
-        return this.chatService.getMessagesByUser(req.user);
     }
 
     // Create a channel
@@ -76,8 +74,7 @@ export class ChatController {
     @Post(':channelId/join')
     async joinChannelById(@Param('channelId') channelId: string, @Body() joinChannelDto: JoinChannelDto, @Request() req ) {
         // Overwrite channelId from the DTO with the one from the URL.
-        joinChannelDto.channelId = Number(channelId);
-        return this.chatService.joinChannel(joinChannelDto, req.user);
+        return this.chatService.joinChannel(joinChannelDto, Number(channelId), req.user);
     }
 
     // Leave a channel by Id

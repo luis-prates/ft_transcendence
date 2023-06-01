@@ -32,6 +32,10 @@ export class ChatGateway implements OnGatewayConnection {
             socketId: ${client.id}
             userId: ${query.userId}
         `);
+
+        // associate the socketId with the userId
+        client.data.userId = Number(query.userId);
+
         // Enter the user in the channels he belongs in
         const userChannels = await this.chatService.getUserChannels(Number(query.userId));
         for (let channelId of userChannels) {
@@ -49,14 +53,13 @@ export class ChatGateway implements OnGatewayConnection {
     @SubscribeMessage('message')
     async handleMessage(client: Socket, payload: string): Promise<WsResponse<any>> {
         let parsedPayload;
-        let senderId : number;
+        let senderId : number = client.data.userId;
         let message : string;
         let channelId : number;
 
         // First check if the payload is valid
         try {
             parsedPayload = JSON.parse(payload);
-            senderId = Number(parsedPayload.senderId);
             channelId = Number(parsedPayload.channelId);
             message = parsedPayload.message;
         } catch (error) {
