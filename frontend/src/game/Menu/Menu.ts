@@ -6,8 +6,6 @@ export interface ElementUI {
   rectangle: Rectangle;
   draw(contex: CanvasRenderingContext2D): void;
   onClick?(): void;
-  add?(...elements: ElementUI[]): void;
-  remove?(...elements: ElementUI[]): void;
   parent?: ElementUI;
   children?: ElementUI[];
   enable?: boolean;
