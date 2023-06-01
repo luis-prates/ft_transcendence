@@ -7,7 +7,6 @@ import skinGame from "@/assets/images/skin/table/skin_Game-Over.png";
 import skinSwag from "@/assets/images/skin/table/skin_swag.png";
 import skinOnePiece from "@/assets/images/skin/table/skin_onepiece.jpg";
 
-
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";
 
@@ -16,9 +15,10 @@ export class CreateGame {
 
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
-//  private onResult: (result: any) => void = () => {};
-  
-//  private player: Player;
+  private customMenu: ElementUI = this.createCustomMenu();
+  //  private onResult: (result: any) => void = () => {};
+
+  //  private player: Player;
 
   private objectId: string;
   private type: string = "solo"; //Solo or Multiplayer
@@ -29,61 +29,60 @@ export class CreateGame {
 
   private skinImage = new Image();
 
-  private custom: boolean = false;
+  // private custom: boolean = false;
 
-//  constructor(player: Player) {
+  //  constructor(player: Player) {
   constructor(objectId: string) {
     this.objectId = objectId;
 
     this.menu.add(this.background);
-    this.menu.add(this.createButtonExit(31, 7, "newGame"));
+
+    this.menu.add(this.background, this.createButtonExit(31, 7, "newGame"));
     //Type
-    this.menu.add(this.createButton("type", 40 + 1 * (10 / 4), 20, "Solo", 8));
-    this.menu.add(this.createButton("type", 40 + 5.25 * (10 / 4), 20, "Multiplayer", 10));
+    this.menu.add(this.background, this.createButton("type", 40 + 1 * (10 / 4), 20, "Solo", 8));
+    this.menu.add(this.background, this.createButton("type", 40 + 5.25 * (10 / 4), 20, "Multiplayer", 10));
     //Score
-    this.menu.add(this.createButton("score", 40 + 0.5 * (10 / 4), 30, "3", 3));
-    this.menu.add(this.createButton("score", 40 + 2.75 * (10 / 4), 30, "6", 3));
-    this.menu.add(this.createButton("score", 40 + 5 * (10 / 4), 30, "9", 3));
-    this.menu.add(this.createButton("score", 40 + 7.25 * (10 / 4), 30, "12", 3));
+    this.menu.add(this.background, this.createButton("score", 40 + 0.5 * (10 / 4), 30, "3", 3));
+    this.menu.add(this.background, this.createButton("score", 40 + 2.75 * (10 / 4), 30, "6", 3));
+    this.menu.add(this.background, this.createButton("score", 40 + 5 * (10 / 4), 30, "9", 3));
+    this.menu.add(this.background, this.createButton("score", 40 + 7.25 * (10 / 4), 30, "12", 3));
     //View
-    this.menu.add(this.createButton("view", 40 + 1 * (10 / 4), 40, "Public", 8));
-    this.menu.add(this.createButton("view", 40 + 5.5 * (10 / 4), 40, "Private", 8));
+    this.menu.add(this.background, this.createButton("view", 40 + 1 * (10 / 4), 40, "Public", 8));
+    this.menu.add(this.background, this.createButton("view", 40 + 5.5 * (10 / 4), 40, "Private", 8));
     //Table
-    this.menu.add(this.createButton("table", 40 + 3.25 * (10 / 4), 75, "Custom", 8));
+    this.menu.add(this.background, this.createButton("table", 40 + 3.25 * (10 / 4), 75, "Custom", 8));
 
     //Start Game
-    this.menu.add(this.createButtonStartGame(32.5 + (10 / 2), 85, "Start Game"));
+    this.menu.add(this.background, this.createButtonStartGame(32.5 + 10 / 2, 85, "Start Game"));
 
     //Custom Menu
-    this.menu.add(this.createCustomMenu());
-    this.menu.add(this.createButtonExit(26, 12, "custom"));
+    this.menu.add(this.customMenu);
+    this.customMenu.visible = false;
 
     //Colors
-    this.menu.add(this.createColorButton(32 + 1 * (10 / 3), 28, "red"));
-    this.menu.add(this.createColorButton(32 + 2 * (10 / 3), 28, "#1e8c2f"));
-    this.menu.add(this.createColorButton(32 + 3 * (10 / 3), 28, "#efc120"));
-    this.menu.add(this.createColorButton(32 + 4 * (10 / 3), 28, "#de1bda"));
-    this.menu.add(this.createColorButton(32 + 5 * (10 / 3), 28, "blue"));
-    this.menu.add(this.createColorButton(32 + 6 * (10 / 3), 28, "black"));
+    this.menu.add(this.customMenu, this.createColorButton(32 + 1 * (10 / 3), 28, "red"));
+    this.menu.add(this.customMenu, this.createColorButton(32 + 2 * (10 / 3), 28, "#1e8c2f"));
+    this.menu.add(this.customMenu, this.createColorButton(32 + 3 * (10 / 3), 28, "#efc120"));
+    this.menu.add(this.customMenu, this.createColorButton(32 + 4 * (10 / 3), 28, "#de1bda"));
+    this.menu.add(this.customMenu, this.createColorButton(32 + 5 * (10 / 3), 28, "blue"));
+    this.menu.add(this.customMenu, this.createColorButton(32 + 6 * (10 / 3), 28, "black"));
 
     //TODO FOREACH
     //Skin
-    this.menu.add(this.createSkinButton(19 + 1 * (10 / 1.5), 46, ""));
-    this.menu.add(this.createSkinButton(19 + 2 * (10 / 1.5), 46, "onepiece"));
-    this.menu.add(this.createSkinButton(19 + 3 * (10 / 1.5), 46, "swag"));
-    this.menu.add(this.createSkinButton(19 + 4 * (10 / 1.5), 46, "game"));
-    this.menu.add(this.createSkinButton(19 + 5 * (10 / 1.5), 46, ""));
-    this.menu.add(this.createSkinButton(19 + 6 * (10 / 1.5), 46, ""));
+    this.menu.add(this.customMenu, this.createSkinButton(19 + 1 * (10 / 1.5), 46, ""));
+    this.menu.add(this.customMenu, this.createSkinButton(19 + 2 * (10 / 1.5), 46, "onepiece"));
+    this.menu.add(this.customMenu, this.createSkinButton(19 + 3 * (10 / 1.5), 46, "swag"));
+    this.menu.add(this.customMenu, this.createSkinButton(19 + 4 * (10 / 1.5), 46, "game"));
+    this.menu.add(this.customMenu, this.createSkinButton(19 + 5 * (10 / 1.5), 46, ""));
+    this.menu.add(this.customMenu, this.createSkinButton(19 + 6 * (10 / 1.5), 46, ""));
 
+    this.menu.add(this.customMenu, this.createButtonExit(26, 12, "custom"));
   }
 
   private skinChoose(name: string): string {
-    if (name == "onepiece")
-      return skinOnePiece;
-    else if (name == "swag")
-      return skinSwag;
-    else if (name == "game")
-      return skinGame;
+    if (name == "onepiece") return skinOnePiece;
+    else if (name == "swag") return skinSwag;
+    else if (name == "game") return skinGame;
     return "";
   }
 
@@ -120,10 +119,6 @@ export class CreateGame {
       type: type,
       rectangle: { x: x + "%", y: y + "%", w: "3%", h: "3%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-
-        if (button.type == "custom" && this.custom == false)
-          return;
-
         ctx.strokeStyle = "black";
         ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
 
@@ -140,11 +135,13 @@ export class CreateGame {
         ctx.stroke();
       },
       onClick: () => {
+        console.log("close: ", button.type);
         close_tab.play();
-        if (button.type == "newGame")
-          this.menu.close();
-        else if (button.type == "custom")
-          this.custom = false;
+        if (button.type == "newGame") this.menu.close();
+        else if (button.type == "custom") {
+          this.customMenu.visible = false;
+          this.background.visible = true;
+        }
       },
     };
     return button;
@@ -156,40 +153,36 @@ export class CreateGame {
       type: type,
       rectangle: { x: x + "%", y: y + "%", w: width + "%", h: "6%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-          if (button.type == "type" && this.type == label.toLowerCase())
-            color = "red";
-          else if (button.type == "score" && this.score.toString() == label) 
-            color = "red";
-          else if (button.type == "view" && this.view == label.toLowerCase()) 
-            color = "red";
-          else
-            color = "black";
-          
-          ctx.fillStyle = "white";
-      	  ctx.strokeStyle = color;
-      	  ctx.lineWidth = 2;
-			
-      	  this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
-			
-      	  ctx.fill();
-      	  ctx.stroke();
-			
-      	  ctx.fillStyle = "black";
-          ctx.font = "12px 'Press Start 2P', cursive";
-      	  ctx.textAlign = "center";
-      	  ctx.textBaseline = "middle";
-      	  ctx.fillText(label, button.rectangle.x + button.rectangle.w / 2, button.rectangle.y + button.rectangle.h / 2);
-      	},
-      	onClick: () => {
-          if (button.type == "type")
-            this.type = label.toLowerCase();
-          else if (button.type == "score") 
-            this.score = parseInt(label);
-          else if (button.type == "view") 
-            this.view = label.toLowerCase();
-          else if (button.type == "table")
-            this.custom = true;
-      	},
+        if (button.type == "type" && this.type == label.toLowerCase()) color = "red";
+        else if (button.type == "score" && this.score.toString() == label) color = "red";
+        else if (button.type == "view" && this.view == label.toLowerCase()) color = "red";
+        else color = "black";
+
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+
+        this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "black";
+        ctx.font = "12px 'Press Start 2P', cursive";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(label, button.rectangle.x + button.rectangle.w / 2, button.rectangle.y + button.rectangle.h / 2);
+      },
+      onClick: () => {
+        console.log(button.type, label);
+        if (button.type == "type") this.type = label.toLowerCase();
+        else if (button.type == "score") this.score = parseInt(label);
+        else if (button.type == "view") this.view = label.toLowerCase();
+        else if (button.type == "table") {
+          this.customMenu.visible = true;
+          this.background.visible = false;
+        }
+      },
     };
     return button;
   }
@@ -199,8 +192,7 @@ export class CreateGame {
       type: "image",
       rectangle: { x: "25%", y: "10%", w: "40%", h: "80%" },
       draw: (context: any) => {
-        if (this.custom == true)
-          this.drawCustomMenu(context, background.rectangle);
+        this.drawCustomMenu(context, background.rectangle);
       },
     };
     return background;
@@ -211,27 +203,21 @@ export class CreateGame {
       type: "color",
       rectangle: { x: x + "%", y: y + "%", w: "2.5%", h: "6%" },
       draw: (ctx: CanvasRenderingContext2D) => {
+        ctx.fillStyle = color;
+        ctx.strokeStyle = color == this.tableColor ? "red" : "black";
+        ctx.lineWidth = 2;
 
-          if (this.custom == false)
-            return ;
+        this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
 
-          ctx.fillStyle = color;
-      	  ctx.strokeStyle = color == this.tableColor ? "red" : "black";
-      	  ctx.lineWidth = 2;
-        
-      	  this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
-        
-      	  ctx.fill();
-      	  ctx.stroke();
-			
-      	},
-      	onClick: () => {
-          this.tableColor = color;
-      	},
+        ctx.fill();
+        ctx.stroke();
+      },
+      onClick: () => {
+        this.tableColor = color;
+      },
     };
     return button;
   }
-
 
   private createSkinButton(x: number, y: number, skin: string): ElementUI {
     const skinImage = new Image();
@@ -239,69 +225,47 @@ export class CreateGame {
       type: "skin",
       rectangle: { x: x + "%", y: y + "%", w: "5%", h: "10%" },
       draw: (ctx: CanvasRenderingContext2D) => {
+        skinImage.src = this.skinChoose(skin);
 
-          if (this.custom == false)
-            return ;
+        ctx.strokeStyle = skin == this.tableSkin ? "red" : "black";
+        ctx.lineWidth = 2;
 
-          skinImage.src = this.skinChoose(skin);
+        ctx.lineWidth = 3;
 
-      	  ctx.strokeStyle = skin == this.tableSkin ? "red" : "black";
-      	  ctx.lineWidth = 2;
+        if (skin == "") {
+          ctx.beginPath();
+          ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
+          ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5 + button.rectangle.h - 10);
+          ctx.stroke();
 
-          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5 + button.rectangle.h - 10);
+          ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5);
+          ctx.stroke();
+        } else if (skinImage.complete) {
+          ctx.save();
 
-          if (skin == "")
-          {
-            ctx.beginPath();
-            ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
-            ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5 + button.rectangle.h - 10);
-            ctx.stroke();
-    
-            ctx.beginPath();
-            ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5 + button.rectangle.h - 10);
-            ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5);
-            ctx.stroke();
-          }
-          else if (skinImage.complete) {
-            ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(button.rectangle.x + this.radius, button.rectangle.y);
+          ctx.arcTo(button.rectangle.x + button.rectangle.w, button.rectangle.y, button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h, this.radius);
+          ctx.arcTo(button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h, button.rectangle.x, button.rectangle.y + button.rectangle.h, this.radius);
+          ctx.arcTo(button.rectangle.x, button.rectangle.y + button.rectangle.h, button.rectangle.x, button.rectangle.y, this.radius);
+          ctx.arcTo(button.rectangle.x, button.rectangle.y, button.rectangle.x + button.rectangle.w, button.rectangle.y, this.radius);
+          ctx.closePath();
+          ctx.clip();
+          ctx.drawImage(skinImage, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
 
-            ctx.beginPath();
-            ctx.moveTo(button.rectangle.x + this.radius, button.rectangle.y);
-            ctx.arcTo(
-              button.rectangle.x + button.rectangle.w, button.rectangle.y,
-              button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h,
-              this.radius
-            );
-            ctx.arcTo(
-              button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h,
-              button.rectangle.x, button.rectangle.y + button.rectangle.h,
-              this.radius
-            );
-            ctx.arcTo(
-              button.rectangle.x, button.rectangle.y + button.rectangle.h,
-              button.rectangle.x, button.rectangle.y,
-              this.radius
-            );
-            ctx.arcTo(
-              button.rectangle.x, button.rectangle.y,
-              button.rectangle.x + button.rectangle.w, button.rectangle.y,
-              this.radius
-            );
-            ctx.closePath();
-            ctx.clip();
-            ctx.drawImage(skinImage, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
-          
-            ctx.restore();
-          }
+          ctx.restore();
+        }
 
-      	  this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
-			
-      	  ctx.stroke();
-      	},
-      	onClick: () => {
-          this.tableSkin = skin;
-          this.skinImage.src = this.skinChoose(skin);
-      	},
+        this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+
+        ctx.stroke();
+      },
+      onClick: () => {
+        this.tableSkin = skin;
+        this.skinImage.src = this.skinChoose(skin);
+      },
     };
     return button;
   }
@@ -311,28 +275,26 @@ export class CreateGame {
       type: "button",
       rectangle: { x: x + "%", y: y + "%", w: "25%", h: "6%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        	ctx.fillStyle = "white";
-        	ctx.strokeStyle = "black";
-        	ctx.lineWidth = 2;
-		
-        	this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
-		
-        	ctx.fill();
-        	ctx.stroke();
-		
-        	ctx.fillStyle = "black";
-          ctx.font = "30px 'Press Start 2P', cursive";
-        	ctx.textAlign = "center";
-        	ctx.textBaseline = "middle";
-        	ctx.fillText("Start Game", button.rectangle.x + button.rectangle.w / 2, button.rectangle.y + button.rectangle.h / 2);
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+
+        this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "black";
+        ctx.font = "30px 'Press Start 2P', cursive";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("Start Game", button.rectangle.x + button.rectangle.w / 2, button.rectangle.y + button.rectangle.h / 2);
       },
       onClick: () => {
         this.menu.close();
-        console.log({objectId: this.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
+        console.log({ objectId: this.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
         socket.emit("new_game", { objectId: this.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
-        Router.push(
-          `/game?objectId=${this.objectId}`
-        );
+        Router.push(`/game?objectId=${this.objectId}`);
         //this.onResult(label);
       },
     };
@@ -352,70 +314,46 @@ export class CreateGame {
     ctx.stroke();
 
     //Tittle
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = "#ffffff";
     ctx.font = "30px 'Press Start 2P', cursive";
-		ctx.textAlign = 'center';
-		ctx.fillText('NEW GAME', pos.x + pos.w / 2, pos.y + pos.h * 0.075);
-		ctx.strokeText('NEW GAME', pos.x + pos.w / 2, pos.y + pos.h * 0.075);
+    ctx.textAlign = "center";
+    ctx.fillText("NEW GAME", pos.x + pos.w / 2, pos.y + pos.h * 0.075);
+    ctx.strokeText("NEW GAME", pos.x + pos.w / 2, pos.y + pos.h * 0.075);
 
     //Type
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = "black";
     ctx.font = "18px 'Press Start 2P', cursive";
-		ctx.fillText('Type:', pos.x + pos.w * 0.15, pos.y + pos.h * 0.20);
+    ctx.fillText("Type:", pos.x + pos.w * 0.15, pos.y + pos.h * 0.2);
 
     //Score
-		ctx.fillText('Score:', pos.x + pos.w * 0.15, pos.y + pos.h * 0.31);
+    ctx.fillText("Score:", pos.x + pos.w * 0.15, pos.y + pos.h * 0.31);
 
     //View
-		ctx.fillText('View:', pos.x + pos.w * 0.15, pos.y + pos.h * 0.42);
+    ctx.fillText("View:", pos.x + pos.w * 0.15, pos.y + pos.h * 0.42);
 
     //Table
-		ctx.fillText('Table:', pos.x + pos.w * 0.15, pos.y + pos.h * 0.52);
+    ctx.fillText("Table:", pos.x + pos.w * 0.15, pos.y + pos.h * 0.52);
 
     //Draw Table
-    this.drawTable(ctx, pos.x + pos.w * 0.30, pos.y + pos.h * 0.5, pos.w * 0.5, pos.h * 0.25, pos.w * 0.01, pos.h * 0.01);
+    this.drawTable(ctx, pos.x + pos.w * 0.3, pos.y + pos.h * 0.5, pos.w * 0.5, pos.h * 0.25, pos.w * 0.01, pos.h * 0.01);
   }
 
   private drawTable(ctx: CanvasRenderingContext2D, start_pos_x: number, start_pos_y: number, start_pos_w: number, start_pos_h: number, pointx: number, pointy: number) {
     ctx.fillStyle = "white";
-    ctx.fillRect(
-      start_pos_x, 
-      start_pos_y,
-      start_pos_w,
-      start_pos_h,
-      );
+    ctx.fillRect(start_pos_x, start_pos_y, start_pos_w, start_pos_h);
     ctx.fillStyle = this.tableColor;
 
-    ctx.fillRect(
-        start_pos_x + pointx, 
-        start_pos_y + pointy,
-        start_pos_w - 2 * pointx,
-        start_pos_h - 2 * pointy,
-    );
+    ctx.fillRect(start_pos_x + pointx, start_pos_y + pointy, start_pos_w - 2 * pointx, start_pos_h - 2 * pointy);
     ctx.fillStyle = "white";
 
     if (this.skinImage.complete) {
-      ctx.drawImage(this.skinImage, 
-      start_pos_x + pointx, 
-      start_pos_y + pointy,
-      start_pos_w - 2 * pointx,
-      start_pos_h - 2 * pointy,);
+      ctx.drawImage(this.skinImage, start_pos_x + pointx, start_pos_y + pointy, start_pos_w - 2 * pointx, start_pos_h - 2 * pointy);
     }
 
     //Vertical Line
-    ctx.fillRect(
-      start_pos_x + pointx + ((start_pos_w - 2 * pointx) / 2), 
-      start_pos_y,
-      pointx,
-      start_pos_h,
-    );
+    ctx.fillRect(start_pos_x + pointx + (start_pos_w - 2 * pointx) / 2, start_pos_y, pointx, start_pos_h);
     //Horizontal Line
-    ctx.fillRect(
-      start_pos_x, 
-      start_pos_y + pointy + ((start_pos_h - 2 * pointy) / 2),
-      start_pos_w,
-      pointy,
-    );
+    ctx.fillRect(start_pos_x, start_pos_y + pointy + (start_pos_h - 2 * pointy) / 2, start_pos_w, pointy);
   }
 
   private drawCustomMenu(ctx: CanvasRenderingContext2D, pos: Rectangle) {
@@ -431,22 +369,22 @@ export class CreateGame {
     ctx.stroke();
 
     //Tittle
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = "#ffffff";
     ctx.font = "30px 'Press Start 2P', cursive";
-		ctx.textAlign = 'center';
-		ctx.fillText('Custom', pos.x + pos.w / 2, pos.y + pos.h * 0.075);
-		ctx.strokeText('Custom', pos.x + pos.w / 2, pos.y + pos.h * 0.075);
+    ctx.textAlign = "center";
+    ctx.fillText("Custom", pos.x + pos.w / 2, pos.y + pos.h * 0.075);
+    ctx.strokeText("Custom", pos.x + pos.w / 2, pos.y + pos.h * 0.075);
 
     //Type
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = "black";
     ctx.font = "18px 'Press Start 2P', cursive";
-		ctx.fillText('Color:', pos.x + pos.w * 0.5, pos.y + pos.h * 0.175);
+    ctx.fillText("Color:", pos.x + pos.w * 0.5, pos.y + pos.h * 0.175);
 
     //Skin
-		ctx.fillText('Skin:', pos.x + pos.w * 0.5, pos.y + pos.h * 0.40);
+    ctx.fillText("Skin:", pos.x + pos.w * 0.5, pos.y + pos.h * 0.4);
 
     //Table
-		ctx.fillText('Table:', pos.x + pos.w * 0.5, pos.y + pos.h * 0.65, pos.w * 0.17);
+    ctx.fillText("Table:", pos.x + pos.w * 0.5, pos.y + pos.h * 0.65, pos.w * 0.17);
 
     this.drawTable(ctx, pos.x + pos.w * 0.25, pos.y + pos.h * 0.7, pos.w * 0.5, pos.h * 0.25, pos.w * 0.01, pos.h * 0.01);
   }

@@ -6,7 +6,10 @@ export interface ElementUI {
   rectangle: Rectangle;
   draw(contex: CanvasRenderingContext2D): void;
   onClick?(): void;
+  add?(...elements: ElementUI[]): void;
+  remove?(...elements: ElementUI[]): void;
   parent?: ElementUI;
+  children?: ElementUI[];
   enable?: boolean;
   visible?: boolean;
 }
@@ -80,11 +83,46 @@ export class Menu implements GameObject {
 
   setData(data: any) {}
 
-  public add(...elements: ElementUI[]) {
+  public add(parent?: ElementUI, ...elements: ElementUI[]) {
+    if (parent && (elements === null || elements === undefined || elements.length === 0)) {
+      elements = parent ? [parent] : [];
+      parent = undefined;
+    }
     if (elements === null || elements === undefined) return;
-    elements.forEach((element) => {
+    elements.forEach((element: any) => {
       if (element.enable === undefined) element.enable = true;
       if (element.visible === undefined) element.visible = true;
+      element.parent = parent;
+      if (parent) {
+        element.visible = parent.visible;
+        element.enable = parent.enable;
+        if (!parent.children) parent.children = [];
+        parent.children?.push(element);
+      }
+      element["_visible"] = element.visible;
+      Object.defineProperty(element, "visible", {
+        get() {
+          return element._visible;
+        },
+        set(value: string) {
+          element.children?.forEach((e: any) => (e.visible = value));
+          element._visible = value;
+        },
+        enumerable: true,
+        configurable: true,
+      });
+      element["_enable"] = element.enable;
+      Object.defineProperty(element, "enable", {
+        get() {
+          return element._enable;
+        },
+        set(value: string) {
+          element.children?.forEach((e: any) => (e.enable = value));
+          element._enable = value;
+        },
+        enumerable: true,
+        configurable: true,
+      });
       (element as any)["resizing"] = { x: element.rectangle.x, y: element.rectangle.y, w: element.rectangle.w, h: element.rectangle.h };
       this.resizing(element, this.w, this.h);
       this.elements.push(element);
@@ -95,9 +133,12 @@ export class Menu implements GameObject {
     Game.instance.removeMenu(this);
   }
 
-  public remove(element: ElementUI): boolean {
+  public remove(...elements: ElementUI[]): boolean {
     const size = this.elements.length;
-    this.elements = this.elements.filter((e) => e !== element);
+    if (elements === null || elements === undefined) return false;
+    elements.forEach((element) => {
+      this.elements = this.elements.filter((e) => e !== element);
+    });
     return size !== this.elements.length;
   }
 
