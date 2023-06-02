@@ -32,7 +32,7 @@ model User {
 	friendsOf				User[] @relation("Friends")
 
 	// Game
-	Games				Game[] //@relation("WonGames")
+	Games					Game[] //@relation("WonGames")
 	//lostGames				Game[] @relation("LostGames")
 
     // TODO: Add blocklist
@@ -106,6 +106,7 @@ enum ChannelType {
 // 	updatedAt DateTime @updatedAt
 
 
+// TODO: need to check how spectators will be handled
 model Game {
 	id						String @id @unique @default(uuid())
 	createdAt				DateTime @default(now())
@@ -115,6 +116,7 @@ model Game {
 	
 	players					User[] //@relation("WonGames", fields: [winnerId], references: [id])
 	
+
 	gameStats				Json? // winnerId, loserId, winnerScore, loserScore, gameTime, gameDate, gameType
 	gameType				GameType // Public, Private, Protected
 

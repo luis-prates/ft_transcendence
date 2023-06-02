@@ -63,6 +63,36 @@ export class GameService {
 		}
 	}
 
+	async startGame(gameId: string, body: GameDto) {
+		try {
+			const game = await this.prisma.game.update({
+				where: {
+					id: gameId,
+				},
+				data: {
+					gameStats: body.gameStats,
+				},
+				include: {
+					players: true,
+				},
+			});
+			// delete the hash for all users from the players object
+			game.players.forEach((player: User) => {
+				delete player.hash;
+			});
+
+			return (game);
+		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2016') {
+					throw new ForbiddenException('Game not found.');
+				}
+				throw error;
+			}
+		}
+	}
+
+	// handles what to do when the game ends
 	async endGame(gameId: string, body: GameDto) {
 		try {
 			const game = await this.prisma.game.update({
@@ -70,9 +100,6 @@ export class GameService {
 					id: gameId,
 				},
 				data: {
-					players: {
-						connect: body.players.map((player) => ({ id: player })),
-					},
 					gameStats: body.gameStats,
 				},
 				include: {
