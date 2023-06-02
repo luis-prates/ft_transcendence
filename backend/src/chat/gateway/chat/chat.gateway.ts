@@ -24,6 +24,7 @@ export class ChatGateway implements OnGatewayConnection {
     server: Server;
 
     afterInit() {
+        // Setup all listeners for events coming from the chat service
         this.chatService.events.on('user-added-to-channel', async ({ channelId, userId }) => {
             const socketId : string = this.userIdToSocketId.get(userId);
             if (!socketId) {
@@ -40,7 +41,32 @@ export class ChatGateway implements OnGatewayConnection {
             client.join(`channel-${channelId}`);
             console.log(`Client joined channel-${channelId}`);
             client.emit('channel-added', { channelId, message: `You have been added to channel ${channelId}` });
+
+            // Send a message to all users in the channel that a new user has been added
+            client.broadcast.to(`channel-${channelId}`).emit('user-added', { channelId, userId, message: `User ${userId} has been added to channel ${channelId}` });
         });
+
+        this.chatService.events.on('user-removed-from-channel', async ({ channelId, userId }) => {
+            const socketId : string = this.userIdToSocketId.get(userId);
+            if (!socketId) {
+                console.error(`No client socket found for user ${userId}`);
+                return;
+            }
+
+            const client: Socket = this.socketMap.get(socketId);
+            if (!client) {
+                console.error(`No client socket found for socketId ${socketId}`);
+                return;
+            }
+
+            client.leave(`channel-${channelId}`);
+            console.log(`Client left channel-${channelId}`);
+            client.emit('channel-removed', { channelId, message: `You have been removed from channel ${channelId}` });
+
+            // Send a message to all users in the channel that a user has been removed
+            client.broadcast.to(`channel-${channelId}`).emit('user-removed', { channelId, userId, message: `User ${userId} has left the channel ${channelId}` });
+        });
+
         console.log('Chat Gateway Initialized!');
     }
 

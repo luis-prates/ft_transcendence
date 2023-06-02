@@ -260,6 +260,9 @@ export class ChatService {
                 }
             }
         });
+
+        // emit an event that user left the channel
+        this.events.emit('user-removed-from-channel', { channelId, userId: removedUserId });
     }
 
     async joinChannel(joinChannelDto: JoinChannelDto, channelId: number, user: any) {
@@ -345,6 +348,8 @@ export class ChatService {
         if (channelUsers.length === 1) {
             await this.prisma.channel.delete({ where: { id: channelId } });
         }
+
+        this.events.emit('user-removed-from-channel', { channelId, userId: user.id });
     }
 
     async muteUser(channelId: number, userId: number) {
@@ -451,6 +456,13 @@ export class ChatService {
             where: {
                 id: channelId,
             },
+            include : {
+                users: {
+                    select: {
+                        user: true,
+                    }
+                }
+            }
         });
 
         if (!channel) {
@@ -473,6 +485,13 @@ export class ChatService {
                 id: channelId,
             },
         });
+
+        const users = channel.users.map(cu => cu.user);
+
+        // Emit events to all users when a channel is deleted
+        for (let user of users) {
+            this.events.emit('user-removed-from-channel', { channelId, userId: user.id });
+        }
     }
 
     // BELOW IS FOR WEBSOCKETS
