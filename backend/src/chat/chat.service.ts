@@ -62,7 +62,7 @@ export class ChatService {
     async createChannel(createChannelDto: CreateChannelDto, user: any) {
         let newChannel;
 
-        if(createChannelDto.channelType !== 'DM' && (createChannelDto.name === null || createChannelDto.name === '')){
+        if(createChannelDto.channelType !== 'DM' && (typeof createChannelDto.name === 'undefined' || createChannelDto.name === null || createChannelDto.name === '')) {
             throw new BadRequestException("Channels that are not DMs must have a name.");
         }
 
@@ -190,6 +190,9 @@ export class ChatService {
         } catch (error) {
             if (error.code === 'P2002' && error.meta.target.includes('name')) {
                 throw new ConflictException('Channel name already exists');
+            }
+            else if (error.code === 'P2025' && error.meta.cause.includes('User')) {
+                throw new NotFoundException('User not found');
             }
             // add more error codes here if needed
         }

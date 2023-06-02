@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, UseGuards, Request, Delete, HttpCode } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { JwtGuard } from 'src/auth/guard';
+import { JwtGuard } from '../auth/guard';
 import { RolesGuard } from './roleguard';
 import { Roles } from './decorator';
 import { CreateChannelDto, JoinChannelDto } from './dto';
@@ -40,7 +40,6 @@ export class ChatController {
     @HttpCode(201)
     @Post()
     async createChannel(@Body() createChannelDto : CreateChannelDto, @Request() req ) {
-        console.log(createChannelDto);
         return this.chatService.createChannel(createChannelDto, req.user);
     }
 

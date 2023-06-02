@@ -28,7 +28,7 @@ export class ChatGateway implements OnGatewayConnection {
         this.chatService.events.on('user-added-to-channel', async ({ channelId, userId }) => {
             const socketId : string = this.userIdToSocketId.get(userId);
             if (!socketId) {
-                console.error(`No client socket found for user ${userId}`);
+                // if socketId not found, client is not currently connected and doesnt need the websocket event
                 return;
             }
 
@@ -49,7 +49,7 @@ export class ChatGateway implements OnGatewayConnection {
         this.chatService.events.on('user-removed-from-channel', async ({ channelId, userId }) => {
             const socketId : string = this.userIdToSocketId.get(userId);
             if (!socketId) {
-                console.error(`No client socket found for user ${userId}`);
+                // if socketId not found, client is not currently connected and doesnt need the websocket event
                 return;
             }
 
