@@ -20,7 +20,13 @@ export class CreateGame {
 
   //  private player: Player;
 
-  private objectId: string;
+  private data: {
+    className: string;
+    objectId: string;
+    color: string;
+    x: number;
+    y: number;
+  };
   private type: string = "solo"; //Solo or Multiplayer
   private score: number = 3; // 3 6 9 12
   private view: string = "public"; //public or private
@@ -32,8 +38,8 @@ export class CreateGame {
   // private custom: boolean = false;
 
   //  constructor(player: Player) {
-  constructor(objectId: string) {
-    this.objectId = objectId;
+  constructor(data: any) {
+    this.data = data;
 
     this.menu.add(this.background);
 
@@ -292,10 +298,9 @@ export class CreateGame {
       },
       onClick: () => {
         this.menu.close();
-        console.log({ objectId: this.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
-        socket.emit("new_game", { objectId: this.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
-        Router.push(`/game?objectId=${this.objectId}`);
-        //this.onResult(label);
+        console.log({ objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
+        socket.emit("new_game", { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
+        socket.emit("new_gameobject", this.data);
       },
     };
     return button;

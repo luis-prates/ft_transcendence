@@ -20,9 +20,6 @@ export class Table implements GameObject {
   isSelect: boolean;
   objectId: string;
   private _data: TableOnline;
-  
-  //TODO Criei mas acho que a logica pode ser outra
-  created: boolean = false;
 
   constructor(data: TableOnline) {
     this._data = data;
@@ -87,17 +84,6 @@ export class Table implements GameObject {
   }
 
   interaction(gameObject: GameObject): void {
-    //TODO - quando criado nao deixar que ele va para o menu de criaçao
-    if (this.created == false)
-    {
-      Game.instance.addMenu(new CreateGame(this.objectId).menu);
-      this.created = true;
-    }
-    else
-    {
-        Router.push(
-        `/game?objectId=${this.objectId}`
-      );
-    }
+    Router.push(`/game?objectId=${this.objectId}`);
   }
 }

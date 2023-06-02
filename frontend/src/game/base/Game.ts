@@ -1,6 +1,7 @@
 import { Camera, Player, Menu, type GameObject, Map, listClass } from "@/game";
 import socket from "@/socket/Socket";
 import { userStore } from "@/stores/userStore";
+import { CreateGame } from "../Menu/CreateGame";
 
 export class Game {
   public static instance: Game;
@@ -53,8 +54,7 @@ export class Game {
           x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE,
           y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,
         };
-        socket.emit("new_gameobject", data);
-        //socket.emit("new_game", { objectId: data.objectId, maxScore: 3, table: data.color, tableSkin: "", bot: color == "#2aaa15" });
+        Game.instance.addMenu(new CreateGame(data).menu);
       }
       event.preventDefault();
     });
