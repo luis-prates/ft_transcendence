@@ -98,6 +98,7 @@ onMounted(function () {
   socket.on("game_update_ball", (e: updateBall) => {
     game.ball.updateBall(e.x, e.y, e.dir);
   });
+  
   socket.on("game_update_point", (e: gamePoint) => {
     if (game.status == Status.InGame) {
       game.updateStatus(Status.Starting);

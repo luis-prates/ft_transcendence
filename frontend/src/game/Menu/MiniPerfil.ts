@@ -8,6 +8,7 @@ import sound_close_tab from "@/assets/audio/close.mp3";
 
 //Image
 import avatares from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg"
+import { userStore } from "@/stores/userStore";
 
 export class MiniPerfil {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -15,8 +16,9 @@ export class MiniPerfil {
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
   private avataresImage = new Image();
-  private chooseAvatar: number;
+  
 
+  private chooseAvatar: number;
 
 
 //  private onResult: (result: any) => void = () => {};
@@ -34,36 +36,13 @@ export class MiniPerfil {
     this.menu.add(this.background);
     this.menu.add(this.createButtonExit(19, 6));
 
-    //TODO if is not himself
     //if is friend the label is "-" if is not friend "+"
-	  this.menu.add(this.createButtonAddFriend("add_friend", 9.25, 7, "+"));
+    this.menu.add(this.createButtonAddFriend("add_friend", 9.25, 7, "+"));
 
     this.menu.add(this.createButton("challenge", 11, 15.5, "Challenge", 9));
     this.menu.add(this.createButton("send_message", 11, 22, "Send Message", 9));
-	  this.menu.add(this.createButton("mute", 11, 28.5, "Mute", 9));
+    this.menu.add(this.createButton("mute", 11, 28.5, "Mute", 9));
 
-	  this.menu.add(this.createButton("left", 3, 30, "", 2));
-	  this.menu.add(this.createButton("rigth", 7, 30, "", 2));
-    //TODO create left arrow or rigth arrow
-    /*
-    // Desenhar seta giratória para a direita
-    ctx.beginPath();
-    ctx.moveTo(50, 50);
-    ctx.lineTo(50 + tamanhoSeta, 50);
-    ctx.lineTo(50 + tamanhoSeta - tamanhoSeta/3, 50 - tamanhoSeta/3);
-    ctx.moveTo(50 + tamanhoSeta, 50);
-    ctx.lineTo(50 + tamanhoSeta - tamanhoSeta/3, 50 + tamanhoSeta/3);
-    ctx.stroke();
-
-    // Desenhar seta giratória para a esquerda
-    ctx.beginPath();
-    ctx.moveTo(150, 50);
-    ctx.lineTo(150 - tamanhoSeta, 50);
-    ctx.lineTo(150 - tamanhoSeta + tamanhoSeta/3, 50 - tamanhoSeta/3);
-    ctx.moveTo(150 - tamanhoSeta, 50);
-    ctx.lineTo(150 - tamanhoSeta + tamanhoSeta/3, 50 + tamanhoSeta/3);
-    ctx.stroke();
-    */
   }
 
   private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
@@ -133,13 +112,6 @@ export class MiniPerfil {
           else if (type == "mute") {
             //TODO mute or unmute
           }
-          else if (type == "left" && this.chooseAvatar > 0) {
-            this.chooseAvatar -= 1;
-          }
-          else if (type == "rigth" && this.chooseAvatar < 7) {
-            this.chooseAvatar += 1;
-          }
-          
       	},
     };
     return button;
@@ -206,8 +178,6 @@ export class MiniPerfil {
       pos.w * 0.4,
       pos.h * 0.80,
       );
-
-    //TODO AVATAR
     
     if (this.avataresImage.complete) ctx.drawImage(this.avataresImage, 
       ((this.chooseAvatar - 4 >= 0 ? this.chooseAvatar - 4 : this.chooseAvatar) * 144) + 48, //+3
@@ -226,7 +196,7 @@ export class MiniPerfil {
     const close_tab = new Audio(sound_close_tab);
     const button: ElementUI = {
       type: "exit",
-      rectangle: { x: x + "%", y: y + "%", w: "1%", h: "1%" },
+      rectangle: { x: x + "%", y: y + "%", w: "1%", h: "2%" },
       draw: (ctx: CanvasRenderingContext2D) => {
         ctx.fillStyle = "red";
         ctx.strokeStyle = "black";

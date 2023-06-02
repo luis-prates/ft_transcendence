@@ -99,7 +99,7 @@ export class Game {
 			}
 		} else if (this.player2 == null) {
 			this.player2 = new Player_Pong(this, 2, user, playerInfo);
-			console.log('player2 connect', playerInfo);
+			//console.log('player2 connect', playerInfo);
 			this.emitStartGame();
 		} else if (!this.watchers.includes(user)) {
 			this.watchers.push(user);

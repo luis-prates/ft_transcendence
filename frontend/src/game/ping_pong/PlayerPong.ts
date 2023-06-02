@@ -37,11 +37,17 @@ export class PlayerPong {
     this.skin.src = "";
   }
 
+
+  private skinChoose(name: string): string {
+    if (name == "onepiece") return skinOnePiece;
+    else if (name == "pacman") return skinPacman;
+    else if (name == "mario") return skinMario;
+    else if (name == "42Lisboa") return skin42Lisboa;
+    return "";
+  }
+
   updateSkin(skin: string) {
-    if (skin == "pacman") this.skin.src = skinPacman;
-    else if (skin == "mario") this.skin.src = skinMario;
-    else if (skin == "onepiece") this.skin.src = skinOnePiece;
-    else if (skin == "42Lisboa") this.skin.src = skin42Lisboa;
+    this.skin.src = this.skinChoose(skin);
   }
 
   moveUp() {

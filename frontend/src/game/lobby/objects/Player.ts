@@ -5,7 +5,7 @@ import { Game } from "@/game/base/Game";
 import type { GameObject } from "@/game/base/GameObject";
 import { type Ref } from "vue";
 import { userStore } from "@/stores/userStore";
-import { MiniPerfil } from "@/game/Menu/MiniPerfil";
+import { YourMiniPerfil } from "@/game/Menu/YourMiniPerfil";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
@@ -56,7 +56,7 @@ export class Player extends Character {
     if (button == 0) {
       this.select = Game.MouseColision(x, y);
       if (this.select == this) {
-        Game.instance.addMenu(new MiniPerfil(this).menu);
+        Game.instance.addMenu(new YourMiniPerfil(this).menu);
         console.log(this.store.user);
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {
@@ -80,7 +80,6 @@ export class Player extends Character {
   }
 
   interaction(gameObject: GameObject): void {
-      Game.instance.addMenu(new MiniPerfil(this).menu);
   }
   // public move(x: number, y: number, animation: string): void {
   //   super.move(x, y, animation);

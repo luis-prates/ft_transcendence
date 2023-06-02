@@ -60,23 +60,23 @@ export class CreateGame {
     this.customMenu.visible = false;
 
     //Colors
-    this.menu.add(this.customMenu, this.createColorButton(32 + 1 * (10 / 3), 28, "red"));
-    this.menu.add(this.customMenu, this.createColorButton(32 + 2 * (10 / 3), 28, "#1e8c2f"));
-    this.menu.add(this.customMenu, this.createColorButton(32 + 3 * (10 / 3), 28, "#efc120"));
-    this.menu.add(this.customMenu, this.createColorButton(32 + 4 * (10 / 3), 28, "#de1bda"));
-    this.menu.add(this.customMenu, this.createColorButton(32 + 5 * (10 / 3), 28, "blue"));
-    this.menu.add(this.customMenu, this.createColorButton(32 + 6 * (10 / 3), 28, "black"));
+    this.menu.add(this.customMenu, this.createColorButton(37 + 1 * (10 / 3), 28, "red"));
+    this.menu.add(this.customMenu, this.createColorButton(37 + 2 * (10 / 3), 28, "#1e8c2f"));
+    this.menu.add(this.customMenu, this.createColorButton(37 + 3 * (10 / 3), 28, "#efc120"));
+    this.menu.add(this.customMenu, this.createColorButton(37 + 4 * (10 / 3), 28, "#de1bda"));
+    this.menu.add(this.customMenu, this.createColorButton(37 + 5 * (10 / 3), 28, "blue"));
+    this.menu.add(this.customMenu, this.createColorButton(37 + 6 * (10 / 3), 28, "black"));
 
     //TODO FOREACH
     //Skin
-    this.menu.add(this.customMenu, this.createSkinButton(19 + 1 * (10 / 1.5), 46, ""));
-    this.menu.add(this.customMenu, this.createSkinButton(19 + 2 * (10 / 1.5), 46, "onepiece"));
-    this.menu.add(this.customMenu, this.createSkinButton(19 + 3 * (10 / 1.5), 46, "swag"));
-    this.menu.add(this.customMenu, this.createSkinButton(19 + 4 * (10 / 1.5), 46, "game"));
-    this.menu.add(this.customMenu, this.createSkinButton(19 + 5 * (10 / 1.5), 46, ""));
-    this.menu.add(this.customMenu, this.createSkinButton(19 + 6 * (10 / 1.5), 46, ""));
+    this.menu.add(this.customMenu, this.createSkinButton(24 + 1 * (10 / 1.5), 46, ""));
+    this.menu.add(this.customMenu, this.createSkinButton(24 + 2 * (10 / 1.5), 46, "onepiece"));
+    this.menu.add(this.customMenu, this.createSkinButton(24 + 3 * (10 / 1.5), 46, "swag"));
+    this.menu.add(this.customMenu, this.createSkinButton(24 + 4 * (10 / 1.5), 46, "game"));
+    this.menu.add(this.customMenu, this.createSkinButton(24 + 5 * (10 / 1.5), 46, ""));
+    this.menu.add(this.customMenu, this.createSkinButton(24 + 6 * (10 / 1.5), 46, ""));
 
-    this.menu.add(this.customMenu, this.createButtonExit(26, 12, "custom"));
+    this.menu.add(this.customMenu, this.createButtonExit(31, 12, "custom"));
   }
 
   private skinChoose(name: string): string {
@@ -190,7 +190,7 @@ export class CreateGame {
   private createCustomMenu(): ElementUI {
     const background: ElementUI = {
       type: "image",
-      rectangle: { x: "25%", y: "10%", w: "40%", h: "80%" },
+      rectangle: { x: "30%", y: "10%", w: "40%", h: "80%" },
       draw: (context: any) => {
         this.drawCustomMenu(context, background.rectangle);
       },
