@@ -66,13 +66,13 @@ export class ChatService {
             throw new BadRequestException("Channels that are not DMs must have a name.");
         }
 
-        if (createChannelDto.channelType === 'PRIVATE' && !createChannelDto.password) {
-            throw new BadRequestException("Private channels must have a password.");
+        if (createChannelDto.channelType === 'PROTECTED' && !createChannelDto.password) {
+            throw new BadRequestException("Protected channels must have a password.");
         }
 
         try {
-            // Logic for public channels
-            if (createChannelDto.channelType == 'PUBLIC') {
+            // Logic for public and private channels
+            if (createChannelDto.channelType == 'PUBLIC' || createChannelDto.channelType == 'PRIVATE') {
                 // Note: channel name has to be unique for open channels
                 newChannel = await this.prisma.channel.create({
                     data: {
@@ -103,16 +103,10 @@ export class ChatService {
                         users: true,
                     }
                 });
-                // emit event to creator for new channel
-                this.events.emit('user-added-to-channel', { channelId: newChannel.id, userId: user.id});
-                // emit event to all other users added to channel
-                for (user of createChannelDto.usersToAdd) {
-                    this.events.emit('user-added-to-channel', { channelId: newChannel.id, userId: user});
-                }
             }
 
-            // Logic for private channels
-            if (createChannelDto.channelType == 'PRIVATE') {
+            // Logic for protected channels
+            if (createChannelDto.channelType == 'PROTECTED') {
                 // Note: channel name has to be unique for open channels
                 let data : { name: string, type: ChannelType, ownerId: number, password?: string, users?: any } = {
                     name: createChannelDto.name,
@@ -120,10 +114,8 @@ export class ChatService {
                     ownerId: user.id
                 };
 
-                // If a password is provided in the DTO, add it to the data object
-                if (createChannelDto.password) {
-                    data.password = createChannelDto.password;
-                }
+                // add password
+                data.password = createChannelDto.password;
 
                 // add users connection
                 data.users = {
@@ -146,6 +138,9 @@ export class ChatService {
 
                 newChannel = await this.prisma.channel.create({
                     data: data,
+                    include: {
+                        users: true,
+                    }
                 });
             }
 
@@ -153,6 +148,7 @@ export class ChatService {
             if (createChannelDto.channelType == 'DM' && createChannelDto.usersToAdd.length !== 1) {
                 throw new BadRequestException('DMs can only be created with one other user');
             }
+
             if (createChannelDto.channelType == 'DM') {
                 // check if there already is a private channel between users
                 const existingDM = await this.prisma.channel.findFirst({
@@ -184,6 +180,12 @@ export class ChatService {
                         }
                     },
                 });
+            }
+            // emit event to creator for new channel
+            this.events.emit('user-added-to-channel', { channelId: newChannel.id, userId: user.id });
+            // emit event to all other users added to channel
+            for (user of createChannelDto.usersToAdd) {
+                this.events.emit('user-added-to-channel', { channelId: newChannel.id, userId: user });
             }
         } catch (error) {
             if (error.code === 'P2002' && error.meta.target.includes('name')) {

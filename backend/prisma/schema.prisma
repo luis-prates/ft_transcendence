@@ -105,7 +105,8 @@ enum UserStatus {
 }
 
 enum ChannelType {
-	PRIVATE
 	PUBLIC
+    PRIVATE
+    PROTECTED
     DM
 }
