@@ -105,47 +105,8 @@ enum UserStatus {
 }
 
 enum ChannelType {
-	PRIVATE
 	PUBLIC
+    PRIVATE
+    PROTECTED
     DM
 }
-
-// model Game {
-// 	id Int @id @unique @default(autoincrement())
-// 	createdAt DateTime @default(now())
-// 	updatedAt DateTime @updatedAt
-
-// 	status Int @default(0)
-// 	player1Id Int
-// 	player1 User @relation("matchHistory", fields: [player1Id], references: [id])
-
-// 	player2Id Int
-// 	player2 User @relation("matchHistory", fields: [player2Id], references: [id])
-
-// 	//result User
-// 	winner User
-// 	loser User
-
-// }
-
-// model Chat {
-// 	id Int @id @unique @default(autoincrement())
-// 	createdAt DateTime @default(now())
-// 	updatedAt DateTime @updatedAt
-
-// 	//messages Message[]
-// 	users User[]
-
-// 	channelName String @unique
-// 	// channel mode may be in front end (public, private, protected by password)
-// 	password String? // if protected
-
-// 	channelOwnerId Int
-// 	channelOwner User[] @relation("channelOwner", fields: [channelOwnerId], references: [id])
-// 	channelAdminId Int
-// 	channelAdmin User[] @relation("channelAdmin", fields: [channelAdminId], references: [id])
-// 	channelMuteId Int
-// 	channelMute User[] @relation("channelMute", fields: [channelMuteId], references: [id])
-// 	channelBanId Int
-// 	channelBan User[] @relation("channelBan", fields: [channelBanId], references: [id])
-// }

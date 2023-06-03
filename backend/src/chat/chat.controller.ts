@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, UseGuards, Request, Delete, HttpCode } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { JwtGuard } from 'src/auth/guard';
+import { JwtGuard } from '../auth/guard';
 import { RolesGuard } from './roleguard';
 import { Roles } from './decorator';
 import { CreateChannelDto, JoinChannelDto } from './dto';
@@ -10,11 +10,29 @@ import { CreateChannelDto, JoinChannelDto } from './dto';
 export class ChatController {
     constructor(private readonly chatService: ChatService) {}
 
+    // Get List of all channels
+    @Get()
+    async getChannels() {
+        return this.chatService.getChannels();
+    }
+
+    // Get List of all channels which user is in
+    @Get('user')
+    async getChannelsByUser(@Request() req) {
+        return this.chatService.getChannelsByUser(req.user);
+    }
+
+    // Get all messages for a user's channels
+    @Get('user/messages')
+    async getMessagesByUser(@Request() req) {
+        return this.chatService.getMessagesByUser(req.user);
+    }
+
     // Get Messages of a channel
     @Get(':channelId/messages')
     @UseGuards(RolesGuard)
     @Roles('admin', 'owner', 'member')
-    async getMessages(@Param('channelId') channelId: string) {
+    async getMessagesByChannel(@Param('channelId') channelId: string) {
         return this.chatService.getMessagesByChannel(Number(channelId));
     }
 
@@ -22,8 +40,6 @@ export class ChatController {
     @HttpCode(201)
     @Post()
     async createChannel(@Body() createChannelDto : CreateChannelDto, @Request() req ) {
-        console.log("lol");
-        console.log(createChannelDto);
         return this.chatService.createChannel(createChannelDto, req.user);
     }
 
@@ -32,12 +48,6 @@ export class ChatController {
     @Delete(':id')
     async deleteChannel(@Param('id') id: string, @Request() req) {
         return this.chatService.deleteChannel(Number(id), req.user);
-    }
-
-    //
-    @Get()
-    async getChannels() {
-        return this.chatService.getChannels();
     }
 
     // Add Users to channel, if you are admin/owner
@@ -62,8 +72,7 @@ export class ChatController {
     @Post(':channelId/join')
     async joinChannelById(@Param('channelId') channelId: string, @Body() joinChannelDto: JoinChannelDto, @Request() req ) {
         // Overwrite channelId from the DTO with the one from the URL.
-        joinChannelDto.channelId = Number(channelId);
-        return this.chatService.joinChannel(joinChannelDto, req.user);
+        return this.chatService.joinChannel(joinChannelDto, Number(channelId), req.user);
     }
 
     // Leave a channel by Id

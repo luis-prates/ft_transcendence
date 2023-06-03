@@ -3,13 +3,31 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
 import { ChannelType } from 'src/types';
+import { Channel } from '@prisma/client';
+import { EventEmitter } from 'events';
 
 @Injectable()
 export class ChatService {
-    constructor(private prisma: PrismaService) {}
+    public events: EventEmitter;
 
-    async getChannels() {
-        // To be defined, what do we want to return here? Channel browsing list?
+    constructor(private prisma: PrismaService) {
+        this.events = new EventEmitter();
+    }
+
+    async getChannels() : Promise<Channel[]>{
+        return this.prisma.channel.findMany();
+    }
+
+    async getChannelsByUser(user: any) {
+        return this.prisma.channel.findMany({
+            where: {
+                users: {
+                    some: {
+                        userId: user.id,
+                    }
+                }
+            }
+        });
     }
 
     async getMessagesByChannel(channelId: number) {
@@ -23,22 +41,38 @@ export class ChatService {
         });
     }
 
+    async getMessagesByUser(user: any) {
+        const userChannels = await this.prisma.channelUser.findMany({
+            where: { userId: user.id },
+            select: {channelId: true },
+        });
+        const channelIds = userChannels.map(channelUser => channelUser.channelId);
+        return this.prisma.message.findMany({
+            where: {
+                channelId: {
+                    in: channelIds,
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+    }
+
     async createChannel(createChannelDto: CreateChannelDto, user: any) {
         let newChannel;
 
-        console.log(createChannelDto);
-        if(createChannelDto.channelType !== 'DM' && (createChannelDto.name === null || createChannelDto.name === '')){
+        if(createChannelDto.channelType !== 'DM' && (typeof createChannelDto.name === 'undefined' || createChannelDto.name === null || createChannelDto.name === '')) {
             throw new BadRequestException("Channels that are not DMs must have a name.");
         }
 
-        if (createChannelDto.channelType === 'PRIVATE' && !createChannelDto.password) {
-            throw new BadRequestException("Private channels must have a password.");
+        if (createChannelDto.channelType === 'PROTECTED' && !createChannelDto.password) {
+            throw new BadRequestException("Protected channels must have a password.");
         }
 
         try {
-            // Logic for public channels
-            if (createChannelDto.channelType == 'PUBLIC') {
-                console.log("LOL");
+            // Logic for public and private channels
+            if (createChannelDto.channelType == 'PUBLIC' || createChannelDto.channelType == 'PRIVATE') {
                 // Note: channel name has to be unique for open channels
                 newChannel = await this.prisma.channel.create({
                     data: {
@@ -69,11 +103,10 @@ export class ChatService {
                         users: true,
                     }
                 });
-                console.log("damn");
             }
 
-            // Logic for public channels
-            if (createChannelDto.channelType == 'PRIVATE') {
+            // Logic for protected channels
+            if (createChannelDto.channelType == 'PROTECTED') {
                 // Note: channel name has to be unique for open channels
                 let data : { name: string, type: ChannelType, ownerId: number, password?: string, users?: any } = {
                     name: createChannelDto.name,
@@ -81,10 +114,8 @@ export class ChatService {
                     ownerId: user.id
                 };
 
-                // If a password is provided in the DTO, add it to the data object
-                if (createChannelDto.password) {
-                    data.password = createChannelDto.password;
-                }
+                // add password
+                data.password = createChannelDto.password;
 
                 // add users connection
                 data.users = {
@@ -107,6 +138,9 @@ export class ChatService {
 
                 newChannel = await this.prisma.channel.create({
                     data: data,
+                    include: {
+                        users: true,
+                    }
                 });
             }
 
@@ -114,8 +148,9 @@ export class ChatService {
             if (createChannelDto.channelType == 'DM' && createChannelDto.usersToAdd.length !== 1) {
                 throw new BadRequestException('DMs can only be created with one other user');
             }
+
             if (createChannelDto.channelType == 'DM') {
-                // check if there already is a private channel between users
+                // check if there already is a DM already between users
                 const existingDM = await this.prisma.channel.findFirst({
                     where: {
                         AND: [
@@ -139,16 +174,39 @@ export class ChatService {
                                         connect: {
                                             id: user.id,
                                         }
-                                    }
-                                }
+                                    },
+                                },
+                                ...createChannelDto.usersToAdd.map((id) => ({
+                                    user: {
+                                        connect: {
+                                            id: id,
+                                        },
+                                    },
+                                }))
                             ]
                         }
                     },
                 });
             }
+            // emit event to creator for new channel
+            this.events.emit('user-added-to-channel', { channelId: newChannel.id, userId: user.id });
+            // emit event to all other users added to channel
+            for (user of createChannelDto.usersToAdd) {
+                this.events.emit('user-added-to-channel', { channelId: newChannel.id, userId: user });
+            }
         } catch (error) {
             if (error.code === 'P2002' && error.meta.target.includes('name')) {
                 throw new ConflictException('Channel name already exists');
+            }
+            else if (error.code === 'P2025' && error.meta.cause.includes('User')) {
+                throw new NotFoundException('User not found');
+            }
+            else if (error instanceof ConflictException || error instanceof BadRequestException) {
+                throw error;
+            }
+            else {
+                console.log("Error: ", error);
+                throw new BadRequestException('Something went wrong');
             }
             // add more error codes here if needed
         }
@@ -174,6 +232,9 @@ export class ChatService {
                 userId: userId,
             },
         });
+
+        // Emit an event when a user is added to a new channel
+        this.events.emit('user-added-to-channel', { channelId, userId });
 
         return newChannelUser;
     }
@@ -218,11 +279,14 @@ export class ChatService {
                 }
             }
         });
+
+        // emit an event that user left the channel
+        this.events.emit('user-removed-from-channel', { channelId, userId: removedUserId });
     }
 
-    async joinChannel(joinChannelDto: JoinChannelDto, user: any) {
-        const { channelId, password } = joinChannelDto;
-
+    async joinChannel(joinChannelDto: JoinChannelDto, channelId: number, user: any) {
+        const { password } = joinChannelDto;
+        const userId = user.id;
         const channel = await this.prisma.channel.findUnique({
             where: {
                 id: channelId,
@@ -256,6 +320,9 @@ export class ChatService {
                 channelId: channelId,
             },
         });
+
+        // Emit an event when a user is added to a new channel
+        this.events.emit('user-added-to-channel', { channelId, userId });
     }
 
     async leaveChannel(channelId: number, user: any) {
@@ -300,6 +367,8 @@ export class ChatService {
         if (channelUsers.length === 1) {
             await this.prisma.channel.delete({ where: { id: channelId } });
         }
+
+        this.events.emit('user-removed-from-channel', { channelId, userId: user.id });
     }
 
     async muteUser(channelId: number, userId: number) {
@@ -406,6 +475,13 @@ export class ChatService {
             where: {
                 id: channelId,
             },
+            include : {
+                users: {
+                    select: {
+                        user: true,
+                    }
+                }
+            }
         });
 
         if (!channel) {
@@ -427,6 +503,35 @@ export class ChatService {
             where: {
                 id: channelId,
             },
+        });
+
+        const users = channel.users.map(cu => cu.user);
+
+        // Emit events to all users when a channel is deleted
+        for (let user of users) {
+            this.events.emit('user-removed-from-channel', { channelId, userId: user.id });
+        }
+    }
+
+    // BELOW IS FOR WEBSOCKETS
+    async getUserChannels(userId: number): Promise<number[]> {
+        // Fetch the ChannelUser entities for this user
+        const userChannels = await this.prisma.channelUser.findMany({
+            where: { userId: userId },
+            select: {channelId: true },
+        });
+        // Extract the channel IDs from the ChannelUser
+        const channelIds = userChannels.map(channelUser => channelUser.channelId);
+        return channelIds;
+    }
+
+    async createMessage(senderId: number, message: string, channelId: number) {
+        return await this.prisma.message.create({
+            data: {
+                content: message,
+                userId: senderId,
+                channelId: channelId
+            }
         });
     }
 }

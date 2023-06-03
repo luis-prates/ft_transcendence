@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthDto } from './dto/auth.dto';
 import * as argon from 'argon2';
@@ -18,12 +18,6 @@ export class AuthService {
 		const hash = await argon.hash(dto.nickname);
 
 		try {
-            // Check if image encoding is correct
-            var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-            if (!base64regex.test(dto.image)) {
-                throw new BadRequestException('Image is not base64 encoding');
-            }
-
             // Check if user exists
 			const userExists = await this.prisma.user.findUnique({
 				where: {
@@ -45,6 +39,25 @@ export class AuthService {
 					hash,
 				},
 			});
+
+            // Get the global channel ID
+            const globalChannel = await this.prisma.channel.findUnique({
+                where: {
+                    name: 'global'
+                },
+            });
+
+            if (!globalChannel) {
+                throw new NotFoundException('Global channel not found');
+            }
+
+            // Add user to the global channel
+            await this.prisma.channelUser.create({
+                data: {
+                    userId: user.id,
+                    channelId: globalChannel.id,
+                },
+            });
 
 			delete user.hash;
 
