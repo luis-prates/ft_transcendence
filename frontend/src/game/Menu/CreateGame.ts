@@ -295,6 +295,7 @@ export class CreateGame {
         console.log({ objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
         socket.emit("new_game", { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
         socket.emit("new_gameobject", this.data);
+        Router.push(`/game?objectId=${this.data.objectId}`);
       },
     };
     return button;
