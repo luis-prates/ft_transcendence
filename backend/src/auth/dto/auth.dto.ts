@@ -18,7 +18,6 @@ export class AuthDto {
 	@IsNotEmpty()
 	email: string;
 
-	@IsString()
 	@IsBase64()
 	image: string;
 }

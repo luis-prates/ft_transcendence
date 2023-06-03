@@ -25,9 +25,6 @@ export class JoinChannelDto {
         message: 'Password is too short. Minimum length is $constraint1 characters, but actual is $value',
     })
     password: string;
-
-    @IsNotEmpty()
-    channelId: number;
 }
 
 export class ChannelUserDto {
