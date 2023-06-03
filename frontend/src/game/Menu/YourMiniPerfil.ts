@@ -56,13 +56,17 @@ export class YourMiniPerfil {
     this.menu.add(this.customMenu, this.createColorButton(21 + 5 * (10 / 3), 18, "blue"));
     this.menu.add(this.customMenu, this.createColorButton(21 + 6 * (10 / 3), 18, "#efc120"));
 
-    //Skin
     this.menu.add(this.customMenu, this.createSkinButton(21 + 1 * (10 / 3), 31, ""));
+    this.user.infoPong.skin.paddles.forEach((skin, index) => {
+      this.menu.add(this.customMenu, this.createSkinButton(21 + (index + 2) * (10 / 3), 31, skin));
+    });
+    //Skin
+    /*this.menu.add(this.customMenu, this.createSkinButton(21 + 1 * (10 / 3), 31, ""));
     this.menu.add(this.customMenu, this.createSkinButton(21 + 2 * (10 / 3), 31, "onepiece"));
     this.menu.add(this.customMenu, this.createSkinButton(21 + 3 * (10 / 3), 31, "pacman"));
     this.menu.add(this.customMenu, this.createSkinButton(21 + 4 * (10 / 3), 31, "mario"));
     this.menu.add(this.customMenu, this.createSkinButton(21 + 5 * (10 / 3), 31, ""));
-    this.menu.add(this.customMenu, this.createSkinButton(21 + 6 * (10 / 3), 31, ""));
+    this.menu.add(this.customMenu, this.createSkinButton(21 + 6 * (10 / 3), 31, ""));*/
 
     this.menu.add(this.customMenu, this.createButtonExit(46, 6, "custom"));
 

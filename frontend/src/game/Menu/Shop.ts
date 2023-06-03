@@ -15,7 +15,7 @@ export class Shop {
   private user = userStore().user;
   private yourMoney: number = 0;
 
-  constructor(player: Player) {
+  constructor() {
     this.menu.add(this.background);
     this.menu.add(this.createButtonExit(10.5, 11));
     this.createAll();
@@ -44,12 +44,8 @@ export class Shop {
     // Loop para desenhar os quadrados de produtos
       const squareX = 10 + 3 + (index % 5) * (squareW + paddingX);
       const squareY = 10 + paddingY + Math.floor(index / 5) * (squareH + paddingY);
-    
-      if (index % 2) {
-        this.menu.add(this.createProduct(skin, squareX, squareY));
-      } else {
-        this.menu.add(this.createProduct(skin, squareX, squareY));
-      }
+
+      this.menu.add(this.createProduct(skin, squareX, squareY));
     });
   }
 
@@ -139,6 +135,7 @@ export class Shop {
             if (value == "CONFIRM") {
               if (skin.type == TypeSkin.Paddle) this.user.infoPong.skin.paddles.push(skin.name as never);
               else if (skin.type == TypeSkin.Tabble) this.user.infoPong.skin.tables.push(skin.name as never);
+              this.yourMoney -= skin.price;
               buy_sound.play();
             }
           });

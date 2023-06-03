@@ -2,13 +2,10 @@ import { Menu, type ElementUI, type Rectangle, Game } from "@/game";
 import Router from "@/router";
 import socket from "@/socket/Socket";
 
-//Skins
-import skinGame from "@/assets/images/skin/table/skin_Game-Over.png";
-import skinSwag from "@/assets/images/skin/table/skin_swag.png";
-import skinOnePiece from "@/assets/images/skin/table/skin_onepiece.jpg";
-
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";
+import { Skin, TypeSkin } from "../ping_pong/Skin";
+import { userStore } from "@/stores/userStore";
 
 export class CreateGame {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -16,7 +13,8 @@ export class CreateGame {
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
   private customMenu: ElementUI = this.createCustomMenu();
-  //  private onResult: (result: any) => void = () => {};
+
+  private user = userStore().user;
 
   //  private player: Player;
 
@@ -34,8 +32,7 @@ export class CreateGame {
   private tableSkin: string = "";
 
   private skinImage = new Image();
-
-  // private custom: boolean = false;
+  private products = new Skin();
 
   //  constructor(player: Player) {
   constructor(data: any) {
@@ -76,20 +73,17 @@ export class CreateGame {
     //TODO FOREACH
     //Skin
     this.menu.add(this.customMenu, this.createSkinButton(24 + 1 * (10 / 1.5), 46, ""));
+    this.user.infoPong.skin.tables.forEach((skin, index) => {
+      this.menu.add(this.customMenu, this.createSkinButton(24 + (index + 2) * (10 / 1.5), 46, skin));
+    });
+    /*this.menu.add(this.customMenu, this.createSkinButton(24 + 1 * (10 / 1.5), 46, ""));
     this.menu.add(this.customMenu, this.createSkinButton(24 + 2 * (10 / 1.5), 46, "onepiece"));
     this.menu.add(this.customMenu, this.createSkinButton(24 + 3 * (10 / 1.5), 46, "swag"));
     this.menu.add(this.customMenu, this.createSkinButton(24 + 4 * (10 / 1.5), 46, "game"));
     this.menu.add(this.customMenu, this.createSkinButton(24 + 5 * (10 / 1.5), 46, ""));
-    this.menu.add(this.customMenu, this.createSkinButton(24 + 6 * (10 / 1.5), 46, ""));
+    this.menu.add(this.customMenu, this.createSkinButton(24 + 6 * (10 / 1.5), 46, ""));*/
 
     this.menu.add(this.customMenu, this.createButtonExit(31, 12, "custom"));
-  }
-
-  private skinChoose(name: string): string {
-    if (name == "onepiece") return skinOnePiece;
-    else if (name == "swag") return skinSwag;
-    else if (name == "game") return skinGame;
-    return "";
   }
 
   private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
@@ -226,12 +220,11 @@ export class CreateGame {
   }
 
   private createSkinButton(x: number, y: number, skin: string): ElementUI {
-    const skinImage = new Image();
+    const skinImage = this.products.get_skin(TypeSkin.Tabble + "_" + skin);
     const button: ElementUI = {
       type: "skin",
       rectangle: { x: x + "%", y: y + "%", w: "5%", h: "10%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        skinImage.src = this.skinChoose(skin);
 
         ctx.strokeStyle = skin == this.tableSkin ? "red" : "black";
         ctx.lineWidth = 2;
@@ -270,7 +263,8 @@ export class CreateGame {
       },
       onClick: () => {
         this.tableSkin = skin;
-        this.skinImage.src = this.skinChoose(skin);
+        
+        this.skinImage = skinImage;
       },
     };
     return button;
