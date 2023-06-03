@@ -12,12 +12,13 @@ import { ChatService } from '../../chat.service';
 import { Namespace, Server, Socket } from 'socket.io';
 import { JwtGuard } from 'src/auth/guard';
 import { UseGuards } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 
 @WebSocketGateway(3001, {namespace: 'chat', cors: {origin: '*'}})
 export class ChatGateway implements OnGatewayConnection {
     private userIdToSocketId: Map<number, string> = new Map<number, string>();
     private socketMap: Map<string, Socket> = new Map<string, Socket>;
-
+    private readonly logger = new Logger(ChatGateway.name);
     constructor(private chatService: ChatService) {}
 
     @WebSocketServer()
@@ -34,7 +35,7 @@ export class ChatGateway implements OnGatewayConnection {
 
             const client: Socket = this.socketMap.get(socketId);
             if (!client) {
-                console.error(`No client socket found for socketId ${socketId}`);
+                this.logger.error(`No client socket found for socketId ${socketId}`);
                 return;
             }
 

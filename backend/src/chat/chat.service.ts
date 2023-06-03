@@ -150,7 +150,7 @@ export class ChatService {
             }
 
             if (createChannelDto.channelType == 'DM') {
-                // check if there already is a private channel between users
+                // check if there already is a DM already between users
                 const existingDM = await this.prisma.channel.findFirst({
                     where: {
                         AND: [
@@ -174,8 +174,15 @@ export class ChatService {
                                         connect: {
                                             id: user.id,
                                         }
-                                    }
-                                }
+                                    },
+                                },
+                                ...createChannelDto.usersToAdd.map((id) => ({
+                                    user: {
+                                        connect: {
+                                            id: id,
+                                        },
+                                    },
+                                }))
                             ]
                         }
                     },
@@ -193,6 +200,13 @@ export class ChatService {
             }
             else if (error.code === 'P2025' && error.meta.cause.includes('User')) {
                 throw new NotFoundException('User not found');
+            }
+            else if (error instanceof ConflictException || error instanceof BadRequestException) {
+                throw error;
+            }
+            else {
+                console.log("Error: ", error);
+                throw new BadRequestException('Something went wrong');
             }
             // add more error codes here if needed
         }
