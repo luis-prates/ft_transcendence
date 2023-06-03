@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthDto } from './dto/auth.dto';
 import * as argon from 'argon2';
@@ -8,6 +8,8 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
+	private readonly logger = new Logger(AuthService.name);
+
 	constructor(
 		private prisma: PrismaService,
 		private jwt: JwtService,
@@ -18,12 +20,6 @@ export class AuthService {
 		const hash = await argon.hash(dto.nickname);
 
 		try {
-            // Check if image encoding is correct
-            var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-            if (!base64regex.test(dto.image)) {
-                throw new BadRequestException('Image is not base64 encoding');
-            }
-
             // Check if user exists
 			const userExists = await this.prisma.user.findUnique({
 				where: {
@@ -31,6 +27,7 @@ export class AuthService {
 				},
 			});
 			if (userExists) {
+				this.logger.warn(`User ${userExists.id} already exists.`);
 				delete userExists.hash;
 				return (this.signToken(userExists));
 			}
@@ -45,6 +42,7 @@ export class AuthService {
 					hash,
 				},
 			});
+			this.logger.log(`User ${user.id} created.`);
 
 			delete user.hash;
 

@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer";
-import { IsNumber, IsNotEmpty, IsString, IsEmail } from "class-validator";
+import { IsNumber, IsNotEmpty, IsString, IsEmail, IsBase64 } from "class-validator";
 
 export class AuthDto {
 	@Transform(({ value }) => parseInt(value))
@@ -19,5 +19,6 @@ export class AuthDto {
 	email: string;
 
 	@IsString()
+	@IsBase64()
 	image: string;
 }
