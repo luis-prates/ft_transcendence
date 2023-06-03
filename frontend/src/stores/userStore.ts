@@ -2,6 +2,7 @@ import { reactive } from "vue";
 import { defineStore } from "pinia";
 import { env } from "../env";
 import axios from "axios";
+import type { ProductSkin } from "@/game/ping_pong/Skin";
 
 export interface Historic {
   winner: string;
@@ -57,7 +58,7 @@ export const userStore = defineStore("user", () => {
     nickname: "",
     isLogin: false,
     image: "",
-    wallet: 0,
+    wallet: 10,
     infoPong: {
       avatar: "",
       color: randomColor(),

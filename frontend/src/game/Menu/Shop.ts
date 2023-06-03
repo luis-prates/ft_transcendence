@@ -1,25 +1,25 @@
-import { Menu, type ElementUI, type Rectangle, Game } from "@/game";
-
-//Paddle Skin
-import skin_mario from "@/assets/images/skin/line/skin_Mario.jpeg";
-
-//Table Skin
-import skin_onepiece from "@/assets/images/skin/table/skin_onepiece.jpg";
+import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
+import { ConfirmButton } from "./ConfirmButton";
+import { Skin, TypeSkin, type ProductSkin } from "../ping_pong/Skin";
 
 //Sound
 import sound_caching from "@/assets/audio/caching.mp3";
 import sound_close_tab from "@/assets/audio/close.mp3";
-import { ConfirmButton } from "./ConfirmButton";
+import { userStore } from "@/stores/userStore";
 
 export class Shop {
   private _menu = new Menu({ layer: "Global", isFocus: true });
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
+  private products = new Skin();
+  private user = userStore().user;
+  private yourMoney: number = 0;
 
-  constructor() {
+  constructor(player: Player) {
     this.menu.add(this.background);
     this.menu.add(this.createButtonExit(10.5, 11));
     this.createAll();
+    this.yourMoney = this.user.wallet;
   }
 
   private createBackground(): ElementUI {
@@ -40,22 +40,22 @@ export class Shop {
     const paddingX = 6;
     const paddingY = 9;
 
+    this.products.skins.forEach((skin, index) => {
     // Loop para desenhar os quadrados de produtos
-    for (let i = 0; i < 15; i++) {
-      const squareX = 10 + 3 + (i % 5) * (squareW + paddingX);
-      const squareY = 10 + paddingY + Math.floor(i / 5) * (squareH + paddingY);
-
-      if (i % 2) this.menu.add(this.createProduct("Text " + i, "table", skin_onepiece, squareX, squareY));
-      else this.menu.add(this.createProduct("Text " + i, "paddle", skin_mario, squareX, squareY));
-    }
+      const squareX = 10 + 3 + (index % 5) * (squareW + paddingX);
+      const squareY = 10 + paddingY + Math.floor(index / 5) * (squareH + paddingY);
+    
+      if (index % 2) {
+        this.menu.add(this.createProduct(skin, squareX, squareY));
+      } else {
+        this.menu.add(this.createProduct(skin, squareX, squareY));
+      }
+    });
   }
 
-  private createProduct(name: string, type: string, image_src: string, x: number, y: number): ElementUI {
-    const photo = new Image();
-    photo.src = image_src;
+  private createProduct(skin: ProductSkin, x: number, y: number): ElementUI {
+   
     const buy_sound = new Audio(sound_caching);
-
-    //const confirmButton = new ConfirmButton();
 
     const product: ElementUI = {
       type: "image",
@@ -73,10 +73,7 @@ export class Shop {
         ctx.fill();
         ctx.stroke();
 
-        /*ctx.fillRect(product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h);
-		  		ctx.strokeRect(product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h);*/
-
-        if (type == "table" && photo.complete) {
+        if (skin.type == TypeSkin.Tabble && skin.image.complete) {
           const scaledWidth = product.rectangle.w * 0.8;
           const scaledHeight = product.rectangle.h * 0.78;
           const pointx = (product.rectangle.w - scaledWidth) / 2;
@@ -88,23 +85,27 @@ export class Shop {
             product.rectangle.y + pointy - this.background.rectangle.y * 0.78 * 0.015,
             scaledWidth + this.background.rectangle.y * 0.78 * 0.03,
             scaledHeight + this.background.rectangle.y * 0.78 * 0.03
-          );
-
-          if (photo.complete) ctx.drawImage(photo, product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth, scaledHeight);
-
+            );
+            
+          ctx.fillStyle = "#1e8c2f";
+          ctx.fillRect(product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth, scaledHeight);
+            
+          if (skin.image.complete) ctx.drawImage(skin.image, product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth, scaledHeight);
+          
+          ctx.fillStyle = "white";
           //Midle Line
           ctx.fillRect(product.rectangle.x + pointx, product.rectangle.y + pointy + (scaledHeight / 2 - this.background.rectangle.y * 0.78 * 0.01), scaledWidth, this.background.rectangle.y * 0.78 * 0.02);
           //Vertical
           ctx.fillRect(product.rectangle.x + (product.rectangle.w / 2 - this.background.rectangle.y * 0.78 * 0.01), product.rectangle.y + pointy, this.background.rectangle.y * 0.78 * 0.02, scaledHeight);
-        } else if (type == "paddle" && photo.complete) {
+        } else if (skin.type == TypeSkin.Paddle && skin.image.complete) {
           const scale = 100 / 30;
           const scaledWidth = product.rectangle.w * 0.15 * scale;
           const scaledHeight = product.rectangle.h * 0.3 * scale;
           const pointx = (product.rectangle.w - scaledWidth * 0.5) / 2;
           const pointy = (product.rectangle.h - scaledHeight * 0.9) / 2;
 
-          if (photo.complete) {
-            ctx.drawImage(photo, product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
+          if (skin.image.complete) {
+            ctx.drawImage(skin.image, product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
           }
 
           ctx.strokeStyle = "black";
@@ -116,20 +117,32 @@ export class Shop {
         ctx.fillStyle = "#000";
         ctx.font = "12px Arial";
         ctx.textAlign = "center";
-        ctx.fillText(name, product.rectangle.x + product.rectangle.w / 2, product.rectangle.y - offSetTittle);
+        ctx.fillText((skin.type == TypeSkin.Paddle ? "Paddle " : "Table ") + skin.tittle, product.rectangle.x + product.rectangle.w / 2, product.rectangle.y - offSetTittle);
 
         // Desenha o preço do produto abaixo do quadrado
         ctx.fillStyle = "#000";
         ctx.font = "12px Arial";
         ctx.textAlign = "center";
         //548₳
-        ctx.fillText("FREE", product.rectangle.x + product.rectangle.w / 2, product.rectangle.y + product.rectangle.h + offSetPrice);
+        ctx.fillText(skin.price == 0 ? "FREE" : skin.price.toString() + "₳", product.rectangle.x + product.rectangle.w / 2, product.rectangle.y + product.rectangle.h + offSetPrice);
       },
       onClick: () => {
-        const confirmButton = new ConfirmButton(name, 0);
-        confirmButton.show((value) => {
-          if (value == "CONFIRM") buy_sound.play();
-        });
+
+        let canBuy: boolean = false;
+        if (skin.type == TypeSkin.Paddle && !this.user.infoPong.skin.paddles.includes(skin.name as never)) canBuy = true;
+        else if (skin.type == TypeSkin.Tabble && !this.user.infoPong.skin.tables.includes(skin.name as never)) canBuy = true;
+
+        if (this.yourMoney >= skin.price && canBuy)
+        {
+          const confirmButton = new ConfirmButton(skin.tittle, 0);
+          confirmButton.show((value) => {
+            if (value == "CONFIRM") {
+              if (skin.type == TypeSkin.Paddle) this.user.infoPong.skin.paddles.push(skin.name as never);
+              else if (skin.type == TypeSkin.Tabble) this.user.infoPong.skin.tables.push(skin.name as never);
+              buy_sound.play();
+            }
+          });
+        }
       },
     };
     return product;

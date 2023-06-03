@@ -1,28 +1,27 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
 import { userStore } from "@/stores/userStore";
+import { Skin, TypeSkin } from "../ping_pong/Skin";
 
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";
 
 //Image
 import avatares from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg"
-import marioSkin from "@/assets/images/skin/line/skin_Mario.jpeg"
-import onePieceSkin from "@/assets/images/skin/line/skin_OnePiece.png"
-import pacmanSkin from "@/assets/images/skin/line/skin_Pac-Man.png"
 
 
 export class YourMiniPerfil {
   private _menu = new Menu({ layer: "Global", isFocus: true });
-  
   
   private radius: number = 10;
   private customMenu: ElementUI = this.createCustomMenu();
   private background: ElementUI = this.createBackground();
   private avataresImage = new Image();
   
+  private skin = new Skin();
+
   private user = userStore().user;
   private chooseAvatar: number;
-  private skinPadleImage = new Image();
+  private skinPadleImage: HTMLImageElement;
   private colorChoose: string = "";
   private skinPadle : string = "";
   
@@ -42,7 +41,8 @@ export class YourMiniPerfil {
     this.avatarArrowR = this.chooseAvatar == 7 ? "grey" : "white";
 
     this.colorChoose = this.user.infoPong.color;
-    this.skinPadleImage.src = this.skinChoose(this.user.infoPong.skin.default.paddle);
+    this.skinPadle = this.user.infoPong.skin.default.paddle;
+    this.skinPadleImage = this.skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
 
     //Custom Menu
     this.menu.add(this.customMenu);
@@ -78,13 +78,6 @@ export class YourMiniPerfil {
     this.menu.add(this.background, this.createButton("custom", 11, 28, "Custom", 9));
     this.menu.add(this.background, this.createButton("save", 11, 33.5, "Save", 9));
 
-  }
-  
-  private skinChoose(name: string): string {
-    if (name == "onepiece") return onePieceSkin;
-    else if (name == "pacman") return pacmanSkin;
-    else if (name == "mario") return marioSkin;
-    return "";
   }
 
   private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
@@ -237,7 +230,6 @@ export class YourMiniPerfil {
 	  ctx.fillText("Money: " + this.user.wallet + "₳", pos.x + pos.w * 0.5, pos.y + pos.h * 0.26, pos.w - (pos.x + pos.w * 0.5));
 
     //Avatar
-
     ctx.fillStyle = "white";
 	  ctx.strokeStyle = "black";
     ctx.strokeRect(
@@ -348,12 +340,12 @@ export class YourMiniPerfil {
 
 
   private createSkinButton(x: number, y: number, skin: string): ElementUI {
-    const skinImage = new Image();
+    const skinImage = this.skin.get_skin(TypeSkin.Paddle + "_" + skin);
     const button: ElementUI = {
       type: "skin",
       rectangle: { x: x + "%", y: y + "%", w: "2.5%", h: "12%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        skinImage.src = this.skinChoose(skin);
+
 
         ctx.strokeStyle = skin == this.skinPadle ? "red" : "black";
         ctx.lineWidth = 2;
@@ -392,7 +384,7 @@ export class YourMiniPerfil {
       },
       onClick: () => {
         this.skinPadle = skin;
-        this.skinPadleImage.src = this.skinChoose(skin);
+        this.skinPadleImage = skinImage;
       },
     };
     return button;
