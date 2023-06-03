@@ -4,6 +4,7 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import { Test } from '@nestjs/testing'
 import * as pactum from 'pactum'
 import { AuthDto } from 'src/auth/dto';
+import { io, Socket } from "socket.io-client";
 
 describe('Chat', () => {
     let app: INestApplication; let prisma: PrismaService;
@@ -42,6 +43,7 @@ describe('Chat', () => {
     });
 
     // Testing
+    // Let's start by creating 3 channels: a public channel, a private channel and a protected channel.
     describe('Create a public channel', () => {
         it('should create a public channel', () => {
             return (
@@ -151,5 +153,95 @@ describe('Chat', () => {
                     .expectBodyContains('myProtectedChannel')
             );
         });
+    });
+
+    // Create a DM channel between user1 and user2
+    describe('Create a DM channel', () => {
+        it('should create a DM channel', () => {
+            return (
+                pactum
+                    .spec()
+                    .post('/chat/channels')
+                    .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+                    .withBody({
+                        "channelType" : "DM",
+                        "usersToAdd" : [2],
+                    })
+                    .expectStatus(201)
+                    .expectBodyContains('DM')
+            );
+        });
+        it('should fail if usersToAdd is empty', () => {
+            return (
+                pactum
+                    .spec()
+                    .post('/chat/channels')
+                    .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+                    .withBody({
+                        "channelType" : "DM",
+                        "usersToAdd" : [],
+                    })
+                    .expectStatus(400)
+            );
+        });
+        it('should fail if usersToAdd has more than 1 person', () => {
+            return (
+                pactum
+                    .spec()
+                    .post('/chat/channels')
+                    .withHeaders({ Authorization: 'Bearer $S{userAt2}' })
+                    .withBody({
+                        "channelType" : "DM",
+                        "usersToAdd" : [1, 3],
+                    })
+                    .expectStatus(400)
+            );
+        });
+        it('should fail if the DM channel already exists', () => {
+            return (
+                pactum
+                    .spec()
+                    .post('/chat/channels')
+                    .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+                    .withBody({
+                        "channelType" : "DM",
+                        "usersToAdd" : [2],
+                    })
+                    .expectStatus(409)
+            );
+        });
+    });
+
+    // Send some messages in each channel!
+    describe('Send messages', () => {
+        let clientSocket: Socket;
+        let serverSocket: Socket;
+
+    // Retrieve the channel list that a user can inspect and join
+
+    // Retrieve the channel list the user is already in
+
+    // Retrieve all of a user's messages accross all channels
+
+    // Retrieve all of a user's messages for a specific channel
+
+    // User4 joins to the public channel
+    // Other users should be notified about a new user in the channel
+    // And should see his messages
+
+    // Make the owner user1 kick user4 out of the public channel
+    // Other users should be notified about the user leaving the channel
+
+    // Invite a fourth user to the private channel
+    // And let the fourth user leave the private channel, others should be notified
+
+    // User4 joins the protected channel by knowing the password
+    // And let the owner make him admin
+
+    // Let the new admin user mute user2 and see if it works
+
+    // Let the owner unmute user2 and see if it works
+
+    // Take away the admin privileges of user4
     });
 });
