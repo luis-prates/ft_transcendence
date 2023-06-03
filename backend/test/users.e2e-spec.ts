@@ -19,7 +19,7 @@ describe('User', () => {
     // Setup
     beforeAll(async () => {
         // launch app
-        const moduleRef = await Test.createTestingModule({ imports: [AppModule], }).compile(); app = moduleRef.createNestApplication(); app.useGlobalPipes(new ValidationPipe({ whitelist: true })); await app.init(); await app.listen(3370); prisma = app.get(PrismaService); await prisma.cleanDb();
+        const moduleRef = await Test.createTestingModule({ imports: [AppModule], }).compile(); app = moduleRef.createNestApplication(); app.useGlobalPipes(new ValidationPipe({ whitelist: true })); await app.init(); await app.listen(3370); prisma = app.get(PrismaService); await prisma.cleanDb(); await prisma.setupDb();
         pactum.request.setBaseUrl('http://localhost:3370');
 
         // create a user
