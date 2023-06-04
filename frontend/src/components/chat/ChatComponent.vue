@@ -1,18 +1,13 @@
 <template>
-  <div style="width: 100%; height: 100%;">
-    <!-- <button class="hiddenbuttom" :class="{ active: showbuttom }" @click="toggleTesss">⇕</button> -->
-    <!-- <div class="tesss" :class="{ active: showTesss }"> -->
-      <!-- <div style="width: 65%"> -->
-        <ChatMessageComponent class="chat_mensagen" ></ChatMessageComponent>
-      <!-- </div> -->
-      <ChatListComponent class="chat_list"></ChatListComponent>
-    <!-- </div>   -->
-</div>
+  <div class="chat">
+    <ChatComponentTest  class="chat_mensagen" />
+    <ChatComponentTestList class="chat_list" />
+  </div>
 </template>
 
 <script setup lang="ts">
-import ChatListComponent from "./ChatListComponent.vue";
-import ChatMessageComponent from "./ChatMessageComponent.vue";
+import ChatComponentTestList from "./ChatComponentTestList.vue";
+import ChatComponentTest from "./ChatComponentTest.vue";
 import { onMounted, onUnmounted, ref } from "vue";
 import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
 import socket from "@/socket/Socket";
@@ -32,7 +27,6 @@ onMounted(() => {
     console.log("join_chat", data);
     store.addChannel(data);
   });
-  
 });
 
 onUnmounted(() => {
@@ -42,23 +36,22 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 
-.chat_mensagen
+.chat
 {
-  width: 100%;
-  left: 0px;
-  padding: 0px;
-  margin: 0px;
-  position: inherit;
+    bottom: 0px;
+    position: absolute;
+    padding: 0px;
+    margin: 0px;
+    display: flex;
+    flex-direction: row;
+}
+.chat_mensagen {
+  flex-grow: 1;
+  margin-right: 10px;
 }
 
-.chat_list
-{
-  max-width: 200px;
+.chat_list {
   width: 40%;
-  right: 0px;
-  padding: 0px;
-  margin: 0px;
-  position: inherit;
-
+  max-width: 200px;
 }
 </style>

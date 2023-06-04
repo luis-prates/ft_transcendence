@@ -1,6 +1,4 @@
 <template>
-  <div>
-    <div class="col-md-8 col-xl-6 chat">
       <div class="card">
         <div class="card-header msg_head">
           <div class="d-flex bd-highlight">
@@ -30,8 +28,13 @@
         </div>
 
         <div class="card-body msg_card_body">
-          <ChatComponentTestStart type="start" mensagem="asd dasd" time="8:40 AM, Today" />
-          <ChatComponentTestStart type="end" mensagem="asd dasd" time="8:40 AM, Today" />
+          <ChatComponentTestStart type="start" mensagem="Ola" time="8:40 AM, Today" />
+          <ChatComponentTestStart type="end" mensagem="Ola" time="8:40 AM, Today" />
+          <ChatComponentTestStart type="start" mensagem="ehehehe" time="8:40 AM, Today" />
+          <ChatComponentTestStart type="start" mensagem="testing" time="8:40 AM, Today" />
+          <ChatComponentTestStart type="start" mensagem="lolol" time="8:40 AM, Today" />
+          <ChatComponentTestStart type="start" mensagem="scroll tes asdasdasd asd asd asd asd t asd asd asdasd asd asd asdasd asd" time="8:40 AM, Today" />
+
         </div>
 
         <div class="card-footer">
@@ -43,8 +46,6 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
 </template>
 
 <script setup lang="ts">

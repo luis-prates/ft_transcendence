@@ -8,9 +8,9 @@ body,html{
     margin-bottom: auto;
   }
   .card{
-    height: 550px;
+    height: 100%;
     border-radius: 15px !important;
-    background-color: rgba(0,0,0,0.4) !important;
+    background-color: rgba(20, 24, 7, 0.8) !important;
   }
   .contacts_body{
     padding:  0.75rem 0 !important;
