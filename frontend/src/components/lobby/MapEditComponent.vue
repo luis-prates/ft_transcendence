@@ -30,7 +30,10 @@ import { Game, Map } from "@/game";
 import img from "@/assets/images/lobby/layer_1.png";
 import { MapEdit } from "@/game/base/editor/MapEdit.js";
 import { MapObject } from "@/game/base/editor/MapObject.js";
+import socket from "@/socket/Socket";
+import { userStore } from "@/stores/userStore";
 
+const store = userStore();
 const game = ref<HTMLDivElement>();
 const file = ref<HTMLInputElement>();
 let lobby: MapEdit | null = null;
@@ -72,6 +75,7 @@ function loadMap(event: any) {
 function loadLobby(data: any) {
   console.log("json: ", data);
   if (lobby) lobby.destructor();
+  socket.emit("join_map", { objectId: store.user.id, map: { name: "lobby" } });
   const map = new MapObject();
   map.setData(data).then(() => {
     console.log("Map: Dados carregados");

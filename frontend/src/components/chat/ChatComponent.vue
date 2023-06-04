@@ -30,6 +30,7 @@ onMounted(() => {
     console.log("join_chat", data);
     store.addChannel(data);
   });
+  
 });
 
 onUnmounted(() => {

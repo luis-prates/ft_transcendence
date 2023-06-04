@@ -2,25 +2,28 @@ import { reactive } from "vue";
 import { defineStore } from "pinia";
 import { env } from "../env";
 import axios from "axios";
+import type { ProductSkin } from "@/game/ping_pong/Skin";
 
 export interface Historic {
-  winner: string,
-  loser: string,
+  winner: string;
+  loser: string;
 }
 
 export interface InfoPong {
-  avatar: string,
-  color: string,
-  skin:{
+  avatar: string;
+  level: number;
+  experience: number;
+  color: string;
+  skin: {
     default: {
-      tableColor: string,
-      tableSkin: string,
-      paddle: string,
-    },
-    tables: string[],
-    paddles: string[],
-  },
-  historic: Historic[],
+      tableColor: string;
+      tableSkin: string;
+      paddle: string;
+    };
+    tables: string[];
+    paddles: string[];
+  };
+  historic: Historic[];
 }
 
 export interface User {
@@ -34,6 +37,7 @@ export interface User {
   nickname: string;
   image: string;
   infoPong: InfoPong;
+  wallet: number;
 }
 
 export const userStore = defineStore("user", () => {
@@ -56,10 +60,11 @@ export const userStore = defineStore("user", () => {
     nickname: "",
     isLogin: false,
     image: "",
+    wallet: 10,
     infoPong: {
       avatar: "",
       color: randomColor(),
-      skin:{
+      skin: {
         default: {
           tableColor: "#1e8c2f",
           tableSkin: "",
@@ -73,7 +78,6 @@ export const userStore = defineStore("user", () => {
   });
 
   async function login(authorizationCode: string | undefined) {
-    console.log("login", authorizationCode);
     if (user.isLogin) return;
     await axios
       .post("https://api.intra.42.fr/oauth/token", {
@@ -92,17 +96,14 @@ export const userStore = defineStore("user", () => {
             Authorization: `Bearer ${user.accessToken}`,
           },
         });
-        const photoResponse = await axios.get("https://api.intra.42.fr/v2/users/" + userInfoResponse.data.id, {
-          headers: {
-            Authorization: `Bearer ${user.accessToken}`,
-          },
-        });
-        user.image = photoResponse.data.image.link;
+        user.image = userInfoResponse.data.image.link;
         console.log(userInfoResponse.data);
         user.name = userInfoResponse.data.displayname;
         user.email = userInfoResponse.data.email;
         user.id = userInfoResponse.data.id;
         user.nickname = userInfoResponse.data.login;
+        user.wallet = userInfoResponse.data.wallet;
+        console.log("user\n", JSON.stringify(user));
         await axios
           .post("https://unbecoming-fact-production.up.railway.app/auth/signin", user)
 
@@ -114,15 +115,15 @@ export const userStore = defineStore("user", () => {
             user.id = response.data.dto.id;
             user.nickname = response.data.dto.nickname;
             user.image = response.data.dto.image;
-            console.log("server:", response.data);
+            user.wallet = response.data.dto.wallet;
           })
           .catch(function (error) {
-            console.log(error);
+            console.error(error);
           });
         user.isLogin = true;
       })
       .catch((error) => {
-        console.log(error);
+        console.error(error);
         user.isLogin = false;
       });
     // .finally(() => window.location.href = window.location.origin);
