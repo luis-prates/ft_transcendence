@@ -11,6 +11,8 @@ export interface Historic {
 
 export interface InfoPong {
   avatar: string;
+  level: number;
+  experience: number;
   color: string;
   skin: {
     default: {
