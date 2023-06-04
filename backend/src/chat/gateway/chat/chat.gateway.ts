@@ -24,20 +24,20 @@ export class ChatGateway implements OnGatewayConnection {
     @WebSocketServer()
     server: Server;
 
-    afterInit() {
-        // Setup all listeners for events coming from the chat service
-        this.chatService.events.on('user-added-to-channel', async ({ channelId, userId }) => {
-            const socketId : string = this.userIdToSocketId.get(userId);
-            if (!socketId) {
-                // if socketId not found, client is not currently connected and doesnt need the websocket event
-                return;
-            }
+	afterInit() {
+		// Setup all listeners for events coming from the chat service
+		this.chatService.events.on('user-added-to-channel', async ({ channelId, userId }) => {
+			const socketId : string = this.userIdToSocketId.get(userId);
+			if (!socketId) {
+				// if socketId not found, client is not currently connected and doesnt need the websocket event
+				return;
+			}
 
-            const client: Socket = this.socketMap.get(socketId);
-            if (!client) {
-                this.logger.error(`No client socket found for socketId ${socketId}`);
-                return;
-            }
+			const client: Socket = this.socketMap.get(socketId);
+			if (!client) {
+				this.logger.error(`No client socket found for socketId ${socketId}`);
+				return;
+			}
 
             client.join(`channel-${channelId}`);
             console.log(`Client joined channel-${channelId}`);

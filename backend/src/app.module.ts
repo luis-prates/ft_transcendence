@@ -12,6 +12,7 @@ import { GameController } from './game/game.controller';
 import { GameService } from './game/game.service';
 import { GameModule } from './game/game.module';
 import { ChatModule } from './chat/chat.module';
+import { SocketService } from './socket/socket.service';
 
 @Module({
 	imports: [
@@ -26,6 +27,6 @@ import { ChatModule } from './chat/chat.module';
 		ChatModule
 	],
 	controllers: [AppController, FriendshipController, GameController],
-	providers: [AppService, FriendshipService, GameService],
+	providers: [AppService, FriendshipService, GameService, SocketService],
 })
 export class AppModule {}

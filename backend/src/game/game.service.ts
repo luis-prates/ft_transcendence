@@ -2,10 +2,15 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameDto } from './dto';
+import EventEmitter from 'events';
 
 @Injectable()
 export class GameService {
-	constructor(private prisma: PrismaService) {}
+	public events: EventEmitter;
+
+	constructor(private prisma: PrismaService) {
+		this.events = new EventEmitter();
+	}
 
 	async createGame(body: GameDto) {
 		const gameData: any = {
