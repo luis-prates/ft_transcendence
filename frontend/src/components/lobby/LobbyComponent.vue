@@ -15,7 +15,10 @@
 
     <img class="laod" src="@/assets/images/load/load_3.gif" v-if="!isLoad" />
   </div>
-  <ChatComponent v-if="isLoad" style="position: absolute" />
+  <div style="width: 70%; height: 50%; bottom: 0px; right: 0px; position: absolute; background-color: brown;">
+    <ChatComponentTest v-if="isLoad"/>
+    <!-- <ChatComponentTestList v-if="isLoad"/> -->
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -24,6 +27,10 @@ import { Player, Map, Lobby, Game } from "@/game";
 import socket from "@/socket/Socket";
 import { userStore } from "@/stores/userStore";
 import ChatComponent from "@/components/chat/ChatComponent.vue";
+import ChatComponentTest from "@/components/chat/ChatComponentTest.vue";
+import ChatComponentTestList from "@/components/chat/ChatComponentTestList.vue";
+
+
 
 const store = userStore();
 const game = ref<HTMLDivElement>();
