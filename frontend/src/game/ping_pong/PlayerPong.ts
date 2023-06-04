@@ -8,7 +8,7 @@ import avatarMarvin from "@/assets/images/pingpong/marvin.jpg";
 
 //Skins
 import skinPacman from "@/assets/images/skin/line/skin_Pac-Man.png";
-import skinMario from "@/assets/images/skin/line/skin_mario.jpeg";
+import skinMario from "@/assets/images/skin/line/skin_Mario.jpeg";
 import skinOnePiece from "@/assets/images/skin/line/skin_OnePiece.png";
 import skin42Lisboa from "@/assets/images/skin/line/42-Lisboa.png";
 

@@ -11,19 +11,102 @@ datasource db {
 }
 
 model User {
-	id Int @id @unique
-	createdAt DateTime @default(now())
-	updatedAt DateTime @updatedAt
+	id						Int @id @unique
+	createdAt				DateTime @default(now())
+	updatedAt				DateTime @updatedAt
 
-	email String @unique
-	hash String
+	email					String @unique
+	hash					String
 
-	name String
-	nickname String @unique
-	image String?
+	name					String
+	nickname				String @unique
+	image					String?
+
+	status					UserStatus @default(OFFLINE) // Offline, In Game, Online
+
 	// lastName String?
 
-	// bookmarks Bookmark[]
-	
+	sentFriendRequests		FriendRequest[] @relation("FriendShipRequestor")
+	receivedFriendRequests	FriendRequest[] @relation("FriendShipRequestee")
+	friends					User[] @relation("Friends")
+	friendsOf				User[] @relation("Friends")
+
+    // TODO: Add blocklist
+
+    messages                Message[]
+    channels                ChannelUser[]
+    ownedChannels           Channel[] @relation("ChannelOwner")
+	@@unique([id, nickname])
 	@@map("users")
+}
+
+model FriendRequest {
+	id						Int @unique @default(autoincrement())
+	createdAt				DateTime @default(now())
+	updatedAt				DateTime @updatedAt
+
+	requestorId				Int
+	requestorName			String
+	requesteeId				Int
+	requesteeName			String
+	status					FriendReqStatus @default(PENDING) // Pending, Accepted, Rejected, Blocked
+
+	requestor				User @relation(fields: [requestorId, requestorName], references: [id, nickname], name: "FriendShipRequestor")
+	requestee				User @relation(fields: [requesteeId, requesteeName], references: [id, nickname], name: "FriendShipRequestee")
+
+	@@id([requestorId, requesteeId])
+	@@index([requestorId, requesteeId], name: "friendship_index")
+	@@map("friend_requests")
+}
+
+model Message {
+    id                      Int @id @default(autoincrement())
+    content                 String
+    userId                  Int
+    user                    User @relation(fields: [userId], references: [id])
+    channelId               Int
+    channel                 Channel @relation(fields: [channelId], references: [id])
+    createdAt               DateTime @default(now())
+}
+
+model Channel {
+    id                      Int @id @default(autoincrement())
+    name                    String? @unique
+    password                String?
+    messages                Message[]
+    users                   ChannelUser[]
+    ownerId                 Int?
+    owner                   User? @relation("ChannelOwner", fields: [ownerId], references: [id])
+	type					ChannelType // Public, Private, Protected, DM
+}
+
+model ChannelUser {
+    userId                  Int
+    user                    User @relation(fields: [userId], references: [id])
+    channelId               Int
+    channel                 Channel @relation(fields: [channelId], references: [id])
+    isMuted                 Boolean @default(false)
+    isAdmin                 Boolean @default(false)
+    @@id([userId, channelId])
+}
+
+enum FriendReqStatus {
+	PENDING
+	ACCEPTED
+	REJECTED
+	BLOCKED
+	CANCELLED
+}
+
+enum UserStatus {
+	OFFLINE
+	IN_GAME
+	ONLINE
+}
+
+enum ChannelType {
+	PUBLIC
+    PRIVATE
+    PROTECTED
+    DM
 }

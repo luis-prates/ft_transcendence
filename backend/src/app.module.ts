@@ -1,21 +1,27 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-// import { AuthModule } from './auth/auth.module';
-// import { UserModule } from './user/user.module';
-// import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
+import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
+import { FriendshipService } from './friendship/friendship.service';
+import { FriendshipController } from './friendship/friendship.controller';
+import { FriendshipModule } from './friendship/friendship.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
 	imports: [
-		// AuthModule,
-		// UserModule,
-		// PrismaModule,
+		AuthModule,
+		UserModule,
+		PrismaModule,
 		ConfigModule.forRoot({
 			isGlobal: true,
-		})
+		}),
+		FriendshipModule,
+		ChatModule
 	],
-	controllers: [AppController],
-	providers: [AppService],
+	controllers: [AppController, FriendshipController],
+	providers: [AppService, FriendshipService],
 })
 export class AppModule {}

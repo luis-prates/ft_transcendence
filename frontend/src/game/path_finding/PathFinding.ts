@@ -210,14 +210,14 @@ export class PathFinding {
     return "idle";
   }
 
-  private updateSocket(): void {
+  private updateSocket(x: number, y: number, animation: string, isStop: boolean): void {
     socket.emit("update_gameobject", {
       className: "Character",
       objectId: this.character.objectId,
       name: this.character.name,
-      x: this.character.x,
-      y: this.character.y,
-      animation: { name: this.character.animation.name, isStop: this.character.animation.isStop },
+      x: x,
+      y: y,
+      animation: { name: animation, isStop: isStop },
     });
   }
 
@@ -229,8 +229,8 @@ export class PathFinding {
           let node = this.path[0];
           this.time = 0;
           if (node != null) {
-            this.character.move(node.x * Map.SIZE, node.y * Map.SIZE, this.getAnimation(node.direction));
-            this.updateSocket();
+            // this.character.move();
+            this.updateSocket(node.x * Map.SIZE, node.y * Map.SIZE, this.getAnimation(node.direction), false);
             this.path.shift();
           }
         }
@@ -239,9 +239,9 @@ export class PathFinding {
         if (this.objectDestination != null) {
           this.character.setLookAt(this.objectDestination);
         }
-        this.character.animation.setStop(true);
+        // this.character.animation.setStop(true);
         if (this.onCompleted) this.onCompleted(this.objectDestination);
-        this.updateSocket();
+        // this.updateSocket(this.character.x, this.character.y, this.character.animation.name, true);
       }
     }
   }

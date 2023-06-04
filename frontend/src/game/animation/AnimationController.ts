@@ -26,15 +26,17 @@ export class AnimationController {
   private size_w: number;
   private size_h: number;
   isStop = true;
+  isRepeat;
   name: string = "";
 
-  constructor(image: HTMLImageElement, size_w: number, size_h: number, speed: number, sx: number = 0, sy: number = 0) {
+  constructor(image: HTMLImageElement, size_w: number, size_h: number, speed: number, sx: number = 0, sy: number = 0, isRepeat: boolean = true) {
     this.image = image;
     this.size_w = size_w;
     this.size_h = size_h;
     this.speed = speed;
     this.sx = sx;
     this.sy = sy;
+    this.isRepeat = isRepeat;
   }
 
   public init(image: HTMLImageElement, size_w: number, size_h: number, speed: number, sx: number = 0, sy: number = 0) {
@@ -72,6 +74,8 @@ export class AnimationController {
       this.frame += this.speed * Game.deltaTime;
       if (this.frame >= this.animation[this.currentAnimation].frames.length) {
         this.frame = 0;
+        console.log("this.isRepeat", this.isRepeat);
+        this.setStop(!this.isRepeat);
       }
     }
     this.frameX = this.animation[this.currentAnimation]?.frames[Math.floor(this.frame)].x + this.sx;

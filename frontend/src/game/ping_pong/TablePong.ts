@@ -21,13 +21,7 @@ export class TablePong {
   draw(context: CanvasRenderingContext2D) {
     this.drawBackGround(context);
     this.drawTableColor(context);
-    if (this.skin.src) {
-      try {
-        context.drawImage(this.skin, 78, 174, this.width - 158, this.height - 248);
-      } catch {
-        ("");
-      }
-    }
+    if (this.skin.complete) context.drawImage(this.skin, 78, 174, this.width - 158, this.height - 248);
     this.drawLines(context);
   }
 

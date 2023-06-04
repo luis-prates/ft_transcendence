@@ -50,7 +50,7 @@ export class GameMap {
 			'update_gameobject',
 			function (data) {
 				player.data = data;
-				this.emitAll('update_gameobject', data, player);
+				this.emitAll('update_gameobject', data);
 			}.bind(this),
 		);
 	}

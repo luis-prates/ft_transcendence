@@ -2,6 +2,8 @@ import socket from "@/socket/Socket";
 import { Game, Map, Menu, Npc, type ElementUI, type Player } from "@/game";
 
 export class Lobby extends Game {
+  private list_update_gameobject: any[] = [];
+
   constructor(map: Map, player: Player) {
     super(map, player);
     this.addGameObject(new Npc());
@@ -10,14 +12,7 @@ export class Lobby extends Game {
       console.log("new_gameobject", data);
     });
 
-    socket.on("update_gameobject", (data: any) => {
-      for (let gameObject of this.gameObjets) {
-        if (gameObject.objectId == data.objectId) {
-          gameObject.setData(data);
-          break;
-        }
-      }
-    });
+    socket.on("update_gameobject", (data: any) => this.list_update_gameobject.push(data));
 
     socket.on("remove_gameobject", (data: any) => {
       for (let gameObject of this.gameObjets) {
@@ -32,6 +27,19 @@ export class Lobby extends Game {
 
   draw(): void {
     super.draw();
+  }
+
+  update(): void {
+    for (let data of this.list_update_gameobject) {
+      for (let gameObject of this.gameObjets) {
+        if (gameObject.objectId == data.objectId) {
+          gameObject.setData(data);
+          break;
+        }
+      }
+    }
+    this.list_update_gameobject = [];
+    super.update();
   }
 
   destructor(): void {
