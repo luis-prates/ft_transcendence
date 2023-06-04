@@ -2,7 +2,6 @@ import { createWebHistory, createRouter, type RouteRecordNormalized, type RouteR
 import LoginPage from "@/pages/LoginPage.vue";
 import HomePage from "@/pages/HomePage.vue";
 import PingPongPage from "@/pages/PingPongPage.vue";
-// import About from "@/views/About.vue";
 
 const routes_login = [
   {
@@ -23,7 +22,7 @@ const routes = [
     path: "/game",
     name: "Ping Pong Game",
     component: PingPongPage,
-    props: (route: any) => ({ 
+    props: (route: any) => ({
       objectId: route.query.objectId,
     }),
   },

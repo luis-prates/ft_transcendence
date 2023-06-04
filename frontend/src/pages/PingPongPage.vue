@@ -40,18 +40,18 @@ onMounted(function () {
   });
 
   console.log("pros: ", props);
-
-  //TODO
-  const tableColor: string = "#1e8c2f";
-
-  const game = new GamePong(canvas.width, canvas.height - 228, 164, ctx, props as gameRequest);
+  
+  const tableBoard = new TablePong(canvas.width, canvas.height, "DarkSlateBlue", "#1e8c2f");
+  const game = new GamePong(canvas.width, canvas.height - 228, 164, ctx, props as gameRequest, tableBoard);
   console.log(props);
-  const tableBoard = new TablePong(canvas.width, canvas.height, "DarkSlateBlue", tableColor);
 
   socket.on("start_game", (e: any) => {
     console.log(e);
     console.log(game);
     game.audio("music_play");
+
+    game.table.color = e.data.table;
+    game.table.skin.src = e.data.tableSkin ? e.data.tableSkin : "";
 
     game.player1.nickname = e.nickname1 ? e.nickname1 : game.player1.nickname;
     game.player1.color = e.color1;
@@ -98,6 +98,7 @@ onMounted(function () {
   socket.on("game_update_ball", (e: updateBall) => {
     game.ball.updateBall(e.x, e.y, e.dir);
   });
+  
   socket.on("game_update_point", (e: gamePoint) => {
     if (game.status == Status.InGame) {
       game.updateStatus(Status.Starting);
@@ -178,3 +179,4 @@ onMounted(function () {
   }
 }
 </style>
+
