@@ -4,13 +4,14 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import { Test } from '@nestjs/testing'
 import * as pactum from 'pactum'
 import { AuthDto } from 'src/auth/dto';
-import { io, Socket } from "socket.io-client";
+import socketIoClient, { Socket } from "socket.io-client";
 
 describe('Chat', () => {
     let app: INestApplication; let prisma: PrismaService;
 
     const baseImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='; // The smallest base64 image from https://gist.github.com/ondrek/7413434
-    const dtos: AuthDto[] = Array.from({length: 3}, (_, i) => {
+    // for logging in
+    const dtos: AuthDto[] = Array.from({ length: 3 }, (_, i) => {
         const id = i + 1; // as your ids start from 1
         return {
             id: id,
@@ -20,10 +21,19 @@ describe('Chat', () => {
             nickname: `tester${id}`,
         }
     });
+    // for websockets
+    let clients: Socket[] = [];
+
     // Setup
     beforeAll(async () => {
         // launch app
-        const moduleRef = await Test.createTestingModule({ imports: [AppModule], }).compile(); app = moduleRef.createNestApplication(); app.useGlobalPipes(new ValidationPipe({ whitelist: true })); await app.init(); await app.listen(3370); prisma = app.get(PrismaService); await prisma.cleanDb(); await prisma.setupDb();
+        const moduleRef = await Test.createTestingModule({ imports: [AppModule], }).compile();
+        app = moduleRef.createNestApplication();
+        app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+        await app.init(); await app.listen(3370);
+        prisma = app.get(PrismaService);
+        await prisma.cleanDb();
+        await prisma.setupDb();
         pactum.request.setBaseUrl('http://localhost:3370');
 
         // create a users
@@ -35,10 +45,26 @@ describe('Chat', () => {
                 .expectStatus(201)
                 .stores(`userAt${dto.id}`, 'access_token')
         }
+
+        // connect all users to the socket
+        await Promise.all(dtos.map(async (dto) => {
+            const client = socketIoClient('http://localhost:3001/chat', { query: { userId: dto.id.toString() } });
+            clients.push(client);
+
+            // Test connection for each client
+            await new Promise((resolve, reject) => {
+                client.on('connect', () => resolve(undefined));
+                client.on('connect_error', reject);
+            });
+        }));
     });
 
+    console.log("CLIENTS BABY:", clients);
     // Teardown
     afterAll(() => {
+        for (const client of clients) {
+            client.disconnect();
+        }
         app.close();
     });
 
@@ -146,7 +172,7 @@ describe('Chat', () => {
                         "name": "myProtectedChannel",
                         "channelType": "PRIVATE",
                         "usersToAdd": [2, 3],
-                        "password" : "123"
+                        "password": "123"
                     })
                     .expectStatus(201)
                     .expectBodyContains('PRIVATE')
@@ -164,8 +190,8 @@ describe('Chat', () => {
                     .post('/chat/channels')
                     .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
                     .withBody({
-                        "channelType" : "DM",
-                        "usersToAdd" : [2],
+                        "channelType": "DM",
+                        "usersToAdd": [2],
                     })
                     .expectStatus(201)
                     .expectBodyContains('DM')
@@ -178,8 +204,8 @@ describe('Chat', () => {
                     .post('/chat/channels')
                     .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
                     .withBody({
-                        "channelType" : "DM",
-                        "usersToAdd" : [],
+                        "channelType": "DM",
+                        "usersToAdd": [],
                     })
                     .expectStatus(400)
             );
@@ -191,8 +217,8 @@ describe('Chat', () => {
                     .post('/chat/channels')
                     .withHeaders({ Authorization: 'Bearer $S{userAt2}' })
                     .withBody({
-                        "channelType" : "DM",
-                        "usersToAdd" : [1, 3],
+                        "channelType": "DM",
+                        "usersToAdd": [1, 3],
                     })
                     .expectStatus(400)
             );
@@ -204,8 +230,8 @@ describe('Chat', () => {
                     .post('/chat/channels')
                     .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
                     .withBody({
-                        "channelType" : "DM",
-                        "usersToAdd" : [2],
+                        "channelType": "DM",
+                        "usersToAdd": [2],
                     })
                     .expectStatus(409)
             );
@@ -213,9 +239,45 @@ describe('Chat', () => {
     });
 
     // Send some messages in each channel!
+    console.log("clients LOL:", clients);
     describe('Send messages', () => {
-        let clientSocket: Socket;
-        let serverSocket: Socket;
+        it('should connect all the users', async () => {
+            const connectionPromises = clients.map(client => new Promise((resolve, reject) => {
+                if (client.connected) {
+                    resolve(undefined);
+                } else {
+                    client.on('connect', () => {
+                        expect(client.connected).toBeTruthy();
+                        resolve(undefined);
+                    });
+                    client.on('connect_error', (err) => {
+                        reject(err);
+                    });
+                }
+            }));
+            await Promise.all(connectionPromises);
+        });
+        it('should disconnect all the users', async () => {
+            // Tell all the clients to disconnect
+            clients.forEach(client => client.disconnect());
+
+            // Then wait for them all to disconnect
+            const disconnectionPromises = clients.map(client => new Promise((resolve, reject) => {
+                if (!client.connected) {
+                    resolve(undefined);
+                } else {
+                    client.on('disconnect', () => {
+                        expect(client.connected).toBeFalsy();
+                        resolve(undefined);
+                    });
+                    client.on('connect_error', (err) => {
+                        reject(err);
+                    });
+                }
+            }));
+            await Promise.all(disconnectionPromises);
+        });
+    });
 
     // Retrieve the channel list that a user can inspect and join
 
@@ -243,5 +305,4 @@ describe('Chat', () => {
     // Let the owner unmute user2 and see if it works
 
     // Take away the admin privileges of user4
-    });
 });

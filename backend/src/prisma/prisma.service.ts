@@ -29,7 +29,6 @@ export class PrismaService extends PrismaClient {
 		if (!existingGlobalChannel) {
 			await this.channel.create({
 				data: {
-                    id: 1,
 					name: globalChannelName,
 					type: ChannelType.PUBLIC,
 				},

@@ -10,15 +10,15 @@ import {
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ChatService } from '../../chat.service';
 import { Namespace, Server, Socket } from 'socket.io';
-import { JwtGuard } from 'src/auth/guard';
+import { JwtGuard } from '../../../auth/guard';
 import { UseGuards } from '@nestjs/common';
-import { Logger } from '@nestjs/common';
+import { TestLogger } from '../../../../test/utils/TestLogger';
 
 @WebSocketGateway(3001, {namespace: 'chat', cors: {origin: '*'}})
 export class ChatGateway implements OnGatewayConnection {
     private userIdToSocketId: Map<number, string> = new Map<number, string>();
     private socketMap: Map<string, Socket> = new Map<string, Socket>;
-    private readonly logger = new Logger(ChatGateway.name);
+    private readonly logger = new TestLogger(ChatGateway.name);
     constructor(private chatService: ChatService) {}
 
     @WebSocketServer()
@@ -106,7 +106,7 @@ export class ChatGateway implements OnGatewayConnection {
     async handleDisconnect(client: Socket) {
         const userId: number = client.data.userId;
         this.userIdToSocketId.delete(userId);
-        console.log(`Client disconnected : ${client.id}`);
+        this.logger.log(`Client disconnected : ${client.id}`);
         const connectedRooms = Object.keys(client.rooms);
         connectedRooms.forEach((room) => client.leave(room));
     }

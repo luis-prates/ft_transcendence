@@ -195,8 +195,8 @@ export class ChatService {
                 this.events.emit('user-added-to-channel', { channelId: newChannel.id, userId: user });
             }
         } catch (error) {
-            if (error.code === 'P2002' && error.meta.target.includes('name')) {
-                throw new ConflictException('Channel name already exists');
+            if (error.code === 'P2002') {
+                throw new ConflictException('Channel already exists');
             }
             else if (error.code === 'P2025' && error.meta.cause.includes('User')) {
                 throw new NotFoundException('User not found');
