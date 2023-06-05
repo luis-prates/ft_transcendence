@@ -10,13 +10,15 @@ export class Player_Pong {
 	player_n: number;
 	y: number = 0;
 	x: number = 0;
-	speed: number = 8;
+	speed: number = 10;
 	score: number = 0;
 	nickname: string;
 	avatar: string;
 	fpsUpdate: number = 0;
 	color: string;
 	skin: string;
+	up: boolean = false;
+	down: boolean = false;
 
 	constructor(game: Game, player_n: number, playerLobby: Player, info?: playerInfo) {
 		this.game = game;
@@ -59,7 +61,18 @@ export class Player_Pong {
 				else if (ballUporDown > 0 && move > this.speed) this.moveDown();
 			}
 		}
+		if (!(this.up && this.down))
+		{
+			if (this.up) this.moveUp();
+			else if (this.down) this.moveDown();
+		}
 		this.emitPlayer();
+	}
+
+	reset_keys()
+	{
+		this.up = false;
+		this.down = false;
 	}
 
 	emitPlayer() {
