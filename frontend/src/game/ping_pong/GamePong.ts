@@ -11,6 +11,8 @@ import sound_wall from "@/assets/audio/wall_hit.wav";
 import sound_score from "@/assets/audio/score.wav";
 import sound_counting from "@/assets/audio/counting.mp3";
 import music from "@/assets/audio/music_game.mp3";
+import { TablePong } from "@/game/ping_pong";
+import { Skin } from "./Skin";
 
 export enum Status {
   Waiting,
@@ -20,6 +22,7 @@ export enum Status {
 }
 
 export class GamePong {
+  table: TablePong;
   status: number = Status.Waiting;
   width: number;
   height: number;
@@ -35,8 +38,10 @@ export class GamePong {
   endMessage: string = "";
   backgroundMusic = new Audio(music);
   watchersNumber: number = 0;
+  skins = new Skin();
 
-  constructor(width: number, height: number, offSet: number, context: CanvasRenderingContext2D, data: gameRequest) {
+  constructor(width: number, height: number, offSet: number, context: CanvasRenderingContext2D, data: gameRequest, table: TablePong) {
+    this.table = table;
     this.width = width;
     this.height = height;
     this.offSet = offSet;

@@ -12,8 +12,10 @@
       <img src="@/assets/images/lobby/table_de1bda.png" />
       <button @click="test">Test</button>
     </div>
+
     <img class="laod" src="@/assets/images/load/load_3.gif" v-if="!isLoad" />
   </div>
+  <ChatComponent class="chat_component"/>
 </template>
 
 <script setup lang="ts">
@@ -21,6 +23,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
 import socket from "@/socket/Socket";
 import { userStore } from "@/stores/userStore";
+import ChatComponent from "@/components/chat/ChatComponent.vue";
 
 const store = userStore();
 const game = ref<HTMLDivElement>();
@@ -89,6 +92,13 @@ function test() {
   margin: 0;
   padding: 0;
   background-color: rgb(30, 39, 210);
+}
+
+.chat_component
+{
+  width: 70%;
+  height: 60%;
+  right: 0px;
 }
 
 .menu {

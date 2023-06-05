@@ -9,7 +9,7 @@ export interface CharacterOnline {
   objectId: number;
   x: number;
   y: number;
-  animation: { name: string; isStop: boolean };
+  animation: { name: string; isStop: boolean, sx: number, sy: number };
 }
 
 export class Character implements GameObject {
@@ -77,7 +77,8 @@ export class Character implements GameObject {
       this.x = data.x;
       this.y = data.y;
       console.log("animation\n", data.animation);
-
+      this.animation.sx = data.animation.sx ? data.animation.sx : this.animation.sx;
+      this.animation.sy = data.animation.sy ? data.animation.sy : this.animation.sy;
       this.animation?.setAnimation(data.animation.name);
       this.animation?.setStop(data.animation.isStop);
     }

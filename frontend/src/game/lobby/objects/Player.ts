@@ -5,6 +5,7 @@ import { Game } from "@/game/base/Game";
 import type { GameObject } from "@/game/base/GameObject";
 import { type Ref } from "vue";
 import { userStore } from "@/stores/userStore";
+import { YourMiniPerfil } from "@/game/Menu/YourMiniPerfil";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
@@ -18,10 +19,13 @@ export class Player extends Character {
     this.x = data.x;
     this.y = data.y;
     this.menu = menu;
+    this.animation.sx = 0;
+    this.animation.sy = 0;
     this.menu.value?.setAttribute("style", "display: none");
     this.type = "player";
     this.name = "Player_" + Date.now();
-    socket.emit("new_player", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop } });
+    console.log("Player", data);
+    socket.emit("new_player", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop, sx: this.animation.sx, sy: this.animation.sy} });
   }
 
   draw(contex: CanvasRenderingContext2D): void {
@@ -45,11 +49,14 @@ export class Player extends Character {
     }
     super.draw(contex);
   }
+
   mouseClick?(x: number, y: number, button: number): void {
     this.menu.value?.setAttribute("style", "display: none");
+    
     if (button == 0) {
       this.select = Game.MouseColision(x, y);
       if (this.select == this) {
+        Game.instance.addMenu(new YourMiniPerfil(this).menu);
         console.log(this.store.user);
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {
@@ -72,6 +79,8 @@ export class Player extends Character {
     this.agent.setPath([]);
   }
 
+  interaction(gameObject: GameObject): void {
+  }
   // public move(x: number, y: number, animation: string): void {
   //   super.move(x, y, animation);
   //   socket.emit("update_gameobject", { className: "Character", objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: animation, isStop: this.animation.isStop } });
