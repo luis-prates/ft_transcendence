@@ -213,7 +213,7 @@ export class YourMiniPerfil {
   }
 
   private drawBackground(ctx: CanvasRenderingContext2D, pos: Rectangle) {
-    const backgroundColor = "#FFC857";
+    const backgroundColor = 'rgba(210, 180, 140, 0.6)';
     const borderColor = "black";
 
     ctx.fillStyle = backgroundColor;
@@ -234,7 +234,6 @@ export class YourMiniPerfil {
 	  ctx.fillText("Money: " + this.user.wallet + "₳", pos.x + pos.w * 0.5, pos.y + pos.h * 0.26, pos.w - (pos.x + pos.w * 0.5));
 
     //Avatar
-    ctx.fillStyle = "white";
 	  ctx.strokeStyle = "black";
     ctx.strokeRect(
       pos.x + pos.w * 0.05, 
@@ -242,7 +241,17 @@ export class YourMiniPerfil {
       pos.w * 0.4,
       pos.h * 0.80,
       );
-    
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+
+      ctx.fillRect(
+        pos.x + pos.w * 0.05, 
+        pos.y + pos.h * 0.1,
+        pos.w * 0.4,
+        pos.h * 0.80,
+        );
+        ctx.fillStyle = "white";
+        
     if (this.avataresImage.complete) ctx.drawImage(this.avataresImage, 
       ((this.chooseAvatar - 4 >= 0 ? this.chooseAvatar - 4 : this.chooseAvatar) * 144) + 48, //+3
       (this.chooseAvatar - 4 >= 0 ? 1 : 0) * 320, //+4
@@ -290,7 +299,7 @@ export class YourMiniPerfil {
       type: "custom",
       rectangle: { x: "18%", y: "5%", w: "30%", h: "40%" },
       draw: (context: any) => {
-        const backgroundColor = "#FFC857";
+        const backgroundColor = 'rgba(210, 180, 140, 0.6)';//"#FFC857";
         const borderColor = "black";
     
         context.fillStyle = backgroundColor;

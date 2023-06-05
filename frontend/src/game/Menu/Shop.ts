@@ -175,7 +175,7 @@ export class Shop {
   }
 
   public draw(ctx: CanvasRenderingContext2D, pos: Rectangle) {
-    const backgroundColor = "#D2B48C"; // Cor de fundo castanho
+    const backgroundColor = 'rgba(210, 180, 140, 0.6)'; // Cor de fundo castanho
     const borderColor = "#8B4513"; // Cor de contorno mais escuro
 
     // Desenha o corpo do balão com cor de fundo castanho
