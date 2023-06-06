@@ -51,8 +51,8 @@ export class Ball {
 
         // Ajusta o ângulo com base no ponto de contato na raquete
         let relativeIntersectY = this.game.player1.y + this.game.player1.height / 2 - (this.y + this.height / 2);
-        let normalizedRelativeIntersectionY = relativeIntersectY / (this.game.player1.height / 2);
-        this.angle -= normalizedRelativeIntersectionY * (Math.PI / 4);
+        let normalizedRelativeIntersectionY = relativeIntersectY / (this.game.player1.height / 2);        
+        this.angle = this.angle - normalizedRelativeIntersectionY * (Math.PI / 4);
 
         this.angle += random;
 
