@@ -1,6 +1,7 @@
 import { Lobby } from './Lobby';
 import { GameMap } from './GameMap';
 import { Socket } from 'socket.io';
+import { Logger } from '@nestjs/common';
 export interface PathNode {
 	x: number;
 	y: number;
@@ -30,12 +31,13 @@ export class Player {
 		animation: { name: 'walk_bottom', isStop: true },
 	};
 	time: number = 0;
+	private readonly logger = new Logger(Player.name);
 
 	constructor(socket: Socket, objectId: number) {
+		this.logger.debug('new player with objectId: ', objectId);
 		this.setSocket(socket);
 		this.data.objectId = objectId;
 		this.time = Date.now();
-		Lobby.players.push(this);
 	}
 
 	get objectId(): number {

@@ -43,9 +43,12 @@ export class Game {
 	//Game Loop 1000 milesecond (1second) for 60 fps
 	gameLoop() {
 		if (!this.isEndGame()) {
-			if (this.status == Status.InGame) this.ball.update();
-			if (this.player1) this.player1.update();
-			if (this.player2) this.player2.update();
+			if (this.status == Status.InGame)
+				this.ball.update();
+			if (this.player1)
+				this.player1.update();
+			if (this.player2)
+				this.player2.update();
 		}
 		setTimeout(() => {
 			this.gameLoop();
@@ -122,13 +125,15 @@ export class Game {
 	}
 	//Begin the Game
 	startGame() {
-		if (this.status != Status.Finish) this.countdown(4);
+		if (this.status != Status.Finish)
+			this.countdown(4);
 	}
 	//When one of the Players make a Point
 	makePoint(playerNumber: number) {
 		this.emitAll('game_update_point', { objectId: this.data.objectId, playerNumber: playerNumber, score: playerNumber == 1 ? this.player1.score : this.player2.score });
 
-		if (this.isEndGame()) this.endGame(playerNumber);
+		if (this.isEndGame())
+			this.endGame(playerNumber);
 		else {
 			this.updateStatus(Status.Starting);
 			this.startGame();
@@ -136,10 +141,10 @@ export class Game {
 		//console.log('1: ', this.player1.score, ' 2:', this.player2.score);
 	}
 	//End Game
-	endGame(player_n: number) {
-		if ((player_n == 1 || player_n == 2) && this.status != Status.Finish) {
+	endGame(playerNumber: number) {
+		if ((playerNumber == 1 || playerNumber == 2) && this.status != Status.Finish) {
 			this.updateStatus(Status.Finish);
-			if (player_n === 1) {
+			if (playerNumber === 1) {
 				this.player1.socket.emit('end_game', {
 					objectId: this.data.objectId,
 					result: 'You Win!',
@@ -154,7 +159,7 @@ export class Game {
 					objectId: this.data.objectId,
 					result: this.player1.nickname + ' Win!',
 				});
-			} else if (player_n === 2) {
+			} else if (playerNumber === 2) {
 				this.player1.socket.emit('end_game', {
 					objectId: this.data.objectId,
 					result: 'You Lose!',
@@ -172,7 +177,8 @@ export class Game {
 			}
 			//INSERT IN DATABASE
 			this.player1?.socket.off('game_move');
-			if (this.player2 != null && this.bot == false) this.player2?.socket.off('game_move');
+			if (this.player2 != null && this.bot == false)
+				this.player2?.socket.off('game_move');
 			this.watchers.forEach((watcher) => watcher.off('game_move'));
 			this.onRemove();
 		}
@@ -202,20 +208,25 @@ export class Game {
 	}
 	//Verific if the game is Ending
 	isEndGame() {
-		if (this.player1.score >= this.maxPoint || this.player2.score >= this.maxPoint) return true;
+		if (this.player1.score >= this.maxPoint || this.player2.score >= this.maxPoint)
+			return true;
 		return false;
 	}
 
 	//Emit for Players
 	emitPlayers(event: string, data: any): void {
-		if (this.player1) this.player1.socket.emit(event, data);
-		if (this.player2 && !this.bot) this.player2.socket.emit(event, data);
+		if (this.player1)
+			this.player1.socket.emit(event, data);
+		if (this.player2 && !this.bot)
+			this.player2.socket.emit(event, data);
 	}
 	//Emit for Watchers
 	emitWatchers(event: string, data: any): void {
-		if (this.watchers.length <= 0) return;
+		if (this.watchers.length <= 0)
+			return;
 		this.watchers.forEach((clientSocket) => {
-			if (clientSocket.id !== this.player1.socket.id || clientSocket.id !== this.player2.socket.id) clientSocket.emit(event, data);
+			if (clientSocket.id !== this.player1.socket.id || clientSocket.id !== this.player2.socket.id)
+				clientSocket.emit(event, data);
 		});
 	}
 	//Emit for Players and Watchers
@@ -225,7 +236,8 @@ export class Game {
 	}
 
 	entry_game(player: Player, info: playerInfo) {
-		if (this.player1 == null || (this.player2 == null && this.bot == false)) player.on('game_move', (e: any) => this.game_move(e));
+		if (this.player1 == null || (this.player2 == null && this.bot == false))
+			player.on('game_move', (e: any) => this.game_move(e));
 		this.addUsers(player, info);
 		console.log(this.games);
 	}
@@ -233,11 +245,15 @@ export class Game {
 	private game_move(e: any) {
 		if (this.status == Status.InGame) {
 			if (e.playerNumber == 1) {
-				if (e.move == 'up') this.player1.moveUp();
-				else if (e.move == 'down') this.player1.moveDown();
+				if (e.move == 'up')
+					this.player1.moveUp();
+				else if (e.move == 'down')
+					this.player1.moveDown();
 			} else if (e.playerNumber == 2) {
-				if (e.move == 'up') this.player2.moveUp();
-				else if (e.move == 'down') this.player2.moveDown();
+				if (e.move == 'up')
+					this.player2.moveUp();
+				else if (e.move == 'down')
+					this.player2.moveDown();
 			}
 		}
 	}

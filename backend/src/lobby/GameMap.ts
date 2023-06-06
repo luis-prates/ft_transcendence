@@ -3,11 +3,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Player } from './Player';
 import { off } from 'process';
+import { Logger } from '@nestjs/common';
 
 export class GameMap {
 	public players: Player[] = [];
 	public gameObjets: any[] = [];
 	private map: any;
+	private readonly logger = new Logger(GameMap.name);
 
 	constructor(mapFile: string = 'map_1.json') {
 		const jsonPath = path.join(__dirname, '..', 'public/maps', mapFile);
@@ -18,14 +20,16 @@ export class GameMap {
 
 	public join(player: Player, position?: { x: number; y: number }): void {
 		GameMap.offAll(player);
-		console.log('join_map: ', player.objectId, this.map.name);
-		if (player.map) player.map.removePlayer(player);
+		this.logger.debug('join_map: ', player.objectId, this.map.name);
+		if (player.map)
+			player.map.removePlayer(player);
 		player.map = this;
 		const clientSocket = this.players.find((clientSocket) => clientSocket.objectId === player.objectId);
 		const data: any[] = this.players.filter((e) => e.objectId != player.objectId).map((e) => e.data);
 		data.push(...this.gameObjets);
 		player.data.x = position?.x || this.map.start_position.x;
 		player.data.y = position?.y || this.map.start_position.y;
+		this.logger.debug('Emitting load_map event');
 		player.emit('load_map', {
 			map: this.map,
 			player: clientSocket ? clientSocket.data : player.data,

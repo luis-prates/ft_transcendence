@@ -33,11 +33,14 @@ export class Games {
 	disconnect(player: Player) {
 		console.log('Socket desconectado:', player.id);
 		function isInGame(game: Game) {
-			const disconect = player.id;
-			if (game.status == Status.Finish) return;
-			if (game.player1.socket.id == disconect) game.endGame(2);
-			else if (game.player2.socket.id == player.id) game.endGame(1);
-			const index = game.watchers.findIndex((socket: any) => socket.socket.id === disconect);
+			const disconnect = player.id;
+			if (game.status == Status.Finish)
+				return;
+			if (game.player1.socket.id == disconnect)
+				game.endGame(2);
+			else if (game.player2.socket.id == player.id)
+				game.endGame(1);
+			const index = game.watchers.findIndex((socket: any) => socket.socket.id === disconnect);
 			if (index !== -1) {
 				game.watchers.splice(index, 1);
 				console.log('Socket removido da lista de watchers');

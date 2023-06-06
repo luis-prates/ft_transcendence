@@ -13,6 +13,11 @@ import { GameService } from './game/game.service';
 import { GameModule } from './game/game.module';
 import { ChatModule } from './chat/chat.module';
 import { SocketService } from './socket/socket.service';
+import { LobbyService } from './lobby/lobby.service';
+import { LobbyGateway } from './lobby/lobby.gateway';
+import { LobbyModule } from './lobby/lobby.module';
+import { PlayerService } from './player/player.service';
+import { PlayerModule } from './player/player.module';
 
 @Module({
 	imports: [
@@ -24,9 +29,18 @@ import { SocketService } from './socket/socket.service';
 		}),
 		FriendshipModule,
 		GameModule,
-		ChatModule
+		ChatModule,
+		LobbyModule,
+		PlayerModule,
 	],
 	controllers: [AppController, FriendshipController, GameController],
-	providers: [AppService, FriendshipService, GameService, SocketService],
+	providers: [
+		AppService,
+		FriendshipService,
+		GameService,
+		SocketService,
+		LobbyService,
+		PlayerService
+	],
 })
 export class AppModule {}

@@ -38,7 +38,8 @@ export class Player_Pong {
 	}
 
 	moveDown() {
-		if (this.fpsUpdate == 1) return;
+		if (this.fpsUpdate == 1)
+			return;
 		if (this.y < this.game.height - this.height) this.y += this.speed;
 		this.fpsUpdate = 1;
 	}

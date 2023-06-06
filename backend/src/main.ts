@@ -14,16 +14,16 @@ async function bootstrap() {
 		}),
 	); // This is a security feature that validates the data sent to the backend.
 	await app.listen(3000);
-	const io = new Server(app.getHttpServer(), {
-		cors: {
-			origin: '*',
-		},
-		pingInterval: 2000,
-		pingTimeout: 5000,
-	});
-	const lobby = new Lobby(io);
-	io.on('connection', (socket) => {
-		lobby.connection(socket);
-	});
+	// const io = new Server(app.getHttpServer(), {
+	// 	cors: {
+	// 		origin: '*',
+	// 	},
+	// 	pingInterval: 2000,
+	// 	pingTimeout: 5000,
+	// });
+	// const lobby = new Lobby(io);
+	// io.on('connection', (socket) => {
+	// 	lobby.connection(socket);
+	// });
 }
 bootstrap();
