@@ -107,41 +107,74 @@ export class ChatService {
 
             // Logic for protected channels
             if (createChannelDto.channelType == 'PROTECTED') {
+                // new
                 // Note: channel name has to be unique for open channels
-                let data : { name: string, type: ChannelType, ownerId: number, password?: string, users?: any } = {
-                    name: createChannelDto.name,
-                    type: createChannelDto.channelType,
-                    ownerId: user.id
-                };
-
-                // add password
-                data.password = createChannelDto.password;
-
-                // add users connection
-                data.users = {
-                    create: {
-                        user: {
-                            connect: {
-                                id: user.id,
-                            }
-                        },
-                        isAdmin: true,
-                    },
-                    ...createChannelDto.usersToAdd.map((id) => ({
-                        user: {
-                            connect: {
-                                id: id,
-                            },
-                        },
-                    }))
-                };
-
                 newChannel = await this.prisma.channel.create({
-                    data: data,
+                    data: {
+                        name: createChannelDto.name,
+                        type: createChannelDto.channelType,
+                        ownerId: user.id,
+                        password: createChannelDto.password,
+                        users: {
+                            create: [
+                                {
+                                    user: {
+                                        connect: {
+                                            id: user.id,
+                                        }
+                                    },
+                                    isAdmin: true,
+                                },
+                                ...createChannelDto.usersToAdd.map((id) => ({
+                                    user: {
+                                        connect: {
+                                            id: id,
+                                        },
+                                    },
+                                }))
+                            ]
+                        }
+                    },
                     include: {
                         users: true,
                     }
                 });
+
+                // Note: channel name has to be unique for open channels
+            //     let data : { name: string, type: ChannelType, ownerId: number, password?: string, users?: any } = {
+            //         name: createChannelDto.name,
+            //         type: createChannelDto.channelType,
+            //         ownerId: user.id
+            //     };
+
+            //     // add password
+            //     data.password = createChannelDto.password;
+
+            //     // add users connection
+            //     data.users = {
+            //         create: {
+            //             user: {
+            //                 connect: {
+            //                     id: user.id,
+            //                 }
+            //             },
+            //             isAdmin: true,
+            //         },
+            //         ...createChannelDto.usersToAdd.map((id) => ({
+            //             user: {
+            //                 connect: {
+            //                     id: id,
+            //                 },
+            //             },
+            //         }))
+            //     };
+
+            //     newChannel = await this.prisma.channel.create({
+            //         data: data,
+            //         include: {
+            //             users: true,
+            //         }
+            //     });
             }
 
             // Logic for DM

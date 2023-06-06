@@ -14,6 +14,11 @@ import { JwtGuard } from '../../../auth/guard';
 import { UseGuards } from '@nestjs/common';
 import { TestLogger } from '../../../../test/utils/TestLogger';
 
+// For testing purposes, we want to make sure Global channel always has ID = 1, so we sleep a bit the afterInit before it can go to testing
+// function sleep(ms: number): Promise<void> {
+//     return new Promise(resolve => setTimeout(resolve, ms));
+// }
+
 @WebSocketGateway(3001, {namespace: 'chat', cors: {origin: '*'}})
 export class ChatGateway implements OnGatewayConnection {
     private userIdToSocketId: Map<number, string> = new Map<number, string>();
@@ -68,6 +73,8 @@ export class ChatGateway implements OnGatewayConnection {
             client.broadcast.to(`channel-${channelId}`).emit('user-removed', { channelId, userId, message: `User ${userId} has left the channel ${channelId}` });
         });
 
+        // ONLY FOR TESTING: we sleep for 0.5 seconds to make sure the global channel is created before we start testing
+        // sleep(1000);
         console.log('Chat Gateway Initialized!');
     }
 
@@ -112,17 +119,22 @@ export class ChatGateway implements OnGatewayConnection {
     }
 
     @SubscribeMessage('message')
-    async handleMessage(client: Socket, payload: string): Promise<WsResponse<any>> {
-        let parsedPayload;
+    async handleMessage(client: Socket, payload: any): Promise<WsResponse<any>> {
         let senderId : number = client.data.userId;
         let message : string;
         let channelId : number;
 
         // First check if the payload is valid
         try {
-            parsedPayload = JSON.parse(payload);
-            channelId = Number(parsedPayload.channelId);
-            message = parsedPayload.message;
+            // in case the request was sent as raw string, we need to parse it
+            console.log("Received message: ", payload);
+            if (typeof payload == 'string') {
+                payload = JSON.parse(payload);
+            }
+            console.log("Parsed payload: ", payload);
+            channelId = Number(payload.channelId);
+            console.log("channelId parsed: ", channelId);
+            message = payload.message;
         } catch (error) {
             console.error("Failed to parse payload or extract required parameters.", error);
             client.emit('error', { message: 'Invalid message format.' });
@@ -131,6 +143,8 @@ export class ChatGateway implements OnGatewayConnection {
 
         // Next, check if the user is allowed to send a message in the channel
         const userChannels = await this.chatService.getUserChannels(Number(senderId));
+        console.log("channelId: ", channelId);
+        console.log("User channels: ", userChannels);
 
         if (!userChannels.includes(channelId)) {
             console.error(`User ${senderId} is not allowed to send a message in channel ${channelId}.`);

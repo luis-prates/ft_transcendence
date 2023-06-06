@@ -23,6 +23,7 @@ describe('Chat', () => {
     });
     // for websockets
     let clients: Socket[] = [];
+    let listeners = [];
 
     // Setup
     beforeAll(async () => {
@@ -30,7 +31,8 @@ describe('Chat', () => {
         const moduleRef = await Test.createTestingModule({ imports: [AppModule], }).compile();
         app = moduleRef.createNestApplication();
         app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-        await app.init(); await app.listen(3370);
+        await app.init();
+        await app.listen(3370);
         prisma = app.get(PrismaService);
         await prisma.cleanDb();
         await prisma.setupDb();
@@ -59,13 +61,22 @@ describe('Chat', () => {
         }));
     });
 
-    console.log("CLIENTS BABY:", clients);
     // Teardown
-    afterAll(() => {
+    afterAll(async () => {
         for (const client of clients) {
             client.disconnect();
         }
-        app.close();
+        await app.close();
+    });
+
+    // afterEach
+    afterEach(() => {
+        // Clean up listeners after each test.
+        for (let listener of listeners) {
+            listener.client.off('message', listener.handler);
+            // add more events here if needed
+        }
+        listeners = [];
     });
 
     // Testing
@@ -85,6 +96,7 @@ describe('Chat', () => {
                     .expectBodyContains('PUBLIC')
                     .expectBodyContains('myPublicChannel')
                     .expectStatus(201)
+                    .stores('publicChannelId', 'id')
             );
         });
         it('should fail if the channel has no name', () => {
@@ -157,6 +169,7 @@ describe('Chat', () => {
                     .expectStatus(201)
                     .expectBodyContains('PRIVATE')
                     .expectBodyContains('myPrivateChannel')
+                    .stores('privateChannelId', 'id')
             );
         });
     });
@@ -170,13 +183,14 @@ describe('Chat', () => {
                     .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
                     .withBody({
                         "name": "myProtectedChannel",
-                        "channelType": "PRIVATE",
+                        "channelType": "PROTECTED",
                         "usersToAdd": [2, 3],
                         "password": "123"
                     })
                     .expectStatus(201)
-                    .expectBodyContains('PRIVATE')
+                    .expectBodyContains('PROTECTED')
                     .expectBodyContains('myProtectedChannel')
+                    .stores('protectedChannelId', 'id')
             );
         });
     });
@@ -195,6 +209,7 @@ describe('Chat', () => {
                     })
                     .expectStatus(201)
                     .expectBodyContains('DM')
+                    .stores('DMChannelId', 'id')
             );
         });
         it('should fail if usersToAdd is empty', () => {
@@ -239,7 +254,6 @@ describe('Chat', () => {
     });
 
     // Send some messages in each channel!
-    console.log("clients LOL:", clients);
     describe('Send messages', () => {
         it('should connect all the users', async () => {
             const connectionPromises = clients.map(client => new Promise((resolve, reject) => {
@@ -257,6 +271,116 @@ describe('Chat', () => {
             }));
             await Promise.all(connectionPromises);
         });
+        it('should send a message to the public channel', async () => {
+            // get publicChannelId as a string
+            const publicChannelId =  pactum.stash.getDataStore()['publicChannelId'];
+            console.log("publicChannelId: ", publicChannelId);
+            // emit the message event as user1
+            // clients[0].emit('message', { "channelId": publicChannelId, "message": "Hello World!" });
+            // expect the message to be received by user2 and user3
+            const messagePromises = clients.slice(1).map(client => new Promise((resolve, reject) => {
+                const handler = ({channelId, message}) => {
+                    expect(channelId).toBe(publicChannelId);
+                    expect(message).toBe('Hello from Public!');
+                    resolve(undefined);
+                };
+                client.on('message', handler);
+                listeners.push({client, handler});
+            }));
+            setImmediate(() => clients[0].emit('message', { "channelId": publicChannelId, "message": "Hello from Public!" }));
+            await Promise.all(messagePromises);
+        });
+        it('should send a message to the private channel', async () => {
+            const privateChannelId = pactum.stash.getDataStore()['privateChannelId'];
+            // We'll make an array of promises for every client that needs to receive the message
+            const messagePromises = clients.slice(1).map(client => new Promise((resolve, reject) => {
+                // We'll make a handler for each client that will resolve the promise when the message is received
+                const handler = ({channelId, message}) => {
+                    expect(channelId).toBe(privateChannelId);
+                    expect(message).toBe('Hello from Private!');
+                    resolve(undefined);
+                };
+                // once a message is received, we'll call the handler which resolves the promise
+                client.on('message', handler);
+                listeners.push({client, handler});
+            }));
+            // setImmediate will run the code after the current event loop
+            // This is needed because the client.on('message') is not yet set up
+            setImmediate(() => clients[0].emit('message', { "channelId": privateChannelId, "message": "Hello from Private!" }));
+            // the Promise.all method will wait for all the promises to resolve
+            await Promise.all(messagePromises);
+        });
+        it('should send a message to the protected channel', async () => {
+            const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
+            // We'll make an array of promises for every client that needs to receive the message
+            const messagePromises = clients.slice(1).map(client => new Promise((resolve, reject) => {
+                // We'll make a handler for each client that will resolve the promise when the message is received
+                const handler = ({channelId, message}) => {
+                    expect(channelId).toBe(protectedChannelId);
+                    expect(message).toBe('Hello from Protected!');
+                    resolve(undefined);
+                };
+                // once a message is received, we'll call the handler which resolves the promise
+                client.on('message', handler);
+                listeners.push({client, handler});
+            }));
+            // setImmediate will run the code after the current event loop
+            // This is needed because the client.on('message') is not yet set up
+            setImmediate(() => clients[0].emit('message', { "channelId": protectedChannelId, "message": "Hello from Protected!" }));
+            // the Promise.all method will wait for all the promises to resolve
+            await Promise.all(messagePromises);
+        });
+        // Note: For DM we only need to set up 1 client to receive the message
+        it('should send a message to the DM channel', async () => {
+            const DMChannelId = pactum.stash.getDataStore()['DMChannelId'];
+            // We'll make an array of promises for every client that needs to receive the message
+            const messagePromise = new Promise((resolve, reject) => {
+                // We'll make a handler for each client that will resolve the promise when the message is received
+                const handler = ({ channelId, message }) => {
+                    expect(channelId).toBe(DMChannelId);
+                    expect(message).toBe('Hello from DM!');
+                    resolve(undefined);
+                };
+                // once a message is received, we'll call the handler which resolves the promise
+                clients[1].on('message', handler);
+                listeners.push({ client: clients[1], handler });
+            });
+            // setImmediate will run the code after the current event loop
+            // This is needed because the client.on('message') is not yet set up
+            setImmediate(() => clients[0].emit('message', { "channelId": DMChannelId, "message": "Hello from DM!" }));
+            // the Promise.all method will wait for all the promises to resolve
+            await messagePromise;
+        });
+
+        // Retrieve the channel list that a user can inspect and join
+
+        // Retrieve the channel list the user is already in
+
+        // Retrieve all of a user's messages accross all channels
+
+        // Retrieve all of a user's messages for a specific channel
+
+        // User4 joins to the public channel
+        // Other users should be notified about a new user in the channel
+        // And should see his messages
+
+        // Make the owner user1 kick user4 out of the public channel
+        // Other users should be notified about the user leaving the channel
+
+        // Invite a fourth user to the private channel
+        // And let the fourth user leave the private channel, others should be notified
+
+        // User4 joins the protected channel by knowing the password
+        // And let the owner make him admin
+
+        // Let the new admin user mute user2 and see if it works
+
+        // Let the owner unmute user2 and see if it works
+
+        // Take away the admin privileges of user4
+
+    });
+    describe('Disconnect', () => {
         it('should disconnect all the users', async () => {
             // Tell all the clients to disconnect
             clients.forEach(client => client.disconnect());
@@ -278,31 +402,4 @@ describe('Chat', () => {
             await Promise.all(disconnectionPromises);
         });
     });
-
-    // Retrieve the channel list that a user can inspect and join
-
-    // Retrieve the channel list the user is already in
-
-    // Retrieve all of a user's messages accross all channels
-
-    // Retrieve all of a user's messages for a specific channel
-
-    // User4 joins to the public channel
-    // Other users should be notified about a new user in the channel
-    // And should see his messages
-
-    // Make the owner user1 kick user4 out of the public channel
-    // Other users should be notified about the user leaving the channel
-
-    // Invite a fourth user to the private channel
-    // And let the fourth user leave the private channel, others should be notified
-
-    // User4 joins the protected channel by knowing the password
-    // And let the owner make him admin
-
-    // Let the new admin user mute user2 and see if it works
-
-    // Let the owner unmute user2 and see if it works
-
-    // Take away the admin privileges of user4
 });

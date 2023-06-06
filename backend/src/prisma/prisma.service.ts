@@ -29,10 +29,12 @@ export class PrismaService extends PrismaClient {
 		if (!existingGlobalChannel) {
 			await this.channel.create({
 				data: {
+                    // id: 1, // we want this for normal mode but not for testing
 					name: globalChannelName,
 					type: ChannelType.PUBLIC,
 				},
 			});
+            console.log("Global channel created");
 		}
 	}
 
@@ -41,6 +43,9 @@ export class PrismaService extends PrismaClient {
 		return (this.$transaction([
             // friend requests
             this.friendRequest.deleteMany(),
+
+            // messages
+            this.message.deleteMany(),
 
             // channel
             this.channelUser.deleteMany(),
