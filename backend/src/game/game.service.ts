@@ -16,7 +16,7 @@ export class GameService {
 		const gameData: any = {
 			data: {
 				gameType: body.gameType,
-				gameStats: Prisma.JsonNull
+				gameStats: Prisma.JsonNull,
 			},
 			include: {
 				players: true,
@@ -24,12 +24,12 @@ export class GameService {
 		};
 		if (body.players.length > 0) {
 			gameData.data.players = {
-				connect: body.players.map((player) => ({ id: player })),
+				connect: body.players.map(player => ({ id: player })),
 			};
 		}
 		const game = await this.prisma.game.create(gameData);
 
-		return (game);
+		return game;
 	}
 
 	// when the client receives the game object, it will have the players array
@@ -45,7 +45,7 @@ export class GameService {
 				},
 				data: {
 					players: {
-						connect: body.players.map((player) => ({ id: player })),
+						connect: body.players.map(player => ({ id: player })),
 					},
 				},
 				include: {
@@ -56,13 +56,14 @@ export class GameService {
 			game.players.forEach((player: User) => {
 				delete player.hash;
 			});
-	
-			return (game);
+
+			return game;
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				if (error.code === 'P2016') {
 					throw new ForbiddenException('Game not found.');
 				}
+
 				throw error;
 			}
 		}
@@ -86,12 +87,13 @@ export class GameService {
 				delete player.hash;
 			});
 
-			return (game);
+			return game;
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				if (error.code === 'P2016') {
 					throw new ForbiddenException('Game not found.');
 				}
+
 				throw error;
 			}
 		}
@@ -115,13 +117,14 @@ export class GameService {
 			game.players.forEach((player: User) => {
 				delete player.hash;
 			});
-	
-			return (game);
+
+			return game;
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				if (error.code === 'P2016') {
 					throw new ForbiddenException('Game not found.');
 				}
+
 				throw error;
 			}
 		}

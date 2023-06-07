@@ -18,10 +18,10 @@ export class LobbyService {
 
 	constructor(private playerService: PlayerService) {
 		console.log('lobby from service created');
-		let players: Player[] = [];
+		const players: Player[] = [];
 		const pathMap = path.join(__dirname, '..', 'public', 'maps');
 		const files = fs.readdirSync(pathMap);
-		files.forEach((file) => {
+		files.forEach(file => {
 			if (file.includes('.json')) {
 				const map = new GameMap(file);
 				this.gameMaps.set(map.objectId, map);
@@ -30,7 +30,10 @@ export class LobbyService {
 	}
 
 	public connection(socket: Socket, data: any): void {
-		let player: Player = this.playerService.onSocketConnected(socket, data.objectId);
+		const player: Player = this.playerService.onSocketConnected(
+			socket,
+			data.objectId,
+		);
 		this.game.connection(player);
 		this.chatController.connection(player);
 		this.logger.debug('new connection: ', player.objectId);
@@ -39,10 +42,13 @@ export class LobbyService {
 	public joinMap(socket: Socket, data: any): void {
 		this.logger.debug('join_map event received');
 		//this.logger.debug('data received: ' + JSON.stringify(data));
-		this.logger.debug('players count: ' + this.playerService.getPlayerCount());
+		this.logger.debug(
+			'players count: ' + this.playerService.getPlayerCount(),
+		);
 		const player = this.playerService.getPlayer(socket);
-		if (!player)
+		if (!player) {
 			return;
+		}
 		this.logger.debug('player found');
 		this.gameMaps.get(data.map.name)?.join(player, data.map?.position);
 	}

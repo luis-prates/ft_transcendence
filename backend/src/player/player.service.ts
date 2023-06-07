@@ -19,11 +19,12 @@ export class PlayerService {
 
 	removePlayer(socket: Socket): void {
 		const player = this.players.get(socket.id);
-        if (!player) {
-            return;
-        }
-        player.destroy();
-        this.players.delete(socket.id);
+		if (!player) {
+			return;
+		}
+
+		player.destroy();
+		this.players.delete(socket.id);
 		this.sockets.delete(socket.id);
 	}
 
@@ -51,7 +52,6 @@ export class PlayerService {
 		if (!playerSocket) {
 			return;
 		}
-		
 	}
 
 	onSocketConnected(socket: Socket, objectId: number): Player {
@@ -59,18 +59,17 @@ export class PlayerService {
 		if (this.players.has(socket.id)) {
 			this.players.delete(socket.id);
 		}
-		
-		  // If this socket was already in the map, remove the old socket data
+
+		// If this socket was already in the map, remove the old socket data
 		if (this.sockets.has(socket.id)) {
 			this.sockets.delete(socket.id);
 		}
-		
-		  // Then you can add the new player data associated with the new socket
+
+		// Then you can add the new player data associated with the new socket
 		const player = this.createPlayer(socket, objectId);
 		// this.logger.debug('onSocketConnected');
 		// this.logger.debug('player: ' + JSON.stringify(player));
 		// this.logger.debug('socket: ' + JSON.stringify(socket));
-		return (player);
+		return player;
 	}
-
 }

@@ -18,13 +18,13 @@ export class ChatController {
 
     // Get List of all channels which user is in
     @Get('user')
-    async getChannelsByUser(@Request() req) {
+    async getChannelsByUser(@Request() req: any) {
         return this.chatService.getChannelsByUser(req.user);
     }
 
     // Get all messages for a user's channels
     @Get('user/messages')
-    async getMessagesByUser(@Request() req) {
+    async getMessagesByUser(@Request() req: any) {
         return this.chatService.getMessagesByUser(req.user);
     }
 
@@ -39,14 +39,14 @@ export class ChatController {
     // Create a channel
     @HttpCode(201)
     @Post()
-    async createChannel(@Body() createChannelDto : CreateChannelDto, @Request() req ) {
+    async createChannel(@Body() createChannelDto : CreateChannelDto, @Request() req: any) {
         return this.chatService.createChannel(createChannelDto, req.user);
     }
 
     // Delete a channel
     @HttpCode(204)
     @Delete(':id')
-    async deleteChannel(@Param('id') id: string, @Request() req) {
+    async deleteChannel(@Param('id') id: string, @Request() req: any) {
         return this.chatService.deleteChannel(Number(id), req.user);
     }
 
@@ -64,13 +64,13 @@ export class ChatController {
     @Delete(':channelId/users/:userId')
     @UseGuards(RolesGuard)
     @Roles('admin', 'owner')
-    async removeUserFromChannel(@Param('channelId') channelId: string, @Request() req, @Param('userId') userId: string) {
+    async removeUserFromChannel(@Param('channelId') channelId: string, @Request() req: any, @Param('userId') userId: string) {
         return this.chatService.removeUserFromChannel(Number(channelId), Number(req.user.id), Number(userId));
     }
 
     // Join a channel by Id
     @Post(':channelId/join')
-    async joinChannelById(@Param('channelId') channelId: string, @Body() joinChannelDto: JoinChannelDto, @Request() req ) {
+    async joinChannelById(@Param('channelId') channelId: string, @Body() joinChannelDto: JoinChannelDto, @Request() req: any) {
         // Overwrite channelId from the DTO with the one from the URL.
         return this.chatService.joinChannel(joinChannelDto, Number(channelId), req.user);
     }
@@ -80,7 +80,7 @@ export class ChatController {
     @UseGuards(RolesGuard)
     @Roles('member')
     @Delete(':channelId/leave')
-    async leaveChannel(@Param('channelId') channelId: string, @Request() req) {
+    async leaveChannel(@Param('channelId') channelId: string, @Request() req: any) {
         return this.chatService.leaveChannel(Number(channelId), req.user);
     }
 
@@ -105,7 +105,7 @@ export class ChatController {
     @UseGuards(RolesGuard)
     @Roles('admin', 'owner')
     async demoteAdmin(
-        @Request() req,
+        @Request() req: any,
         @Param('channelId') channelId: string,
         @Param('userId') userId: string
     ) {

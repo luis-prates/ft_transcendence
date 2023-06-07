@@ -14,7 +14,6 @@ import { GameModule } from './game/game.module';
 import { ChatModule } from './chat/chat.module';
 import { SocketService } from './socket/socket.service';
 import { LobbyService } from './lobby/lobby.service';
-import { LobbyGateway } from './lobby/lobby.gateway';
 import { LobbyModule } from './lobby/lobby.module';
 import { PlayerService } from './player/player.service';
 import { PlayerModule } from './player/player.module';
@@ -40,7 +39,7 @@ import { PlayerModule } from './player/player.module';
 		GameService,
 		SocketService,
 		LobbyService,
-		PlayerService
+		PlayerService,
 	],
 })
 export class AppModule {}

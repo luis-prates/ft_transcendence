@@ -1,6 +1,15 @@
-import { GameStatus, GameType } from "@prisma/client";
-import { Type } from "class-transformer";
-import { ArrayMaxSize, IsArray, IsEnum, IsInt, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { GameStatus, GameType } from '@prisma/client';
+import { Type } from 'class-transformer';
+import {
+	ArrayMaxSize,
+	IsArray,
+	IsEnum,
+	IsInt,
+	IsNotEmpty,
+	IsNumber,
+	IsOptional,
+	ValidateNested,
+} from 'class-validator';
 
 class GameStatsDto {
 	@IsOptional()
@@ -25,7 +34,6 @@ class GameStatsDto {
 }
 
 export class GameDto {
-
 	@IsOptional()
 	@IsEnum(GameStatus)
 	status: GameStatus;
@@ -46,5 +54,4 @@ export class GameDto {
 	@IsOptional()
 	@IsEnum(GameType)
 	gameType?: GameType;
-
 }

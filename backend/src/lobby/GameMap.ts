@@ -52,7 +52,7 @@ export class GameMap {
 		);
 		player.on(
 			'update_gameobject',
-			function (data) {
+			function (data: any) {
 				player.data = data;
 				this.emitAll('update_gameobject', data);
 			}.bind(this),

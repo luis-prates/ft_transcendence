@@ -19,13 +19,22 @@ export class AppController {
 	}
 
 	@Post('v2/hello/sd/dsd')
-	d(as): string {
+	d(as: any): string {
 		return this.appService.getHello();
 	}
 
 	@Get('v2/image/:imageName')
-	getImage(@Param('imageName') imageName: string, @Res() res: Response): void {
-		const imagePath = path.join(__dirname, './', 'public', 'images', imageName);
+	getImage(
+		@Param('imageName') imageName: string,
+		@Res() res: Response,
+	): void {
+		const imagePath = path.join(
+			__dirname,
+			'./',
+			'public',
+			'images',
+			imageName,
+		);
 		const imageStream = fs.createReadStream(imagePath);
 
 		imageStream.pipe(res);
