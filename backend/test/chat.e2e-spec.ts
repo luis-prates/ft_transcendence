@@ -46,6 +46,7 @@ describe('Chat', () => {
                 .withBody(dto)
                 .expectStatus(201)
                 .stores(`userAt${dto.id}`, 'access_token')
+                .stores(`user${dto.id}Id`, 'dto.id')
         }
 
         // connect all users to the socket
@@ -74,6 +75,9 @@ describe('Chat', () => {
         // Clean up listeners after each test.
         for (let listener of listeners) {
             listener.client.off('message', listener.handler);
+            listener.client.off('user-added', listener.handler);
+            listener.client.off('user-removed', listener.handler);
+            listener.client.off('user-muted', listener.handler);
             // add more events here if needed
         }
         listeners = [];
@@ -401,31 +405,199 @@ describe('Chat', () => {
             )
         });
     });
-    // describe('Add users to channels', () => {
-    //     return (
-    //         pactum
-    //             .spec()
-    //             .post('/chat/channels/$S{publicChannelId}/users/4')
-    //             .
-    //     )
-        // Retrieve the channel list that a user can inspect and join
+    describe('Channel management', () => {
+        it('should let a new user join the public channel and receive user-added event', async () => {
+        const publicChannelId = pactum.stash.getDataStore()['publicChannelId'];
+        const user4Id = pactum.stash.getDataStore()['user4Id'];
+        // start listening to 'user-added' event for users 1 to 3 before sending the request
+        const userAddedPromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
+            const handler = ({channelId, userId}) => {
+                expect(channelId).toBe(publicChannelId);
+                expect(userId).toBe(user4Id);
+                resolve(undefined);
+            };
+            client.on('user-added', handler);
+            listeners.push({client, handler});
+        }));
+        await pactum
+            .spec()
+            .post('/chat/channels/$S{publicChannelId}/join')
+            .withHeaders({ Authorization : 'Bearer $S{userAt4}' })
+            .expectStatus(201)
+        await Promise.all(userAddedPromises);
+        });
+        it('should not let user4 join the private channel', async () => {
+            return pactum
+                .spec()
+                .post('/chat/channels/$S{privateChannelId}/join')
+                .withHeaders({ Authorization : 'Bearer $S{userAt4}' })
+                .expectStatus(403)
+        });
+        it('should let a new user leave the public channel and others receive user-removed event', async () => {
+            const publicChannelId = pactum.stash.getDataStore()['publicChannelId'];
+            const user4Id = pactum.stash.getDataStore()['user4Id'];
+            // start listening to 'user-removed' event for users 1 to 3 before sending the request
+            const userRemovedPromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
+                const handler = ({channelId, userId}) => {
+                    expect(channelId).toBe(publicChannelId);
+                    expect(userId).toBe(user4Id);
+                    resolve(undefined);
+                };
+                client.on('user-removed', handler);
+                listeners.push({client, handler});
+            }));
+            await pactum
+                .spec()
+                .delete('/chat/channels/$S{publicChannelId}/leave')
+                .withHeaders({ Authorization : 'Bearer $S{userAt4}' })
+                .expectStatus(204)
+            await Promise.all(userRemovedPromises);
+        });
+        it('should let a new user join the private channel and receive user-added event', async () => {
+            const privateChannelId = pactum.stash.getDataStore()['privateChannelId'];
+            const user4Id = pactum.stash.getDataStore()['user4Id'];
+            // start listening to 'user-added' event for users 1 to 3 before sending the request
+            const userAddedPromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
+                const handler = ({channelId, userId}) => {
+                    expect(channelId).toBe(privateChannelId);
+                    expect(userId).toBe(user4Id);
+                    resolve(undefined);
+                };
+                client.on('user-added', handler);
+                listeners.push({client, handler});
+            }));
+            await pactum
+                .spec()
+                .post('/chat/channels/$S{privateChannelId}/users/$S{user4Id}')
+                .withHeaders({ Authorization : 'Bearer $S{userAt1}' })
+                .expectStatus(201)
+            await Promise.all(userAddedPromises);
+        });
+        it('should let users in the private channel receive messages from user4', async () => {
+            const privateChannelId = pactum.stash.getDataStore()['privateChannelId'];
+            // We'll make an array of promises for every client that needs to receive the message
+            const messagePromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
+                // We'll make a handler for each client that will resolve the promise when the message is received
+                const handler = ({ channelId, message }) => {
+                    expect(channelId).toBe(privateChannelId);
+                    expect(message).toBe('Hello from User4!');
+                    resolve(undefined);
+                };
+                // once a message is received, we'll call the handler which resolves the promise
+                client.on('message', handler);
+                listeners.push({ client, handler });
+            }));
+            // setImmediate will run the code after the current event loop
+            // This is needed because the client.on('message') is not yet set up
+            setImmediate(() => clients[3].emit('message', { "channelId": privateChannelId, "message": "Hello from User4!" }));
+            // the Promise.all method will wait for all the promises to resolve
+            await Promise.all(messagePromises);
+        });
+        it('should let the channel owner kick a user from the private channel and others receive a removed-user event', async () => {
+            const privateChannelId = pactum.stash.getDataStore()['privateChannelId'];
+            const user4Id = pactum.stash.getDataStore()['user4Id'];
+            // start listening to 'user-removed' event for users 1 to 3 before sending the request
+            const userRemovedPromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
+                const handler = ({channelId, userId}) => {
+                    expect(channelId).toBe(privateChannelId);
+                    expect(userId).toBe(user4Id);
+                    resolve(undefined);
+                };
+                client.on('user-removed', handler);
+                listeners.push({client, handler});
+            }));
+            await pactum
+                .spec()
+                .delete('/chat/channels/$S{privateChannelId}/users/$S{user4Id}')
+                .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+                .expectStatus(204)
+            await Promise.all(userRemovedPromises);
+        });
+        it('should let a new user join the protected channel and others receive user-added event', async () => {
+            const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
+            const user4Id = pactum.stash.getDataStore()['user4Id'];
+            // start listening to 'user-added' event for users 1 to 3 before sending the request
+            const userAddedPromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
+                const handler = ({channelId, userId}) => {
+                    expect(channelId).toBe(protectedChannelId);
+                    expect(userId).toBe(user4Id);
+                    resolve(undefined);
+                };
+                client.on('user-added', handler);
+                listeners.push({client, handler});
+            }
+            ));
+            await pactum
+                .spec()
+                .post('/chat/channels/$S{protectedChannelId}/join')
+                .withHeaders({ Authorization: 'Bearer $S{userAt4}' })
+                .withBody({password: '123'})
+                .expectStatus(201)
+            await Promise.all(userAddedPromises);
+        });
+        // TODO: add muted user event
+        it('should mute a user and let others receive a muted-user event', async () => {
+            const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
+            const user4Id = pactum.stash.getDataStore()['user4Id'];
+            const userMutedPromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
+                const handler = ({channelId, userId}) => {
+                    expect(channelId).toBe(protectedChannelId);
+                    expect(userId).toBe(user4Id);
+                    resolve(undefined);
+                };
+                client.on('user-muted', handler);
+                listeners.push({client, handler});
+            }
+            ));
+            await pactum
+                .spec()
+                .post('/chat/channels/$S{protectedChannelId}/mute/$S{user4Id}')
+                .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+                .expectStatus(201)
+            await Promise.all(userMutedPromises);
+        });
+        it('should make sure the other users do not receive messages from the muted user and user4 receives error message', async () => {
+            const channelId = pactum.stash.getDataStore()['privateChannelId'];
+            const user4Id = pactum.stash.getDataStore()['user4Id'];
 
-        // Retrieve the channel list the user is already in
+            // This promise is for checking if an event with 'You are muted' was sent back to sender
+            const user4ErrorPromise = new Promise((resolve, reject) => {
+                const handler = ({ message }) => {
+                    expect(message).toBe('You are muted in this channel.');
+                    resolve(undefined);
+                };
+                clients[3].on('error', handler);
+                listeners.push({ client: clients[3], handler });
+            });
 
-        // Retrieve all of a user's messages accross all channels
+            // These other promises will resolve if no message is received from user4 for 1 second
+            const messagePromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
+                // We'll make a handler for each client that will resolve the promise when the message is received
+                const handler = ({ channelId: receivedChannelId, message }) => {
+                    // If any of these clients receives a message from user4, reject the promise
+                    if(receivedChannelId === channelId) {
+                        reject(new Error(`User ${user4Id} is muted but their message was received.`));
+                    }
+                };
+                // once a message is received, we'll call the handler
+                client.on('message', handler);
+                listeners.push({ client, handler });
 
-        // Retrieve all of a user's messages for a specific channel
+                // if no message is received after 1 second, resolve the promise
+                setTimeout(resolve, 1000);
+            }));
 
-        // User4 joins to the public channel
-        // Other users should be notified about a new user in the channel
-        // And should see his messages
+            setImmediate(() => clients[3].emit('message', { "channelId": channelId, "message": "Hello from Muted User4!" }));
 
-        // Make the owner user1 kick user4 out of the public channel
-        // Other users should be notified about the user leaving the channel
-
-        // Invite a fourth user to the private channel
-        // And let the fourth user leave the private channel, others should be notified
-
+            try {
+                await Promise.all([user4ErrorPromise, ...messagePromises]);
+                // If we get here without rejecting, that means no client received a message from user4, so the test passes
+            } catch (error) {
+                // If a client received a message from user4, we'll end up here, so the test fails
+                throw error;
+            }
+        });
+    });
         // User4 joins the protected channel by knowing the password
         // And let the owner make him admin
 

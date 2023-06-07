@@ -330,8 +330,12 @@ export class ChatService {
             throw new NotFoundException('Channel not found');
         }
 
-        if (channel.type == 'PRIVATE' && channel.password !== password) {
+        if (channel.type == 'PROTECTED' && channel.password !== password) {
             throw new BadRequestException('Password is incorrect');
+        }
+
+        if (channel.type == 'PRIVATE') {
+            throw new ForbiddenException('Cannot join a private channel without an invite');
         }
 
         const channelUser = await this.prisma.channelUser.findUnique({
@@ -430,6 +434,8 @@ export class ChatService {
                 isMuted: true,
             },
         });
+        // emit event that user was muted
+        this.events.emit('user-muted', { channelId, userId });
     }
 
     async makeAdmin(channelId: number, userId: number) {
@@ -566,5 +572,22 @@ export class ChatService {
                 channelId: channelId
             }
         });
+    }
+
+    async isUserMutedInChannel(userId: number, channelId: number) {
+        const channelUser = await this.prisma.channelUser.findUnique({
+            where: {
+                userId_channelId: {
+                    channelId: channelId,
+                    userId: userId
+                }
+            }
+        });
+
+        if (!channelUser) {
+            throw new NotFoundException('User is not part of this channel');
+        }
+
+        return channelUser.isMuted;
     }
 }

@@ -72,6 +72,24 @@ export class ChatGateway implements OnGatewayConnection {
             // Send a message to all users in the channel that a user has been removed
             client.broadcast.to(`channel-${channelId}`).emit('user-removed', { channelId, userId, message: `User ${userId} has left the channel ${channelId}` });
         });
+        this.chatService.events.on('user-muted-in-channel', async ({ channelId, userId }) => {
+            const socketId : string = this.userIdToSocketId.get(userId);
+            if (!socketId) {
+                // if socketId not found, client is not currently connected and doesnt need the websocket event
+                return;
+            }
+
+            const client: Socket = this.socketMap.get(socketId);
+            if (!client) {
+                console.error(`No client socket found for socketId ${socketId}`);
+                return;
+            }
+
+            client.emit('user-muted', { channelId, message: `You have been muted in channel ${channelId}` });
+
+            // Send a message to all users in the channel that a user has been muted
+            client.broadcast.to(`channel-${channelId}`).emit('user-muted', { channelId, userId, message: `User ${userId} has been muted in channel ${channelId}` });
+        });
 
         // ONLY FOR TESTING: we sleep for 0.5 seconds to make sure the global channel is created before we start testing
         // sleep(1000);
@@ -150,6 +168,14 @@ export class ChatGateway implements OnGatewayConnection {
             console.error(`User ${senderId} is not allowed to send a message in channel ${channelId}.`);
             client.emit('error', { message: 'You are not allowed to send a message in this channel.' });
             return { event: 'error', data: 'You are not allowed to send a message in this channel.' };
+        }
+
+        // if user is muted, he cannot send messages
+        const isMuted = await this.chatService.isUserMutedInChannel(senderId, channelId);
+        if (isMuted) {
+            console.error(`User ${senderId} is muted in channel ${channelId}.`);
+            client.emit('error', { message: 'You are muted in this channel.' });
+            return { event: 'error', data: 'You are muted in this channel.' };
         }
 
         // Finally, try to store the message and emit it to others in the channel
