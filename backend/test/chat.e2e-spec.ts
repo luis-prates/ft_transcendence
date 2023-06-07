@@ -11,7 +11,7 @@ describe('Chat', () => {
 
     const baseImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='; // The smallest base64 image from https://gist.github.com/ondrek/7413434
     // for logging in
-    const dtos: AuthDto[] = Array.from({ length: 3 }, (_, i) => {
+    const dtos: AuthDto[] = Array.from({ length: 4 }, (_, i) => {
         const id = i + 1; // as your ids start from 1
         return {
             id: id,
@@ -278,7 +278,7 @@ describe('Chat', () => {
             // emit the message event as user1
             // clients[0].emit('message', { "channelId": publicChannelId, "message": "Hello World!" });
             // expect the message to be received by user2 and user3
-            const messagePromises = clients.slice(1).map(client => new Promise((resolve, reject) => {
+            const messagePromises = clients.slice(1, 3).map(client => new Promise((resolve, reject) => {
                 const handler = ({channelId, message}) => {
                     expect(channelId).toBe(publicChannelId);
                     expect(message).toBe('Hello from Public!');
@@ -293,7 +293,7 @@ describe('Chat', () => {
         it('should send a message to the private channel', async () => {
             const privateChannelId = pactum.stash.getDataStore()['privateChannelId'];
             // We'll make an array of promises for every client that needs to receive the message
-            const messagePromises = clients.slice(1).map(client => new Promise((resolve, reject) => {
+            const messagePromises = clients.slice(1, 3).map(client => new Promise((resolve, reject) => {
                 // We'll make a handler for each client that will resolve the promise when the message is received
                 const handler = ({channelId, message}) => {
                     expect(channelId).toBe(privateChannelId);
@@ -313,7 +313,7 @@ describe('Chat', () => {
         it('should send a message to the protected channel', async () => {
             const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
             // We'll make an array of promises for every client that needs to receive the message
-            const messagePromises = clients.slice(1).map(client => new Promise((resolve, reject) => {
+            const messagePromises = clients.slice(1, 3).map(client => new Promise((resolve, reject) => {
                 // We'll make a handler for each client that will resolve the promise when the message is received
                 const handler = ({channelId, message}) => {
                     expect(channelId).toBe(protectedChannelId);
@@ -351,7 +351,63 @@ describe('Chat', () => {
             // the Promise.all method will wait for all the promises to resolve
             await messagePromise;
         });
-
+    });
+    describe('Retrieve channels & messages', () => {
+        it('should retrieve all the channels', () => {
+            return (
+                pactum
+                    .spec()
+                    .get('/chat/channels')
+                    .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+                    .expectStatus(200)
+                    .expectBodyContains('myPublicChannel')
+                    .expectBodyContains('myPrivateChannel')
+                    .expectBodyContains('myProtectedChannel')
+            );
+        });
+        it('should retrieve the channels the current user is in', () => {
+            return (
+                pactum
+                    .spec()
+                    .get('/chat/channels/user')
+                    .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+                    .expectStatus(200)
+                    .expectBodyContains('myPublicChannel')
+                    .expectBodyContains('myPrivateChannel')
+                    .expectBodyContains('myProtectedChannel')
+            );
+        });
+        it('should retrieve all the messages for the current user', () => {
+            return (
+                pactum
+                    .spec()
+                    .get('/chat/channels/user/messages')
+                    .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+                    .expectStatus(200)
+                    .expectBodyContains('Hello from Public!')
+                    .expectBodyContains('Hello from Private!')
+                    .expectBodyContains('Hello from Protected!')
+                    .expectBodyContains('Hello from DM!')
+            );
+        });
+        it('should retrieve all the messages of current user for a channel', () => {
+            return (
+                pactum
+                    .spec()
+                    .get('/chat/channels/$S{publicChannelId}/messages')
+                    .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+                    .expectStatus(200)
+                    .expectBodyContains('Hello from Public!')
+            )
+        });
+    });
+    // describe('Add users to channels', () => {
+    //     return (
+    //         pactum
+    //             .spec()
+    //             .post('/chat/channels/$S{publicChannelId}/users/4')
+    //             .
+    //     )
         // Retrieve the channel list that a user can inspect and join
 
         // Retrieve the channel list the user is already in
@@ -379,7 +435,6 @@ describe('Chat', () => {
 
         // Take away the admin privileges of user4
 
-    });
     describe('Disconnect', () => {
         it('should disconnect all the users', async () => {
             // Tell all the clients to disconnect
