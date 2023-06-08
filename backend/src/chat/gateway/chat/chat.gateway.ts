@@ -72,6 +72,7 @@ export class ChatGateway implements OnGatewayConnection {
             // Send a message to all users in the channel that a user has been removed
             client.broadcast.to(`channel-${channelId}`).emit('user-removed', { channelId, userId, message: `User ${userId} has left the channel ${channelId}` });
         });
+
         this.chatService.events.on('user-muted-in-channel', async ({ channelId, userId }) => {
             const socketId : string = this.userIdToSocketId.get(userId);
             if (!socketId) {
@@ -89,6 +90,63 @@ export class ChatGateway implements OnGatewayConnection {
 
             // Send a message to all users in the channel that a user has been muted
             client.broadcast.to(`channel-${channelId}`).emit('user-muted', { channelId, userId, message: `User ${userId} has been muted in channel ${channelId}` });
+        });
+
+        this.chatService.events.on('user-unmuted-in-channel', async ({ channelId, userId }) => {
+            const socketId : string = this.userIdToSocketId.get(userId);
+            if (!socketId) {
+                // if socketId not found, client is not currently connected and doesnt need the websocket event
+                return;
+            }
+
+            const client: Socket = this.socketMap.get(socketId);
+            if (!client) {
+                console.error(`No client socket found for socketId ${socketId}`);
+                return;
+            }
+
+            client.emit('user-unmuted', { channelId, message: `You have been unmuted in channel ${channelId}` });
+
+            // Send a message to all users in the channel that a user has been unmuted
+            client.broadcast.to(`channel-${channelId}`).emit('user-unmuted', { channelId, userId, message: `User ${userId} has been unmuted in channel ${channelId}` });
+        });
+
+        this.chatService.events.on('user-promoted-in-channel', async ({ channelId, userId }) => {
+            const socketId : string = this.userIdToSocketId.get(userId);
+            if (!socketId) {
+                // if socketId not found, client is not currently connected and doesnt need the websocket event
+                return;
+            }
+
+            const client: Socket = this.socketMap.get(socketId);
+            if (!client) {
+                console.error(`No client socket found for socketId ${socketId}`);
+                return;
+            }
+
+            client.emit('user-promoted', { channelId, message: `You have been promoted in channel ${channelId}` });
+
+            // Send a message to all users in the channel that a user has been promoted
+            client.broadcast.to(`channel-${channelId}`).emit('user-promoted', { channelId, userId, message: `User ${userId} has been promoted in channel ${channelId}` });
+        });
+
+        this.chatService.events.on('user-demoted-in-channel', async ({ channelId, userId }) => {
+            const socketId : string = this.userIdToSocketId.get(userId);
+            if (!socketId) {
+                // if socketId not found, client is not currently connected and doesnt need the websocket event
+                return;
+            }
+
+            const client: Socket = this.socketMap.get(socketId);
+            if (!client) {
+                console.error(`No client socket found for socketId ${socketId}`);
+                return;
+            }
+
+            client.emit('user-demoted', { channelId, message: `You have been demoted in channel ${channelId}` });
+
+            // Send a message to all users in the channel that a user has been demoted
+            client.broadcast.to(`channel-${channelId}`).emit('user-demoted', { channelId, userId, message: `User ${userId} has been demoted in channel ${channelId}` });
         });
 
         // ONLY FOR TESTING: we sleep for 0.5 seconds to make sure the global channel is created before we start testing
@@ -145,37 +203,31 @@ export class ChatGateway implements OnGatewayConnection {
         // First check if the payload is valid
         try {
             // in case the request was sent as raw string, we need to parse it
-            console.log("Received message: ", payload);
+            console.log(`User ${client.data.userId} received message from user ${senderId}: ${payload.message}`);
             if (typeof payload == 'string') {
                 payload = JSON.parse(payload);
             }
-            console.log("Parsed payload: ", payload);
             channelId = Number(payload.channelId);
-            console.log("channelId parsed: ", channelId);
             message = payload.message;
         } catch (error) {
-            console.error("Failed to parse payload or extract required parameters.", error);
-            client.emit('error', { message: 'Invalid message format.' });
+            // console.error("Failed to parse payload or extract required parameters.", error);
             return { event: 'error', data: 'Invalid message format.' };
         }
 
         // Next, check if the user is allowed to send a message in the channel
         const userChannels = await this.chatService.getUserChannels(Number(senderId));
-        console.log("channelId: ", channelId);
-        console.log("User channels: ", userChannels);
 
         if (!userChannels.includes(channelId)) {
-            console.error(`User ${senderId} is not allowed to send a message in channel ${channelId}.`);
-            client.emit('error', { message: 'You are not allowed to send a message in this channel.' });
-            return { event: 'error', data: 'You are not allowed to send a message in this channel.' };
+            // console.error(`User ${senderId} is not allowed to send a message in channel ${channelId}.`);
+            return { event: 'unauthorized', data: 'You are not allowed to send a message in this channel.' };
         }
 
         // if user is muted, he cannot send messages
         const isMuted = await this.chatService.isUserMutedInChannel(senderId, channelId);
         if (isMuted) {
-            console.error(`User ${senderId} is muted in channel ${channelId}.`);
-            client.emit('error', { message: 'You are muted in this channel.' });
-            return { event: 'error', data: 'You are muted in this channel.' };
+            // note: giving any error event, disconnects hoppscotch, so be careful
+            // console.error(`User ${senderId} is muted in channel ${channelId}.`);
+            return { event: 'muted-message', data: 'You are muted in this channel.' };
         }
 
         // Finally, try to store the message and emit it to others in the channel
@@ -186,8 +238,8 @@ export class ChatGateway implements OnGatewayConnection {
             return { event: 'message', data: 'Message sent successfully.' };
         } catch (error) {
             console.error("Failed to store the message.", error);
-            client.emit('error', { message: 'There was an error sending your message.' });
-            return { event: 'error', data: 'There was an error sending your message.' };
+            // client.emit('error', { message: 'There was an error sending your message.' });
+            return { event: 'send-failure', data: 'There was an error sending your message.' };
         }
     }
 }

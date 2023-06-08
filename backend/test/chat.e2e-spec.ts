@@ -78,6 +78,10 @@ describe('Chat', () => {
             listener.client.off('user-added', listener.handler);
             listener.client.off('user-removed', listener.handler);
             listener.client.off('user-muted', listener.handler);
+            listener.client.off('muted-message', listener.handler);
+            listener.client.off('user-unmuted', listener.handler);
+            listener.client.off('user-promoted', listener.handler);
+            listener.client.off('user-demoted', listener.handler);
             // add more events here if needed
         }
         listeners = [];
@@ -278,7 +282,6 @@ describe('Chat', () => {
         it('should send a message to the public channel', async () => {
             // get publicChannelId as a string
             const publicChannelId =  pactum.stash.getDataStore()['publicChannelId'];
-            console.log("publicChannelId: ", publicChannelId);
             // emit the message event as user1
             // clients[0].emit('message', { "channelId": publicChannelId, "message": "Hello World!" });
             // expect the message to be received by user2 and user3
@@ -473,7 +476,7 @@ describe('Chat', () => {
                 .expectStatus(201)
             await Promise.all(userAddedPromises);
         });
-        it('should let users in the private channel receive messages from user4', async () => {
+        it('should let users in the private channel receive messages from the new user', async () => {
             const privateChannelId = pactum.stash.getDataStore()['privateChannelId'];
             // We'll make an array of promises for every client that needs to receive the message
             const messagePromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
@@ -539,6 +542,7 @@ describe('Chat', () => {
         it('should mute a user and let others receive a muted-user event', async () => {
             const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
             const user4Id = pactum.stash.getDataStore()['user4Id'];
+
             const userMutedPromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
                 const handler = ({channelId, userId}) => {
                     expect(channelId).toBe(protectedChannelId);
@@ -547,8 +551,7 @@ describe('Chat', () => {
                 };
                 client.on('user-muted', handler);
                 listeners.push({client, handler});
-            }
-            ));
+            }));
             await pactum
                 .spec()
                 .post('/chat/channels/$S{protectedChannelId}/mute/$S{user4Id}')
@@ -556,17 +559,17 @@ describe('Chat', () => {
                 .expectStatus(201)
             await Promise.all(userMutedPromises);
         });
-        it('should make sure the other users do not receive messages from the muted user and user4 receives error message', async () => {
-            const channelId = pactum.stash.getDataStore()['privateChannelId'];
+        it('should make sure the other users do not receive messages from the muted user and muted user receives error message', async () => {
+            const channelId = pactum.stash.getDataStore()['protectedChannelId'];
             const user4Id = pactum.stash.getDataStore()['user4Id'];
 
             // This promise is for checking if an event with 'You are muted' was sent back to sender
-            const user4ErrorPromise = new Promise((resolve, reject) => {
-                const handler = ({ message }) => {
+            const userErrorPromise = new Promise((resolve, reject) => {
+                const handler = (message) => {
                     expect(message).toBe('You are muted in this channel.');
                     resolve(undefined);
                 };
-                clients[3].on('error', handler);
+                clients[3].on('muted-message', handler);
                 listeners.push({ client: clients[3], handler });
             });
 
@@ -587,15 +590,79 @@ describe('Chat', () => {
                 setTimeout(resolve, 1000);
             }));
 
-            setImmediate(() => clients[3].emit('message', { "channelId": channelId, "message": "Hello from Muted User4!" }));
+            setImmediate(() => clients[3].emit('message', { "channelId": channelId, "message": "Hello from Muted User!" }));
 
             try {
-                await Promise.all([user4ErrorPromise, ...messagePromises]);
+                // await Promise.all([userErrorPromise]);
+                await Promise.all([userErrorPromise, ...messagePromises]);
                 // If we get here without rejecting, that means no client received a message from user4, so the test passes
             } catch (error) {
                 // If a client received a message from user4, we'll end up here, so the test fails
                 throw error;
             }
+        });
+        it('should unmute a user and let others receive a unmuted-user event', async () => {
+            const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
+            const user4Id = pactum.stash.getDataStore()['user4Id'];
+
+            const userUnmutedPromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
+                const handler = ({channelId, userId}) => {
+                    expect(channelId).toBe(protectedChannelId);
+                    expect(userId).toBe(user4Id);
+                    resolve(undefined);
+                };
+                client.on('user-unmuted', handler);
+                listeners.push({client, handler});
+            }
+            ));
+            await pactum
+                .spec()
+                .post('/chat/channels/$S{protectedChannelId}/unmute/$S{user4Id}')
+                .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+                .expectStatus(201)
+            await Promise.all(userUnmutedPromises);
+        });
+        it('should make a user admin and let others receive a promoted-user event', async () => {
+            const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
+            const user4Id = pactum.stash.getDataStore()['user4Id'];
+
+            const userPromotedPromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
+                const handler = ({channelId, userId, message}) => {
+                    expect(channelId).toBe(protectedChannelId);
+                    expect(userId).toBe(user4Id);
+                    expect(message).toBe(`User ${user4Id} has been promoted in channel ${protectedChannelId}`);
+                    resolve(undefined);
+                }
+                client.on('user-promoted', handler);
+                listeners.push({client, handler});
+            }));
+            await pactum
+                .spec()
+                .post('/chat/channels/$S{protectedChannelId}/admin/$S{user4Id}')
+                .withHeaders( {Authorization : 'Bearer $S{userAt1}' })
+                .expectStatus(201)
+            await Promise.all(userPromotedPromises);
+        });
+        it('should demote a user and let others receive a demoted-user event', async () => {
+            const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
+            const user4Id = pactum.stash.getDataStore()['user4Id'];
+
+            const userDemotedPromises = clients.slice(0, 3).map(client => new Promise((resolve, reject) => {
+                const handler = ({channelId, userId, message}) => {
+                    expect(channelId).toBe(protectedChannelId);
+                    expect(userId).toBe(user4Id);
+                    expect(message).toBe(`User ${user4Id} has been demoted in channel ${protectedChannelId}`);
+                    resolve(undefined);
+                }
+                client.on('user-demoted', handler);
+                listeners.push({client, handler});
+            }));
+            await pactum
+                .spec()
+                .post('/chat/channels/$S{protectedChannelId}/users/$S{user4Id}/demote')
+                .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+                .expectStatus(201)
+            await Promise.all(userDemotedPromises);
         });
     });
         // User4 joins the protected channel by knowing the password

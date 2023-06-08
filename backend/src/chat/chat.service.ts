@@ -422,6 +422,11 @@ export class ChatService {
             throw new NotFoundException('User is not part of this channel');
         }
 
+        // if muser is already muted, throw error
+        if (channelUser.isMuted) {
+            throw new BadRequestException('User is already muted');
+        }
+
         // Mute the user
         await this.prisma.channelUser.update({
             where: {
@@ -435,7 +440,42 @@ export class ChatService {
             },
         });
         // emit event that user was muted
-        this.events.emit('user-muted', { channelId, userId });
+        this.events.emit('user-muted-in-channel', { channelId, userId });
+    }
+
+    async unmuteUser(channelId: number, userId: number) {
+        const channelUser = await this.prisma.channelUser.findUnique({
+            where: {
+                userId_channelId: {
+                    channelId: channelId,
+                    userId: userId
+                }
+            }
+        });
+
+        if (!channelUser) {
+            throw new NotFoundException('User is not part of this channel');
+        }
+
+        // if user is already unmuted, throw error
+        if (!channelUser.isMuted) {
+            throw new BadRequestException('User is already unmuted');
+        }
+
+        // Unmute the user
+        await this.prisma.channelUser.update({
+            where: {
+                userId_channelId: {
+                    channelId: channelId,
+                    userId: userId
+                }
+            },
+            data: {
+                isMuted: false,
+            },
+        });
+        // emit event that user was unmuted
+        this.events.emit('user-unmuted-in-channel', { channelId, userId });
     }
 
     async makeAdmin(channelId: number, userId: number) {
@@ -464,6 +504,8 @@ export class ChatService {
                 isAdmin: true,
             },
         });
+        // emit an event someone was promoted to admin
+        this.events.emit('user-promoted-in-channel', { channelId, userId });
     }
 
     // Demote admins back to normal users
@@ -506,6 +548,9 @@ export class ChatService {
                 isAdmin: false
             }
         });
+
+        // emit an event someone was demoted from admin
+        this.events.emit('user-demoted-in-channel', { channelId, userId: targetUserId });
     }
 
     // Owner can delete a channel
