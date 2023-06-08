@@ -19,7 +19,7 @@ import { ChatModule } from './chat/chat.module';
 			isGlobal: true,
 		}),
 		FriendshipModule,
-		ChatModule
+		ChatModule,
 	],
 	controllers: [AppController, FriendshipController],
 	providers: [AppService, FriendshipService],

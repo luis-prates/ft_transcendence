@@ -1,14 +1,14 @@
 import { Logger } from '@nestjs/common';
 
 export class TestLogger extends Logger {
-    private logs = [];
+	private logs = [];
 
-    log(message: string) {
-        super.log(message);
-        this.logs.push(message);
-    }
+	log(message: string) {
+		super.log(message);
+		this.logs.push(message);
+	}
 
-    getLogs() {
-        return this.logs;
-    }
+	getLogs() {
+		return this.logs;
+	}
 }

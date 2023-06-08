@@ -1,9 +1,8 @@
-import { FriendReqStatus } from "@prisma/client";
-import { Transform } from "class-transformer";
-import { IsNumber, IsNotEmpty, IsEnum } from "class-validator";
+import { FriendReqStatus } from '@prisma/client';
+import { Transform } from 'class-transformer';
+import { IsNumber, IsNotEmpty, IsEnum } from 'class-validator';
 
 export class FriendshipDto {
-	
 	@Transform(({ value }) => parseInt(value))
 	@IsNumber()
 	@IsNotEmpty()
@@ -11,6 +10,4 @@ export class FriendshipDto {
 
 	@IsEnum(FriendReqStatus)
 	status?: FriendReqStatus;
-
-
 }

@@ -1,1 +1,1 @@
-export * from './friendship.dto'
+export * from './friendship.dto';

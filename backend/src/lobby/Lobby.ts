@@ -6,13 +6,13 @@ import * as path from 'path';
 import { Games } from 'src/ping_pong/Games';
 import { ChatController } from 'src/chat/ChatController';
 
-export interface TableData {
+export type TableData = {
 	className: string;
 	x: number;
 	y: number;
 	objectId: string;
 	pontoEvento: { x: number; y: number; isFree: boolean }[];
-}
+};
 
 export class Lobby {
 	public game: Games = new Games();
@@ -24,7 +24,7 @@ export class Lobby {
 		console.log('lobby created');
 		const pathMap = path.join(__dirname, '..', 'public', 'maps');
 		const files = fs.readdirSync(pathMap);
-		files.forEach((file) => {
+		files.forEach(file => {
 			if (file.includes('.json')) {
 				const map = new GameMap(file);
 				this.gameMaps.set(map.objectId, map);
@@ -33,11 +33,14 @@ export class Lobby {
 	}
 
 	public connection(socket: Socket): void {
-		socket.once('connection_lobby', (data) => {
-			let player = Lobby.players.find((e) => e.objectId == data.objectId);
+		socket.once('connection_lobby', data => {
+			let player = Lobby.players.find(e => e.objectId == data.objectId);
 
-			if (player) player.setSocket(socket);
-			else player = new Player(socket, data.objectId);
+			if (player) {
+				player.setSocket(socket);
+			} else {
+				player = new Player(socket, data.objectId);
+			}
 			this.game.connection(player);
 			this.chatController.connection(player);
 			console.log('new connection: ', player.objectId);
@@ -45,9 +48,15 @@ export class Lobby {
 		socket.on(
 			'join_map',
 			function (data: any) {
-				const player = Lobby.players.find((e) => e.objectId == data.objectId);
-				if (!player) return;
-				this.gameMaps.get(data.map.name)?.join(player, data.map?.position);
+				const player = Lobby.players.find(
+					e => e.objectId == data.objectId,
+				);
+				if (!player) {
+					return;
+				}
+				this.gameMaps
+					.get(data.map.name)
+					?.join(player, data.map?.position);
 			}.bind(this),
 		);
 	}
@@ -62,7 +71,9 @@ export class SocketSingleton {
 	}
 
 	on(event: string, listener: (...args: any[]) => void) {
-		if (this.events.includes(event)) return;
+		if (this.events.includes(event)) {
+			return;
+		}
 		this.socket.on(event, listener);
 		this.events.push(event);
 	}
@@ -72,7 +83,7 @@ export class SocketSingleton {
 	}
 	off(event: string) {
 		this.socket.off(event, () => {});
-		this.events = this.events.filter((e) => e !== event);
+		this.events = this.events.filter(e => e !== event);
 	}
 
 	get id(): string {

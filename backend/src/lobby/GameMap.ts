@@ -9,7 +9,7 @@ export class GameMap {
 	public gameObjets: any[] = [];
 	private map: any;
 
-	constructor(mapFile: string = 'map_1.json') {
+	constructor(mapFile = 'map_1.json') {
 		const jsonPath = path.join(__dirname, '..', 'public/maps', mapFile);
 		const jsonData = fs.readFileSync(jsonPath, 'utf-8');
 		const jsonObject = JSON.parse(jsonData);
@@ -19,10 +19,16 @@ export class GameMap {
 	public join(player: Player, position?: { x: number; y: number }): void {
 		GameMap.offAll(player);
 		console.log('join_map: ', player.objectId, this.map.name);
-		if (player.map) player.map.removePlayer(player);
+		if (player.map) {
+			player.map.removePlayer(player);
+		}
 		player.map = this;
-		const clientSocket = this.players.find((clientSocket) => clientSocket.objectId === player.objectId);
-		const data: any[] = this.players.filter((e) => e.objectId != player.objectId).map((e) => e.data);
+		const clientSocket = this.players.find(
+			clientSocket => clientSocket.objectId === player.objectId,
+		);
+		const data: any[] = this.players
+			.filter(e => e.objectId != player.objectId)
+			.map(e => e.data);
 		data.push(...this.gameObjets);
 		player.data.x = position?.x || this.map.start_position.x;
 		player.data.y = position?.y || this.map.start_position.y;
@@ -56,21 +62,26 @@ export class GameMap {
 	}
 
 	public emitAll(event: string, data: any, ignorerPlayer?: Player): void {
-		this.players.forEach((clientSocket) => {
-			if (ignorerPlayer === undefined || clientSocket.objectId !== ignorerPlayer.objectId) clientSocket.emit(event, data);
+		this.players.forEach(clientSocket => {
+			if (
+				ignorerPlayer === undefined ||
+				clientSocket.objectId !== ignorerPlayer.objectId
+			) {
+				clientSocket.emit(event, data);
+			}
 		});
 	}
 
 	public removePlayer(player: Player): void {
 		GameMap.offAll(player);
-		this.players = this.players.filter((clientSocket) => {
+		this.players = this.players.filter(clientSocket => {
 			return clientSocket.objectId !== player.objectId;
 		});
 		this.emitAll('remove_gameobject', player.data, player);
 	}
 
 	public removeGameObject(objectId: string): void {
-		this.gameObjets = this.gameObjets.filter((e) => e.objectId != objectId);
+		this.gameObjets = this.gameObjets.filter(e => e.objectId != objectId);
 		this.emitAll('remove_gameobject', { objectId: objectId });
 	}
 
