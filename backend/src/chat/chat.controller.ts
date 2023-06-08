@@ -119,4 +119,12 @@ export class ChatController {
     ) {
         return this.chatService.demoteAdmin(Number(req.user.id), Number(channelId), Number(userId));
     }
+
+    // Change channel password
+    @Post(':channelId/password')
+    @UseGuards(RolesGuard)
+    @Roles('admin', 'owner')
+    async changePassword(@Param('channelId') channelId: string, @Body() joinChannelDto: JoinChannelDto) {
+        return this.chatService.changeChannelPassword(joinChannelDto, Number(channelId));
+    }
 }

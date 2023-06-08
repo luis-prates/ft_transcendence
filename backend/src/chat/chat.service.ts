@@ -569,6 +569,35 @@ export class ChatService {
         }
     }
 
+    // Change password of a protected channel
+    async changeChannelPassword(joinChannelDto : JoinChannelDto, channelId: number) {
+        const channel = await this.prisma.channel.findUnique({
+            where: {
+                id: channelId,
+            },
+        });
+
+        if (!channel) {
+            throw new NotFoundException('Channel not found');
+        }
+
+        if (channel.type !== 'PROTECTED') {
+            throw new BadRequestException('Channel is not protected');
+        }
+
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(joinChannelDto.password, saltRounds);
+
+        await this.prisma.channel.update({
+            where: {
+                id: channelId,
+            },
+            data: {
+                hash: hashedPassword,
+            },
+        });
+    }
+
     // BELOW IS FOR WEBSOCKETS
     async getUserChannels(userId: number): Promise<number[]> {
         // Fetch the ChannelUser entities for this user
