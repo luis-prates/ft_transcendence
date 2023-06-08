@@ -11,7 +11,7 @@ import { GamePong, TablePong, Status } from "@/game/ping_pong";
 import { onMounted, onUnmounted, ref, defineProps } from "vue";
 import socket from "@/socket/Socket";
 import { type gameRequest, type updatePlayer, type updateBall, type gamePoint, type gameEnd } from "@/game/ping_pong/SocketInterface";
-import { userStore } from "@/stores/userStore";
+import { userStore, type Historic } from "@/stores/userStore";
 
 import avatar_marvin from "@/assets/images/pingpong/marvin.jpg";
 
@@ -119,14 +119,29 @@ onMounted(function () {
     game.updateStatus(Status.Finish);
     console.log(e);
     game.endGame = e;
-    user.wallet += e.max_money;
-    user.infoPong.experience += e.max_exp;
 
-    while (user.infoPong.experience >= user.infoPong.level * 200)
-    {
-      user.infoPong.experience -= user.infoPong.level * 100;
-		  user.infoPong.level += 1;
+    //Add info in storage
+    if (game.playerNumber == 1 || game.playerNumber == 2) {
+
+      user.wallet += e.max_money;
+      user.infoPong.experience += e.max_exp;
+
       //Up Level!
+      while (user.infoPong.experience >= user.infoPong.level * 200)
+      {
+        user.infoPong.experience -= user.infoPong.level * 100;
+		    user.infoPong.level += 1;
+      }
+    
+      const player_2 = game.playerNumber == 1 ? game.player2 : game.player1;
+      const history_game: Historic = {
+        winner: e.result == "You Win!" ? user.nickname : player_2.nickname,
+        loser: e.result == "You Lose!" ? user.nickname : player_2.nickname,
+        player1: game.player1.nickname,
+        player2: game.player2.nickname,
+        result: game.player1.score + "-" + game.player2.score,
+      }
+      user.infoPong.historic.push(history_game as never);
     }
 
     game.audio("music_stop");

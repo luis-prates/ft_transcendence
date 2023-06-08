@@ -4,9 +4,10 @@ import { Map } from "./Map";
 import { Game } from "@/game/base/Game";
 import type { GameObject } from "@/game/base/GameObject";
 import { type Ref } from "vue";
-import { userStore } from "@/stores/userStore";
+import { userStore, type Historic } from "@/stores/userStore";
 import { YourMiniPerfil } from "@/game/Menu/YourMiniPerfil";
 import { LeaderBoard } from "@/game/Menu/LeaderBoard";
+import { Profile } from "@/game/Menu/Profile";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
@@ -53,12 +54,37 @@ export class Player extends Character {
 
   mouseClick?(x: number, y: number, button: number): void {
     this.menu.value?.setAttribute("style", "display: none");
-    
     if (button == 0) {
       this.select = Game.MouseColision(x, y);
       if (this.select == this) {
-        Game.instance.addMenu(new YourMiniPerfil(this).menu);
-        console.log(this.store.user);
+        //Game.instance.addMenu(new YourMiniPerfil(this).menu);
+        
+        const user = userStore().user;
+        const history_game_1: Historic = {
+          winner: user.nickname,
+          loser: "Marvin",
+          player1: user.nickname,
+          player2: "Marvin",
+          result: 3 + "-" + 0,
+        };
+        const history_game_2: Historic = {
+          winner: "Marvin2",
+          loser: user.nickname,
+          player1: user.nickname,
+          player2: "Marvin2",
+          result: 0 + "-" + 3,
+        }
+        console.log(user.infoPong)
+        user.infoPong.historic.push(history_game_1 as never);
+        user.infoPong.historic.push(history_game_1 as never);
+        user.infoPong.historic.push(history_game_1 as never);
+        user.infoPong.historic.push(history_game_2 as never);
+        user.infoPong.historic.push(history_game_2 as never);
+        user.infoPong.historic.push(history_game_2 as never);
+        user.infoPong.historic.push(history_game_2 as never);
+        
+        Game.instance.addMenu(new Profile(this).menu);
+
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {
           if (gameObject && gameObject.interaction) gameObject.interaction(this);

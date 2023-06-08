@@ -194,37 +194,13 @@ export class Shop {
     ctx.fillText("Shop", pos.x + pos.w / 2, pos.y + pos.h * 0.05);
     ctx.strokeText("Shop", pos.x + pos.w / 2, pos.y + pos.h * 0.05);
 
+    ctx.textAlign = "start";
     // Adiciona sublinhado ao título
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(pos.x + pos.w / 2 - 30, pos.y + pos.h * 0.06); // Posição inicial do sublinhado
     ctx.lineTo(pos.x + pos.w / 2 + 30, pos.y + pos.h * 0.06); // Posição final do sublinhado
     ctx.stroke();
-  }
-
-  private static drawMessage(ctx: CanvasRenderingContext2D, pos: Rectangle, message: string) {
-    ctx.font = "12px Arial";
-    ctx.fillStyle = "black";
-
-    const words = message.split(" ");
-    const lineLength = 46; // Comprimento máximo da linha
-
-    let line = 0;
-    let currentLine = "";
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-      const testLine = currentLine + word + " ";
-
-      if (testLine.length > lineLength) {
-        ctx.fillText(currentLine, pos.x + 10, pos.y + 20 + line);
-        currentLine = word + " ";
-        line += 16; // Ajuste a altura da nova linha conforme necessário
-      } else {
-        currentLine = testLine;
-      }
-    }
-
-    ctx.fillText(currentLine, pos.x + 10, pos.y + 20 + line);
   }
 
   roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {

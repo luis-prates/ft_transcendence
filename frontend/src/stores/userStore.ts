@@ -7,6 +7,9 @@ import type { ProductSkin } from "@/game/ping_pong/Skin";
 export interface Historic {
   winner: string;
   loser: string;
+  player1: string;
+  player2: string;
+  result: string;
 }
 
 export interface InfoPong {
