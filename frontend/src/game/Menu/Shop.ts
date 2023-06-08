@@ -108,7 +108,7 @@ export class Shop {
           ctx.lineWidth = 3;
           ctx.strokeRect(product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
         }
-
+        
         // Desenha o título do produto acima do quadrado
         ctx.fillStyle = "#000";
         ctx.font = "12px Arial";
@@ -116,11 +116,10 @@ export class Shop {
         ctx.fillText((skin.type == TypeSkin.Paddle ? "Paddle " : "Table ") + skin.tittle, product.rectangle.x + product.rectangle.w / 2, product.rectangle.y - offSetTittle);
 
         // Desenha o preço do produto abaixo do quadrado
-        ctx.fillStyle = "#000";
-        ctx.font = "12px Arial";
-        ctx.textAlign = "center";
         //548₳
         ctx.fillText(skin.price == 0 ? "FREE" : skin.price.toString() + "₳", product.rectangle.x + product.rectangle.w / 2, product.rectangle.y + product.rectangle.h + offSetPrice);
+      
+        ctx.textAlign = "start";
       },
       onClick: () => {
 

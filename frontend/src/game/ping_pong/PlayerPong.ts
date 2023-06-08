@@ -1,11 +1,9 @@
 import { GamePong } from "@/game/ping_pong/";
-import { type updatePlayer } from "./SocketInterface";
 import socket from "@/socket/Socket";
 import { TypeSkin } from "./Skin";
 
 //Avatar
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
-import avatarMarvin from "@/assets/images/pingpong/marvin.jpg";
 
 export class PlayerPong {
   game: GamePong;

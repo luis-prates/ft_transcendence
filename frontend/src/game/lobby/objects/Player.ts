@@ -6,6 +6,7 @@ import type { GameObject } from "@/game/base/GameObject";
 import { type Ref } from "vue";
 import { userStore } from "@/stores/userStore";
 import { YourMiniPerfil } from "@/game/Menu/YourMiniPerfil";
+import { LeaderBoard } from "@/game/Menu/LeaderBoard";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;

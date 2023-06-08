@@ -320,6 +320,7 @@ export class YourMiniPerfil {
         context.fillText("Custom", custom.rectangle.x + custom.rectangle.w / 2, custom.rectangle.y + custom.rectangle.h * 0.125);
         context.strokeText("Custom", custom.rectangle.x + custom.rectangle.w / 2, custom.rectangle.y + custom.rectangle.h * 0.125);
     
+        context.textAlign = "start";
         //Type
         context.fillStyle = "black";
         context.font = "18px 'Press Start 2P', cursive";
