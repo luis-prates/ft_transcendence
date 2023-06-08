@@ -1,7 +1,4 @@
 import { Game } from './GamePong';
-import { Player_Pong } from './PlayerPong';
-import { type gamePoint } from './SocketInterface';
-
 
 export class Ball {
   //Macros

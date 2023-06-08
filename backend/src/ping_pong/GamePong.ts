@@ -145,31 +145,67 @@ export class Game {
 				this.player1.socket.emit('end_game', {
 					objectId: this.data.objectId,
 					result: 'You Win!',
+					exp: 0,
+					max_exp: (this.maxPoint * (this.bot ? 50 : (this.player2.score == 0 ? 150 : 100))),
+					money: 0,
+					max_money: (this.maxPoint * (this.bot ? 2 : (this.player2.score == 0 ? 5 : 3))),
+					watchers: 0,
+					max_watchers: this.watchers.length,
 				});
 				if (this.player2 && this.bot == false) {
 					this.player2.socket.emit('end_game', {
 						objectId: this.data.objectId,
 						result: 'You Lose!',
+						exp: 0,
+						max_exp: (this.player2.score == 0 ? 10 : this.player2.score * (this.bot ? 10 : 20)),
+						money: 0,
+						max_money: (this.player2.score == 0 ? 1 : this.player2.score * (this.bot ? 1 : 2)),
+						watchers: 0,
+						max_watchers: this.watchers.length,
 					});
 				}
 				this.emitWatchers('end_game', {
 					objectId: this.data.objectId,
 					result: this.player1.nickname + ' Win!',
+					exp: 0,
+					max_exp: 0,
+					money: 0,
+					max_money: 0,
+					watchers: 0,
+					max_watchers: 0,
 				});
 			} else if (player_n === 2) {
 				this.player1.socket.emit('end_game', {
 					objectId: this.data.objectId,
 					result: 'You Lose!',
+					exp: 0,
+					max_exp: (this.player1.score == 0 ? 10 : this.player1.score * (this.bot ? 10 : 20)),
+					money: 0,
+					max_money: (this.player1.score == 0 ? 1 : this.player1.score * (this.bot ? 1 : 2)),
+					watchers: 0,
+					max_watchers: this.watchers.length,
 				});
 				if (this.player2 && this.bot == false) {
 					this.player2.socket.emit('end_game', {
 						objectId: this.data.objectId,
 						result: 'You Win!',
+						exp: 0,
+						max_exp: (this.maxPoint * (this.bot ? 50 : (this.player1.score == 0 ? 150 : 100))),
+						money: 0,
+						max_money: (this.maxPoint * (this.bot ? 2 : (this.player1.score == 0 ? 5 : 3))),
+						watchers: 0,
+						max_watchers: this.watchers.length,
 					});
 				}
 				this.emitWatchers('end_game', {
 					objectId: this.data.objectId,
 					result: this.player2.nickname + ' Win!',
+					exp: 0,
+					max_exp: 0,
+					money: 0,
+					max_money: 0,
+					watchers: 0,
+					max_watchers: 0,
 				});
 			}
 			//INSERT IN DATABASE

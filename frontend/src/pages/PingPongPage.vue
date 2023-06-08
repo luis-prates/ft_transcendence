@@ -3,9 +3,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
   <div class="box" href>
     <canvas id="canvas1"></canvas>
-    <router-link v-if="status == Status.Finish" class="exitGame" to="/">
-      <h4>Exit</h4>
-    </router-link>
   </div>
 </template>
 
@@ -13,7 +10,7 @@
 import { GamePong, TablePong, Status } from "@/game/ping_pong";
 import { onMounted, onUnmounted, ref, defineProps } from "vue";
 import socket from "@/socket/Socket";
-import { type gameRequest, type updatePlayer, type updateBall, type gamePoint } from "@/game/ping_pong/SocketInterface";
+import { type gameRequest, type updatePlayer, type updateBall, type gamePoint, type gameEnd } from "@/game/ping_pong/SocketInterface";
 import { userStore } from "@/stores/userStore";
 
 import avatar_marvin from "@/assets/images/pingpong/marvin.jpg";
@@ -42,7 +39,7 @@ onMounted(function () {
   console.log("pros: ", props);
   
   const tableBoard = new TablePong(canvas.width, canvas.height, "DarkSlateBlue", "#1e8c2f");
-  const game = new GamePong(canvas.width, canvas.height - 228, 164, ctx, props as gameRequest, tableBoard);
+  const game = new GamePong(canvas, canvas.width, canvas.height - 228, 164, ctx, props as gameRequest, tableBoard);
   console.log(props);
 
   socket.on("start_game", (e: any) => {
@@ -115,11 +112,11 @@ onMounted(function () {
     game.updateWatchers(e);
   });
 
-  socket.on("end_game", (e: any) => {
+  socket.on("end_game", (e: gameEnd) => {
     status.value = Status.Finish;
     game.updateStatus(Status.Finish);
     console.log(e);
-    game.endMessage = e.result;
+    game.endGame = e;
     game.audio("music_stop");
   });
 
@@ -163,20 +160,6 @@ onMounted(function () {
   transform: translate(-50%, 5%);
   max-width: 100%;
   max-height: 100%;
-}
-.exitGame {
-  position: absolute;
-  top: 65%;
-  left: 40%;
-  width: 20%;
-  height: 30px;
-  border-radius: 5px;
-  border-color: blue;
-  background-color: aqua;
-  * {
-    align-items: center;
-    text-align: center;
-  }
 }
 </style>
 

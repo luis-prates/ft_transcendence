@@ -106,12 +106,11 @@ export class PlayerPong {
   drawPhoto(context: CanvasRenderingContext2D) {
     let width: number = 0;
     if (this.player == 2) width = this.game.width - 50;
-    try {
-      context.drawImage(this.avatar, width != 0 ? width - 25 : 25, 35, 50, 50);
-    } catch {
+    if (this.avatar.complete == false)
       this.avatar.src = avatarDefault;
-      context.drawImage(this.avatar, width != 0 ? width - 25 : 25, 35, 50, 50);
-    }
+    
+    context.drawImage(this.avatar, width != 0 ? width - 25 : 25, 35, 50, 50);
+  
     context.strokeStyle = "black";
     context.lineWidth = 3;
     context.strokeRect(width ? width - 25 : 25, 35, 50, 50);
