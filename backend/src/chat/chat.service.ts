@@ -5,6 +5,7 @@ import { ConflictException } from '@nestjs/common';
 import { ChannelType } from 'src/types';
 import { Channel } from '@prisma/client';
 import { EventEmitter } from 'events';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ChatService {
@@ -107,14 +108,17 @@ export class ChatService {
 
             // Logic for protected channels
             if (createChannelDto.channelType == 'PROTECTED') {
-                // new
                 // Note: channel name has to be unique for open channels
+                // add encryption here
+                const saltRounds = 10;
+                const hashedPassword = await bcrypt.hash(createChannelDto.password, saltRounds);
+
                 newChannel = await this.prisma.channel.create({
                     data: {
                         name: createChannelDto.name,
                         type: createChannelDto.channelType,
                         ownerId: user.id,
-                        password: createChannelDto.password,
+                        hash: hashedPassword,
                         users: {
                             create: [
                                 {
@@ -139,42 +143,6 @@ export class ChatService {
                         users: true,
                     }
                 });
-
-                // Note: channel name has to be unique for open channels
-            //     let data : { name: string, type: ChannelType, ownerId: number, password?: string, users?: any } = {
-            //         name: createChannelDto.name,
-            //         type: createChannelDto.channelType,
-            //         ownerId: user.id
-            //     };
-
-            //     // add password
-            //     data.password = createChannelDto.password;
-
-            //     // add users connection
-            //     data.users = {
-            //         create: {
-            //             user: {
-            //                 connect: {
-            //                     id: user.id,
-            //                 }
-            //             },
-            //             isAdmin: true,
-            //         },
-            //         ...createChannelDto.usersToAdd.map((id) => ({
-            //             user: {
-            //                 connect: {
-            //                     id: id,
-            //                 },
-            //             },
-            //         }))
-            //     };
-
-            //     newChannel = await this.prisma.channel.create({
-            //         data: data,
-            //         include: {
-            //             users: true,
-            //         }
-            //     });
             }
 
             // Logic for DM
@@ -330,8 +298,12 @@ export class ChatService {
             throw new NotFoundException('Channel not found');
         }
 
-        if (channel.type == 'PROTECTED' && channel.password !== password) {
-            throw new BadRequestException('Password is incorrect');
+        if (channel.type == 'PROTECTED') {
+            console.log('password: ', password);
+            console.log('channel.hash: ', channel.hash);
+            const isMatch = await bcrypt.compare(password, channel.hash);
+            if (!isMatch)
+                throw new BadRequestException('Password is incorrect');
         }
 
         if (channel.type == 'PRIVATE') {

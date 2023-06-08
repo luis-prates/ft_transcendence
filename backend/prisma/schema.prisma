@@ -72,7 +72,7 @@ model Message {
 model Channel {
     id                      Int @id @default(autoincrement())
     name                    String? @unique
-    password                String?
+    hash                    String?
     messages                Message[]
     users                   ChannelUser[]
     ownerId                 Int?
