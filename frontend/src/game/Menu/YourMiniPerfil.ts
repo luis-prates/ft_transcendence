@@ -36,7 +36,7 @@ export class YourMiniPerfil {
   constructor(player: Player) {
     this.player = player;
     this.avataresImage.src = avatares;
-    this.chooseAvatar = Math.ceil((player.animation.sx / 48) / 3) + (player.animation.sy / 80 > 3 * 80 ? 4 : 0);
+    this.chooseAvatar = Math.ceil((player.animation.sx / 48) / 3) + (player.animation.sy / 80);
     this.avatarArrowL = this.chooseAvatar == 0 ? "grey" : "white";
     this.avatarArrowR = this.chooseAvatar == 7 ? "grey" : "white";
 
@@ -232,6 +232,9 @@ export class YourMiniPerfil {
     //Level
     ctx.font = "10px 'Press Start 2P', cursive";
 	  ctx.fillText("Money: " + this.user.wallet + "₳", pos.x + pos.w * 0.5, pos.y + pos.h * 0.26, pos.w - (pos.x + pos.w * 0.5));
+
+    ctx.font = "10px 'Press Start 2P', cursive";
+	  ctx.fillText("Level: " + this.user.infoPong.level, pos.x + pos.w * 0.5, pos.y + pos.h * 0.10, pos.w - (pos.x + pos.w * 0.5));
 
     //Avatar
 	  ctx.strokeStyle = "black";

@@ -60,6 +60,8 @@ onMounted(function () {
 
     if (game.player2.nickname == "Marvin" && e.avatar2 == "marvin") game.player2.avatar.src = avatar_marvin;
 
+
+
     e.skin1 ? game.player1.updateSkin(e.skin1) : "";
     e.skin2 ? game.player2.updateSkin(e.skin2) : "";
 
@@ -117,6 +119,16 @@ onMounted(function () {
     game.updateStatus(Status.Finish);
     console.log(e);
     game.endGame = e;
+    user.wallet += e.max_money;
+    user.infoPong.experience += e.max_exp;
+
+    while (user.infoPong.experience >= user.infoPong.level * 200)
+    {
+      user.infoPong.experience -= user.infoPong.level * 100;
+		  user.infoPong.level += 1;
+      //Up Level!
+    }
+
     game.audio("music_stop");
   });
 

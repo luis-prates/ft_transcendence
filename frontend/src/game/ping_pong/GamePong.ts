@@ -128,6 +128,7 @@ export class GamePong {
 
     const viewImage = new Image();
     viewImage.src = viewGame;
+
     if (viewImage.complete)
       this.context.drawImage(viewImage, 65, this.height + this.offSet + 9, 50, 50);
     else {
@@ -146,28 +147,12 @@ export class GamePong {
     this.context.strokeStyle = "black";
     this.context.lineWidth = 10;
     this.context.strokeText("WAITING!", 95, 380, this.width - 180);
-    this.context.strokeText("________", 95, 405, this.width - 180);
+    this.context.strokeText("_".repeat("WAITING!".length), 95, 380, this.width - 180);
 
     this.context.fillStyle = "yellow";
     this.context.fillText("WAITING!", 95, 380, this.width - 180);
-    this.context.fillText("________", 95, 405, this.width - 180);
-    this.drawBoard();
+    this.context.fillText("_".repeat("WAITING!".length), 95, 380, this.width - 180);
   }
-  //Draw End Game
-  /*drawEndGame() {
-    this.drawBoard();
-    this.context.font = "100px 'Press Start 2P', cursive";
-    this.context.fillStyle = "black";
-
-    this.context.strokeStyle = "black";
-    this.context.lineWidth = 10;
-    this.context.strokeText(this.endGame.result, 95, 380, this.width - 180);
-    this.context.strokeText("_".repeat(this.endGame.result.length), 95, 405, this.width - 180);
-
-    this.context.fillStyle = this.playerNumber == 2 ? this.player2.color : this.player1.color;
-    this.context.fillText(this.endGame.result, 95, 380, this.width - 180);
-    this.context.fillText("_".repeat(this.endGame.result.length), 95, 405, this.width - 180);
-  }*/
 
   drawBoard()
   {
@@ -206,7 +191,7 @@ export class GamePong {
     this.context.strokeText("Watchers:", 85 + (this.width - 180) / 8, 530);
 
     this.context.strokeText("+" + this.endGame.exp.toString() + " Exp", 85 + (this.width - 180) / 1.85, 410);
-    this.context.strokeText("+" + this.endGame.money.toString() + "€", 85 + (this.width - 180) / 1.85, 470);
+    this.context.strokeText("+" + this.endGame.money.toString() + "₳", 85 + (this.width - 180) / 1.85, 470);
     this.context.strokeText(this.endGame.watchers.toString(), 85 + (this.width - 180) / 1.85, 530);
     
 
@@ -217,12 +202,14 @@ export class GamePong {
     this.context.fillStyle = "white";
     
     this.context.fillText("+" + this.endGame.exp.toString() + " Exp", 85 + (this.width - 180) / 1.85, 410);
-    this.context.fillText("+" + this.endGame.money.toString() + "€", 85 + (this.width - 180) / 1.85, 470);
+    this.context.fillText("+" + this.endGame.money.toString() + "₳", 85 + (this.width - 180) / 1.85, 470);
     this.context.fillText(this.endGame.watchers.toString(), 85 + (this.width - 180) / 1.85, 530);
 
   }
   
   drawButtonFinalScore(context: CanvasRenderingContext2D) {
+
+    this.context.font = "30px 'Press Start 2P', cursive";
 
     //Button "Go Back!"
     if ((this.playerNumber != 1 && this.playerNumber != 2) || this.endGame.exp == this.endGame.max_exp && this.endGame.money == this.endGame.max_money && this.endGame.watchers == this.endGame.max_watchers)
@@ -279,19 +266,33 @@ export class GamePong {
   //TODO
   handleClick(event: MouseEvent, game: GamePong) {
 
+    if (game.status != Status.Finish)
+      return ;
+
+    const isgetall = (game.endGame.exp == game.endGame.max_exp && game.endGame.money == game.endGame.max_money && game.endGame.watchers == game.endGame.max_watchers);
+
+    if (!isgetall)
+    {
+      game.endGame.exp = game.endGame.max_exp;
+      game.endGame.money = game.endGame.max_money;
+      game.endGame.watchers = game.endGame.max_watchers;
+    }
+    else
+    {
+      game.canvas.removeEventListener("click", (event) => this.handleClick(event, game));
+      Router.push(`/`);
+    }
+
+    return ;
+
+    //TODO
+
     console.log("click 1!! game:", game.endGame)
-
-   /* if (game.status != Status.Finish)
-      return ;*/
-
 
     const rect = game.canvas.getBoundingClientRect();
 
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
-
-
-    const isgetall = (game.endGame.exp == game.endGame.max_exp && game.endGame.money == game.endGame.max_money && game.endGame.watchers == game.endGame.max_watchers);
 
     const buttonX1 = game.width / 2 - 140;
     const buttonX2 = game.width / 2 + 140;
@@ -318,28 +319,19 @@ export class GamePong {
     // Verificar se o clique ocorreu dentro da nova posição do botão
     if (isgetall && (mouseX >= newButtonX1 && mouseX <= newButtonX2 && mouseY >= newButtonY1 && mouseY <= newButtonY2)) {
       // Botão clicado!
-      console.log("click push!!");
       game.canvas.removeEventListener("click", (event) => this.handleClick(event, game));
       Router.push(`/`);
     }
 
-
-
-
-
+    if (mouseX >= 0 && mouseX <= game.canvas.width && mouseY >= 0 && mouseY <= game.canvas.height) {
+      game.endGame.exp = game.endGame.max_exp;
+      game.endGame.money = game.endGame.max_money;
+      game.endGame.watchers = game.endGame.max_watchers; 
+    }
 
     // if ( isgetall && (mouseX >= game.width / 2 - 140 && mouseX <= game.width / 2 + 140  && mouseY >= 575 && mouseY <= 625)) {
     //     console.log("click push!!")
-    //     game.canvas.removeEventListener("click", (event) => this.handleClick(event, game));
-    //     Router.push(`/`);
+    //     
     // }
-
-    if (mouseX >= 0 && mouseX <= game.canvas.width && mouseY >= 0 && mouseY <= game.canvas.height) {
-      
-      console.log("click on x: ", mouseX, "y: ", mouseY )
-      game.endGame.exp = game.endGame.max_exp;
-      game.endGame.money = game.endGame.max_money;
-      game.endGame.watchers = game.endGame.max_watchers;
-    }
   }
 }

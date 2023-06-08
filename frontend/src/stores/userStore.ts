@@ -63,6 +63,8 @@ export const userStore = defineStore("user", () => {
     wallet: 10,
     infoPong: {
       avatar: "",
+      level: 1,
+      experience: 0,
       color: randomColor(),
       skin: {
         default: {
