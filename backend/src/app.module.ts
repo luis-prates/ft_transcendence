@@ -9,6 +9,7 @@ import { FriendshipService } from './friendship/friendship.service';
 import { FriendshipController } from './friendship/friendship.controller';
 import { FriendshipModule } from './friendship/friendship.module';
 import { ChatModule } from './chat/chat.module';
+import { BlocklistModule } from './blocklist/blocklist.module';
 
 @Module({
 	imports: [
@@ -20,6 +21,7 @@ import { ChatModule } from './chat/chat.module';
 		}),
 		FriendshipModule,
 		ChatModule,
+		BlocklistModule,
 	],
 	controllers: [AppController, FriendshipController],
 	providers: [AppService, FriendshipService],

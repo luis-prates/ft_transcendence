@@ -44,6 +44,9 @@ export class PrismaService extends PrismaClient {
 			// friend requests
 			this.friendRequest.deleteMany(),
 
+            // blocklist
+            this.blocklist.deleteMany(),
+
 			// messages
 			this.message.deleteMany(),
 

@@ -1,17 +1,12 @@
 import {
 	SubscribeMessage,
 	WebSocketGateway,
-	OnGatewayInit,
 	WebSocketServer,
 	OnGatewayConnection,
-	OnGatewayDisconnect,
 	WsResponse,
 } from '@nestjs/websockets';
-import { PrismaService } from '../../../prisma/prisma.service';
 import { ChatService } from '../../chat.service';
-import { Namespace, Server, Socket } from 'socket.io';
-import { JwtGuard } from '../../../auth/guard';
-import { UseGuards } from '@nestjs/common';
+import { Server, Socket } from 'socket.io';
 import { TestLogger } from '../../../../test/utils/TestLogger';
 
 // For testing purposes, we want to make sure Global channel always has ID = 1, so we sleep a bit the afterInit before it can go to testing

@@ -4,7 +4,7 @@
     "printWidth": 80,
     "tabWidth": 4,
     "semi": true,
-    "useTabs": true,
+    "useTabs": false,
     "arrowParens": "avoid",
     "bracketSpacing": true,
     "eslintIntegration": true
