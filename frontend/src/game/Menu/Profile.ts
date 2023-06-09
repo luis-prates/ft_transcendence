@@ -21,7 +21,6 @@ export class Profile {
 	private avatarArrowL: string = "grey";
 	private avatarArrowR: string = "grey";
 	private page: number = 0;
-	private inPage: any = [];
 
 	constructor(player: Player) {
 
@@ -57,28 +56,22 @@ export class Profile {
 		
 		this.user.infoPong.historic.forEach((matche, index) => {
 
-			if ((index + 1) % 5 == 0)
+			
+			if ((index == 0 ? index + 1 : index) % 4 == 0)
 				this.page++;
 			
-			const isVisible : boolean = this.page > 0 ? false : true;
-			
 			const i = index - (this.page * 4);
-		  
+
 			const squareX = 1 + (i % 2) * (squareW + paddingX);
 			const squareY = 30 + paddingY + Math.floor(i / 2) * (squareH + paddingY);
-			this.inPage.push(this.createMatches(matche, squareX, squareY, isVisible));
-			console.log("page: ", this.page, " index: ", index, " i: ", i);
-		});
-		
-		this.inPage.forEach((element: ElementUI | undefined) => {
-			this.menu.add(element);
+			this.menu.add(this.createMatches(index, matche, squareX, squareY));
 		});
 
 		this.page = 0;
 					
 	}
 
-	private createMatches(matche: Historic, x: number, y: number, isVisible : boolean): ElementUI {
+	private createMatches(index: number, matche: Historic, x: number, y: number): ElementUI {
 
 		const player1Image = new Image();
 		const player2Image = new Image();
@@ -87,6 +80,13 @@ export class Profile {
 		  type: "image",
 		  rectangle: { x: x + "%", y: y + "%", w: "15%", h: "15%" },
 		  draw: (ctx: CanvasRenderingContext2D) => {
+
+			const currPageStart = this.page * 4;
+			const currPageEnd = ((this.page + 1) * 4) - 1;
+
+			if (!(currPageStart <= index && index <= currPageEnd))
+				return;			
+
 			const offSetTittle = this.background.rectangle.y * 1.75;
 	
 			ctx.fillStyle = "silver";
@@ -101,15 +101,17 @@ export class Profile {
 			ctx.fillStyle = "#000";
 			ctx.font = "20px 'Press Start 2P', cursive";
 
+			//Regua Vertical
 			/*ctx.strokeRect(product.rectangle.x + ((product.rectangle.w) / 2), product.rectangle.y, 1, product.rectangle.h + + product.rectangle.w * 0.07);
 			ctx.strokeRect(product.rectangle.x + (product.rectangle.w + product.rectangle.w * 0.07) / 3, product.rectangle.y, 1, product.rectangle.h + + product.rectangle.w * 0.07);
 			ctx.strokeRect((product.rectangle.x + product.rectangle.w) - (product.rectangle.w + product.rectangle.w * 0.07) / 3, product.rectangle.y, 1, product.rectangle.h + + product.rectangle.w * 0.07);
 			*/
-			//Regua
+			//Regua Horizontal
 			/*ctx.strokeRect(product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3, 1);
 			ctx.strokeRect(product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3, 1);
 			ctx.strokeRect(product.rectangle.x + product.rectangle.w * 0.35, product.rectangle.y + product.rectangle.h * 0.2, product.rectangle.w * 0.3, 1);
-*/
+			*/
+
 			ctx.fillText(matche.result,
 			product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
 
@@ -151,7 +153,6 @@ export class Profile {
 		  onClick: () => {
 	
 		  },
-		  visible: isVisible,
 		};
 		return product;
 	}	
@@ -387,22 +388,6 @@ export class Profile {
 	  };
 	  return button;
 	}
-
-	private visibleMatches(first_visible: number, last_visible: number, first_invisible: number, last_invisible: number, incrementPage: number)
-	{
-		const min = Math.max(first_visible, first_invisible);
-  		const max = Math.min(last_visible, last_invisible);
-			
-  		console.log("Visibles: ", first_visible, last_visible);
-  		console.log("Invisibles: ", first_invisible, last_invisible);
-  		console.log("Min: ", min, "Max: ", max);
-			
-  		for (let i = min; i <= max; i++) {
-  		  this.inPage[i].visible = first_visible <= i && i <= last_visible;
-  		}
-	
-  		this.page += incrementPage;
-	}
 	
 	private createArrowButton(type: string, x: number, y: number, width: number): ElementUI {
 		const button: ElementUI = {
@@ -432,24 +417,13 @@ export class Profile {
 			  ctx.stroke();
 			  },
 			  onClick: () => {
-				if (type === "left" && this.page > 0) {
-					const prevPageStart = (this.page - 1) * 4;
-					const prevPageEnd = (this.page * 4) - 1;
-					const currPageStart = this.page * 4;
-					const currPageEnd = ((this.page + 1) * 4) - 1;
-					this.visibleMatches(prevPageStart, prevPageEnd, currPageStart, currPageEnd, -1);
-				} else if (type === "right" && ((this.page + 1) * 4) - 1 < this.user.infoPong.historic.length) {
-					const currPageStart = this.page * 4;
-					const currPageEnd = ((this.page + 1) * 4) - 1;
-					const nextPageStart = (this.page + 1) * 4;
-					const nextPageEnd = ((this.page + 2) * 4) - 1;
-					this.visibleMatches(nextPageStart, nextPageEnd, currPageStart, currPageEnd, 1);
-				}
+				if (type === "left" && this.page > 0) this.page--;
+				else if (type === "right" && ((this.page + 1) * 4) - 1 < this.user.infoPong.historic.length - 1) this.page++;
 
 			  	if (this.page == 0) this.avatarArrowL = "grey";
 			  	else this.avatarArrowL = "white";
 				
-			  	if (((this.page + 1) * 4) - 1 >= this.user.infoPong.historic.length) this.avatarArrowR = "grey";
+			  	if (((this.page + 1) * 4) - 1 >= this.user.infoPong.historic.length - 1) this.avatarArrowR = "grey";
 			  	else this.avatarArrowR = "white";
 			  },
 		};

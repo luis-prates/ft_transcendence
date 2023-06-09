@@ -84,6 +84,7 @@ export class Player extends Character {
         user.infoPong.historic.push(history_game_2 as never);
         
         Game.instance.addMenu(new Profile(this).menu);
+        Game.instance.addMenu(new LeaderBoard().menu);
 
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {
