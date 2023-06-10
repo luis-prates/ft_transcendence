@@ -1,5 +1,5 @@
 <template>
-      <div v-if="props.chat == true" class="card">
+      <div v-if="channelStatus" class="card">
         <div class="card-header msg_head">
           <div class="d-flex bd-highlight">
             <div class="img_cont">
@@ -11,7 +11,7 @@
             </div>
             <div class="video_cam">
               <button class="config_chat">⚙</button>
-              <button class="close_chat">✖</button>
+              <button  @click="toggleStatus" class="close_chat">✖</button>
             </div>
           </div>
 
@@ -55,15 +55,28 @@ import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
 import { ref } from "vue";
 import ChatComponentTestStart from "./ChatComponentTestStart.vue";
+import { defineProps, getCurrentInstance } from 'vue';
+
+// Props declaration
+const props = defineProps({
+ channelStatus: Boolean
+});
+
+// Get the current component instance
+const instance = getCurrentInstance();
+
+// Emit event from the child component
+const toggleStatus = () => {
+  console.log("Valor do status: " + props.channelStatus);
+ const newStatus = !props.channelStatus;
+ instance?.emit('update-channel-status', newStatus);
+};
 
 const text = ref();
 
 function send() {
   console.log(text.value.value);
 }
-const props = defineProps({
-  chat: Boolean,
-})
 </script>
 
 <style lang="scss">

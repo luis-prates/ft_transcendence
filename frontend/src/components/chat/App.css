@@ -37,6 +37,9 @@ body,html{
     border:0 !important;
     color:white !important;
   }
+  .search::placeholder {
+    color: white;
+  }
   .search:focus{
      box-shadow:none !important;
    outline:0px !important;
@@ -45,8 +48,11 @@ body,html{
     background-color: rgba(0,0,0,0.3) !important;
     border:0 !important;
     color:white !important;
-    height: 60px !important;
+    height: 40px !important;
     overflow-y: auto;
+  }
+  .type_msg::placeholder {
+    color: white;
   }
     .type_msg:focus{
      box-shadow:none !important;
@@ -78,6 +84,12 @@ body,html{
   .contacts{
     list-style: none;
     padding: 0;
+  }
+  .item-box:hover {
+    background-color: black;
+    border-radius: 10px;
+    padding-top: 3%;
+    padding-left: 3%;
   }
   .contacts li{
     width: 100% !important;
@@ -123,6 +135,11 @@ body,html{
   margin-top: auto;
   margin-bottom: auto;
   margin-left: 15px;
+  display:inline-block;
+    width:180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .user_info span{
   font-size: 20px;
