@@ -176,6 +176,7 @@ body,html{
   background-color: #82ccdd;
   padding: 10px;
   position: relative;
+  min-width: 45px;
   }
   .msg_cotainer_send{
   margin-top: auto;
@@ -185,6 +186,7 @@ body,html{
   background-color: #78e08f;
   padding: 10px;
   position: relative;
+  min-width: 45px;
   }
   .msg_time{
   position: absolute;

@@ -50,6 +50,7 @@
           </li>
         </ul>
       </div>
+      <button style="background-color: black; border-color: transparent; color: white;">Hide Chat</button>
     </div>
   </div>
 </template>
