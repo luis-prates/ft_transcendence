@@ -10,6 +10,7 @@ import {
 	IsOptional,
 	ValidateNested,
 } from 'class-validator';
+import { gameRequest, playerInfo } from 'src/ping_pong/SocketInterface';
 
 class GameStatsDto {
 	@IsOptional()
@@ -54,4 +55,8 @@ export class GameDto {
 	@IsOptional()
 	@IsEnum(GameType)
 	gameType?: GameType;
+
+	@IsNotEmpty()
+	@ValidateNested()
+	gameRequest: gameRequest;
 }

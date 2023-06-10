@@ -7,6 +7,7 @@ import {
 	OnGatewayDisconnect,
 	MessageBody,
 	WsResponse,
+	ConnectedSocket,
 } from '@nestjs/websockets';
 import { SocketService } from '../../socket/socket.service';
 import { Server } from 'http';
@@ -14,6 +15,7 @@ import { GameService } from '../game.service';
 import { Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { Player } from '../../lobby';
+import { PlayerService } from '../../player/player.service';
 
 @WebSocketGateway(3001, { namespace: 'game', cors: { origin: '*' } })
 export class GameGateway
@@ -24,6 +26,7 @@ export class GameGateway
 	constructor(
 		private gameService: GameService,
 		private socketService: SocketService,
+		private playerService: PlayerService,
 	) {}
 
 	@WebSocketServer()
@@ -45,15 +48,69 @@ export class GameGateway
 		console.log('On Connect');
 		const { query } = client.handshake;
 		this.logger.log(
-			`Client connected on /game namespace: ${client.id}, userId: ${query.userId}`,
+			`Client connected on /game namespace: ${client.id}, userId: ${JSON.stringify(query)}`,
 		);
-		this.socketService.gameSocketMap.set(client.id, client);
 		const userId = Number(query.userId);
-		const gameId = String(query.gameId);
-		const isPlayer = Boolean(query.isPlayer);
+		// set the current socket to the player game socket
+		this.logger.debug(`UserId is ${userId}`);
+		const player = this.playerService.getPlayer(query);
+		if (!player) {
+			this.logger.error(`Player ${userId} not found`);
+			return;
+		} else {
+			this.logger.debug(`Player ${userId} found`);
+		}
+		player.gameSocket = client;
 		client.data.userId = userId;
+	}
+
+	handleDisconnect(client: Socket) {
+		const userId = client.data.userId;
+		this.logger.log(`Client disconnected on /game namespace: ${userId}`);
+		if (client.data.gameId) {
+			const gameId = client.data.gameId;
+			// Remove the player from the game
+			const isPlayer = this.socketService.gameIdToPlayerId
+				.get(gameId)
+				.includes(userId);
+			if (isPlayer) {
+				this.socketService.gameIdToPlayerId.set(
+					gameId,
+					this.socketService.gameIdToPlayerId
+						.get(gameId)
+						.filter(playerId => playerId !== userId),
+				);
+				this.logger.log(`Removed player ${userId} from game ${gameId}`);
+				this.logger.log(
+					`Current players in game ${gameId}: ${this.socketService.gameIdToPlayerId.get(
+						gameId,
+					)}`,
+				);
+				// Leave the room for the game
+				client.leave(`game-${gameId}-player`);
+			} else {
+				this.socketService.gameIdToWatcherId.set(
+					gameId,
+					this.socketService.gameIdToWatcherId
+						.get(gameId)
+						.filter(watcherId => watcherId !== userId),
+				);
+				this.logger.log(`Removed watcher ${userId} from game ${gameId}`);
+				client.leave(`game-${gameId}-watcher`);
+			}
+		}
+	}
+
+	@SubscribeMessage('entry_game')
+	handleEnterGame(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() body: any,
+	) {
+		this.logger.log(`Enter game received: ${body}`);
+		const { gameId, isPlayer } = body;
 		client.data.gameId = gameId;
-		this.socketService.playerIdToSocketId.set(userId, client.id);
+		const userId = client.data.userId;
+		const player = this.playerService.getPlayer(userId);
 		// Add userId to gameIdToUserId map
 		// if gameId not in map, create new entry
 		// if gameId in map, append userId to array
@@ -70,6 +127,7 @@ export class GameGateway
 			);
 			// Join the room for the game
 			client.join(`game-${gameId}-player`);
+			this.gameService.enterGame(player, isPlayer, body.playerInfo);
 		}
 		// else, add userId to gameIdToWatcherId map
 		else {
@@ -79,41 +137,7 @@ export class GameGateway
 			]);
 			this.logger.log(`Added watcher ${userId} to game ${gameId}`);
 			client.join(`game-${gameId}-watcher`);
-		}
-	}
-
-	handleDisconnect(client: Socket) {
-		const userId = client.data.userId;
-		this.logger.log(`Client disconnected on /game namespace: ${userId}`);
-		this.socketService.playerIdToSocketId.delete(userId);
-		const gameId = client.data.gameId;
-		const isPlayer = this.socketService.gameIdToPlayerId
-			.get(gameId)
-			.includes(userId);
-		if (isPlayer) {
-			this.socketService.gameIdToPlayerId.set(
-				gameId,
-				this.socketService.gameIdToPlayerId
-					.get(gameId)
-					.filter(playerId => playerId !== userId),
-			);
-			this.logger.log(`Removed player ${userId} from game ${gameId}`);
-			this.logger.log(
-				`Current players in game ${gameId}: ${this.socketService.gameIdToPlayerId.get(
-					gameId,
-				)}`,
-			);
-			// Leave the room for the game
-			client.leave(`game-${gameId}-player`);
-		} else {
-			this.socketService.gameIdToWatcherId.set(
-				gameId,
-				this.socketService.gameIdToWatcherId
-					.get(gameId)
-					.filter(watcherId => watcherId !== userId),
-			);
-			this.logger.log(`Removed watcher ${userId} from game ${gameId}`);
-			client.leave(`game-${gameId}-watcher`);
+			this.gameService.enterGame(player, isPlayer, body.playerInfo);
 		}
 	}
 

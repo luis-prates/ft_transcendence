@@ -13,7 +13,8 @@ import { GameService } from './game.service';
 import { GetUser } from '../auth/decorator';
 import { GameDto } from './dto';
 
-@UseGuards(JwtGuard)
+//! deactivated for testing purposes
+//@UseGuards(JwtGuard)
 @Controller('game')
 export class GameController {
 	constructor(private gameService: GameService) {}

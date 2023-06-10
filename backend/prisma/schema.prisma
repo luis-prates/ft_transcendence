@@ -32,7 +32,7 @@ model User {
 	friendsOf				User[] @relation("Friends")
 
 	// Game
-	Games					Game[] //@relation("WonGames")
+	games					Game[] //@relation("WonGames")
 	//lostGames				Game[] @relation("LostGames")
 
     // TODO: Add blocklist
@@ -71,6 +71,8 @@ model Message {
     channelId               Int
     channel                 Channel @relation(fields: [channelId], references: [id])
     createdAt               DateTime @default(now())
+
+	@@map("messages")
 }
 
 model Channel {
@@ -82,6 +84,8 @@ model Channel {
     ownerId                 Int?
     owner                   User? @relation("ChannelOwner", fields: [ownerId], references: [id])
 	type					ChannelType // Public, Private, Protected, DM
+
+	@@map("channels")
 }
 
 model ChannelUser {
@@ -91,7 +95,9 @@ model ChannelUser {
     channel                 Channel @relation(fields: [channelId], references: [id])
     isMuted                 Boolean @default(false)
     isAdmin                 Boolean @default(false)
+
     @@id([userId, channelId])
+	@@map("channel_users")
 }
 
 enum ChannelType {
@@ -114,7 +120,6 @@ model Game {
 	updatedAt				DateTime @updatedAt
 
 	status					GameStatus @default(NOT_STARTED) // 0: not started, 1: started, 2: ended
-	
 	players					User[] //@relation("WonGames", fields: [winnerId], references: [id])
 	
 
