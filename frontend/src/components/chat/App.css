@@ -135,12 +135,21 @@ body,html{
   .video_cam{
   margin-left: 50px;
   margin-top: 5px;
+  margin: 0px 0px 0px auto;
   }
   .video_cam span{
   color: white;
   font-size: 20px;
   cursor: pointer;
   margin-right: 20px;
+  }
+  .config_chat {
+    background-color: transparent;
+    border-color: transparent;
+  }
+  .close_chat {
+    background-color: transparent;
+    border-color: transparent;
   }
   .msg_cotainer{
   margin-top: auto;
@@ -212,6 +221,18 @@ body,html{
   .action_menu ul li:hover{
   cursor: pointer;
   background-color: rgba(0,0,0,0.2);
+  }
+  .chat_filter {
+    background-color: transparent;
+    border-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 25%;
+  }
+  .chat_filter_button{
+    background-color: transparent;
+    border-color: transparent;
   }
   @media(max-width: 576px){
   .contacts_card{

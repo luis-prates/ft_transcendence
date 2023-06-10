@@ -3,7 +3,7 @@
     <div class="img_cont_msg">
       <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img_msg" />
     </div>
-    <div class="msg_cotainer">
+    <div class="msg_cotainer" style="min-width: 50px;">
       {{ props.mensagem }}
       <span class="msg_time">{{props.time}}</span>
     </div>

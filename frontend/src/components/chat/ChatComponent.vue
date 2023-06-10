@@ -1,7 +1,7 @@
 <template>
   <div class="chat">
-    <ChatComponentTest  class="chat_mensagen" />
-    <ChatComponentTestList class="chat_list" />
+    <ChatComponentTest  :chat="true" class="chat_mensagen" />
+    <ChatComponentTestList :chat="true" class="chat_list" />
   </div>
 </template>
 
@@ -52,6 +52,7 @@ onUnmounted(() => {
 
 .chat_list {
   width: 40%;
-  max-width: 200px;
+  max-width: 250px;
+  margin-left: auto;
 }
 </style>

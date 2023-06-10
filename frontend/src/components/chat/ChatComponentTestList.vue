@@ -9,20 +9,13 @@
             </div>
           </div>
         </div>
-        <div class="card-body contacts_body">
+        <div v-if="props.chat == false" class="card-body contacts_body">
+          <!-- Add chat list items here -->
+          <div class="chat_filter">
+            <button class="chat_filter_button">💬</button>
+            <button class="chat_filter_button">🌐</button>
+          </div>
           <ul class="contacts">
-            <li class="active">
-              <div class="d-flex bd-highlight">
-                <div class="img_cont">
-                  <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img">
-                  <span class="online_icon"></span>
-                </div>
-                <div class="user_info">
-                  <span>jassa</span>
-                  <p>Kalid is online</p>
-                </div>
-              </div>
-            </li>
             <li>
               <div class="d-flex bd-highlight">
                 <div class="img_cont">
@@ -35,46 +28,25 @@
                 </div>
               </div>
             </li>
-            <li>
-              <div class="d-flex bd-highlight">
-                <div class="img_cont">
-                  <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img">
-                  <span class="online_icon offline"></span>
-                </div>
-                <div class="user_info">
-                  <span>jassa</span>
-                  <p>Taherah left 7 mins ago</p>
-                </div>
-              </div>
-            </li>
-            <li>
-              <div class="d-flex bd-highlight">
-                <div class="img_cont">
-                  <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img">
-                  <span class="online_icon offline"></span>
-                </div>
-                <div class="user_info">
-                  <span>jassa</span>
-                  <p>Taherah left 7 mins ago</p>
-                </div>
-              </div>
-            </li>
-            <li>
-              <div class="d-flex bd-highlight">
-                <div class="img_cont">
-                  <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img">
-                  <span class="online_icon offline"></span>
-                </div>
-                <div class="user_info">
-                  <span>jassa</span>
-                  <p>Taherah left 7 mins ago</p>
-                </div>
-              </div>
-            </li>
-            
-            <!-- Add more list items here -->
           </ul>
         </div>
+        <div v-else class="card-body contacts_body">
+          <!-- Users inside the chat selected -->
+          <ul class="contacts">
+            <li>
+              <div class="d-flex bd-highlight">
+                <div class="img_cont">
+                  <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img">
+                  <span class="online_icon offline"></span>
+                </div>
+                <div class="user_info">
+                  <span>jassa</span>
+                  <p>Taherah left 7 mins ago</p>
+                </div>
+              </div>
+            </li>
+          </ul>
+      </div>
       </div>
   </div>
 </template>
@@ -84,6 +56,11 @@
  import 'bootstrap/dist/css/bootstrap.min.css';
  import 'bootstrap/dist/js/bootstrap.min.js';
  import './App.css';
+ import { defineProps } from "vue";
+
+ const props = defineProps({
+  chat: Boolean,
+})
 
  </script>
 

@@ -1,5 +1,5 @@
 <template>
-      <div class="card">
+      <div v-if="props.chat == true" class="card">
         <div class="card-header msg_head">
           <div class="d-flex bd-highlight">
             <div class="img_cont">
@@ -10,8 +10,8 @@
               <p>1767 Messages</p>
             </div>
             <div class="video_cam">
-              <span><i class="fas fa-video"></i></span>
-              <span><i class="fas fa-phone"></i></span>
+              <button class="config_chat">⚙</button>
+              <button class="close_chat">✖</button>
             </div>
           </div>
 
@@ -28,12 +28,12 @@
         </div>
 
         <div class="card-body msg_card_body">
-          <ChatComponentTestStart type="start" mensagem="Ola" time="8:40 AM, Today" />
-          <ChatComponentTestStart type="end" mensagem="Ola" time="8:40 AM, Today" />
-          <ChatComponentTestStart type="start" mensagem="ehehehe" time="8:40 AM, Today" />
-          <ChatComponentTestStart type="start" mensagem="testing" time="8:40 AM, Today" />
-          <ChatComponentTestStart type="start" mensagem="lolol" time="8:40 AM, Today" />
-          <ChatComponentTestStart type="start" mensagem="scroll tes asdasdasd asd asd asd asd t asd asd asdasd asd asd asdasd asd" time="8:40 AM, Today" />
+          <ChatComponentTestStart type="start" mensagem="." time="8:40 AM" />
+          <ChatComponentTestStart type="end" mensagem="Ola" time="8:40 AM" />
+          <ChatComponentTestStart type="start" mensagem="ehehehe" time="8:40 AM" />
+          <ChatComponentTestStart type="start" mensagem="testing" time="8:40 AM" />
+          <ChatComponentTestStart type="start" mensagem="lolol" time="8:40 AM" />
+          <ChatComponentTestStart type="start" mensagem="scroll tes asdasdasd asd asd asd asd t asd asd asdasd asd asd asdasd asd" time="8:40 AM" />
 
         </div>
 
@@ -61,6 +61,9 @@ const text = ref();
 function send() {
   console.log(text.value.value);
 }
+const props = defineProps({
+  chat: Boolean,
+})
 </script>
 
 <style lang="scss">
