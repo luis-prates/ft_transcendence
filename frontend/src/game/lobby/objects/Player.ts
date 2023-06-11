@@ -57,7 +57,6 @@ export class Player extends Character {
     if (button == 0) {
       this.select = Game.MouseColision(x, y);
       if (this.select == this) {
-        //Game.instance.addMenu(new YourMiniPerfil(this).menu);
         
         const user = userStore().user;
         const history_game_1: Historic = {
@@ -84,7 +83,8 @@ export class Player extends Character {
         user.infoPong.historic.push(history_game_2 as never);
         
         Game.instance.addMenu(new Profile(this).menu);
-        Game.instance.addMenu(new LeaderBoard().menu);
+       /* Game.instance.addMenu(new LeaderBoard().menu);
+        Game.instance.addMenu(new YourMiniPerfil(this).menu);*/
 
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {

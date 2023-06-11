@@ -35,14 +35,14 @@ export class Profile {
 
 
 		this.menu.add(this.background);
-		this.menu.add(this.createButtonExit(32.5, 6));
+		this.menu.add(this.background, this.createButtonExit(33.5, 6));
 
 		//if is friend the label is "-" if is not friend "+"
-		this.menu.add(this.createButtonAddFriend("add_friend", 9.25, 23, "+"));
-
-		this.menu.add(this.createButton("challenge", 2, 26, "Challenge", 9));
-		this.menu.add(this.createButton("send_message", 12, 26, "Send Message", 9));
-		this.menu.add(this.createButton("mute", 22, 26, "Mute", 9));
+		this.menu.add(this.background, this.createButtonAddFriend("add_friend", 10.5, 23, "+"));
+		
+		this.menu.add(this.background, this.createButton("challenge", 3.25, 26, "Challenge", 9));
+		this.menu.add(this.background, this.createButton("send_message", 13.25, 26, "Send Message", 9));
+		this.menu.add(this.background, this.createButton("mute", 23.25, 26, "Mute", 9));
 
 		const squareW = 10;
 		const squareH = 8;
@@ -177,7 +177,7 @@ export class Profile {
 	private createBackground(): ElementUI {
 	  const background: ElementUI = {
 		type: "image",
-		rectangle: { x: "-1%", y: "5%", w: "35%", h: "75%" },
+		rectangle: { x: "0%", y: "5%", w: "35%", h: "75%" },
 		draw: (context: any) => {
 		  this.drawBackground(context, background.rectangle);
 		},
@@ -193,23 +193,35 @@ export class Profile {
 		draw: (ctx: CanvasRenderingContext2D) => {
 		
 			ctx.fillStyle = "white";
-			  ctx.strokeStyle = color;
-			  ctx.lineWidth = 2;
+			ctx.strokeStyle = color;
+			ctx.lineWidth = 2;
 
-			  this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+			this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
 
-			  ctx.fill();
-			  ctx.stroke();
+			ctx.fill();
+			ctx.stroke();
 
-			  ctx.fillStyle = "black";
+			ctx.fillStyle = "black";
 			ctx.font = "10px 'Press Start 2P', cursive";
 
-			const labelWidth = ctx.measureText(label).width;
+			const begin = button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.1;
+			const max_with = button.rectangle.w - (button.rectangle.w * 0.2);
 
-			  ctx.fillText(label, 
-			  button.rectangle.x + button.rectangle.w / 2 - labelWidth / 2,
-			  button.rectangle.y + button.rectangle.h / 2 + 6,
-			  /*TODO fazer com que a label tenha limite, ps this.background*/);
+			let offset = 0;
+			let offsetmax = 0;
+			const labelWidth = ctx.measureText(label).width;
+			while (begin + offset + labelWidth < begin + max_with - offset)
+			{
+				offsetmax += button.rectangle.w * 0.05;
+				if (begin + offsetmax + labelWidth > begin + max_with - offset)
+					break ;
+				offset = offsetmax;
+			}
+
+			ctx.fillText(label, 
+			button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.1 + offset,
+			button.rectangle.y + button.rectangle.h / 2 + 6, 
+			button.rectangle.w - (button.rectangle.w * 0.2) - offset);
 			},
 			onClick: () => {
 			if (type == "challenge") {
@@ -240,7 +252,7 @@ export class Profile {
 			  ctx.strokeStyle = "black";
 			  ctx.lineWidth = 2;
 
-			  this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+			  this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
 
 			  ctx.fill();
 			  ctx.stroke();
@@ -250,7 +262,7 @@ export class Profile {
 
 			const labelWidth = ctx.measureText(label).width;
 
-			  ctx.fillText(label, button.rectangle.x + button.rectangle.w / 2 - labelWidth/2, button.rectangle.y + button.rectangle.h / 2 + 6);
+			  ctx.fillText(label, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w / 2 - labelWidth/2, button.rectangle.y + button.rectangle.h / 2 + 6);
 			},
 			onClick: () => {
 			//TODO Request Friend
@@ -341,12 +353,12 @@ export class Profile {
 	  ctx.font = "22px 'Press Start 2P', cursive";
 	  ctx.lineWidth = 4;
       ctx.strokeStyle = "black";
-	  ctx.strokeText("Matches", pos.x + pos.w * 0.40, pos.y + pos.h * 0.425, pos.w - (pos.x + pos.w * 0.5));
+	  ctx.strokeText("Matches", pos.x + pos.w * 0.35, pos.y + pos.h * 0.425, pos.w * 0.275);
 
 	  ctx.lineWidth = 3;
 
       ctx.fillStyle = "white";
-	  ctx.fillText("Matches", pos.x + pos.w * 0.40, pos.y + pos.h * 0.425, pos.w - (pos.x + pos.w * 0.5));
+	  ctx.fillText("Matches", pos.x + pos.w * 0.35, pos.y + pos.h * 0.425, pos.w * 0.275);
         
     /*if (this.avataresImage.complete) ctx.drawImage(this.avataresImage, 
       ((this.chooseAvatar - 4 >= 0 ? this.chooseAvatar - 4 : this.chooseAvatar) * 144) + 48, //+3
@@ -366,19 +378,19 @@ export class Profile {
 		draw: (ctx: CanvasRenderingContext2D) => {
 		  ctx.fillStyle = "red";
 		  ctx.strokeStyle = "black";
-		  ctx.fillRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
-		  ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
+		  ctx.fillRect(button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
+		  ctx.strokeRect(button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
 
 		  ctx.lineWidth = 3;
 
 		  ctx.beginPath();
-		  ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
-		  ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5 + button.rectangle.h - 10);
+		  ctx.moveTo(button.parent?.rectangle.x + button.rectangle.x + 5, button.rectangle.y + 5);
+		  ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5 + button.rectangle.h - 10);
 		  ctx.stroke();
 
 		  ctx.beginPath();
-		  ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5 + button.rectangle.h - 10);
-		  ctx.lineTo(button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5);
+		  ctx.moveTo(button.parent?.rectangle.x + button.rectangle.x + 5, button.rectangle.y + 5 + button.rectangle.h - 10);
+		  ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5);
 		  ctx.stroke();
 		},
 		onClick: () => {
@@ -402,15 +414,15 @@ export class Profile {
 	
 			  if (type == "right") {
 				ctx.beginPath();
-				ctx.moveTo(button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h / 2);
-				ctx.lineTo(button.rectangle.x + button.rectangle.w - arrowSize, button.rectangle.y);
-				ctx.lineTo(button.rectangle.x + button.rectangle.w - arrowSize, button.rectangle.y + button.rectangle.h);
+				ctx.moveTo(button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h / 2);
+				ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w - arrowSize, button.rectangle.y);
+				ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w - arrowSize, button.rectangle.y + button.rectangle.h);
 				ctx.closePath();
 			  } else if (type == "left") {
 				ctx.beginPath();
-				ctx.moveTo(button.rectangle.x, button.rectangle.y + button.rectangle.h / 2);
-				ctx.lineTo(button.rectangle.x + arrowSize, button.rectangle.y);
-				ctx.lineTo(button.rectangle.x + arrowSize, button.rectangle.y + button.rectangle.h);
+				ctx.moveTo(button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y + button.rectangle.h / 2);
+				ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + arrowSize, button.rectangle.y);
+				ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + arrowSize, button.rectangle.y + button.rectangle.h);
 				ctx.closePath();
 			  }
 			  ctx.fill();
