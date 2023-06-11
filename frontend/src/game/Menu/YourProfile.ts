@@ -1,56 +1,79 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
 import { userStore, type Historic } from "@/stores/userStore";
+import { Skin, TypeSkin } from "../ping_pong/Skin";
+import { AnimationMenu } from "./AnimationMenu";
 
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";
-import { Skin, TypeSkin } from "../ping_pong/Skin";
 
+//Image
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
-import { AnimationMenu } from "./AnimationMenu";
+import avatares from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg"
 
-export class Profile {
+
+export class YourProfile {
 	private _menu = new Menu({ layer: "Global", isFocus: true });
 	
-	private radius: number = 10;
-	private background: ElementUI = this.createBackground();	
+	private background: ElementUI = this.createBackground();
+	private customAvatar: ElementUI = this.createAvatar();	
+	private customPaddle: ElementUI = this.createCustomPaddle();
 	  
   	private user = userStore().user;
 	private player: Player;
 	private avatarImage = new Image();
-	private skinPaddle;
 
-	private avatarArrowL: string = "grey";
-	private avatarArrowR: string = "grey";
+	private matcheArrowL: string = "grey";
+	private matcheArrowR: string = "grey";
 	private page: number = 0;
+
+	//MiniPerfil
+	private skin = new Skin();
+	private avataresImage = new Image();
+	private chooseAvatar: number;
+	private skinPadleImage: HTMLImageElement;
+	private colorChoose: string = "";
+	private skinPadle : string = "";
+	private avatarArrowR: string = "white";
+	private avatarArrowL: string = "white";
+
+
 
 	constructor(player: Player) {
 
 		this.player = player;
 
 		this.avatarImage.src = this.user.infoPong.avatar ? this.user.infoPong.avatar : avatarDefault;
-  
-		const skin = new Skin();
-		this.skinPaddle = skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
 
-		this.avatarArrowR = this.user.infoPong.historic.length > 4 ? "white" : "grey";
+	    this.skinPadle = this.user.infoPong.skin.default.paddle;
+   		 this.skinPadleImage = this.skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
+
+		this.matcheArrowR = this.user.infoPong.historic.length > 4 ? "white" : "grey";
+
+		this.avataresImage.src = avatares;
+		this.chooseAvatar = Math.ceil((player.animation.sx / 48) / 3) + (player.animation.sy / 80);
+		this.avatarArrowL = this.chooseAvatar == 0 ? "grey" : "white";
+		this.avatarArrowR = this.chooseAvatar == 7 ? "grey" : "white";
+	
+		this.colorChoose = this.user.infoPong.color;
+		this.skinPadle = this.user.infoPong.skin.default.paddle;
+		this.skinPadleImage = this.skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
+
 
 
 		this.menu.add(this.background);
-		this.menu.add(this.background, this.createButtonExit(33.5, 6));
+		this.menu.add(this.background, this.createButtonExit(33.5, 6, "profile"));
 
-		//if is friend the label is "-" if is not friend "+"
-		this.menu.add(this.background, this.createButtonAddFriend("add_friend", 10.5, 23, "+"));
-		
-		this.menu.add(this.background, this.createButton("challenge", 3.25, 26, "Challenge", 9));
-		this.menu.add(this.background, this.createButton("send_message", 13.25, 26, "Send Message", 9));
-		this.menu.add(this.background, this.createButton("mute", 23.25, 26, "Mute", 9));
+		this.menu.add(this.background, this.createButtonCustom(35, 40, 40, "paddle"));
+		this.menu.add(this.background, this.createButtonCustom(35, 5, 35, "avatar"));
+
+		//Custom and Save Buttons
+		this.menu.add(this.background, this.createButton("save", 13.25, 26, "Save", 9));
 
 		const squareW = 10;
 		const squareH = 8;
 		const paddingX = 6;
 		const paddingY = 12;
 
-	  
     	//Arrow Buttons
 		this.menu.add(this.background, this.createArrowButton("left", 2.5, 33.5, 2));
 		this.menu.add(this.background, this.createArrowButton("right", 30.5, 33.5, 2));
@@ -69,7 +92,32 @@ export class Profile {
 		});
 
 		this.page = 0;
-					
+
+    	//Custom Menu
+    	this.menu.add(this.background, this.customPaddle);
+    	this.customPaddle.visible = false;
+		
+    	//Colors
+    	this.menu.add(this.customPaddle, this.createColorButton(34.5 + 1 * (10 / 3), 53.5, "red"));
+    	this.menu.add(this.customPaddle, this.createColorButton(34.5 + 2 * (10 / 3), 53.5, "#1e8c2f"));
+    	this.menu.add(this.customPaddle, this.createColorButton(34.5 + 3 * (10 / 3), 53.5, "orange"));
+    	this.menu.add(this.customPaddle, this.createColorButton(34.5 + 4 * (10 / 3), 53.5, "#de1bda"));
+    	this.menu.add(this.customPaddle, this.createColorButton(34.5 + 5 * (10 / 3), 53.5, "blue"));
+    	this.menu.add(this.customPaddle, this.createColorButton(34.5 + 6 * (10 / 3), 53.5, "#efc120"));
+		
+    	this.menu.add(this.customPaddle, this.createSkinButton(34.5 + 1 * (10 / 3), 66.5, ""));
+    	this.user.infoPong.skin.paddles.forEach((skin, index) => {
+    	  this.menu.add(this.customPaddle, this.createSkinButton(34.5 + (index + 2) * (10 / 3), 66.5, skin));
+    	});
+
+		//Custom Avatar
+		this.menu.add(this.background, this.customAvatar);
+    	this.customAvatar.visible = false;
+	
+		//Arrow Buttons
+		this.menu.add(this.customAvatar, this.createArrowButton("left", 2.5, 31.5, 2));
+		this.menu.add(this.customAvatar, this.createArrowButton("right", 7.5, 31.5, 2));
+
 	}
 
 	private createMatches(index: number, matche: Historic, x: number, y: number): ElementUI {
@@ -94,7 +142,7 @@ export class Profile {
 			ctx.strokeStyle = "#000";
 			ctx.lineWidth = 2;
 	
-			this.roundRect(ctx, product.parent?.rectangle.x + product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h, this.radius);
+			this.roundRect(ctx, product.parent?.rectangle.x + product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h, 10);
 	
 			ctx.fill();
 			ctx.stroke();
@@ -200,7 +248,7 @@ export class Profile {
 			ctx.strokeStyle = color;
 			ctx.lineWidth = 2;
 
-			this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+			this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
 
 			ctx.fill();
 			ctx.stroke();
@@ -246,42 +294,12 @@ export class Profile {
 	  return button;
 	}
 
-	private createButtonAddFriend(type: string, x: number, y: number, label: string): ElementUI {
-	  const button: ElementUI = {
-		type: type,
-		rectangle: { x: x + "%", y: y + "%", w: "1.5%", h: "2%" },
-		draw: (ctx: CanvasRenderingContext2D) => {
-		
-			ctx.fillStyle = "green";
-			  ctx.strokeStyle = "black";
-			  ctx.lineWidth = 2;
-
-			  this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
-
-			  ctx.fill();
-			  ctx.stroke();
-
-			  ctx.fillStyle = "black";
-			ctx.font = "10px 'Press Start 2P', cursive";
-
-			const labelWidth = ctx.measureText(label).width;
-
-			  ctx.fillText(label, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w / 2 - labelWidth/2, button.rectangle.y + button.rectangle.h / 2 + 6);
-			},
-			onClick: () => {
-			//TODO Request Friend
-			//Or UnFriend
-			},
-	  };
-	  return button;
-	}
-
 	private drawBackground(ctx: CanvasRenderingContext2D, pos: Rectangle) {
 	  const backgroundColor = "rgba(210, 180, 140, 0.6)";
 	  const borderColor = "black";
 
 	  ctx.fillStyle = backgroundColor;
-	  this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
+	  this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, 10);
 	  ctx.fill();
 
 	  ctx.strokeStyle = borderColor;
@@ -340,12 +358,11 @@ export class Profile {
         const pointx = (pos.w - pos.w * 0.15);
         const pointy = (pos.h* 0.07);
         
-        ctx.fillStyle = this.user.infoPong.color;
+        ctx.fillStyle = this.colorChoose;
         ctx.fillRect(pos.x + pointx, pos.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
-      
 
-        if (this.skinPaddle.complete) {
-          ctx.drawImage(this.skinPaddle, pos.x + pointx, pos.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
+        if (this.skinPadleImage.complete) {
+          ctx.drawImage(this.skinPadleImage, pos.x + pointx, pos.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
         }
           
         ctx.strokeStyle = "black";
@@ -374,10 +391,10 @@ export class Profile {
       pos.h * 0.80);*/
 	}
 
-	private createButtonExit(x: number, y: number): ElementUI {
+	private createButtonExit(x: number, y: number, type: string): ElementUI {
 	  const close_tab = new Audio(sound_close_tab);
 	  const button: ElementUI = {
-		type: "exit",
+		type: type,
 		rectangle: { x: x + "%", y: y + "%", w: "1%", h: "2%" },
 		draw: (ctx: CanvasRenderingContext2D) => {
 		  ctx.fillStyle = "red";
@@ -399,11 +416,65 @@ export class Profile {
 		},
 		onClick: () => {
 		  close_tab.play();
-		  this.menu.close();
+		  if (button.type == "profile") this.menu.close();
 		},
 	  };
 	  return button;
 	}
+
+	private createButtonCustom(x: number, y: number, h: number, type: string): ElementUI {
+		const close_tab = new Audio(sound_close_tab);
+		const button: ElementUI = {
+		  type: type,
+		  rectangle: { x: x + "%", y: y + "%", w: "2%", h: h + "%" },
+		  draw: (ctx: CanvasRenderingContext2D) => {
+			ctx.fillStyle = "white";
+			ctx.strokeStyle = "black";
+			ctx.lineWidth = 2;
+
+			this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
+
+			ctx.fill();
+			ctx.stroke();
+
+			ctx.fillStyle = "black";
+			ctx.font = "10px 'Press Start 2P', cursive";
+
+			const begin = button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.1;
+			const max_with = button.rectangle.w - (button.rectangle.w * 0.2);
+
+			let offset = 0;
+			let offsetmax = 0;
+			const labelWidth = ctx.measureText(type).width;
+			while (begin + offset + labelWidth < begin + max_with - offset)
+			{
+				offsetmax += button.rectangle.w * 0.05;
+				if (begin + offsetmax + labelWidth > begin + max_with - offset)
+					break ;
+				offset = offsetmax;
+			}
+
+			ctx.fillText(type, 
+			button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.1 + offset,
+			button.rectangle.y + button.rectangle.h / 2 + 6, 
+			button.rectangle.w - (button.rectangle.w * 0.2) - offset);
+		  },
+		  onClick: () => {
+			close_tab.play();
+			if (button.type == "avatar") 
+			{
+				this.customAvatar.visible = !this.customAvatar.visible;	
+				button.rectangle.x = (this.customAvatar.visible ? button.rectangle.x + button.parent?.rectangle.w * 0.28 : button.rectangle.x - (button.parent?.rectangle.w * 0.28));
+			}
+			else if (button.type == "paddle") 
+			{
+				this.customPaddle.visible = !this.customPaddle.visible;
+				button.rectangle.x = (this.customPaddle.visible ? 60 : 35);
+			}
+		  },
+		};
+		return button;
+	  }
 	
 	private createArrowButton(type: string, x: number, y: number, width: number): ElementUI {
 		const button: ElementUI = {
@@ -412,7 +483,7 @@ export class Profile {
 		  draw: (ctx: CanvasRenderingContext2D) => {
 			 
 			  ctx.strokeStyle = "black"; // Definir a cor do sublinhado preto
-			  ctx.fillStyle = button.type == "right" ? this.avatarArrowR : this.avatarArrowL;
+			  ctx.fillStyle = button.type == "right" ? this.matcheArrowR : this.matcheArrowL;
 	
 			  const arrowSize = Math.min(button.rectangle.w, button.rectangle.h); 
 	
@@ -436,15 +507,172 @@ export class Profile {
 				if (type === "left" && this.page > 0) this.page--;
 				else if (type === "right" && ((this.page + 1) * 4) - 1 < this.user.infoPong.historic.length - 1) this.page++;
 
-			  	if (this.page == 0) this.avatarArrowL = "grey";
-			  	else this.avatarArrowL = "white";
+			  	if (this.page == 0) this.matcheArrowL = "grey";
+			  	else this.matcheArrowL = "white";
 				
-			  	if (((this.page + 1) * 4) - 1 >= this.user.infoPong.historic.length - 1) this.avatarArrowR = "grey";
-			  	else this.avatarArrowR = "white";
+			  	if (((this.page + 1) * 4) - 1 >= this.user.infoPong.historic.length - 1) this.matcheArrowR = "grey";
+			  	else this.matcheArrowR = "white";
 			  },
 		};
 		return button;
 	  }
+
+	private createAvatar(): ElementUI {
+		const avatar: ElementUI = {
+		  type: "image",
+		  rectangle: { x: "35%", y: "5%", w: "10%", h: "35%" },
+		  draw: (context: any) => {
+			const pos : Rectangle = avatar.rectangle;
+			const backgroundColor = 'rgba(210, 180, 140, 0.6)';
+			const borderColor = "black";
+		
+			context.fillStyle = backgroundColor;
+			this.roundRect(context, pos.x, pos.y, pos.w, pos.h, 10);
+			context.fill();
+		
+			context.strokeStyle = borderColor;
+			context.lineWidth = 2;
+			context.stroke();
+		
+			//Avatar
+			context.strokeStyle = "black";
+			context.strokeRect(
+			  pos.x + pos.w * 0.10, 
+			  pos.y + pos.h * 0.1,
+			  pos.w * 0.8,
+			  pos.h * 0.80,
+			  );
+			  
+			context.fillStyle = 'rgba(0, 0, 0, 0.3)';
+		
+			context.fillRect(
+				pos.x + pos.w * 0.10, 
+				pos.y + pos.h * 0.1,
+				pos.w * 0.8,
+				pos.h * 0.80,
+				);
+			context.fillStyle = "white";
+				
+			if (this.avataresImage.complete) context.drawImage(this.avataresImage, 
+			  ((this.chooseAvatar - 4 >= 0 ? this.chooseAvatar - 4 : this.chooseAvatar) * 144) + 48, //+3
+			  (this.chooseAvatar - 4 >= 0 ? 1 : 0) * 320, //+4
+			  48, 80,
+			  pos.x + pos.w * 0.10, 
+			  pos.y + pos.h * 0.04,
+			  pos.w * 0.8,
+			  pos.h * 0.80);
+		  },
+		};
+		return avatar;
+	}
+
+	private createCustomPaddle(): ElementUI {
+		const custom: ElementUI = {
+		  type: "custom",
+		  rectangle: { x: "35%", y: "40%", w: "25%", h: "40%" },
+		  draw: (context: any) => {
+			const backgroundColor = 'rgba(210, 180, 140, 0.6)';//"#FFC857";
+			const borderColor = "black";
+		
+			context.fillStyle = backgroundColor;
+			this.roundRect(context, custom.rectangle.x, custom.rectangle.y, custom.rectangle.w, custom.rectangle.h, 10);
+			context.fill();
+		
+			context.strokeStyle = borderColor;
+			context.lineWidth = 2;
+			context.stroke();
+		
+			//Tittle
+			context.fillStyle = "#ffffff";
+			context.font = "25px 'Press Start 2P', cursive";
+			context.lineWidth = 4;
+			context.strokeText("Custom", custom.rectangle.x + custom.rectangle.w / 3, custom.rectangle.y + custom.rectangle.h * 0.125);
+			context.fillText("Custom", custom.rectangle.x + custom.rectangle.w / 3, custom.rectangle.y + custom.rectangle.h * 0.125);
+		
+			context.textAlign = "start";
+			//Type
+			context.fillStyle = "black";
+			context.font = "18px 'Press Start 2P', cursive";
+			context.fillText("Color:", custom.rectangle.x + custom.rectangle.w * 0.4, custom.rectangle.y + custom.rectangle.h * 0.285);
+		
+			//Skin
+			context.fillText("Skin:", custom.rectangle.x + custom.rectangle.w * 0.41, custom.rectangle.y + custom.rectangle.h * 0.625);
+		
+		  },
+		};
+		return custom;
+	}
+	
+	private createColorButton(x: number, y: number, color: string): ElementUI {
+		const button: ElementUI = {
+		  type: "color",
+		  rectangle: { x: x + "%", y: y + "%", w: "2.5%", h: "6%" },
+		  draw: (ctx: CanvasRenderingContext2D) => {
+			ctx.fillStyle = color;
+			ctx.strokeStyle = color == this.colorChoose ? "red" : "black";
+			ctx.lineWidth = 2;
+	
+			this.roundRect(ctx, button.parent?.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
+	
+			ctx.fill();
+			ctx.stroke();
+		  },
+		  onClick: () => {
+			this.colorChoose = color;
+		  },
+		};
+		return button;
+	}
+	
+	private createSkinButton(x: number, y: number, skin: string): ElementUI {
+		const skinImage = this.skin.get_skin(TypeSkin.Paddle + "_" + skin);
+		const button: ElementUI = {
+		  type: "skin",
+		  rectangle: { x: x + "%", y: y + "%", w: "2.5%", h: "12%" },
+		  draw: (ctx: CanvasRenderingContext2D) => {
+	
+			ctx.strokeStyle = skin == this.skinPadle ? "red" : "black";
+			ctx.lineWidth = 2;
+	
+			ctx.lineWidth = 3;
+			
+			if (skin == "") {
+			  ctx.beginPath();
+			  ctx.moveTo(button.parent?.parent?.rectangle.x + button.rectangle.x + 5, button.rectangle.y + 5);
+			  ctx.lineTo(button.parent?.parent?.rectangle.x + button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5 + button.rectangle.h - 10);
+			  ctx.stroke();
+	
+			  ctx.beginPath();
+			  ctx.moveTo(button.parent?.parent?.rectangle.x + button.rectangle.x + 5, button.rectangle.y + 5 + button.rectangle.h - 10);
+			  ctx.lineTo(button.parent?.parent?.rectangle.x + button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5);
+			  ctx.stroke();
+			} else if (skinImage.complete) {
+			  ctx.save();
+	
+			  ctx.beginPath();
+			  ctx.moveTo(button.parent?.parent?.rectangle.x + button.rectangle.x + 10, button.rectangle.y);
+			  ctx.arcTo(button.parent?.parent?.rectangle.x + button.rectangle.x + button.rectangle.w, button.rectangle.y, button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h, 10);
+			  ctx.arcTo(button.parent?.parent?.rectangle.x + button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h, button.rectangle.x, button.rectangle.y + button.rectangle.h, 10);
+			  ctx.arcTo(button.parent?.parent?.rectangle.x + button.rectangle.x, button.rectangle.y + button.rectangle.h, button.rectangle.x, button.rectangle.y, 10);
+			  ctx.arcTo(button.parent?.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.x + button.rectangle.w, button.rectangle.y, 10);
+			  ctx.closePath();
+			  ctx.clip();
+			  ctx.drawImage(skinImage, button.parent?.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
+	
+			  ctx.restore();
+			}
+	
+			this.roundRect(ctx, button.parent?.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
+	
+			ctx.stroke();
+		  },
+		  onClick: () => {
+			this.skinPadle = skin;
+			this.skinPadleImage = skinImage;
+		  },
+		};
+		return button;
+	}
 
 	get menu(): Menu {
 	  return this._menu;

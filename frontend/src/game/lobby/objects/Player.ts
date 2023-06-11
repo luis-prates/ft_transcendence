@@ -8,6 +8,7 @@ import { userStore, type Historic } from "@/stores/userStore";
 import { YourMiniPerfil } from "@/game/Menu/YourMiniPerfil";
 import { LeaderBoard } from "@/game/Menu/LeaderBoard";
 import { Profile } from "@/game/Menu/Profile";
+import { YourProfile } from "@/game/Menu/YourProfile";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
@@ -82,9 +83,9 @@ export class Player extends Character {
         user.infoPong.historic.push(history_game_2 as never);
         user.infoPong.historic.push(history_game_2 as never);
         
-        Game.instance.addMenu(new Profile(this).menu);
-       /* Game.instance.addMenu(new LeaderBoard().menu);
-        Game.instance.addMenu(new YourMiniPerfil(this).menu);*/
+        Game.instance.addMenu(new YourProfile(this).menu);
+        //Game.instance.addMenu(new LeaderBoard().menu);
+       // Game.instance.addMenu(new YourMiniPerfil(this).menu);
 
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {
