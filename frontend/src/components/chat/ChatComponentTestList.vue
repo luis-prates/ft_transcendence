@@ -1,6 +1,7 @@
 <template>
   <div class="parent-container">
     <div class="card mb-sm-3 mb-md-0 contacts_card">
+      <button class="hide_chat" @click="toggleChat">{{buttonString}}</button>
       <div class="card-header">
         <div class="input-group">
           <input type="text" placeholder="Search..." name="" class="form-control search" />
@@ -50,7 +51,6 @@
           </li>
         </ul>
       </div>
-      <button style="background-color: black; border-color: transparent; color: white;">Hide Chat</button>
     </div>
   </div>
 </template>
@@ -62,7 +62,8 @@ import "bootstrap/dist/js/bootstrap.min.js";
 import ChatItemTestComponent from "./ChatItemTestComponent.vue";
 import { chatStore, type channel } from "@/stores/chatStore";
 import "./App.css";
-import { defineProps, getCurrentInstance } from "vue";
+import { defineProps, ref, getCurrentInstance, type WebViewHTMLAttributes } from "vue";
+import { onMounted } from 'vue';
 
 const store = chatStore();
 
@@ -99,6 +100,34 @@ const toggleStatus = () => {
   const newStatus = !props.channelStatus;
   instance?.emit("update-channel-status", newStatus);
 };
+
+
+
+// Variável para controlar o estado do chat
+let isChatHidden = true;
+
+onMounted(() => {
+  toggleChat();
+});
+
+const buttonString = ref("⇑"); // Set initial button text
+
+// Função para alternar o estado do chat
+const toggleChat = () => {
+  const chatElement = document.querySelector(".chat") as any;
+
+  if (isChatHidden) {
+    // Mostrar o chat
+    chatElement.style.bottom = "-57%";
+  } else {
+    // Ocultar o chat
+    chatElement.style.bottom = "0%";
+  }
+  // Update the button text based on isChatHidden
+  buttonString.value = isChatHidden ? "⇑" : "⇓";
+  isChatHidden = !isChatHidden;//
+};
+
 </script>
 
 <style>
@@ -106,6 +135,7 @@ const toggleStatus = () => {
   height: 100%;
   display: flex;
   justify-content: flex-end;
+  pointer-events: all;
 }
 
 .contacts_card {

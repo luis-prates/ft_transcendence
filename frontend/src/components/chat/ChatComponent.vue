@@ -55,6 +55,7 @@ const updateChannelStatus = (newStatus: boolean) => {
     margin: 0px;
     display: flex;
     flex-direction: row;
+    pointer-events: none;
 }
 .chat_mensagen {
   flex-grow: 1;

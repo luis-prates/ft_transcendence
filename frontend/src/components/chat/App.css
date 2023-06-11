@@ -11,6 +11,7 @@ body,html{
     height: 100%;
     border-radius: 15px !important;
     background-color: rgba(20, 24, 7, 0.8) !important;
+    pointer-events: all;
   }
   .contacts_body{
     padding:  0.75rem 0 !important;
@@ -167,6 +168,11 @@ body,html{
   .close_chat {
     background-color: transparent;
     border-color: transparent;
+  }
+  .hide_chat {
+    background-color: black; 
+    border-color: transparent; 
+    color: white;
   }
   .msg_cotainer{
   margin-top: auto;
