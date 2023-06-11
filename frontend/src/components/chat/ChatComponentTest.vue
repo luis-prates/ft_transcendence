@@ -27,7 +27,7 @@
              </div> -->
         </div>
 
-        <div class="card-body msg_card_body">
+        <div class="card-body msg_card_body" ref="scrollContainer">
           <ChatComponentTestStart type="start" mensagem="." time="8:40 AM" />
           <ChatComponentTestStart type="end" mensagem="Ola" time="8:40 AM" />
           <ChatComponentTestStart type="start" mensagem="ehehehe" time="8:40 AM" />
@@ -55,11 +55,12 @@ import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
 import { ref } from "vue";
 import ChatComponentTestStart from "./ChatComponentTestStart.vue";
-import { defineProps, getCurrentInstance } from 'vue';
+import { defineProps, getCurrentInstance, watch } from 'vue';
+
 
 // Props declaration
 const props = defineProps({
- channelStatus: Boolean
+  channelStatus: Boolean
 });
 
 // Get the current component instance
@@ -76,6 +77,22 @@ const text = ref();
 
 function send() {
   console.log(text.value.value);
+}
+
+const scrollContainer = ref<HTMLElement | null>(null);
+
+watch(() => scrollContainer.value, (newContainer) => {
+  if (newContainer) { 
+    scrollToBottom();
+  }
+});
+
+function scrollToBottom() {
+  const container = scrollContainer.value;
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+    console.log("SCROLL FUNCTION");
+  }
 }
 </script>
 
