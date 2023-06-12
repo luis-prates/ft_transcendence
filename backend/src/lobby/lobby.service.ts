@@ -21,7 +21,7 @@ export class LobbyService {
 		const files = fs.readdirSync(pathMap);
 		files.forEach(file => {
 			if (file.includes('.json')) {
-				const map = new GameMap(file);
+				const map = new GameMap(file, this.playerService);
 				this.gameMaps.set(map.objectId, map);
 			}
 		});
@@ -43,7 +43,7 @@ export class LobbyService {
 		this.logger.debug(
 			'players count: ' + this.playerService.getPlayerCount(),
 		);
-		const player = this.playerService.getPlayer(payload);
+		const player = this.playerService.getPlayer(Number(payload.userId));
 		if (!player) {
 			this.logger.debug('player not found');
 			return;

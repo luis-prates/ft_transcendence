@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
-import { GameMap, Player, Lobby } from '../lobby';
-import { PlayerData } from '../lobby/Player';
-import { LobbyService } from '../lobby/lobby.service';
+import { Player } from '../lobby';
 
 @Injectable()
 export class PlayerService {
@@ -20,25 +18,25 @@ export class PlayerService {
 		return player;
 	}
 
-	removePlayer(socket: Socket, payload: any): void {
-		const player = this.players.get(Number(payload.userId));
+	removePlayer(player: Player): void {
+		const playerFromMap = this.players.get(Number(player.objectId));
 		if (!player) {
 			return;
 		}
 
-		player.destroy();
-		this.players.delete(Number(payload.userId));
-		this.sockets.delete(Number(payload.userId));
+		playerFromMap.destroy();
+		this.players.delete(Number(player.objectId));
+		this.sockets.delete(Number(player.objectId));
 	}
 
-	getPlayer(payload: any): Player {
+	getPlayer(userId: number): Player {
 		this.logger.debug(`number of players is ${this.players.size}`);
-		this.logger.debug('getPlayer with userId: ' + payload.userId);
+		this.logger.debug('getPlayer with userId: ' + userId);
 		// log each player in players map
-		const userId = Number(payload.userId);
 		for (const [key, value] of this.players.entries()) {
-			if (key == userId)
+			if (key == userId) {
 				return value;
+			}
 			this.logger.debug('key: ' + key + ' value: ' + value.name);
 		}
 		this.logger.debug('userId: ' + userId);
@@ -47,8 +45,26 @@ export class PlayerService {
 		return player;
 	}
 
+	getUserIdFromSocket(socket: Socket): number {
+		// find id in sockets map
+		for (const [key, value] of this.sockets.entries()) {
+			if (value.id == socket.id) {
+				return key;
+			}
+		}
+		return null;
+	}
+
 	getPlayerCount(): number {
 		return this.players.size;
+	}
+
+	getPlayers(): Map<number, Player> {
+		return this.players;
+	}
+
+	addPlayer(player: Player): void {
+		this.players.set(player.objectId, player);
 	}
 
 	hasPlayerFromObjectId(objectId: number): boolean {

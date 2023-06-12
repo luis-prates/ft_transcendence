@@ -18,11 +18,6 @@ export class AppController {
 		return this.appService.getHello();
 	}
 
-	@Post('v2/hello/sd/dsd')
-	d(as: any): string {
-		return this.appService.getHello();
-	}
-
 	@Get('v2/image/:imageName')
 	getImage(
 		@Param('imageName') imageName: string,

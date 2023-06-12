@@ -1,7 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Server } from 'socket.io';
-import { Lobby } from './lobby';
 
 import { ValidationPipe } from '@nestjs/common';
 

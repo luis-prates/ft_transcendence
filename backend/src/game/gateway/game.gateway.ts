@@ -6,7 +6,6 @@ import {
 	OnGatewayConnection,
 	OnGatewayDisconnect,
 	MessageBody,
-	WsResponse,
 	ConnectedSocket,
 } from '@nestjs/websockets';
 import { SocketService } from '../../socket/socket.service';
@@ -14,7 +13,6 @@ import { Server } from 'http';
 import { GameService } from '../game.service';
 import { Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
-import { Player } from '../../lobby';
 import { PlayerService } from '../../player/player.service';
 
 @WebSocketGateway(3001, { namespace: 'game', cors: { origin: '*' } })
@@ -48,12 +46,14 @@ export class GameGateway
 		console.log('On Connect');
 		const { query } = client.handshake;
 		this.logger.log(
-			`Client connected on /game namespace: ${client.id}, userId: ${JSON.stringify(query)}`,
+			`Client connected on /game namespace: ${
+				client.id
+			}, userId: ${JSON.stringify(query)}`,
 		);
 		const userId = Number(query.userId);
 		// set the current socket to the player game socket
 		this.logger.debug(`UserId is ${userId}`);
-		const player = this.playerService.getPlayer(query);
+		const player = this.playerService.getPlayer(userId);
 		if (!player) {
 			this.logger.error(`Player ${userId} not found`);
 			return;
@@ -65,8 +65,11 @@ export class GameGateway
 	}
 
 	handleDisconnect(client: Socket) {
-		const userId = client.data.userId;
+		const userId = this.playerService.getUserIdFromSocket(client);
 		this.logger.log(`Client disconnected on /game namespace: ${userId}`);
+		const player = this.playerService.getPlayer(userId);
+		this.logger.debug(`Removing Player ${userId} from playerService`);
+		this.playerService.removePlayer(player);
 		if (client.data.gameId) {
 			const gameId = client.data.gameId;
 			// Remove the player from the game
@@ -95,7 +98,9 @@ export class GameGateway
 						.get(gameId)
 						.filter(watcherId => watcherId !== userId),
 				);
-				this.logger.log(`Removed watcher ${userId} from game ${gameId}`);
+				this.logger.log(
+					`Removed watcher ${userId} from game ${gameId}`,
+				);
 				client.leave(`game-${gameId}-watcher`);
 			}
 		}

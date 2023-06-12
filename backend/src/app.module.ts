@@ -12,11 +12,10 @@ import { GameController } from './game/game.controller';
 import { GameService } from './game/game.service';
 import { GameModule } from './game/game.module';
 import { ChatModule } from './chat/chat.module';
-import { SocketService } from './socket/socket.service';
 import { LobbyService } from './lobby/lobby.service';
 import { LobbyModule } from './lobby/lobby.module';
-import { PlayerService } from './player/player.service';
 import { PlayerModule } from './player/player.module';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
 	imports: [
@@ -31,15 +30,9 @@ import { PlayerModule } from './player/player.module';
 		ChatModule,
 		LobbyModule,
 		PlayerModule,
+		SocketModule,
 	],
 	controllers: [AppController, FriendshipController, GameController],
-	providers: [
-		AppService,
-		FriendshipService,
-		GameService,
-		SocketService,
-		LobbyService,
-		PlayerService,
-	],
+	providers: [AppService, FriendshipService, GameService, LobbyService],
 })
 export class AppModule {}

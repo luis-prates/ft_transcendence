@@ -1,12 +1,12 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
-import { Game, Prisma, User } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameDto } from './dto';
 import { EventEmitter } from 'events';
-import { PlayerService } from '../player/player.service';
 import { GameClass } from '../ping_pong/GamePong';
 import { Player } from '../lobby';
 import { playerInfo } from '../ping_pong/SocketInterface';
+import { PlayerService } from '../player/player.service';
 
 @Injectable()
 export class GameService {
@@ -17,7 +17,10 @@ export class GameService {
 	// TODO: to be added to Game service
 	// private isInLobby = false;
 
-	constructor(private prisma: PrismaService, private players: PlayerService) {
+	constructor(
+		private prisma: PrismaService,
+		private playerService: PlayerService,
+	) {
 		this.events = new EventEmitter();
 	}
 
@@ -27,16 +30,17 @@ export class GameService {
 			data: {
 				gameType: body.gameType,
 				gameStats: Prisma.JsonNull,
-				players: {
-					connect: body.players.map(player => ({ id: player })),
-				},
+				//! used if players are added when game is created
+				// players: {
+				// 	connect: body.players.map(player => ({ id: player })),
+				// },
 			},
 			include: {
 				players: true,
 			},
 		});
 		this.logger.debug('game created in database: ', game);
-		const playerOne = await this.players.getPlayer(game.players[0].id);
+		const playerOne = this.playerService.getPlayer(body.players[0]);
 		// //! should it be here?
 		// //! will entry game be here or separate?
 		// if (game.players.length === 2) {

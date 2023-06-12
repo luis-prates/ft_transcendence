@@ -9,7 +9,7 @@ import {
 	MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { LobbyService } from './lobby.service';
+import { LobbyService } from '../lobby.service';
 import { Logger, UnauthorizedException } from '@nestjs/common';
 
 @WebSocketGateway(3001, { namespace: 'lobby', cors: { origin: '*' } })

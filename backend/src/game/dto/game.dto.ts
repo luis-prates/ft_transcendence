@@ -1,16 +1,17 @@
 import { GameStatus, GameType } from '@prisma/client';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
 	ArrayMaxSize,
 	IsArray,
+	IsBoolean,
 	IsEnum,
 	IsInt,
 	IsNotEmpty,
 	IsNumber,
 	IsOptional,
+	IsString,
 	ValidateNested,
 } from 'class-validator';
-import { gameRequest, playerInfo } from 'src/ping_pong/SocketInterface';
 
 class GameStatsDto {
 	@IsOptional()
@@ -32,6 +33,29 @@ class GameStatsDto {
 	@IsNotEmpty()
 	@IsInt()
 	loserScore: number;
+}
+
+class GameRequestDto {
+	@IsOptional()
+	@IsString()
+	objectId: string;
+
+	@IsOptional()
+	@Transform(({ value }) => parseInt(value))
+	@IsNumber()
+	maxScore: number;
+
+	@IsOptional()
+	@IsString()
+	table: string;
+
+	@IsOptional()
+	@IsString()
+	tableSkin: string;
+
+	@IsOptional()
+	@IsBoolean()
+	bot: boolean;
 }
 
 export class GameDto {
@@ -57,6 +81,7 @@ export class GameDto {
 	gameType?: GameType;
 
 	@IsNotEmpty()
+	@Type(() => GameRequestDto)
 	@ValidateNested()
-	gameRequest: gameRequest;
+	gameRequest: GameRequestDto;
 }

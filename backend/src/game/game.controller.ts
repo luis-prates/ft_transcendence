@@ -6,7 +6,6 @@ import {
 	ParseUUIDPipe,
 	Patch,
 	Post,
-	UseGuards,
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
