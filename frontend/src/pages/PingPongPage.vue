@@ -142,6 +142,8 @@ onMounted(function () {
         result: game.player1.score + "-" + game.player2.score,
       }
       user.infoPong.historic.push(history_game as never);
+
+      game.animation_points();
     }
 
     game.audio("music_stop");

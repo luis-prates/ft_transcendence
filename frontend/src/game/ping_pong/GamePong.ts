@@ -154,6 +154,20 @@ export class GamePong {
     this.context.fillText("_".repeat("WAITING!".length), 95, 380, this.width - 180);
   }
 
+  //Animation Loop 1000 milesecond (1second) for 30 fps
+	animation_points() {
+    
+    this.endGame.max_exp > this.endGame.exp ? this.endGame.exp += 5 : (this.endGame.max_money > this.endGame.money ? this.endGame.money++ : 
+      (this.endGame.max_watchers > this.endGame.watchers ? this.endGame.watchers++ : 0 ));
+      
+    new Audio(sound_coin).play();
+		
+    setTimeout(() => {
+      if (!(this.endGame.exp == this.endGame.max_exp && this.endGame.money == this.endGame.max_money && this.endGame.watchers == this.endGame.max_watchers))
+			  this.animation_points();
+		}, 1000 / 30);
+	}
+
   drawBoard()
   {
     this.context.fillStyle = 'rgba(0, 0, 0, 0.6)';
@@ -162,9 +176,6 @@ export class GamePong {
     this.context.strokeStyle = "black";
     this.context.strokeRect(85, 150, this.width - 170, 500);
     this.context.lineWidth = 2;
-  
-    this.endGame.max_exp > this.endGame.exp ? this.endGame.exp += 5 : (this.endGame.max_money > this.endGame.money ? this.endGame.money++ : 
-      (this.endGame.max_watchers > this.endGame.watchers ? this.endGame.watchers++ : 0 ));
 
     this.context.font = "40px 'Press Start 2P', cursive";
 
@@ -221,8 +232,6 @@ export class GamePong {
       this.context.strokeText("Go Back!", this.width / 2 - 110, 617.5)
       this.context.fillText("Go Back!", this.width / 2 - 110, 617.5);   
     }
-    else
-      new Audio(sound_coin).play();
   
     context.strokeRect(210, 250, 100, 100);
     context.strokeRect(this.width - 210 - 100, 250, 100, 100);

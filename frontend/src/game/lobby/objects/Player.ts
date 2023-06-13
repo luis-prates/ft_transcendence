@@ -75,13 +75,13 @@ export class Player extends Character {
           result: 0 + "-" + 3,
         }
         console.log(user.infoPong)
+       /* user.infoPong.historic.push(history_game_1 as never);
         user.infoPong.historic.push(history_game_1 as never);
         user.infoPong.historic.push(history_game_1 as never);
-        user.infoPong.historic.push(history_game_1 as never);
         user.infoPong.historic.push(history_game_2 as never);
         user.infoPong.historic.push(history_game_2 as never);
         user.infoPong.historic.push(history_game_2 as never);
-        user.infoPong.historic.push(history_game_2 as never);
+        user.infoPong.historic.push(history_game_2 as never);*/
         
         Game.instance.addMenu(new YourProfile(this).menu);
         //Game.instance.addMenu(new LeaderBoard().menu);

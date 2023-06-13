@@ -9,6 +9,7 @@ import sound_close_tab from "@/assets/audio/close.mp3";
 //Image
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import avatares from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
+import { NULL } from "sass";
 
 export class YourProfile {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -251,6 +252,9 @@ export class YourProfile {
 
   private createButton(type: string, x: number, y: number, label: string, width: number): ElementUI {
     let color = "black";
+    let fileInput: any;
+    if (type == "photo")
+      fileInput = document.getElementById("fileInput") as HTMLElement;
     const button: ElementUI = {
       type: type,
       rectangle: { x: x + "%", y: y + "%", w: width + "%", h: "4.5%" },
@@ -287,9 +291,45 @@ export class YourProfile {
             this.player.animation.sy =  (this.chooseAvatar - 4 >= 0 ? 1 : 0) * 320;
             this.user.infoPong.color = this.colorChoose;
             this.user.infoPong.skin.default.paddle = this.skinPadle;
-          }
+            this.user.infoPong.avatar = this.avatarImage.src ? this.avatarImage.src : this.user.infoPong.avatar;
+        }
+        if (type == "photo") {
+          fileInput.click();
+        }
       },
     };
+
+    if (type == "photo") 
+    {
+      fileInput.addEventListener("change", async (event: any) => {
+
+        if (event.target)
+        {
+          let fileForm = new FormData();
+          const selectedFile = event.target.files[0];
+          
+          fileForm.append("image", selectedFile, selectedFile.name);
+
+          try {
+            const response = await fetch("https://api.imgbb.com/1/upload?key=d9a1c108b92558d90d3b1bd9f59a507c", {
+              method: "POST",
+              body: fileForm,
+            });
+          
+            if (response.ok) {
+              const data = await response.json();
+              console.log("response data:", data);
+              this.avatarImage.src = data.data.display_url;
+            } else {
+              throw new Error("Erro na requisição");
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      });
+    }
+    
     return button;
   }
 
@@ -432,12 +472,12 @@ export class YourProfile {
       },
       onClick: () => {
         if (visible == false) return;
-        close_tab.play();
         if (button.type == "avatar_on") this.customAvatar.visible = false;
         else if (button.type == "paddle_on") this.customPaddle.visible = false;
         else if (button.type == "avatar_off") this.customAvatar.visible = true;
         else if (button.type == "paddle_off") this.customPaddle.visible = true;
         visible = false;
+        close_tab.play();
       },
     };
     return button;
