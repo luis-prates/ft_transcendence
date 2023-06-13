@@ -118,6 +118,9 @@ const toggleChat = () => {
 
   if (isChatHidden) {
     // Mostrar o chat
+    if (props.channelStatus) {
+      instance?.emit('update-channel-status', false);
+    }
     chatElement.style.bottom = "-57%";
   } else {
     // Ocultar o chat

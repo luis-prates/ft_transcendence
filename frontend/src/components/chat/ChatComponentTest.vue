@@ -68,7 +68,6 @@ const instance = getCurrentInstance();
 
 // Emit event from the child component
 const toggleStatus = () => {
-  console.log("Valor do status: " + props.channelStatus);
  const newStatus = !props.channelStatus;
  instance?.emit('update-channel-status', newStatus);
 };
