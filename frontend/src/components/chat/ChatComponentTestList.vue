@@ -6,7 +6,7 @@
         <div class="input-group">
           <input type="text" placeholder="Search..." name="" class="form-control search" />
           <div class="input-group-prepend">
-            <span class="input-group-text search_btn" @click="addChannel">+<i class="fas fa-search"></i></span>
+            <span class="input-group-text search_btn" @click="createChannel">+<i class="fas fa-search"></i></span>
           </div>
         </div>
       </div>
@@ -72,10 +72,26 @@ function selectChannel(channel: channel) {
   store.showChannel(channel);
 }
 
+//Creating a new channel:
+const createChannel = () => {
+  if (!props.channelStatus) {
+    console.log("Vai criar um novo channel");
+    instance?.emit("update-create-channel", true);
+  }
+  else {
+    console.log("Vai adicionar um novo user ao channel");
+  }
+  //instance?.emit("update-channel-status", newStatus);
+};
+
+//Testing the number of cahnnels created//Remover depois do backend devolver o objectId do channel em questao
+let maxObjectId = 0;
+
 //Buttom + addChannel
 function addChannel() {
+  maxObjectId++;
   const newChannel: channel = {
-    objectId: 1,
+    objectId: maxObjectId,
     name: "New Channel",
     avatar: "",
     password: "",
@@ -96,7 +112,6 @@ const instance = getCurrentInstance();
 
 // Emit event from the child component
 const toggleStatus = () => {
-  console.log("Valor do status: " + props.channelStatus);
   const newStatus = !props.channelStatus;
   instance?.emit("update-channel-status", newStatus);
 };
@@ -108,6 +123,7 @@ let isChatHidden = true;
 
 onMounted(() => {
   toggleChat();
+  addChannel();
 });
 
 const buttonString = ref("⇑"); // Set initial button text

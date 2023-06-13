@@ -55,7 +55,6 @@ function sendMessage() {
 
 onMounted(() => {
   socket.on("send_message", (data: any) => {
-    console.log("send_message", data);
     store.addMessage(data.objectId, data.message);
     setTimeout(function () {
       if (scroll.value) scroll.value.scrollTop = scroll.value.scrollHeight - scroll.value.clientHeight;

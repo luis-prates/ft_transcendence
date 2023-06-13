@@ -23,12 +23,11 @@ import { chatStore, type channel } from "@/stores/chatStore";
 const store = chatStore();
 
 function selectChannel(channel: channel) {
-  console.log("Carregou no channel!\n", channel);
   store.showChannel(channel);
 }
 
 function sendMessage() {
-  console.log("sendMessage");
+  console.log("sendMessage function called");
 }
 </script>
 
