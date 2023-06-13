@@ -9,6 +9,7 @@
     <LobbyComponent />
     <!-- <ProfileComponent class="profile" /> -->
   </div>
+  <input id="inputName" type="text" pattern="[A-Za-z0-9]+" value="" disabled="false" style="display: none; background-color: transparent; font-family: 'Press Start 2P';" @input="cleanInput" :maxlength="10">
 </template>
 
 <script setup lang="ts">
@@ -46,6 +47,19 @@ console.log(store.user);
 // function entryGame() {
 //   Router.push("/game?objectId=gameteste&maxScore=3&avatar=https://animesher.com/orig/1/146/1463/14634/animesher.com_okama-sanji-travesti-1463471.jpg&nickname=edos-san&color=orange&skinPlayer=pacman");
 // }
+
+function cleanInput(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const inputValue = input.value;
+  
+  const sanitizedValue = inputValue.replace(/[^A-Za-z0-9_-]+/g, '');
+  
+  const firstChar = sanitizedValue.charAt(0);
+  if (/[0-9]/.test(firstChar))
+    input.value = sanitizedValue.substring(1);
+  else
+    input.value = sanitizedValue;
+}
 </script>
 
 <style scoped>

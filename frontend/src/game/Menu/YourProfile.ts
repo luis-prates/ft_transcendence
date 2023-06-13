@@ -9,7 +9,7 @@ import sound_close_tab from "@/assets/audio/close.mp3";
 //Image
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import avatares from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
-import { NULL } from "sass";
+import pencil from "@/assets/images/lobby/pencil.png";
 
 export class YourProfile {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -25,6 +25,8 @@ export class YourProfile {
   private matcheArrowL: string = "grey";
   private matcheArrowR: string = "grey";
   private page: number = 0;
+
+  private new_nickname = "";
 
   //MiniPerfil
   private skin = new Skin();
@@ -46,6 +48,8 @@ export class YourProfile {
     this.skinPadleImage = this.skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
 
     this.matcheArrowR = this.user.infoPong.historic.length > 4 ? "white" : "grey";
+
+    this.new_nickname = this.user.nickname;
 
     this.avataresImage.src = avatares;
     this.chooseAvatar = Math.ceil(player.animation.sx / 48 / 3) + player.animation.sy / 80;
@@ -115,7 +119,7 @@ export class YourProfile {
     this.menu.add(this.background, this.createButtonCustom(46, 5, 35, "avatar_on", "grey"));
     this.menu.add(this.background, this.createButtonCustom(35, 5, 35, "avatar_off", "white"));
 
-	this.menu.add(this.background, this.createPencilButton(35, 5));
+	  this.menu.add(this.background, this.createPencilButton(26.5, 9, 2, 3));
   }
 
   private createMatches(index: number, matche: Historic, x: number, y: number): ElementUI {
@@ -263,11 +267,22 @@ export class YourProfile {
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
 
+        if (type == "save" && 
+        (this.player.animation.sx !== ((this.chooseAvatar - 4 >= 0 ? this.chooseAvatar - 4 : this.chooseAvatar) * 144) ||
+        this.player.animation.sy !== ((this.chooseAvatar - 4 >= 0 ? 1 : 0) * 320) ||
+        this.user.infoPong.color !== this.colorChoose ||
+        this.user.infoPong.skin.default.paddle !== this.skinPadle ||
+        this.user.infoPong.avatar !== this.avatarImage.src ||
+        this.user.nickname !== this.new_nickname))
+        {
+          ctx.fillStyle = "green";
+        }
         this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
-
+        
+        
         ctx.fill();
         ctx.stroke();
-
+        
         ctx.fillStyle = "black";
         ctx.font = "10px 'Press Start 2P', cursive";
 
@@ -292,6 +307,7 @@ export class YourProfile {
             this.user.infoPong.color = this.colorChoose;
             this.user.infoPong.skin.default.paddle = this.skinPadle;
             this.user.infoPong.avatar = this.avatarImage.src ? this.avatarImage.src : this.user.infoPong.avatar;
+            this.user.nickname = this.new_nickname;
         }
         if (type == "photo") {
           fileInput.click();
@@ -345,13 +361,9 @@ export class YourProfile {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    //NickName
-    ctx.fillStyle = "black";
-    ctx.font = "22px 'Press Start 2P', cursive";
-    ctx.fillText(this.user.nickname, pos.x + pos.w * 0.3, pos.y + pos.h * 0.1, pos.w - (pos.x + pos.w * 0.5));
-
     //Level
     ctx.font = "12px 'Press Start 2P', cursive";
+    ctx.fillStyle = "black";
     ctx.fillText("Level: " + this.user.infoPong.level, pos.x + pos.w * 0.3, pos.y + pos.h * 0.13, pos.w - (pos.x + pos.w * 0.5));
 
     //Money
@@ -441,7 +453,13 @@ export class YourProfile {
       },
       onClick: () => {
         close_tab.play();
-        if (button.type == "profile") this.menu.close();
+        if (button.type == "profile") { 
+          
+          this.menu.close();
+          const inputName = document.getElementById("inputName") as HTMLInputElement;
+          inputName.disabled = true;
+          inputName.style.display = "none";
+        }
       },
     };
     return button;
@@ -687,41 +705,62 @@ export class YourProfile {
     return button;
   }
 
-  private createPencilButton(x: number, y: number): ElementUI {
+  private createPencilButton(x: number, y: number, w: number, h: number): ElementUI {
+    const pencilImage = new Image();
+    pencilImage.src = pencil;
+
+    let edit: boolean = false;
+    
+    const inputName = document.getElementById("inputName") as HTMLInputElement;
+    inputName.value = this.new_nickname;
+    inputName.disabled = edit;
+
     const button: ElementUI = {
       type: "pencil",
-      rectangle: { x: x + "%", y: y + "%", w: "2.5%", h: "12%" },
+      rectangle: { x: x + "%", y: y + "%", w: w + "%", h: h + "%" },
       draw: (ctx: CanvasRenderingContext2D) => {
 
-			// //TODO
-        	// const pencilColor = "black";
-			// const pencilSize = 10;
+        const pos_x: number = button.parent?.rectangle.x + button.parent?.rectangle.w * 0.3;
+        const pos_y: number = button.parent?.rectangle.y + button.parent?.rectangle.h * 0.055;
+        const width: number = button.parent?.rectangle.w * 0.45;
+        
+        inputName.style.width = width + "px";
+        inputName.style.position = "absolute";
+        inputName.style.top = pos_y + "px";
+        inputName.style.left = pos_x + "px";
 
-			// ctx.fillStyle = "brown";
-			// const rectX = button.rectangle.x *button.rectangle.w;
-			// const rectY = button.rectangle.y *button.rectangle.h;
-			// const rectWidth = button.rectangle.w *button.rectangle.w;
-			// const rectHeight = button.rectangle.h *button.rectangle.h;
-	  
-      		// ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
 
-      		// // Iniciar o desenho do lápis
-      		// ctx.beginPath();
-      		// ctx.moveTo(rectX + rectWidth * 0.5, rectY); // Posição inicial do lápis
+        if (edit == false)
+        {
+          //NickName
+          ctx.fillStyle = "black";
+          ctx.font = "22px 'Press Start 2P', cursive";
+          ctx.fillText(this.new_nickname, 
+            button.parent?.rectangle.x + button.parent?.rectangle.w * 0.3, 
+            button.parent?.rectangle.y + button.parent?.rectangle.h * 0.1, 
+            button.parent?.rectangle.w * 0.45);
+        }
 
-      		// // Desenhar com o lápis
-      		// ctx.strokeStyle = pencilColor;
-      		// ctx.lineWidth = pencilSize;
-      		// ctx.lineTo(rectX + rectWidth, rectY + rectHeight); // Primeiro traço
-      		// ctx.lineTo(rectX + rectWidth * 0.75, rectY + rectHeight * 0.75); // Segundo traço
-      		// ctx.lineTo(rectX + rectWidth * 0.25, rectY + rectHeight * 0.75); // Terceiro traço
-      		// ctx.lineTo(rectX + rectWidth * 0.5, rectY); // Retorno ao ponto inicial
-      		// ctx.stroke();
+        if (pencilImage.complete)
+          ctx.drawImage(pencilImage, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
+        
+        this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
 
-			// // Finalizar o desenho do lápis
-			// ctx.closePath();
       },
       onClick: () => {
+        if (edit)
+        {
+          edit = false;
+          inputName.disabled = true;
+          inputName.style.display = "none";
+          this.new_nickname = inputName.value;
+        }
+        else
+        {
+          edit = true;
+          inputName.disabled = false;
+          inputName.style.display = "block";
+        }
 
       },
     };

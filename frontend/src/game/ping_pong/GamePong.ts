@@ -154,10 +154,13 @@ export class GamePong {
     this.context.fillText("_".repeat("WAITING!".length), 95, 380, this.width - 180);
   }
 
-  //Animation Loop 1000 milesecond (1second) for 30 fps
+  //Animation Loop 1000 milesecond (1second) for 10 fps
 	animation_points() {
     
-    this.endGame.max_exp > this.endGame.exp ? this.endGame.exp += 5 : (this.endGame.max_money > this.endGame.money ? this.endGame.money++ : 
+    let gain_exp = Math.ceil(this.endGame.max_exp / 10);
+    gain_exp = this.endGame.exp + gain_exp > this.endGame.max_exp ? this.endGame.max_exp - gain_exp : gain_exp;
+
+    this.endGame.max_exp > this.endGame.exp ? this.endGame.exp += gain_exp : (this.endGame.max_money > this.endGame.money ? this.endGame.money++ : 
       (this.endGame.max_watchers > this.endGame.watchers ? this.endGame.watchers++ : 0 ));
       
     new Audio(sound_coin).play();
@@ -165,7 +168,7 @@ export class GamePong {
     setTimeout(() => {
       if (!(this.endGame.exp == this.endGame.max_exp && this.endGame.money == this.endGame.max_money && this.endGame.watchers == this.endGame.max_watchers))
 			  this.animation_points();
-		}, 1000 / 30);
+		}, 1000 / 10);
 	}
 
   drawBoard()
