@@ -61,7 +61,7 @@ export class Player extends Character {
       if (this.select == this) {
         
         const user = userStore().user;
-        const history_game_1: Historic = {
+        /*const history_game_1: Historic = {
           winner: user.nickname,
           loser: "Marvin",
           player1: user.nickname,
@@ -75,7 +75,6 @@ export class Player extends Character {
           player2: "Marvin2",
           result: 0 + "-" + 3,
         }
-        console.log(user.infoPong)
         user.infoPong.historic.push(history_game_1 as never);
         user.infoPong.historic.push(history_game_1 as never);
         user.infoPong.historic.push(history_game_1 as never);
@@ -83,12 +82,19 @@ export class Player extends Character {
         user.infoPong.historic.push(history_game_2 as never);
         user.infoPong.historic.push(history_game_2 as never);
         user.infoPong.historic.push(history_game_2 as never);
-        
-       // Game.instance.addMenu(new YourProfile(this).menu);
-        Game.instance.addMenu(new Shop().menu);
 
-        //Game.instance.addMenu(new LeaderBoard().menu);
-       // Game.instance.addMenu(new YourMiniPerfil(this).menu);
+        //skin 
+        user.infoPong.skin.paddles.push("mario" as never);
+        user.infoPong.skin.paddles.push("pacman" as never);
+        user.infoPong.skin.paddles.push("onepiece" as never);
+        user.infoPong.skin.paddles.push("42Lisboa" as never);
+        user.infoPong.skin.paddles.push("42Lisboa" as never);
+        user.infoPong.skin.paddles.push("onepiece" as never);
+        user.infoPong.skin.paddles.push("pacman" as never);
+        user.infoPong.skin.paddles.push("mario" as never);
+        console.log(user.infoPong)*/
+
+        Game.instance.addMenu(new YourProfile(this).menu);
 
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {

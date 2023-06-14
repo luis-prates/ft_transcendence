@@ -10,6 +10,7 @@ import sound_close_tab from "@/assets/audio/close.mp3";
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import avatares from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
 import pencil from "@/assets/images/lobby/pencil.png";
+import { PaginationMenu } from "./PaginationMenu";
 
 export class YourProfile {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -22,22 +23,19 @@ export class YourProfile {
   private player: Player;
   private avatarImage = new Image();
 
-  private matcheArrowL: string = "grey";
-  private matcheArrowR: string = "grey";
-  private page: number = 0;
+  private avatar_pagination: PaginationMenu;
+  private matche_pagination: PaginationMenu;
+  private paddle_pagination: PaginationMenu;
 
   private new_nickname = "";
 
   //MiniPerfil
   private skin = new Skin();
   private avataresImage = new Image();
-  private chooseAvatar: number;
   private skinPadleImage: HTMLImageElement;
   private colorChoose: string = "";
   private skinPadle: string = "";
 
-  private avatarArrowR: string = "white";
-  private avatarArrowL: string = "white";
 
   constructor(player: Player) {
     this.player = player;
@@ -47,19 +45,22 @@ export class YourProfile {
     this.skinPadle = this.user.infoPong.skin.default.paddle;
     this.skinPadleImage = this.skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
 
-    this.matcheArrowR = this.user.infoPong.historic.length > 4 ? "white" : "grey";
+    this.matche_pagination = new PaginationMenu(this.user.infoPong.historic, 4, 2, this.background, this.menu);
 
     this.new_nickname = this.user.nickname;
 
     this.avataresImage.src = avatares;
-    this.chooseAvatar = Math.ceil(player.animation.sx / 48 / 3) + player.animation.sy / 80;
-    this.avatarArrowL = this.chooseAvatar == 0 ? "grey" : "white";
-    this.avatarArrowR = this.chooseAvatar == 7 ? "grey" : "white";
 
+    this.avatar_pagination = new PaginationMenu([ 0 , 1 , 2 , 3 , 4 , 5, 6, 7], 1, 1, this.customAvatar);
+    this.avatar_pagination.page = Math.ceil(player.animation.sx / 48 / 3) + player.animation.sy / 80;
+
+    
+    this.paddle_pagination = new PaginationMenu(this.user.infoPong.skin.paddles, 4, 4, this.customPaddle);
     this.colorChoose = this.user.infoPong.color;
     this.skinPadle = this.user.infoPong.skin.default.paddle;
     this.skinPadleImage = this.skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
 
+    
     this.menu.add(this.background);
     this.menu.add(this.background, this.createButtonExit(33.5, 6, "profile"));
 
@@ -67,30 +68,31 @@ export class YourProfile {
     this.menu.add(this.background, this.createButton("photo", 1, 26, "Update Photo", 9));
     this.menu.add(this.background, this.createButton("save", 28, 26, "Save", 5));
 
-    const squareW = 10;
-    const squareH = 8;
-    const paddingX = 6;
-    const paddingY = 12;
 
     //Arrow Buttons
-    this.menu.add(this.background, this.createArrowButton("matche", "left", 2.5, 33.5, 2));
-    this.menu.add(this.background, this.createArrowButton("matche", "right", 30.5, 33.5, 2));
+    this.menu.add(this.background, this.matche_pagination.createArrowButton("left", 2.5, 33.5, 2));
+    this.menu.add(this.background, this.matche_pagination.createArrowButton("right", 30.5, 33.5, 2));
 
-    this.user.infoPong.historic.forEach((matche, index) => {
-      if ((index == 0 ? index + 1 : index) % 4 == 0) this.page++;
+    let squareW = 10;
+    let squareH = 8;
+    let paddingX = 6;
+    let paddingY = 12;
 
-      const i = index - this.page * 4;
+    let page = 0;
 
-      const squareX = 1 + (i % 2) * (squareW + paddingX);
-      const squareY = 30 + paddingY + Math.floor(i / 2) * (squareH + paddingY);
+    this.user.infoPong.historic.forEach((matche: any, index: number) => {
+      if ((index == 0 ? index + 1 : index) % this.matche_pagination.max_for_page == 0) page++;
+
+      const i = index - page * this.matche_pagination.max_for_page;
+
+      const squareX = 1 + (i % this.matche_pagination.max_for_line) * (squareW + paddingX);
+      const squareY = 30 + paddingY + Math.floor(i / this.matche_pagination.max_for_line) * (squareH + paddingY);
       this.menu.add(this.background, this.createMatches(index, matche, squareX, squareY));
     });
 
-    this.page = 0;
-
     //Custom Menu
     this.menu.add(this.background, this.customPaddle);
-    this.customPaddle.visible = true;
+    this.customPaddle.visible = false;
 
     //Colors
     this.menu.add(this.customPaddle, this.createColorButton(34.5 + 1 * (10 / 3), 53.5, "red"));
@@ -100,18 +102,32 @@ export class YourProfile {
     this.menu.add(this.customPaddle, this.createColorButton(34.5 + 5 * (10 / 3), 53.5, "blue"));
     this.menu.add(this.customPaddle, this.createColorButton(34.5 + 6 * (10 / 3), 53.5, "#efc120"));
 
-    this.menu.add(this.customPaddle, this.createSkinButton(34.5 + 1 * (10 / 3), 66.5, ""));
-    this.user.infoPong.skin.paddles.forEach((skin, index) => {
-      this.menu.add(this.customPaddle, this.createSkinButton(34.5 + (index + 2) * (10 / 3), 66.5, skin));
+    //Paddle Skins
+    page = 0;
+    
+    this.menu.add(this.customPaddle, this.createSkinButton(-1, "", 35.5 + 1 * (10 / 3), 66.5));
+    this.user.infoPong.skin.paddles.forEach((skin: any, index: number) => {
+      if ((index == 0 ? index + 1 : index) % this.paddle_pagination.max_for_page == 0) page++;
+
+      const i = index - page * this.paddle_pagination.max_for_page;
+
+      const squareX = 35.5 + (i + 2 % this.paddle_pagination.max_for_line) * (10 / 3);
+      const squareY = 66.5;
+
+      this.menu.add(this.customPaddle, this.createSkinButton(index, skin, squareX, squareY));
     });
+
+    //Arrow Buttons
+    this.menu.add(this.background, this.paddle_pagination.createArrowButton("left", 35.5, 70.5, 2));
+    this.menu.add(this.background, this.paddle_pagination.createArrowButton("right", 56.5, 70.5, 2));
 
     //Custom Avatar
     this.menu.add(this.background, this.customAvatar);
-    this.customAvatar.visible = true;
+    this.customAvatar.visible = false;
 
     //Arrow Buttons
-    this.menu.add(this.background, this.createArrowButton("avatar", "left", 35 + 2, 31.5, 2));
-    this.menu.add(this.background, this.createArrowButton("avatar", "right", 35 + 7.25, 31.5, 2));
+    this.menu.add(this.background, this.avatar_pagination.createArrowButton("left", 35 + 2, 31.5, 2));
+    this.menu.add(this.background, this.avatar_pagination.createArrowButton("right", 35 + 7.25, 31.5, 2));
 
     //Custom On / Off
     this.menu.add(this.background, this.createButtonCustom(59, 40, 40, "paddle_on", "grey"));
@@ -130,10 +146,14 @@ export class YourProfile {
       type: "image",
       rectangle: { x: x + "%", y: y + "%", w: "15%", h: "15%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        const currPageStart = this.page * 4;
-        const currPageEnd = (this.page + 1) * 4 - 1;
-
-        if (!(currPageStart <= index && index <= currPageEnd)) return;
+        
+        if (!(this.matche_pagination.isIndexInCurrentPage(index))) {
+          if (product.enable)
+            product.enable = false;
+          return;
+        }
+        if (!product.enable)
+          product.enable = true;
 
         const offSetTittle = this.background.rectangle.y * 1.75;
 
@@ -148,17 +168,6 @@ export class YourProfile {
 
         ctx.fillStyle = "#000";
         ctx.font = "20px 'Press Start 2P', cursive";
-
-        //Regua Vertical
-        /*ctx.strokeRect(product.rectangle.x + ((product.rectangle.w) / 2), product.rectangle.y, 1, product.rectangle.h + + product.rectangle.w * 0.07);
-			ctx.strokeRect(product.rectangle.x + (product.rectangle.w + product.rectangle.w * 0.07) / 3, product.rectangle.y, 1, product.rectangle.h + + product.rectangle.w * 0.07);
-			ctx.strokeRect((product.rectangle.x + product.rectangle.w) - (product.rectangle.w + product.rectangle.w * 0.07) / 3, product.rectangle.y, 1, product.rectangle.h + + product.rectangle.w * 0.07);
-			*/
-        //Regua Horizontal
-        /*ctx.strokeRect(product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3, 1);
-			ctx.strokeRect(product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3, 1);
-			ctx.strokeRect(product.rectangle.x + product.rectangle.w * 0.35, product.rectangle.y + product.rectangle.h * 0.2, product.rectangle.w * 0.3, 1);
-			*/
 
         ctx.fillText(matche.result, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
 
@@ -268,8 +277,8 @@ export class YourProfile {
         ctx.lineWidth = 2;
 
         if (type == "save" && 
-        (this.player.animation.sx !== ((this.chooseAvatar - 4 >= 0 ? this.chooseAvatar - 4 : this.chooseAvatar) * 144) ||
-        this.player.animation.sy !== ((this.chooseAvatar - 4 >= 0 ? 1 : 0) * 320) ||
+        (this.player.animation.sx !== ((this.avatar_pagination.page - 4 >= 0 ? this.avatar_pagination.page - 4 : this.avatar_pagination.page) * 144) ||
+        this.player.animation.sy !== ((this.avatar_pagination.page - 4 >= 0 ? 1 : 0) * 320) ||
         this.user.infoPong.color !== this.colorChoose ||
         this.user.infoPong.skin.default.paddle !== this.skinPadle ||
         this.user.infoPong.avatar !== this.avatarImage.src ||
@@ -302,8 +311,8 @@ export class YourProfile {
       },
       onClick: () => {
         if (type == "save") {
-            this.player.animation.sx = (this.chooseAvatar - 4 >= 0 ? this.chooseAvatar - 4 : this.chooseAvatar) * 144;
-            this.player.animation.sy =  (this.chooseAvatar - 4 >= 0 ? 1 : 0) * 320;
+            this.player.animation.sx = (this.avatar_pagination.page - 4 >= 0 ? this.avatar_pagination.page - 4 : this.avatar_pagination.page) * 144;
+            this.player.animation.sy =  (this.avatar_pagination.page - 4 >= 0 ? 1 : 0) * 320;
             this.user.infoPong.color = this.colorChoose;
             this.user.infoPong.skin.default.paddle = this.skinPadle;
             this.user.infoPong.avatar = this.avatarImage.src ? this.avatarImage.src : this.user.infoPong.avatar;
@@ -504,61 +513,6 @@ export class YourProfile {
     return button;
   }
 
-  private createArrowButton(type: string, dir: string, x: number, y: number, width: number): ElementUI {
-    const button: ElementUI = {
-      type: type + "_" + dir,
-      rectangle: { x: x + "%", y: y + "%", w: width + "%", h: "4%" },
-      draw: (ctx: CanvasRenderingContext2D) => {
-        if (type == "avatar" && this.customAvatar.visible == false) return;
-
-        ctx.strokeStyle = "black"; // Definir a cor do sublinhado preto
-        ctx.fillStyle = type == "avatar" ? (dir == "right" ? this.avatarArrowR : this.avatarArrowL) : dir == "right" ? this.matcheArrowR : this.matcheArrowL;
-
-        const arrowSize = Math.min(button.rectangle.w, button.rectangle.h);
-
-        if (dir == "right") {
-          ctx.beginPath();
-          ctx.moveTo(button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h / 2);
-          ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w - arrowSize, button.rectangle.y);
-          ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w - arrowSize, button.rectangle.y + button.rectangle.h);
-          ctx.closePath();
-        } else if (dir == "left") {
-          ctx.beginPath();
-          ctx.moveTo(button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y + button.rectangle.h / 2);
-          ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + arrowSize, button.rectangle.y);
-          ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + arrowSize, button.rectangle.y + button.rectangle.h);
-          ctx.closePath();
-        }
-        ctx.fill();
-        ctx.stroke();
-      },
-      onClick: () => {
-        if (type == "avatar") {
-		  if (this.customAvatar.visible == false) return;
-
-          if (dir == "left" && this.chooseAvatar > 0) this.chooseAvatar -= 1;
-          else if (dir == "right" && this.chooseAvatar < 7) this.chooseAvatar += 1;
-
-          if (this.chooseAvatar == 0) this.avatarArrowL = "grey";
-          else this.avatarArrowL = "white";
-
-          if (this.chooseAvatar == 7) this.avatarArrowR = "grey";
-          else this.avatarArrowR = "white";
-        } else if (type == "matche") {
-          if (dir == "left" && this.page > 0) this.page--;
-          else if (dir == "right" && (this.page + 1) * 4 - 1 < this.user.infoPong.historic.length - 1) this.page++;
-
-          if (this.page == 0) this.matcheArrowL = "grey";
-          else this.matcheArrowL = "white";
-
-          if ((this.page + 1) * 4 - 1 >= this.user.infoPong.historic.length - 1) this.matcheArrowR = "grey";
-          else this.matcheArrowR = "white";
-        }
-      },
-    };
-    return button;
-  }
-
   private createAvatar(): ElementUI {
     const avatar: ElementUI = {
       type: "image",
@@ -588,8 +542,8 @@ export class YourProfile {
         if (this.avataresImage.complete)
           context.drawImage(
             this.avataresImage,
-            (this.chooseAvatar - 4 >= 0 ? this.chooseAvatar - 4 : this.chooseAvatar) * 144 + 48, //+3
-            (this.chooseAvatar - 4 >= 0 ? 1 : 0) * 320, //+4
+            (this.avatar_pagination.page - 4 >= 0 ? this.avatar_pagination.page - 4 : this.avatar_pagination.page) * 144 + 48, //+3
+            (this.avatar_pagination.page - 4 >= 0 ? 1 : 0) * 320, //+4
             48,
             80,
             pos.x + pos.w * 0.09,
@@ -659,12 +613,21 @@ export class YourProfile {
     return button;
   }
 
-  private createSkinButton(x: number, y: number, skin: string): ElementUI {
+  private createSkinButton(index: number, skin: string, x: number, y: number): ElementUI {
     const skinImage = this.skin.get_skin(TypeSkin.Paddle + "_" + skin);
     const button: ElementUI = {
       type: "skin",
       rectangle: { x: x + "%", y: y + "%", w: "2.5%", h: "12%" },
       draw: (ctx: CanvasRenderingContext2D) => {
+        
+        if (index > 0 && !(this.paddle_pagination.isIndexInCurrentPage(index))) {
+          if (button.enable)
+            button.enable = false;
+          return;
+        }
+        if (!button.enable)
+          button.enable = true;
+        
         ctx.strokeStyle = skin == this.skinPadle ? "red" : "black";
         ctx.lineWidth = 2;
 
@@ -701,6 +664,9 @@ export class YourProfile {
         ctx.stroke();
       },
       onClick: () => {
+
+        if (index > 0 && !(this.paddle_pagination.isIndexInCurrentPage(index))) return;
+
         this.skinPadle = skin;
         this.skinPadleImage = skinImage;
       },
@@ -769,9 +735,6 @@ export class YourProfile {
     };
     return button;
   }
-
-
-  
 
   get menu(): Menu {
     return this._menu;

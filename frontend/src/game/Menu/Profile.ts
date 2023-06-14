@@ -7,6 +7,7 @@ import { Skin, TypeSkin } from "../ping_pong/Skin";
 
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import { AnimationMenu } from "./AnimationMenu";
+import { PaginationMenu } from "./PaginationMenu";
 
 export class Profile {
 	private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -19,9 +20,7 @@ export class Profile {
 	private avatarImage = new Image();
 	private skinPaddle;
 
-	private avatarArrowL: string = "grey";
-	private avatarArrowR: string = "grey";
-	private page: number = 0;
+	private matche_pagination: PaginationMenu;
 
 	constructor(player: Player) {
 
@@ -32,8 +31,7 @@ export class Profile {
 		const skin = new Skin();
 		this.skinPaddle = skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
 
-		this.avatarArrowR = this.user.infoPong.historic.length > 4 ? "white" : "grey";
-
+		this.matche_pagination = new PaginationMenu(this.user.infoPong.historic, 4, 2, this.background, this.menu);
 
 		this.menu.add(this.background);
 		this.menu.add(this.background, this.createButtonExit(33.5, 6));
@@ -45,31 +43,28 @@ export class Profile {
 		this.menu.add(this.background, this.createButton("send_message", 13.25, 26, "Send Message", 9));
 		this.menu.add(this.background, this.createButton("mute", 23.25, 26, "Mute", 9));
 
-		const squareW = 10;
-		const squareH = 8;
-		const paddingX = 6;
-		const paddingY = 12;
-
-	  
-    	//Arrow Buttons
-		this.menu.add(this.background, this.createArrowButton("left", 2.5, 33.5, 2));
-		this.menu.add(this.background, this.createArrowButton("right", 30.5, 33.5, 2));
 		
-		this.user.infoPong.historic.forEach((matche, index) => {
+    	//Arrow Buttons
+    	this.menu.add(this.background, this.matche_pagination.createArrowButton("left", 2.5, 33.5, 2));
+    	this.menu.add(this.background, this.matche_pagination.createArrowButton("right", 30.5, 33.5, 2));
 
-			
-			if ((index == 0 ? index + 1 : index) % 4 == 0)
-				this.page++;
-			
-			const i = index - (this.page * 4);
+		const squareW = 10;
+    	const squareH = 8;
+    	const paddingX = 6;
+    	const paddingY = 12;
 
-			const squareX = 1 + (i % 2) * (squareW + paddingX);
-			const squareY = 30 + paddingY + Math.floor(i / 2) * (squareH + paddingY);
-			this.menu.add(this.background, this.createMatches(index, matche, squareX, squareY));
-		});
+    	let page = 0;
 
-		this.page = 0;
-					
+    	this.user.infoPong.historic.forEach((matche: any, index: number) => {
+    	  if ((index == 0 ? index + 1 : index) % this.matche_pagination.max_for_page == 0) page++;
+
+    	  const i = index - page * this.matche_pagination.max_for_page;
+
+    	  const squareX = 1 + (i % this.matche_pagination.max_for_line) * (squareW + paddingX);
+    	  const squareY = 30 + paddingY + Math.floor(i / this.matche_pagination.max_for_line) * (squareH + paddingY);
+    	  this.menu.add(this.background, this.createMatches(index, matche, squareX, squareY));
+    	});
+
 	}
 
 	private createMatches(index: number, matche: Historic, x: number, y: number): ElementUI {
@@ -82,11 +77,13 @@ export class Profile {
 		  rectangle: { x: x + "%", y: y + "%", w: "15%", h: "15%" },
 		  draw: (ctx: CanvasRenderingContext2D) => {
 
-			const currPageStart = this.page * 4;
-			const currPageEnd = ((this.page + 1) * 4) - 1;
-
-			if (!(currPageStart <= index && index <= currPageEnd))
-				return;			
+			if (!(this.matche_pagination.isIndexInCurrentPage(index))) {
+				if (product.enable)
+				  product.enable = false;
+				return;
+			  }
+			if (!product.enable)
+				product.enable = true;
 
 			const offSetTittle = this.background.rectangle.y * 1.75;
 	
@@ -101,17 +98,6 @@ export class Profile {
 
 			ctx.fillStyle = "#000";
 			ctx.font = "20px 'Press Start 2P', cursive";
-
-			//Regua Vertical
-			/*ctx.strokeRect(product.rectangle.x + ((product.rectangle.w) / 2), product.rectangle.y, 1, product.rectangle.h + + product.rectangle.w * 0.07);
-			ctx.strokeRect(product.rectangle.x + (product.rectangle.w + product.rectangle.w * 0.07) / 3, product.rectangle.y, 1, product.rectangle.h + + product.rectangle.w * 0.07);
-			ctx.strokeRect((product.rectangle.x + product.rectangle.w) - (product.rectangle.w + product.rectangle.w * 0.07) / 3, product.rectangle.y, 1, product.rectangle.h + + product.rectangle.w * 0.07);
-			*/
-			//Regua Horizontal
-			/*ctx.strokeRect(product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3, 1);
-			ctx.strokeRect(product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3, 1);
-			ctx.strokeRect(product.rectangle.x + product.rectangle.w * 0.35, product.rectangle.y + product.rectangle.h * 0.2, product.rectangle.w * 0.3, 1);
-			*/
 
 			ctx.fillText(matche.result, product.parent?.rectangle.x + 
 			product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
@@ -152,7 +138,8 @@ export class Profile {
 			
 		},
 		  onClick: () => {
-	
+			if (!(this.matche_pagination.isIndexInCurrentPage(index))) return ;
+			//DO SOMETHING
 		  },
 		};
 		return product;
@@ -404,47 +391,6 @@ export class Profile {
 	  };
 	  return button;
 	}
-	
-	private createArrowButton(type: string, x: number, y: number, width: number): ElementUI {
-		const button: ElementUI = {
-		  type: type,
-		  rectangle: { x: x + "%", y: y + "%", w: width + "%", h: "4%" },
-		  draw: (ctx: CanvasRenderingContext2D) => {
-			 
-			  ctx.strokeStyle = "black"; // Definir a cor do sublinhado preto
-			  ctx.fillStyle = button.type == "right" ? this.avatarArrowR : this.avatarArrowL;
-	
-			  const arrowSize = Math.min(button.rectangle.w, button.rectangle.h); 
-	
-			  if (type == "right") {
-				ctx.beginPath();
-				ctx.moveTo(button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h / 2);
-				ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w - arrowSize, button.rectangle.y);
-				ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w - arrowSize, button.rectangle.y + button.rectangle.h);
-				ctx.closePath();
-			  } else if (type == "left") {
-				ctx.beginPath();
-				ctx.moveTo(button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y + button.rectangle.h / 2);
-				ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + arrowSize, button.rectangle.y);
-				ctx.lineTo(button.parent?.rectangle.x + button.rectangle.x + arrowSize, button.rectangle.y + button.rectangle.h);
-				ctx.closePath();
-			  }
-			  ctx.fill();
-			  ctx.stroke();
-			  },
-			  onClick: () => {
-				if (type === "left" && this.page > 0) this.page--;
-				else if (type === "right" && ((this.page + 1) * 4) - 1 < this.user.infoPong.historic.length - 1) this.page++;
-
-			  	if (this.page == 0) this.avatarArrowL = "grey";
-			  	else this.avatarArrowL = "white";
-				
-			  	if (((this.page + 1) * 4) - 1 >= this.user.infoPong.historic.length - 1) this.avatarArrowR = "grey";
-			  	else this.avatarArrowR = "white";
-			  },
-		};
-		return button;
-	  }
 
 	get menu(): Menu {
 	  return this._menu;

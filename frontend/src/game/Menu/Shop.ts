@@ -6,6 +6,7 @@ import { Skin, TypeSkin, type ProductSkin } from "../ping_pong/Skin";
 import sound_caching from "@/assets/audio/caching.mp3";
 import sound_close_tab from "@/assets/audio/close.mp3";
 import { userStore } from "@/stores/userStore";
+import { PaginationMenu } from "./PaginationMenu";
 
 export class Shop {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -14,17 +15,14 @@ export class Shop {
   private products = new Skin();
   private user = userStore().user;
   private yourMoney: number = 0;
-  private page: number = 0;
-  private shopArrowL: string = "grey";
-  private shopArrowR: string = "grey";
+  private pagination_shop: PaginationMenu;
 
   constructor() {
+    this.pagination_shop = new PaginationMenu(this.products.skins, 15, 5);
     this.menu.add(this.background);
     this.menu.add(this.createButtonExit(10.5, 11));
     this.createAll();
     this.yourMoney = this.user.wallet;
-
-    this.shopArrowR = this.products.skins.length > 15 ? "white" : "grey";
   }
 
   private createBackground(): ElementUI {
@@ -45,23 +43,23 @@ export class Shop {
     const paddingX = 6;
     const paddingY = 9;
 
-    this.products.skins.forEach((skin, index) => {
-      if ((index == 0 ? index + 1 : index) % 15 == 0) this.page++;
+    let page = 0;
 
-      const i = index - this.page * 15;
+    this.products.skins.forEach((skin, index) => {
+      if ((index == 0 ? index + 1 : index) % 15 == 0) page++;
+
+      const i = index - page * this.pagination_shop.max_for_page;
 
       // Loop para desenhar os quadrados de produtos
-      const squareX = 10 + 3 + (i % 5) * (squareW + paddingX);
-      const squareY = 10 + paddingY + Math.floor(i / 5) * (squareH + paddingY);
+      const squareX = 10 + 3 + (i % this.pagination_shop.max_for_line) * (squareW + paddingX);
+      const squareY = 10 + paddingY + Math.floor(i / this.pagination_shop.max_for_line) * (squareH + paddingY);
 
       this.menu.add(this.createProduct(index, skin, squareX, squareY));
     });
 
-    this.page = 0;
-
     //Arrow Buttons
-    this.menu.add(this.createArrowButton("shop", "left", 11, 85, 2));
-    this.menu.add(this.createArrowButton("shop", "right", 87, 85, 2));
+    this.menu.add(this.pagination_shop.createArrowButton("left", 11, 85, 2));
+    this.menu.add(this.pagination_shop.createArrowButton("right", 87, 85, 2));
   }
 
   private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, rectangle: Rectangle, y: number, max_with?: number, font?: string) {
@@ -91,10 +89,14 @@ export class Shop {
       type: "image",
       rectangle: { x: x + "%", y: y + "%", w: "10%", h: "15%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        const currPageStart = this.page * 15;
-        const currPageEnd = (this.page + 1) * 15 - 1;
-
-        if (!(currPageStart <= index && index <= currPageEnd)) return;
+        
+        if (!(this.pagination_shop.isIndexInCurrentPage(index))) {
+          if (product.enable)
+            product.enable = false;
+          return;
+        }
+        if (!product.enable)
+          product.enable = true;
 
         const offSetTittle = this.background.rectangle.y * 0.05;
         const offSetPrice = this.background.rectangle.y * 0.2;
@@ -153,6 +155,9 @@ export class Shop {
         this.fillTextCenter(ctx, skin.price == 0 ? "FREE" : skin.price.toString() + "₳", product.rectangle, product.rectangle.y + product.rectangle.h + offSetPrice);
       },
       onClick: () => {
+
+        if (!(this.pagination_shop.isIndexInCurrentPage(index))) return ;
+
         let canBuy: boolean = false;
         if (skin.type == TypeSkin.Paddle && !this.user.infoPong.skin.paddles.includes(skin.name as never)) canBuy = true;
         else if (skin.type == TypeSkin.Tabble && !this.user.infoPong.skin.tables.includes(skin.name as never)) canBuy = true;
@@ -226,8 +231,8 @@ export class Shop {
     // Adiciona sublinhado ao título
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(pos.x + pos.w / 2 - 30, pos.y + pos.h * 0.06); // Posição inicial do sublinhado
-    ctx.lineTo(pos.x + pos.w / 2 + 30, pos.y + pos.h * 0.06); // Posição final do sublinhado
+    ctx.moveTo(pos.x + pos.w / 2 - 30, pos.y + pos.h * 0.06);
+    ctx.lineTo(pos.x + pos.w / 2 + 30, pos.y + pos.h * 0.06);
     ctx.stroke();
 
     ctx.font = "bold 18px Arial";
@@ -236,49 +241,6 @@ export class Shop {
     ctx.strokeText("Your Money: " + this.yourMoney + "₳", pos.x + pos.w * 0.055, pos.y + pos.h * 0.05, pos.w * 0.15);
     ctx.fillText("Your Money: " + this.yourMoney + "₳", pos.x + pos.w * 0.055, pos.y + pos.h * 0.05, pos.w * 0.15);
     ctx.lineWidth = 2;
-  }
-
-  private createArrowButton(type: string, dir: string, x: number, y: number, width: number): ElementUI {
-    const button: ElementUI = {
-      type: type + "_" + dir,
-      rectangle: { x: x + "%", y: y + "%", w: width + "%", h: "4%" },
-      draw: (ctx: CanvasRenderingContext2D) => {
-        ctx.strokeStyle = "black"; // Definir a cor do sublinhado preto
-        ctx.fillStyle = dir == "right" ? this.shopArrowR : this.shopArrowL;
-
-        const arrowSize = Math.min(button.rectangle.w, button.rectangle.h);
-
-        if (dir == "right") {
-          ctx.beginPath();
-          ctx.moveTo(button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h / 2);
-          ctx.lineTo(button.rectangle.x + button.rectangle.w - arrowSize, button.rectangle.y);
-          ctx.lineTo(button.rectangle.x + button.rectangle.w - arrowSize, button.rectangle.y + button.rectangle.h);
-          ctx.closePath();
-        } else if (dir == "left") {
-          ctx.beginPath();
-          ctx.moveTo(button.rectangle.x, button.rectangle.y + button.rectangle.h / 2);
-          ctx.lineTo(button.rectangle.x + arrowSize, button.rectangle.y);
-          ctx.lineTo(button.rectangle.x + arrowSize, button.rectangle.y + button.rectangle.h);
-          ctx.closePath();
-        }
-        ctx.fill();
-        ctx.stroke();
-      },
-      onClick: () => {
-        if (type == "shop") {
-          if (dir == "left" && this.page > 0) this.page--;
-          else if (dir == "right" && (this.page + 1) * 15 - 1 < this.products.skins.length - 1) this.page++;
-
-          if (this.page == 0) this.shopArrowL = "grey";
-          else this.shopArrowL = "white";
-
-          if ((this.page + 1) * 15 - 1 >= this.products.skins.length - 1) this.shopArrowR = "grey";
-          else this.shopArrowR = "white";
-        }
-        console.log("click " + dir);
-      },
-    };
-    return button;
   }
 
   roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
