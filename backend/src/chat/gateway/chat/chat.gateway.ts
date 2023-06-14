@@ -308,7 +308,6 @@ export class ChatGateway implements OnGatewayConnection {
 				data: 'You are not allowed to send a message in this channel.',
 			};
 		}
-
 		// if user is muted, he cannot send messages
 		const isMuted = await this.chatService.isUserMutedInChannel(
 			senderId,
@@ -335,9 +334,11 @@ export class ChatGateway implements OnGatewayConnection {
             // who have not blocked the sender
             // Speed here could probably be improved
             const userIdsInChannel = this.channelIdToUserIds.get(channelId);
+            console.log("userIdsInChannel: ", userIdsInChannel);
             if (userIdsInChannel) {
                 userIdsInChannel.forEach(async (userId) => {
                     if (!(await this.chatService.isUserBlocked(senderId, userId))) {
+                        console.log("Unblocked message triggered for userId: " + userId);
                         const socket = this.userIdToSocketMap.get(userId);
                         socket.emit('message', { channelId: channelId, message: message });
                     }
