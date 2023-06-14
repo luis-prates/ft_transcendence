@@ -9,7 +9,7 @@
     <LobbyComponent />
     <!-- <ProfileComponent class="profile" /> -->
   </div>
-  <input id="inputName" type="text" pattern="[A-Za-z0-9]+" value="" disabled="false" style="display: none; background-color: transparent; font-family: 'Press Start 2P';" @input="cleanInput" :maxlength="10">
+  <input id="inputName" type="text" pattern="[A-Za-z0-9]+" value="" disabled="false" style="display: none; background-color: transparent; font-family: 'Press Start 2P';" @input="cleanInput" :maxlength="15">
 </template>
 
 <script setup lang="ts">

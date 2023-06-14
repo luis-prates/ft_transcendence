@@ -14,6 +14,26 @@ export class ConfirmButton {
     this.menu.add(this.background);
     this.menu.add(this.createButton(40 + 10 / 4, 57, "CONFIRM"));
     this.menu.add(this.createButton(55 - 10 / 4, 57, "CANCEL"));
+
+  }
+
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, rectangle: Rectangle, y: number, stroke?: boolean, max_with?: number)
+  {
+    const begin = rectangle.x + rectangle.w * 0.1;
+    const max = max_with ? max_with : rectangle.w - rectangle.w * 0.2;
+
+    let offset = 0;
+    let offsetmax = 0;
+    const labelWidth = ctx.measureText(label).width;
+    while (begin + offset + labelWidth < begin + max - offset) {
+      offsetmax += rectangle.w * 0.05;
+      if (begin + offsetmax + labelWidth > begin + max - offset) break;
+      offset = offsetmax;
+    }
+
+    if (stroke)
+      ctx.strokeText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
+    ctx.fillText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
   }
 
   private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
@@ -48,21 +68,21 @@ export class ConfirmButton {
       	type: "exit",
       	rectangle: { x: x + "%", y: y + "%", w: "5%", h: "6%" },
       	draw: (ctx: CanvasRenderingContext2D) => {
-      	  	ctx.fillStyle = "white";
-      	  	ctx.strokeStyle = "black";
-      	  	ctx.lineWidth = 2;
+      	  ctx.fillStyle = "white";
+      	  ctx.strokeStyle = "black";
+      	  ctx.lineWidth = 2;
 			
-      	  	this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+      	  this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
 			
-      	  	ctx.fill();
-      	  	ctx.stroke();
+      	  ctx.fill();
+      	  ctx.stroke();
 			
-      	  	ctx.fillStyle = "black";
-      	  	ctx.font = "12px Arial";
-      	  	ctx.textAlign = "center";
-      	  	ctx.textBaseline = "middle";
-      	  	ctx.fillText(label, button.rectangle.x + button.rectangle.w / 2, button.rectangle.y + button.rectangle.h / 2);
-      	},
+      	  ctx.fillStyle = "black";
+      	  ctx.font = "12px Arial";
+      	  ctx.textAlign = "start";
+      	
+          this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.6);
+        },
       	onClick: () => {
       	  this.menu.close();
       	  this.onResult(label);
@@ -83,24 +103,15 @@ export class ConfirmButton {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    /*ctx.fillStyle = '#ffffff';
-		ctx.font = 'bold 22px Arial';
-		ctx.textAlign = 'center';
-		ctx.fillText('CONFIRM?', pos.x + pos.w / 2, pos.y + pos.h * 0.15);
-		ctx.strokeText('CONFIRM?', pos.x + pos.w / 2, pos.y + pos.h * 0.15);*/
-
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 18px Arial";
-    ctx.textAlign = "center";
-    ctx.lineWidth = 1;
-    ctx.fillText("Do you want to buy,", pos.x + pos.w / 2, pos.y + pos.h * 0.15);
-    ctx.strokeText("Do you want to buy,", pos.x + pos.w / 2, pos.y + pos.h * 0.15);
+    ctx.textAlign = "start";
+    ctx.lineWidth = 3;
+
+    this.fillTextCenter(ctx, "Do you want to buy,", pos, pos.y + pos.h * 0.15, true);
+    this.fillTextCenter(ctx, "for " + this.productPrice + "₳?", pos, pos.y + pos.h * 0.48, true);
     ctx.fillStyle = "gold";
-    ctx.fillText(this.productName, pos.x + pos.w / 2, pos.y + pos.h * 0.3);
-    ctx.strokeText(this.productName, pos.x + pos.w / 2, pos.y + pos.h * 0.3);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText("for " + this.productPrice + "₳?", pos.x + pos.w / 2, pos.y + pos.h * 0.45);
-    ctx.strokeText("for " + this.productPrice + "₳?", pos.x + pos.w / 2, pos.y + pos.h * 0.45);
+    this.fillTextCenter(ctx, this.productName, pos, pos.y + pos.h * 0.32, true);
   }
 
   public show(onResult: (result: any) => void) {
@@ -108,3 +119,12 @@ export class ConfirmButton {
     Game.addMenu(this.menu);
   }
 }
+/*
+//Regua Horizontal
+ctx.strokeRect(button.rectangle.x + button.rectangle.w * 0.475, button.rectangle.y + button.rectangle.h * 0.05, button.rectangle.w * 0.05, 1);
+
+ctx.strokeRect(button.rectangle.x, button.rectangle.y + button.rectangle.h / 2, button.rectangle.w, 1);
+ctx.strokeRect(button.rectangle.x + button.rectangle.w / 2, button.rectangle.y, 1, button.rectangle.h);
+ctx.strokeRect(button.rectangle.x + button.rectangle.w * 0.33, button.rectangle.y, 1, button.rectangle.h);
+ctx.strokeRect(button.rectangle.x + button.rectangle.w * 0.66, button.rectangle.y, 1, button.rectangle.h);
+*/

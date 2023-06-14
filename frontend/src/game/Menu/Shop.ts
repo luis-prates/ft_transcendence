@@ -49,6 +49,27 @@ export class Shop {
     });
   }
 
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, rectangle: Rectangle, y: number, max_with?: number, font?: string, )
+  {
+    ctx.fillStyle = "#000";
+    ctx.font = font ? font : "12px Arial";
+    ctx.textAlign = "start";
+
+    const begin = rectangle.x + rectangle.w * 0.1;
+    const max = max_with ? max_with : rectangle.w - rectangle.w * 0.2;
+
+    let offset = 0;
+    let offsetmax = 0;
+    const labelWidth = ctx.measureText(label).width;
+    while (begin + offset + labelWidth < begin + max - offset) {
+      offsetmax += rectangle.w * 0.05;
+      if (begin + offsetmax + labelWidth > begin + max - offset) break;
+      offset = offsetmax;
+    }
+
+    ctx.fillText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
+  }
+
   private createProduct(skin: ProductSkin, x: number, y: number): ElementUI {
    
     const buy_sound = new Audio(sound_caching);
@@ -109,15 +130,37 @@ export class Shop {
           ctx.strokeRect(product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
         }
         
+        this.fillTextCenter(ctx, (skin.type == TypeSkin.Paddle ? "Paddle " : "Table ") + skin.tittle, product.rectangle, product.rectangle.y - offSetTittle);
         // Desenha o título do produto acima do quadrado
-        ctx.fillStyle = "#000";
+       /* ctx.fillStyle = "#000";
         ctx.font = "12px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText((skin.type == TypeSkin.Paddle ? "Paddle " : "Table ") + skin.tittle, product.rectangle.x + product.rectangle.w / 2, product.rectangle.y - offSetTittle);
+        ctx.textAlign = "start";
+       // ctx.fillText(label, product.rectangle.x + product.rectangle.w / 2, product.rectangle.y - offSetTittle);
+        const begin = product.rectangle.x + product.rectangle.w * 0.1;
+        const max_with = product.rectangle.w - product.rectangle.w * 0.2;
+
+        let offset = 0;
+        let offsetmax = 0;
+        const labelWidth = ctx.measureText(label).width;
+        while (begin + offset + labelWidth < begin + max_with - offset) {
+          offsetmax += product.rectangle.w * 0.05;
+          if (begin + offsetmax + labelWidth > begin + max_with - offset) break;
+          offset = offsetmax;
+        }
+
+        ctx.fillText(label, product.rectangle.x + product.rectangle.w * 0.1 + offset, product.rectangle.y - offSetTittle, product.rectangle.w - product.rectangle.w * 0.2 - offset);
+    */
+        // Desenha o título do produto acima do quadrado
+        // ctx.fillStyle = "#000";
+        // ctx.font = "12px Arial";
+        // ctx.textAlign = "start";
+        // ctx.fillText((skin.type == TypeSkin.Paddle ? "Paddle " : "Table ") + skin.tittle, product.rectangle.x + product.rectangle.w / 2, product.rectangle.y - offSetTittle);
 
         // Desenha o preço do produto abaixo do quadrado
         //548₳
-        ctx.fillText(skin.price == 0 ? "FREE" : skin.price.toString() + "₳", product.rectangle.x + product.rectangle.w / 2, product.rectangle.y + product.rectangle.h + offSetPrice);
+        
+        this.fillTextCenter(ctx, skin.price == 0 ? "FREE" : skin.price.toString() + "₳", product.rectangle, product.rectangle.y + product.rectangle.h + offSetPrice);
+//        ctx.fillText(skin.price == 0 ? "FREE" : skin.price.toString() + "₳", product.rectangle.x + product.rectangle.w / 2, product.rectangle.y + product.rectangle.h + offSetPrice);
       
         ctx.textAlign = "start";
       },
@@ -188,11 +231,9 @@ export class Shop {
     ctx.stroke();
 
     // Escreve "Shop" no topo do balão
-    //2ctx.fillStyle = '#000';
     ctx.font = "bold 22px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("Shop", pos.x + pos.w / 2, pos.y + pos.h * 0.05);
-    ctx.strokeText("Shop", pos.x + pos.w / 2, pos.y + pos.h * 0.05);
+    ctx.fillText("Shop", pos.x + pos.w * 0.475, pos.y + pos.h * 0.05, pos.w * 0.05);
+    ctx.strokeText("Shop", pos.x + pos.w * 0.475, pos.y + pos.h * 0.05, pos.w * 0.05);
 
     ctx.textAlign = "start";
     // Adiciona sublinhado ao título

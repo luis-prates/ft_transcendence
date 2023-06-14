@@ -5,10 +5,10 @@ import { Game } from "@/game/base/Game";
 import type { GameObject } from "@/game/base/GameObject";
 import { type Ref } from "vue";
 import { userStore, type Historic } from "@/stores/userStore";
-import { YourMiniPerfil } from "@/game/Menu/YourMiniPerfil";
 import { LeaderBoard } from "@/game/Menu/LeaderBoard";
 import { Profile } from "@/game/Menu/Profile";
 import { YourProfile } from "@/game/Menu/YourProfile";
+import { ConfirmButton } from "@/game/Menu/ConfirmButton";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
@@ -75,15 +75,16 @@ export class Player extends Character {
           result: 0 + "-" + 3,
         }
         console.log(user.infoPong)
-       /* user.infoPong.historic.push(history_game_1 as never);
         user.infoPong.historic.push(history_game_1 as never);
         user.infoPong.historic.push(history_game_1 as never);
+        user.infoPong.historic.push(history_game_1 as never);
         user.infoPong.historic.push(history_game_2 as never);
         user.infoPong.historic.push(history_game_2 as never);
         user.infoPong.historic.push(history_game_2 as never);
-        user.infoPong.historic.push(history_game_2 as never);*/
+        user.infoPong.historic.push(history_game_2 as never);
         
         Game.instance.addMenu(new YourProfile(this).menu);
+
         //Game.instance.addMenu(new LeaderBoard().menu);
        // Game.instance.addMenu(new YourMiniPerfil(this).menu);
 

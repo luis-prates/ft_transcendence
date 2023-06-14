@@ -93,13 +93,11 @@ export class LeaderBoard {
     ctx.stroke();
 
     ctx.font = "bold 24px Arial";
-    ctx.textAlign = "center";
-	ctx.fillStyle = "gold";
-    ctx.fillText("Leader Board", pos.x + pos.w / 2, pos.y + pos.h * 0.05);
-    ctx.strokeText("Leader Board", pos.x + pos.w / 2, pos.y + pos.h * 0.05);
-
     ctx.textAlign = "start";
-    // Adiciona sublinhado ao título
+	  ctx.fillStyle = "gold";
+    ctx.fillText("Leader Board", pos.x + pos.w * 0.33, pos.y + pos.h * 0.05, pos.w * 0.33);
+    ctx.strokeText("Leader Board", pos.x + pos.w * 0.33, pos.y + pos.h * 0.05, pos.w * 0.33);
+
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(pos.x + pos.w / 2 - 30, pos.y + pos.h * 0.06);
@@ -123,28 +121,27 @@ export class LeaderBoard {
         ctx.fill();
         ctx.stroke();
 
-		try {
-			ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
-		}
-		catch {
-			avatar.src = avatarDefault;
-			ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
-		}
+		    try {
+		    	ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
+		    }
+		    catch {
+		    	avatar.src = avatarDefault;
+		    	ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
+		    }
 
-		ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
-		ctx.strokeRect(raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
-		
-		ctx.fillStyle = "white";
+		    ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
+		    ctx.strokeRect(raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
+      
+		    ctx.fillStyle = "white";
         ctx.strokeStyle = nickname == this.user.nickname ? "red" : "black";
 
-		//Posicao
-    	ctx.fillText(position.toString(), raking.rectangle.x + raking.rectangle.x * 0.02, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.5);
-		ctx.strokeText(position.toString(), raking.rectangle.x + raking.rectangle.x * 0.02, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.5);
-	
-
-		//Nickname
-    	ctx.fillText(nickname, raking.rectangle.x + raking.rectangle.x * 0.2, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.5);
-		ctx.strokeText(nickname, raking.rectangle.x + raking.rectangle.x * 0.2, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.5);
+		    //Posicao
+        ctx.fillText(position.toString(), raking.rectangle.x + raking.rectangle.x * 0.02, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.05);
+		    ctx.strokeText(position.toString(), raking.rectangle.x + raking.rectangle.x * 0.02, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.05);
+      
+		    //Nickname
+        ctx.fillText(nickname, raking.rectangle.x + raking.rectangle.x * 0.2, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.375);
+		    ctx.strokeText(nickname, raking.rectangle.x + raking.rectangle.x * 0.2, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.375);
       },
       onClick: () => {
 		//TODO

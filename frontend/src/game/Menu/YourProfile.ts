@@ -428,12 +428,15 @@ export class YourProfile {
       pos.h * 0.80);*/
   }
 
+  //✖
   private createButtonExit(x: number, y: number, type: string): ElementUI {
     const close_tab = new Audio(sound_close_tab);
     const button: ElementUI = {
       type: type,
       rectangle: { x: x + "%", y: y + "%", w: "1%", h: "2%" },
       draw: (ctx: CanvasRenderingContext2D) => {
+        
+        ctx.font = "8px 'Press Start 2P', cursive";
         ctx.fillStyle = "red";
         ctx.strokeStyle = "black";
         ctx.fillRect(button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
@@ -614,22 +617,22 @@ export class YourProfile {
         context.strokeStyle = borderColor;
         context.lineWidth = 2;
         context.stroke();
-
+			
         //Tittle
         context.fillStyle = "#ffffff";
         context.font = "25px 'Press Start 2P', cursive";
         context.lineWidth = 4;
-        context.strokeText("Custom", custom.rectangle.x + custom.rectangle.w / 3, custom.rectangle.y + custom.rectangle.h * 0.125);
-        context.fillText("Custom", custom.rectangle.x + custom.rectangle.w / 3, custom.rectangle.y + custom.rectangle.h * 0.125);
+        context.strokeText("Custom", custom.rectangle.x + custom.rectangle.w * 0.275, custom.rectangle.y + custom.rectangle.h * 0.125, custom.rectangle.w * 0.45);
+        context.fillText("Custom", custom.rectangle.x + custom.rectangle.w * 0.275, custom.rectangle.y + custom.rectangle.h * 0.125, custom.rectangle.w * 0.45);
 
         context.textAlign = "start";
         //Type
         context.fillStyle = "black";
         context.font = "18px 'Press Start 2P', cursive";
-        context.fillText("Color:", custom.rectangle.x + custom.rectangle.w * 0.4, custom.rectangle.y + custom.rectangle.h * 0.285);
+        context.fillText("Color:", custom.rectangle.x + custom.rectangle.w * 0.35, custom.rectangle.y + custom.rectangle.h * 0.285, custom.rectangle.w * 0.3);
 
         //Skin
-        context.fillText("Skin:", custom.rectangle.x + custom.rectangle.w * 0.41, custom.rectangle.y + custom.rectangle.h * 0.625);
+        context.fillText("Skin:", custom.rectangle.x + custom.rectangle.w * 0.37, custom.rectangle.y + custom.rectangle.h * 0.625, custom.rectangle.w * 0.25);
       },
     };
     return custom;
