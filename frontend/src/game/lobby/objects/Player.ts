@@ -9,6 +9,7 @@ import { LeaderBoard } from "@/game/Menu/LeaderBoard";
 import { Profile } from "@/game/Menu/Profile";
 import { YourProfile } from "@/game/Menu/YourProfile";
 import { ConfirmButton } from "@/game/Menu/ConfirmButton";
+import { Shop } from "@/game/Menu/Shop";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
@@ -83,7 +84,8 @@ export class Player extends Character {
         user.infoPong.historic.push(history_game_2 as never);
         user.infoPong.historic.push(history_game_2 as never);
         
-        Game.instance.addMenu(new YourProfile(this).menu);
+       // Game.instance.addMenu(new YourProfile(this).menu);
+        Game.instance.addMenu(new Shop().menu);
 
         //Game.instance.addMenu(new LeaderBoard().menu);
        // Game.instance.addMenu(new YourMiniPerfil(this).menu);

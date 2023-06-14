@@ -29,13 +29,13 @@ export class Skin {
 
 	constructor() {
 		this.skins.push(
-			this.createSkin("onepiece", "One Piece", 0, TypeSkin.Paddle),
-			this.createSkin("pacman", "PacMan", 0, TypeSkin.Paddle),
-			this.createSkin("mario", "Mario and Friends", 0, TypeSkin.Paddle),
+			this.createSkin("onepiece", "One Piece", 3, TypeSkin.Paddle),
+			this.createSkin("pacman", "PacMan", 5, TypeSkin.Paddle),
+			this.createSkin("mario", "Mario and Friends", 6, TypeSkin.Paddle),
 			this.createSkin("42Lisboa", "42 Lisboa", 0, TypeSkin.Paddle),
-			this.createSkin("onepiece", "Luffy", 0, TypeSkin.Tabble),
-			this.createSkin("swag", "Swag", 0, TypeSkin.Tabble),
-			this.createSkin("game", "Game Over", 0, TypeSkin.Tabble),
+			this.createSkin("onepiece", "Luffy", 10, TypeSkin.Tabble),
+			this.createSkin("swag", "Swag", 5, TypeSkin.Tabble),
+			this.createSkin("game", "Game Over", 5, TypeSkin.Tabble),
 		)
 	}
 

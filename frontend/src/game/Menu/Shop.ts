@@ -14,12 +14,17 @@ export class Shop {
   private products = new Skin();
   private user = userStore().user;
   private yourMoney: number = 0;
+  private page: number = 0;
+  private shopArrowL: string = "grey";
+  private shopArrowR: string = "grey";
 
   constructor() {
     this.menu.add(this.background);
     this.menu.add(this.createButtonExit(10.5, 11));
     this.createAll();
     this.yourMoney = this.user.wallet;
+
+    this.shopArrowR = this.products.skins.length > 15 ? "white" : "grey";
   }
 
   private createBackground(): ElementUI {
@@ -41,16 +46,25 @@ export class Shop {
     const paddingY = 9;
 
     this.products.skins.forEach((skin, index) => {
-    // Loop para desenhar os quadrados de produtos
-      const squareX = 10 + 3 + (index % 5) * (squareW + paddingX);
-      const squareY = 10 + paddingY + Math.floor(index / 5) * (squareH + paddingY);
+      if ((index == 0 ? index + 1 : index) % 15 == 0) this.page++;
 
-      this.menu.add(this.createProduct(skin, squareX, squareY));
+      const i = index - this.page * 15;
+
+      // Loop para desenhar os quadrados de produtos
+      const squareX = 10 + 3 + (i % 5) * (squareW + paddingX);
+      const squareY = 10 + paddingY + Math.floor(i / 5) * (squareH + paddingY);
+
+      this.menu.add(this.createProduct(index, skin, squareX, squareY));
     });
+
+    this.page = 0;
+
+    //Arrow Buttons
+    this.menu.add(this.createArrowButton("shop", "left", 11, 85, 2));
+    this.menu.add(this.createArrowButton("shop", "right", 87, 85, 2));
   }
 
-  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, rectangle: Rectangle, y: number, max_with?: number, font?: string, )
-  {
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, rectangle: Rectangle, y: number, max_with?: number, font?: string) {
     ctx.fillStyle = "#000";
     ctx.font = font ? font : "12px Arial";
     ctx.textAlign = "start";
@@ -70,14 +84,18 @@ export class Shop {
     ctx.fillText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
   }
 
-  private createProduct(skin: ProductSkin, x: number, y: number): ElementUI {
-   
+  private createProduct(index: number, skin: ProductSkin, x: number, y: number): ElementUI {
     const buy_sound = new Audio(sound_caching);
 
     const product: ElementUI = {
       type: "image",
       rectangle: { x: x + "%", y: y + "%", w: "10%", h: "15%" },
       draw: (ctx: CanvasRenderingContext2D) => {
+        const currPageStart = this.page * 15;
+        const currPageEnd = (this.page + 1) * 15 - 1;
+
+        if (!(currPageStart <= index && index <= currPageEnd)) return;
+
         const offSetTittle = this.background.rectangle.y * 0.05;
         const offSetPrice = this.background.rectangle.y * 0.2;
 
@@ -102,13 +120,13 @@ export class Shop {
             product.rectangle.y + pointy - this.background.rectangle.y * 0.78 * 0.015,
             scaledWidth + this.background.rectangle.y * 0.78 * 0.03,
             scaledHeight + this.background.rectangle.y * 0.78 * 0.03
-            );
-            
+          );
+
           ctx.fillStyle = "#1e8c2f";
           ctx.fillRect(product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth, scaledHeight);
-            
+
           if (skin.image.complete) ctx.drawImage(skin.image, product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth, scaledHeight);
-          
+
           ctx.fillStyle = "white";
           //Midle Line
           ctx.fillRect(product.rectangle.x + pointx, product.rectangle.y + pointy + (scaledHeight / 2 - this.background.rectangle.y * 0.78 * 0.01), scaledWidth, this.background.rectangle.y * 0.78 * 0.02);
@@ -129,50 +147,18 @@ export class Shop {
           ctx.lineWidth = 3;
           ctx.strokeRect(product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
         }
-        
+
         this.fillTextCenter(ctx, (skin.type == TypeSkin.Paddle ? "Paddle " : "Table ") + skin.tittle, product.rectangle, product.rectangle.y - offSetTittle);
-        // Desenha o título do produto acima do quadrado
-       /* ctx.fillStyle = "#000";
-        ctx.font = "12px Arial";
-        ctx.textAlign = "start";
-       // ctx.fillText(label, product.rectangle.x + product.rectangle.w / 2, product.rectangle.y - offSetTittle);
-        const begin = product.rectangle.x + product.rectangle.w * 0.1;
-        const max_with = product.rectangle.w - product.rectangle.w * 0.2;
 
-        let offset = 0;
-        let offsetmax = 0;
-        const labelWidth = ctx.measureText(label).width;
-        while (begin + offset + labelWidth < begin + max_with - offset) {
-          offsetmax += product.rectangle.w * 0.05;
-          if (begin + offsetmax + labelWidth > begin + max_with - offset) break;
-          offset = offsetmax;
-        }
-
-        ctx.fillText(label, product.rectangle.x + product.rectangle.w * 0.1 + offset, product.rectangle.y - offSetTittle, product.rectangle.w - product.rectangle.w * 0.2 - offset);
-    */
-        // Desenha o título do produto acima do quadrado
-        // ctx.fillStyle = "#000";
-        // ctx.font = "12px Arial";
-        // ctx.textAlign = "start";
-        // ctx.fillText((skin.type == TypeSkin.Paddle ? "Paddle " : "Table ") + skin.tittle, product.rectangle.x + product.rectangle.w / 2, product.rectangle.y - offSetTittle);
-
-        // Desenha o preço do produto abaixo do quadrado
-        //548₳
-        
         this.fillTextCenter(ctx, skin.price == 0 ? "FREE" : skin.price.toString() + "₳", product.rectangle, product.rectangle.y + product.rectangle.h + offSetPrice);
-//        ctx.fillText(skin.price == 0 ? "FREE" : skin.price.toString() + "₳", product.rectangle.x + product.rectangle.w / 2, product.rectangle.y + product.rectangle.h + offSetPrice);
-      
-        ctx.textAlign = "start";
       },
       onClick: () => {
-
         let canBuy: boolean = false;
         if (skin.type == TypeSkin.Paddle && !this.user.infoPong.skin.paddles.includes(skin.name as never)) canBuy = true;
         else if (skin.type == TypeSkin.Tabble && !this.user.infoPong.skin.tables.includes(skin.name as never)) canBuy = true;
 
-        if (this.yourMoney >= skin.price && canBuy)
-        {
-          const confirmButton = new ConfirmButton(skin.tittle, 0);
+        if (this.yourMoney >= skin.price && canBuy) {
+          const confirmButton = new ConfirmButton(skin.tittle, skin.price);
           confirmButton.show((value) => {
             if (value == "CONFIRM") {
               if (skin.type == TypeSkin.Paddle) this.user.infoPong.skin.paddles.push(skin.name as never);
@@ -191,12 +177,13 @@ export class Shop {
     const close_tab = new Audio(sound_close_tab);
     const button: ElementUI = {
       type: "exit",
-      rectangle: { x: x + "%", y: y + "%", w: "3%", h: "3%" },
+      rectangle: { x: x + "%", y: y + "%", w: "1.5%", h: "3%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        ctx.strokeStyle = "#8B4513";
-        ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
-
+        ctx.strokeStyle = "black";
+        ctx.fillStyle = "red";
         ctx.lineWidth = 3;
+        ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
+        ctx.fillRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
 
         ctx.beginPath();
         ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
@@ -217,7 +204,7 @@ export class Shop {
   }
 
   public draw(ctx: CanvasRenderingContext2D, pos: Rectangle) {
-    const backgroundColor = 'rgba(210, 180, 140, 0.6)'; // Cor de fundo castanho
+    const backgroundColor = "rgba(210, 180, 140, 0.6)"; // Cor de fundo castanho
     const borderColor = "#8B4513"; // Cor de contorno mais escuro
 
     // Desenha o corpo do balão com cor de fundo castanho
@@ -232,16 +219,66 @@ export class Shop {
 
     // Escreve "Shop" no topo do balão
     ctx.font = "bold 22px Arial";
+    ctx.fillStyle = "gold";
     ctx.fillText("Shop", pos.x + pos.w * 0.475, pos.y + pos.h * 0.05, pos.w * 0.05);
     ctx.strokeText("Shop", pos.x + pos.w * 0.475, pos.y + pos.h * 0.05, pos.w * 0.05);
 
-    ctx.textAlign = "start";
     // Adiciona sublinhado ao título
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(pos.x + pos.w / 2 - 30, pos.y + pos.h * 0.06); // Posição inicial do sublinhado
     ctx.lineTo(pos.x + pos.w / 2 + 30, pos.y + pos.h * 0.06); // Posição final do sublinhado
     ctx.stroke();
+
+    ctx.font = "bold 18px Arial";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+    ctx.strokeText("Your Money: " + this.yourMoney + "₳", pos.x + pos.w * 0.055, pos.y + pos.h * 0.05, pos.w * 0.15);
+    ctx.fillText("Your Money: " + this.yourMoney + "₳", pos.x + pos.w * 0.055, pos.y + pos.h * 0.05, pos.w * 0.15);
+    ctx.lineWidth = 2;
+  }
+
+  private createArrowButton(type: string, dir: string, x: number, y: number, width: number): ElementUI {
+    const button: ElementUI = {
+      type: type + "_" + dir,
+      rectangle: { x: x + "%", y: y + "%", w: width + "%", h: "4%" },
+      draw: (ctx: CanvasRenderingContext2D) => {
+        ctx.strokeStyle = "black"; // Definir a cor do sublinhado preto
+        ctx.fillStyle = dir == "right" ? this.shopArrowR : this.shopArrowL;
+
+        const arrowSize = Math.min(button.rectangle.w, button.rectangle.h);
+
+        if (dir == "right") {
+          ctx.beginPath();
+          ctx.moveTo(button.rectangle.x + button.rectangle.w, button.rectangle.y + button.rectangle.h / 2);
+          ctx.lineTo(button.rectangle.x + button.rectangle.w - arrowSize, button.rectangle.y);
+          ctx.lineTo(button.rectangle.x + button.rectangle.w - arrowSize, button.rectangle.y + button.rectangle.h);
+          ctx.closePath();
+        } else if (dir == "left") {
+          ctx.beginPath();
+          ctx.moveTo(button.rectangle.x, button.rectangle.y + button.rectangle.h / 2);
+          ctx.lineTo(button.rectangle.x + arrowSize, button.rectangle.y);
+          ctx.lineTo(button.rectangle.x + arrowSize, button.rectangle.y + button.rectangle.h);
+          ctx.closePath();
+        }
+        ctx.fill();
+        ctx.stroke();
+      },
+      onClick: () => {
+        if (type == "shop") {
+          if (dir == "left" && this.page > 0) this.page--;
+          else if (dir == "right" && (this.page + 1) * 15 - 1 < this.products.skins.length - 1) this.page++;
+
+          if (this.page == 0) this.shopArrowL = "grey";
+          else this.shopArrowL = "white";
+
+          if ((this.page + 1) * 15 - 1 >= this.products.skins.length - 1) this.shopArrowR = "grey";
+          else this.shopArrowR = "white";
+        }
+        console.log("click " + dir);
+      },
+    };
+    return button;
   }
 
   roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
