@@ -272,13 +272,16 @@ describe('Chat', () => {
 			// get publicChannelId as a string
 			const publicChannelId =
 				pactum.stash.getDataStore()['publicChannelId'];
+            console.log("publicChannelId is: ", publicChannelId);
 			// emit the message event as user1
 			// clients[0].emit('message', { "channelId": publicChannelId, "message": "Hello World!" });
 			// expect the message to be received by user2 and user3
+            console.log("clients is: ", clients);
 			const messagePromises = clients.slice(1, 3).map(
 				client =>
 					new Promise((resolve, reject) => {
 						const handler = ({ channelId, message }) => {
+                            console.log("channelId is: ", channelId, "message is: ", message);
 							expect(channelId).toBe(publicChannelId);
 							expect(message).toBe('Hello from Public!');
 							resolve(undefined);
@@ -743,14 +746,6 @@ describe('Chat', () => {
 			await Promise.all(userDemotedPromises);
 		});
 	});
-	// User4 joins the protected channel by knowing the password
-	// And let the owner make him admin
-
-	// Let the new admin user mute user2 and see if it works
-
-	// Let the owner unmute user2 and see if it works
-
-	// Take away the admin privileges of user4
 
 	describe('Disconnect', () => {
 		it('should disconnect all the users', async () => {

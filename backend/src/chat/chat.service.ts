@@ -361,8 +361,6 @@ export class ChatService {
 		}
 
 		if (channel.type == 'PROTECTED') {
-			console.log('password: ', password);
-			console.log('channel.hash: ', channel.hash);
 			const isMatch = await bcrypt.compare(password, channel.hash);
 			if (!isMatch) {
 				throw new BadRequestException('Password is incorrect');
@@ -732,4 +730,17 @@ export class ChatService {
 
 		return channelUser.isMuted;
 	}
+
+    async isUserBlocked(senderId: number, receiverId: number): Promise<boolean> {
+        const blockRecord = await this.prisma.blocklist.findFirst({
+            where: {
+                AND: [
+                    { blockerId: receiverId },
+                    { blockedId: senderId },
+                ]
+            }
+        });
+
+        return !!blockRecord;
+    }
 }

@@ -9,15 +9,10 @@ import { ChatService } from '../../chat.service';
 import { Server, Socket } from 'socket.io';
 import { TestLogger } from '../../../../test/utils/TestLogger';
 
-// For testing purposes, we want to make sure Global channel always has ID = 1, so we sleep a bit the afterInit before it can go to testing
-// function sleep(ms: number): Promise<void> {
-//     return new Promise(resolve => setTimeout(resolve, ms));
-// }
-
 @WebSocketGateway(3001, { namespace: 'chat', cors: { origin: '*' } })
 export class ChatGateway implements OnGatewayConnection {
-	private userIdToSocketId: Map<number, string> = new Map<number, string>();
-	private socketMap: Map<string, Socket> = new Map<string, Socket>();
+    private userIdToSocketMap: Map<number, Socket> = new Map<number, Socket>();
+    private channelIdToUserIds: Map<number, Set<number>> = new Map<number, Set<number>>();
 	private readonly logger = new TestLogger(ChatGateway.name);
 	constructor(private chatService: ChatService) {}
 
@@ -29,22 +24,24 @@ export class ChatGateway implements OnGatewayConnection {
 		this.chatService.events.on(
 			'user-added-to-channel',
 			async ({ channelId, userId }) => {
-				const socketId: string = this.userIdToSocketId.get(userId);
-				if (!socketId) {
+                const client : Socket = this.userIdToSocketMap.get(userId);
+				if (!client) {
 					// if socketId not found, client is not currently connected and doesnt need the websocket event
 					return;
 				}
 
-				const client: Socket = this.socketMap.get(socketId);
-				if (!client) {
-					this.logger.error(
-						`No client socket found for socketId ${socketId}`,
-					);
-					return;
-				}
-
 				client.join(`channel-${channelId}`);
-				console.log(`Client joined channel-${channelId}`);
+				console.log(`User ${userId} joined a room: channel-${channelId}`);
+
+                // New for blocklist: maintain the users to channels mapping
+                // Update the channelIdToUserIds map
+                let userIdsInChannel = this.channelIdToUserIds.get(channelId);
+                if (!userIdsInChannel) {
+                    userIdsInChannel = new Set();
+                    this.channelIdToUserIds.set(channelId, userIdsInChannel);
+                }
+                userIdsInChannel.add(userId);
+
 				client.emit('channel-added', {
 					channelId,
 					message: `You have been added to channel ${channelId}`,
@@ -62,22 +59,27 @@ export class ChatGateway implements OnGatewayConnection {
 		this.chatService.events.on(
 			'user-removed-from-channel',
 			async ({ channelId, userId }) => {
-				const socketId: string = this.userIdToSocketId.get(userId);
-				if (!socketId) {
+
+                const client : Socket = this.userIdToSocketMap.get(userId);
+				if (!client) {
 					// if socketId not found, client is not currently connected and doesnt need the websocket event
 					return;
 				}
 
-				const client: Socket = this.socketMap.get(socketId);
-				if (!client) {
-					console.error(
-						`No client socket found for socketId ${socketId}`,
-					);
-					return;
-				}
-
 				client.leave(`channel-${channelId}`);
-				console.log(`Client left channel-${channelId}`);
+				console.log(`User ${userId} left a room: channel-${channelId}`);
+
+                // Update channelIdToUserIds map: remove user from channel
+                let userIdsInChannel = this.channelIdToUserIds.get(channelId);
+                if (userIdsInChannel) {
+                    userIdsInChannel.delete(userId);
+
+                    // If no more users in the channel, we can also delete the channel entry
+                    if (userIdsInChannel.size === 0) {
+                        this.channelIdToUserIds.delete(channelId);
+                    }
+                }
+
 				client.emit('channel-removed', {
 					channelId,
 					message: `You have been removed from channel ${channelId}`,
@@ -97,17 +99,10 @@ export class ChatGateway implements OnGatewayConnection {
 		this.chatService.events.on(
 			'user-muted-in-channel',
 			async ({ channelId, userId }) => {
-				const socketId: string = this.userIdToSocketId.get(userId);
-				if (!socketId) {
-					// if socketId not found, client is not currently connected and doesnt need the websocket event
-					return;
-				}
 
-				const client: Socket = this.socketMap.get(socketId);
+                const client : Socket = this.userIdToSocketMap.get(userId);
 				if (!client) {
-					console.error(
-						`No client socket found for socketId ${socketId}`,
-					);
+					// if socketId not found, client is not currently connected and doesnt need the websocket event
 					return;
 				}
 
@@ -128,17 +123,10 @@ export class ChatGateway implements OnGatewayConnection {
 		this.chatService.events.on(
 			'user-unmuted-in-channel',
 			async ({ channelId, userId }) => {
-				const socketId: string = this.userIdToSocketId.get(userId);
-				if (!socketId) {
-					// if socketId not found, client is not currently connected and doesnt need the websocket event
-					return;
-				}
 
-				const client: Socket = this.socketMap.get(socketId);
+                const client : Socket = this.userIdToSocketMap.get(userId);
 				if (!client) {
-					console.error(
-						`No client socket found for socketId ${socketId}`,
-					);
+					// if socketId not found, client is not currently connected and doesnt need the websocket event
 					return;
 				}
 
@@ -161,17 +149,10 @@ export class ChatGateway implements OnGatewayConnection {
 		this.chatService.events.on(
 			'user-promoted-in-channel',
 			async ({ channelId, userId }) => {
-				const socketId: string = this.userIdToSocketId.get(userId);
-				if (!socketId) {
-					// if socketId not found, client is not currently connected and doesnt need the websocket event
-					return;
-				}
 
-				const client: Socket = this.socketMap.get(socketId);
+                const client : Socket = this.userIdToSocketMap.get(userId);
 				if (!client) {
-					console.error(
-						`No client socket found for socketId ${socketId}`,
-					);
+					// if socketId not found, client is not currently connected and doesnt need the websocket event
 					return;
 				}
 
@@ -194,17 +175,10 @@ export class ChatGateway implements OnGatewayConnection {
 		this.chatService.events.on(
 			'user-demoted-in-channel',
 			async ({ channelId, userId }) => {
-				const socketId: string = this.userIdToSocketId.get(userId);
-				if (!socketId) {
-					// if socketId not found, client is not currently connected and doesnt need the websocket event
-					return;
-				}
 
-				const client: Socket = this.socketMap.get(socketId);
+                const client : Socket = this.userIdToSocketMap.get(userId);
 				if (!client) {
-					console.error(
-						`No client socket found for socketId ${socketId}`,
-					);
+					// if socketId not found, client is not currently connected and doesnt need the websocket event
 					return;
 				}
 
@@ -224,8 +198,6 @@ export class ChatGateway implements OnGatewayConnection {
 			},
 		);
 
-		// ONLY FOR TESTING: we sleep for 0.5 seconds to make sure the global channel is created before we start testing
-		// sleep(1000);
 		console.log('Chat Gateway Initialized!');
 	}
 
@@ -242,33 +214,61 @@ export class ChatGateway implements OnGatewayConnection {
         `);
 
 		// For channel-added updates, we need to keep track of the socket
-		this.socketMap.set(client.id, client);
+        this.userIdToSocketMap.set(Number(query.userId), client);
 
 		// associate the socketId with the userId
 		const userId = Number(query.userId);
 		client.data.userId = userId;
-		this.userIdToSocketId.set(userId, client.id);
+		// this.userIdToSocketId.set(userId, client.id);
 
 		// Add the user to his own room for personal notifications and channel-added updates
 		client.join(`user-${client.data.userId}`);
-		console.log(`Client joined user-${client.data.userId}`);
+		console.log(`User ${userId} joined a room: user-${client.data.userId}`);
 
 		// Enter the user in the channels he belongs in
 		const userChannels = await this.chatService.getUserChannels(
 			Number(query.userId),
 		);
+
+        // TODO: review if below code is still needed
+		// for (const channelId of userChannels) {
+		// 	client.join(`channel-${channelId}`);
+		// 	console.log(`Client joined channel-${channelId}`);
+		// }
+
+        // New for blocklist: maintain the users to channels mapping
 		for (const channelId of userChannels) {
 			client.join(`channel-${channelId}`);
 			console.log(`Client joined channel-${channelId}`);
+
+			// Update the channelIdToUserIds map
+			let userIdsInChannel = this.channelIdToUserIds.get(channelId);
+            if (!userIdsInChannel) {
+                userIdsInChannel = new Set();
+                this.channelIdToUserIds.set(channelId, userIdsInChannel);
+            }
+            userIdsInChannel.add(userId);
 		}
 	}
 
 	async handleDisconnect(client: Socket) {
 		const userId: number = client.data.userId;
-		this.userIdToSocketId.delete(userId);
+		this.userIdToSocketMap.delete(userId);
 		this.logger.log(`Client disconnected : ${client.id}`);
 		const connectedRooms = Object.keys(client.rooms);
-		connectedRooms.forEach(room => client.leave(room));
+		// connectedRooms.forEach(room => client.leave(room));
+        // Update the channelIdToUserIds map
+		connectedRooms.forEach(room => {
+			client.leave(room);
+			const channelId = Number(room.split('-')[1]); // Assuming room names are in the format 'channel-{channelId}'
+			const userIdsInChannel = this.channelIdToUserIds.get(channelId);
+			if (userIdsInChannel) {
+				userIdsInChannel.delete(userId);
+				if (userIdsInChannel.size === 0) {
+					this.channelIdToUserIds.delete(channelId);
+				}
+			}
+		});
 	}
 
 	@SubscribeMessage('message')
@@ -331,10 +331,22 @@ export class ChatGateway implements OnGatewayConnection {
 				channelId,
 			);
 
-			client
-				.to(`channel-${channelId}`)
-				.emit('message', { channelId: channelId, message: message });
-			return { event: 'message', data: 'Message sent successfully.' };
+            // Iterate over all connected clients and emit the message only to those
+            // who have not blocked the sender
+            // Speed here could probably be improved
+            const userIdsInChannel = this.channelIdToUserIds.get(channelId);
+            if (userIdsInChannel) {
+                userIdsInChannel.forEach(async (userId) => {
+                    if (!(await this.chatService.isUserBlocked(senderId, userId))) {
+                        const socket = this.userIdToSocketMap.get(userId);
+                        socket.emit('message', { channelId: channelId, message: message });
+                    }
+                    else {
+                        console.log("userId: " + userId + " has blocked senderId: " + senderId + " and does not receive the message");
+                    }
+                });
+            }
+
 		} catch (error) {
 			console.error('Failed to store the message.', error);
 			// client.emit('error', { message: 'There was an error sending your message.' });
