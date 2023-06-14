@@ -317,6 +317,8 @@ export class YourProfile {
             this.user.infoPong.skin.default.paddle = this.skinPadle;
             this.user.infoPong.avatar = this.avatarImage.src ? this.avatarImage.src : this.user.infoPong.avatar;
             this.user.nickname = this.new_nickname;
+            //TODO DATABASE 
+            //POST_User_update_info(user: User, nickname: string, avatar: number, color: string, paddle_default: string, photo: string)
         }
         if (type == "photo") {
           fileInput.click();
@@ -701,6 +703,9 @@ export class YourProfile {
 
         if (edit == false)
         {
+          //TODO DATABASE 
+          //POST_User_update_nickname(user: User, nickname: string) //if exist return false or 201
+
           //NickName
           ctx.fillStyle = "black";
           ctx.font = "22px 'Press Start 2P', cursive";

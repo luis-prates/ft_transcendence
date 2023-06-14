@@ -169,7 +169,10 @@ export class Shop {
               if (skin.type == TypeSkin.Paddle) this.user.infoPong.skin.paddles.push(skin.name as never);
               else if (skin.type == TypeSkin.Tabble) this.user.infoPong.skin.tables.push(skin.name as never);
               this.yourMoney -= skin.price;
+              this.user.wallet = this.yourMoney;
               buy_sound.play();
+              //TODO DATABASE 
+              //POST_User_Buy_Skin(user: user, skin: string, price: number)
             }
           });
         }

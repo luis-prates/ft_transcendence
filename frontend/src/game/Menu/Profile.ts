@@ -223,12 +223,17 @@ export class Profile {
 				}); */
 			}
 			else if (type == "send_message") {
-			  //TODO send priv message
+				//TODO DATABASE 
+				//Send Private Message
+			  	//TODO send priv message
 			}
 			else if (type == "mute") {
-			  //TODO mute or unmute
+			  	//TODO mute or unmute
+				//TODO DATABASE 
+				//Post_User_Mute(user, true)
+				//Post_User_Mute(user, false)
 			}
-			},
+		},
 	  };
 	  return button;
 	}
@@ -256,8 +261,11 @@ export class Profile {
 			  ctx.fillText(label, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w / 2 - labelWidth/2, button.rectangle.y + button.rectangle.h / 2 + 6);
 			},
 			onClick: () => {
-			//TODO Request Friend
-			//Or UnFriend
+				//TODO DATABASE 
+				//Request Friend
+        		//Post_User_Request_Add_Friend(user: User, true)
+				//Or UnFriend
+				//Post_User_Request_Add_Friend(user: User, false)
 			},
 	  };
 	  return button;

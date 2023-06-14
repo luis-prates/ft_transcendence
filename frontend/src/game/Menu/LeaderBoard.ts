@@ -144,8 +144,10 @@ export class LeaderBoard {
 		    ctx.strokeText(nickname, raking.rectangle.x + raking.rectangle.x * 0.2, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.375);
       },
       onClick: () => {
-		//TODO
-		//Go to Profile
+        //TODO DATABASE 
+        //Get_User_info(user: User)
+		    //TODO
+		    //Go to Profile
       },
     };
     return raking;
