@@ -11,17 +11,14 @@ export class BlocklistService {
             throw new BadRequestException('Cannot block self');
         }
         try {
-            console.log("blockedId", blockedId)
             const blocked = await this.prisma.user.findUnique({
                 where: {
                     id: blockedId,
                 },
             });
-            console.log("blocked", blocked);
             if (!blocked) {
                 throw new NotFoundException('User not found');
             }
-            console.log("blocked", blocked);
             const block = await this.prisma.blocklist.create({
                 data: {
                     blocker: {

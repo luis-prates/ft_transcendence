@@ -276,7 +276,6 @@ describe('Chat', () => {
 			// emit the message event as user1
 			// clients[0].emit('message', { "channelId": publicChannelId, "message": "Hello World!" });
 			// expect the message to be received by user2 and user3
-            console.log("clients is: ", clients);
 			const messagePromises = clients.slice(1, 3).map(
 				client =>
 					new Promise((resolve, reject) => {
@@ -689,6 +688,41 @@ describe('Chat', () => {
 				.expectStatus(201);
 			await Promise.all(userUnmutedPromises);
 		});
+        it('should not let messages from blocked users to users that blocked them', async () => {
+            await pactum
+                .spec()
+                .post('/blocklist/block/$S{user4Id}')
+                .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+                .expectStatus(201);
+
+            const channelId = pactum.stash.getDataStore()['protectedChannelId'];
+            const user4Id = pactum.stash.getDataStore()['user4Id'];
+
+            // promise that will resolve if no message is received from user4 to user1 for 1 second
+            const messagePromise = new Promise((resolve, reject) => {
+                // We'll make a handler for each client that will resolve the promise when the message is received
+                const handler = ({
+                    channelId: receivedChannelId,
+                    message,
+                }) => {
+                    // If any of these clients receives a message from user4, reject the promise
+                    if (receivedChannelId === channelId) {
+                        reject(
+                            new Error(
+                                `User ${user4Id} is blocked but their message was received.`,
+                            ),
+                        );
+                    }
+                };
+                // once a message is received, we'll call the handler
+                clients[0].on('message', handler);
+                listeners.push({ client: clients[0], handler });
+
+                // if no message is received after 1 second, resolve the promise
+                setTimeout(resolve, 1000);
+            }
+            );
+        });
 		it('should make a user admin and let others receive a promoted-user event', async () => {
 			const protectedChannelId =
 				pactum.stash.getDataStore()['protectedChannelId'];
