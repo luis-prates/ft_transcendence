@@ -43,6 +43,8 @@ export class LobbyGateway
 
 	async handleConnection(@ConnectedSocket() client: Socket, ...args: any[]) {
 		this.logger.debug(`Client connected: ${client.id} to lobby namespace`);
+		//TODO: do the chat setup here?
+		//TODO: add to global chat room, etc.
 		client.once('connection_lobby', payload => {
 			//	this.logger.log(`Client ${client.id} connected to lobby`);
 			this.lobbyService.connection(client, payload);

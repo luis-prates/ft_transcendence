@@ -11,15 +11,16 @@ export class PlayerService {
 
 	//TODO: add namespace to keys maybe?
 	createPlayer(socket: Socket, payload: any): Player {
-		const player = new Player(socket, payload.objectId);
-		this.logger.debug('created player: ' + player.objectId);
+		const player = new Player(socket, payload.objectId, this);
+		this.logger.debug(`created player: ${player.objectId}`);
 		this.players.set(player.objectId, player);
 		this.sockets.set(player.objectId, socket);
 		return player;
 	}
 
 	removePlayer(player: Player): void {
-		const playerFromMap = this.players.get(Number(player.objectId));
+		//! is it needed?
+		const playerFromMap = this.getPlayer(player.objectId);
 		if (!player) {
 			return;
 		}
@@ -31,24 +32,24 @@ export class PlayerService {
 
 	getPlayer(userId: number): Player {
 		this.logger.debug(`number of players is ${this.players.size}`);
-		this.logger.debug('getPlayer with userId: ' + userId);
+		this.logger.debug(`getPlayer with userId: ${userId}`);
 		// log each player in players map
 		for (const [key, value] of this.players.entries()) {
 			if (key == userId) {
 				return value;
 			}
-			this.logger.debug('key: ' + key + ' value: ' + value.name);
+			this.logger.debug(`key: ${key} value: ${value.name}`);
 		}
-		this.logger.debug('userId: ' + userId);
+		this.logger.debug(`userId: ${userId}`);
 		const player: Player = this.players.get(userId);
-		this.logger.debug('player: ' + JSON.stringify(player));
+		this.logger.debug(`player: ${JSON.stringify(player)}`);
 		return player;
 	}
 
-	getUserIdFromSocket(socket: Socket): number {
+	getUserIdFromGameSocket(socket: Socket): number {
 		// find id in sockets map
-		for (const [key, value] of this.sockets.entries()) {
-			if (value.id == socket.id) {
+		for (const [key, value] of this.players.entries()) {
+			if (value.getGameSocket().id == socket.id) {
 				return key;
 			}
 		}

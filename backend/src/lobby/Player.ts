@@ -2,24 +2,27 @@ import { Lobby } from './Lobby';
 import { GameMap } from './GameMap';
 import { Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
-export interface PathNode {
+import { PlayerService } from '../player/player.service';
+export type PathNode = {
 	x: number;
 	y: number;
 	direction: number;
-}
+};
 
-export interface PlayerData {
+export type PlayerData = {
 	className: string;
 	name: string;
 	objectId: number;
 	x: number;
 	y: number;
 	animation: { name: string; isStop: boolean };
-}
+};
 
+// Is objectId supposed to be the user ID?
 export class Player {
-	private _socket: Socket;
-	avatar: string = '';
+	private _lobbySocket: Socket;
+	gameSocket: Socket | null = null;
+	avatar = '';
 	name: string = 'name_' + Date.now();
 	map: GameMap | null = null;
 	data: PlayerData = {
@@ -30,11 +33,15 @@ export class Player {
 		y: 64,
 		animation: { name: 'walk_bottom', isStop: true },
 	};
-	time: number = 0;
+	time = 0;
 	private readonly logger = new Logger(Player.name);
 
-	constructor(socket: Socket, objectId: number) {
-		this.logger.debug('new player with objectId: ', objectId);
+	constructor(
+		socket: Socket,
+		objectId: number,
+		private playerService?: PlayerService,
+	) {
+		this.logger.debug(`new player with objectId: ${objectId}`);
 		this.setSocket(socket);
 		this.data.objectId = objectId;
 		this.time = Date.now();
@@ -45,38 +52,53 @@ export class Player {
 	}
 
 	getSocket(): Socket {
-		return this._socket;
+		return this._lobbySocket;
 	}
 
 	setSocket(value: Socket) {
+		this.logger.debug(`setSocket: ${value.id}`);
 		this.time = 0;
 		value.on('disconnect', () => {
 			this.time = Date.now();
 			setTimeout(() => {
 				console.log('disconnect: ' + this.objectId);
 				if (this.time && this.map) {
+					//! this is the first call to remove player
+					//! need to fix infinite loop that starts here
 					this.map.removePlayer(this);
-					Lobby.players = Lobby.players.splice(Lobby.players.indexOf(this), 1);
+					//! useless since I'm removing it on the line above
+					// Lobby.players = Lobby.players.splice(
+					// 	Lobby.players.indexOf(this),
+					// 	1,
+					// );
 				}
 			}, 30000);
 		});
-		this._socket = value;
+		this._lobbySocket = value;
+	}
+
+	setGameSocket(value: Socket) {
+		this.gameSocket = value;
+	}
+
+	getGameSocket(): Socket {
+		return this.gameSocket;
 	}
 
 	public get id(): string {
-		return this._socket.id;
+		return this._lobbySocket.id;
 	}
 
-	public emit(event: string, data: any): void {
-		this._socket.emit(event, data);
+	public emitToLobby(event: string, data: any): void {
+		this._lobbySocket.emit(event, data);
 	}
 
-	public on(event: string, callback: (...args: any[]) => void): void {
-		this._socket.on(event, callback);
+	public onLobby(event: string, callback: (...args: any[]) => void): void {
+		this._lobbySocket.on(event, callback);
 	}
 
-	public off(event: string): void {
-		this._socket.off(event, () => {});
+	public offLobby(event: string): void {
+		this._lobbySocket.off(event, () => {});
 	}
 
 	public offAll(): void {
@@ -85,8 +107,11 @@ export class Player {
 
 	public destroy(): void {
 		this.offAll();
-		this._socket.disconnect();
-		Lobby.players = Lobby.players.splice(Lobby.players.indexOf(this), 1);
+		this._lobbySocket.disconnect();
+		this.gameSocket?.disconnect();
+		// this.playerService.players = Lobby.players.splice(Lobby.players.indexOf(this), 1);
+		// this.playerService?.removePlayer(this);
+		//! need to check this
 		this.map?.removePlayer(this);
 	}
 }

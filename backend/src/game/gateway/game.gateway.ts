@@ -42,7 +42,7 @@ export class GameGateway
 		// return 'Hello world!';
 	}
 
-	handleConnection(client: Socket, ...args: any[]) {
+	handleConnection(@ConnectedSocket() client: Socket, ...args: any[]) {
 		console.log('On Connect');
 		const { query } = client.handshake;
 		this.logger.log(
@@ -64,12 +64,14 @@ export class GameGateway
 		client.data.userId = userId;
 	}
 
-	handleDisconnect(client: Socket) {
-		const userId = this.playerService.getUserIdFromSocket(client);
+	handleDisconnect(@ConnectedSocket() client: Socket) {
+		const userId = this.playerService.getUserIdFromGameSocket(client);
 		this.logger.log(`Client disconnected on /game namespace: ${userId}`);
 		const player = this.playerService.getPlayer(userId);
 		this.logger.debug(`Removing Player ${userId} from playerService`);
 		this.playerService.removePlayer(player);
+		//! needs to be changed to check if player is in game
+		//! perhaps add game id to player object?
 		if (client.data.gameId) {
 			const gameId = client.data.gameId;
 			// Remove the player from the game

@@ -25,7 +25,7 @@ export class GameService {
 	}
 
 	async createGame(body: GameDto) {
-		this.logger.debug('createGame is called with body: ', body);
+		this.logger.debug(`createGame is called with body: ${body}`);
 		const game = await this.prisma.game.create({
 			data: {
 				gameType: body.gameType,
@@ -39,15 +39,8 @@ export class GameService {
 				players: true,
 			},
 		});
-		this.logger.debug('game created in database: ', game);
+		this.logger.debug(`game created in database: ${game}`);
 		const playerOne = this.playerService.getPlayer(body.players[0]);
-		// //! should it be here?
-		// //! will entry game be here or separate?
-		// if (game.players.length === 2) {
-		// 	const playerTwo = await this.players.getPlayerFromObjectId(
-		// 		game.players[1].id,
-		// 	);
-		// }
 		// objectId same as game.id generated in database?
 		body.gameRequest.objectId = game.id;
 		// new_game equivalent
@@ -59,10 +52,13 @@ export class GameService {
 					g => g.data.objectId !== body.gameRequest.objectId,
 				);
 				this.logger.log(`Game ${game.id} ended and removed.`);
-				playerOne?.map.removeGameObject(body.gameRequest.objectId);
+				playerOne?.map.removeGameObject(
+					playerOne,
+					body.gameRequest.objectId,
+				);
 			}),
 		);
-		this.logger.debug('GameClass Object created in memory: ', this.games);
+		this.logger.debug('GameClass Object created in memory');
 
 		//! perhaps this should be in the gateway?
 		// // entry_game equivalent

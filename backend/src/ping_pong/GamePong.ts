@@ -18,10 +18,10 @@ const infoBot: playerInfo = {
 	skin: '42Lisboa',
 };
 
-export class Game {
-	games: Game[];
-	width: number = 1000;
-	height: number = 522;
+export class GameClass {
+	games: GameClass[];
+	width = 1000;
+	height = 522;
 	status: number = Status.Waiting;
 	ball: Ball;
 	player1: Player_Pong | null = null;
@@ -29,7 +29,7 @@ export class Game {
 	maxPoint = 3;
 	watchers: Player[] = [];
 	data: gameRequest;
-	bot: boolean = false;
+	bot = false;
 	onRemove: Function = () => {};
 
 	constructor(gameResquest: gameRequest, onRemove: Function) {
@@ -43,12 +43,15 @@ export class Game {
 	//Game Loop 1000 milesecond (1second) for 60 fps
 	gameLoop() {
 		if (!this.isEndGame()) {
-			if (this.status == Status.InGame)
+			if (this.status == Status.InGame) {
 				this.ball.update();
-			if (this.player1)
+			}
+			if (this.player1) {
 				this.player1.update();
-			if (this.player2)
+			}
+			if (this.player2) {
 				this.player2.update();
+			}
 		}
 		setTimeout(() => {
 			this.gameLoop();
@@ -56,7 +59,7 @@ export class Game {
 	}
 
 	emitStartGame() {
-		this.player1.socket.emit('start_game', {
+		this.player1.socket.emitToLobby('start_game', {
 			player: 1,
 			status: Status.Starting,
 			data: this.data,
@@ -70,7 +73,7 @@ export class Game {
 			skin2: this.player2.skin,
 		});
 		if (this.bot == false) {
-			this.player2.socket.emit('start_game', {
+			this.player2.socket.emitToLobby('start_game', {
 				player: 2,
 				status: Status.Starting,
 				data: this.data,
@@ -90,23 +93,23 @@ export class Game {
 	}
 
 	//Create Players and Watchers
-	addUsers(user: Player, playerInfo?: playerInfo) {
+	addUsers(user: Player, isPlayer: boolean, playerInfo?: playerInfo) {
 		// DATA BASE VERIFICATION
 
-		if (this.player1 == null) {
+		if (isPlayer && this.player1 == null) {
 			this.player1 = new Player_Pong(this, 1, user, playerInfo);
 			//console.log('player1 connect', playerInfo);
 			if (this.bot == true) {
 				this.player2 = new Player_Pong(this, 3, user, infoBot);
 				this.emitStartGame();
 			}
-		} else if (this.player2 == null) {
+		} else if (isPlayer && this.player2 == null) {
 			this.player2 = new Player_Pong(this, 2, user, playerInfo);
 			//console.log('player2 connect', playerInfo);
 			this.emitStartGame();
 		} else if (!this.watchers.includes(user)) {
 			this.watchers.push(user);
-			user.emit('start_game', {
+			user.emitToLobby('start_game', {
 				//Game
 				status: this.status,
 				data: this.data,
@@ -125,16 +128,21 @@ export class Game {
 	}
 	//Begin the Game
 	startGame() {
-		if (this.status != Status.Finish)
+		if (this.status != Status.Finish) {
 			this.countdown(4);
+		}
 	}
 	//When one of the Players make a Point
 	makePoint(playerNumber: number) {
-		this.emitAll('game_update_point', { objectId: this.data.objectId, playerNumber: playerNumber, score: playerNumber == 1 ? this.player1.score : this.player2.score });
+		this.emitAll('game_update_point', {
+			objectId: this.data.objectId,
+			playerNumber: playerNumber,
+			score: playerNumber == 1 ? this.player1.score : this.player2.score,
+		});
 
-		if (this.isEndGame())
+		if (this.isEndGame()) {
 			this.endGame(playerNumber);
-		else {
+		} else {
 			this.updateStatus(Status.Starting);
 			this.startGame();
 		}
@@ -142,15 +150,18 @@ export class Game {
 	}
 	//End Game
 	endGame(playerNumber: number) {
-		if ((playerNumber == 1 || playerNumber == 2) && this.status != Status.Finish) {
+		if (
+			(playerNumber == 1 || playerNumber == 2) &&
+			this.status != Status.Finish
+		) {
 			this.updateStatus(Status.Finish);
 			if (playerNumber === 1) {
-				this.player1.socket.emit('end_game', {
+				this.player1.socket.emitToLobby('end_game', {
 					objectId: this.data.objectId,
 					result: 'You Win!',
 				});
 				if (this.player2 && this.bot == false) {
-					this.player2.socket.emit('end_game', {
+					this.player2.socket.emitToLobby('end_game', {
 						objectId: this.data.objectId,
 						result: 'You Lose!',
 					});
@@ -160,12 +171,12 @@ export class Game {
 					result: this.player1.nickname + ' Win!',
 				});
 			} else if (playerNumber === 2) {
-				this.player1.socket.emit('end_game', {
+				this.player1.socket.emitToLobby('end_game', {
 					objectId: this.data.objectId,
 					result: 'You Lose!',
 				});
 				if (this.player2 && this.bot == false) {
-					this.player2.socket.emit('end_game', {
+					this.player2.socket.emitToLobby('end_game', {
 						objectId: this.data.objectId,
 						result: 'You Win!',
 					});
@@ -176,10 +187,11 @@ export class Game {
 				});
 			}
 			//INSERT IN DATABASE
-			this.player1?.socket.off('game_move');
-			if (this.player2 != null && this.bot == false)
-				this.player2?.socket.off('game_move');
-			this.watchers.forEach((watcher) => watcher.off('game_move'));
+			this.player1?.socket.offLobby('game_move');
+			if (this.player2 != null && this.bot == false) {
+				this.player2?.socket.offLobby('game_move');
+			}
+			this.watchers.forEach(watcher => watcher.offLobby('game_move'));
 			this.onRemove();
 		}
 	}
@@ -208,25 +220,36 @@ export class Game {
 	}
 	//Verific if the game is Ending
 	isEndGame() {
-		if (this.player1.score >= this.maxPoint || this.player2.score >= this.maxPoint)
+		if (
+			this.player1.score >= this.maxPoint ||
+			this.player2.score >= this.maxPoint
+		) {
 			return true;
+		}
 		return false;
 	}
 
 	//Emit for Players
 	emitPlayers(event: string, data: any): void {
-		if (this.player1)
-			this.player1.socket.emit(event, data);
-		if (this.player2 && !this.bot)
-			this.player2.socket.emit(event, data);
+		if (this.player1) {
+			this.player1.socket.emitToLobby(event, data);
+		}
+		if (this.player2 && !this.bot) {
+			this.player2.socket.emitToLobby(event, data);
+		}
 	}
 	//Emit for Watchers
 	emitWatchers(event: string, data: any): void {
-		if (this.watchers.length <= 0)
+		if (this.watchers.length <= 0) {
 			return;
-		this.watchers.forEach((clientSocket) => {
-			if (clientSocket.id !== this.player1.socket.id || clientSocket.id !== this.player2.socket.id)
-				clientSocket.emit(event, data);
+		}
+		this.watchers.forEach(clientSocket => {
+			if (
+				clientSocket.id !== this.player1.socket.id ||
+				clientSocket.id !== this.player2.socket.id
+			) {
+				clientSocket.emitToLobby(event, data);
+			}
 		});
 	}
 	//Emit for Players and Watchers
@@ -235,25 +258,29 @@ export class Game {
 		this.emitWatchers(event, data);
 	}
 
-	entry_game(player: Player, info: playerInfo) {
-		if (this.player1 == null || (this.player2 == null && this.bot == false))
-			player.on('game_move', (e: any) => this.game_move(e));
-		this.addUsers(player, info);
+	entry_game(player: Player, isPlayer: boolean, info: playerInfo) {
+		// || (this.player2 == null && this.bot == false))
+		if (isPlayer) {
+			player.onLobby('game_move', (e: any) => this.game_move(e));
+		}
+		this.addUsers(player, isPlayer, info);
 		console.log(this.games);
 	}
 
 	private game_move(e: any) {
 		if (this.status == Status.InGame) {
 			if (e.playerNumber == 1) {
-				if (e.move == 'up')
+				if (e.move == 'up') {
 					this.player1.moveUp();
-				else if (e.move == 'down')
+				} else if (e.move == 'down') {
 					this.player1.moveDown();
+				}
 			} else if (e.playerNumber == 2) {
-				if (e.move == 'up')
+				if (e.move == 'up') {
 					this.player2.moveUp();
-				else if (e.move == 'down')
+				} else if (e.move == 'down') {
 					this.player2.moveDown();
+				}
 			}
 		}
 	}
