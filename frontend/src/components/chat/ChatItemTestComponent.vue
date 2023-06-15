@@ -3,12 +3,12 @@
 
     <div class="d-flex item-box">
       <div class="img_cont">
-        <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img" />
+        <img :src="props.channel.avatar !== '' ? props.channel.avatar : 'https://therichpost.com/wp-content/uploads/2020/06/avatar2.png'" class="rounded-circle user_img" />
         <span class="online_icon offline"></span>
       </div>
       <div class="user_info">
-        <span>Chat Global</span>
-        <p>5 Users</p>
+        <span>{{ props.channel.name }}</span>
+        <p>{{ props.channel.users.length }}</p>
       </div>
     </div>
   </div>

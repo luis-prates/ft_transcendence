@@ -20,18 +20,6 @@
           <u v-for="channel in store.channels">
             <ChatItemTestComponent :channel="channel" @click="selectChannel(channel)" />
           </u>
-          <!-- <li>
-            <div class="d-flex bd-highlight item-box">
-              <div class="img_cont">
-                <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img" />
-                <span class="online_icon offline"></span>
-              </div>
-              <div class="user_info">
-                <span>Chat Global</span>
-                <p>5 Users</p>
-              </div>
-            </div>
-          </li> -->
         </ul>
       </div>
       <div v-else class="card-body contacts_body">
@@ -145,6 +133,7 @@ const toggleChat = () => {
   // Update the button text based on isChatHidden
   buttonString.value = isChatHidden ? "⇑" : "⇓";
   isChatHidden = !isChatHidden;//
+  instance?.emit('update-create-channel', false);
 };
 
 </script>
