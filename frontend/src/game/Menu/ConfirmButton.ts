@@ -119,12 +119,3 @@ export class ConfirmButton {
     Game.addMenu(this.menu);
   }
 }
-/*
-//Regua Horizontal
-ctx.strokeRect(button.rectangle.x + button.rectangle.w * 0.475, button.rectangle.y + button.rectangle.h * 0.05, button.rectangle.w * 0.05, 1);
-
-ctx.strokeRect(button.rectangle.x, button.rectangle.y + button.rectangle.h / 2, button.rectangle.w, 1);
-ctx.strokeRect(button.rectangle.x + button.rectangle.w / 2, button.rectangle.y, 1, button.rectangle.h);
-ctx.strokeRect(button.rectangle.x + button.rectangle.w * 0.33, button.rectangle.y, 1, button.rectangle.h);
-ctx.strokeRect(button.rectangle.x + button.rectangle.w * 0.66, button.rectangle.y, 1, button.rectangle.h);
-*/

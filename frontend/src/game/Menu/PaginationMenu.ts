@@ -1,4 +1,5 @@
 import type { ElementUI, Menu } from "./Menu";
+import sound_close_tab from "@/assets/audio/close.mp3";
 
 export class PaginationMenu {
 
@@ -10,6 +11,8 @@ export class PaginationMenu {
 	max_for_line: number = 0;
 	arrowL: string = "grey";
 	arrowR: string = "grey";
+	close_tab = new Audio(sound_close_tab);
+
 
 	constructor (array: any[], max_page: number, max_line: number, parent?: ElementUI | undefined, menu?: Menu)
 	{
@@ -57,9 +60,11 @@ export class PaginationMenu {
 			ctx.stroke();
 		  },
 		  onClick: () => {
-			  if (dir == "left" && this.page > 0) this.page--;
-			  else if (dir == "right" && (this.page + 1) * this.max_for_page - 1 < this.array.length - 1) this.page++;
-		  },
+				if (dir == "left" && this.page > 0) this.page--;
+				else if (dir == "right" && (this.page + 1) * this.max_for_page - 1 < this.array.length - 1) this.page++;
+
+				this.close_tab.play();
+			},
 		};
 		return button;
 	}

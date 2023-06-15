@@ -6,6 +6,7 @@ import socket from "@/socket/Socket";
 import sound_close_tab from "@/assets/audio/close.mp3";
 import { Skin, TypeSkin } from "../ping_pong/Skin";
 import { userStore } from "@/stores/userStore";
+import { PaginationMenu } from "./PaginationMenu";
 
 export class CreateGame {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -33,13 +34,18 @@ export class CreateGame {
 
   private skinImage = new Image();
   private products = new Skin();
+  private table_pagination: PaginationMenu;
 
   //  constructor(player: Player) {
   constructor(data: any) {
     this.data = data;
 
-    this.menu.add(this.background);
+    this.tableColor = this.user.infoPong.skin.default.tableColor ? this.user.infoPong.skin.default.tableColor : "#1e8c2f";
+    this.tableSkin = this.user.infoPong.skin.default.tableSkin ? this.user.infoPong.skin.default.tableSkin : "";
+    this.skinImage = this.products.get_skin(TypeSkin.Tabble + "_" + this.tableSkin);
 
+    this.menu.add(this.background);
+    
     this.menu.add(this.background, this.createButtonExit(31, 7, "newGame"));
     //Type
     this.menu.add(this.background, this.createButton("type", 40 + 1 * (10 / 4), 20, "Solo", 8));
@@ -54,14 +60,14 @@ export class CreateGame {
     this.menu.add(this.background, this.createButton("view", 40 + 5.5 * (10 / 4), 40, "Private", 8));
     //Table
     this.menu.add(this.background, this.createButton("table", 40 + 3.25 * (10 / 4), 75, "Custom", 8));
-
+    
     //Start Game
     this.menu.add(this.background, this.createButtonStartGame(32.5 + 10 / 2, 85, "Start Game"));
-
+    
     //Custom Menu
     this.menu.add(this.customMenu);
     this.customMenu.visible = false;
-
+    
     //Colors
     this.menu.add(this.customMenu, this.createColorButton(37 + 1 * (10 / 3), 28, "red"));
     this.menu.add(this.customMenu, this.createColorButton(37 + 2 * (10 / 3), 28, "#1e8c2f"));
@@ -69,19 +75,32 @@ export class CreateGame {
     this.menu.add(this.customMenu, this.createColorButton(37 + 4 * (10 / 3), 28, "#de1bda"));
     this.menu.add(this.customMenu, this.createColorButton(37 + 5 * (10 / 3), 28, "blue"));
     this.menu.add(this.customMenu, this.createColorButton(37 + 6 * (10 / 3), 28, "black"));
+    
 
-    //TODO FOREACH
-    //Skin
-    this.menu.add(this.customMenu, this.createSkinButton(24 + 1 * (10 / 1.5), 46, ""));
-    this.user.infoPong.skin.tables.forEach((skin, index) => {
-      this.menu.add(this.customMenu, this.createSkinButton(24 + (index + 2) * (10 / 1.5), 46, skin));
+    this.table_pagination = new PaginationMenu(this.user.infoPong.skin.tables, 4, 4, this.customMenu);
+    
+    //Arrow Buttons
+    this.menu.add(this.customMenu, this.table_pagination.createArrowButton("left", 31, 49, 2));
+    this.menu.add(this.customMenu, this.table_pagination.createArrowButton("right", 67, 49, 2));
+
+    let page = 0;
+    
+    this.menu.add(this.customMenu, this.createSkinButton(-1, "", 27.5 + 1 * (10 / 1.5), 46));
+    this.user.infoPong.skin.tables.forEach((skin: string, index: number) => {
+      if ((index == 0 ? index + 1 : index) % this.table_pagination.max_for_page == 0) page++;
+
+      const i = index - page * this.table_pagination.max_for_page;
+
+      const squareX = 27.5 + (i + 2 % this.table_pagination.max_for_line) * (10 / 1.5);
+      const squareY = 46;
+
+      if (this.tableSkin == skin)
+        this.table_pagination.page = page;
+
+      this.menu.add(this.customMenu, this.createSkinButton(index, skin, squareX, squareY));
     });
-    /*this.menu.add(this.customMenu, this.createSkinButton(24 + 1 * (10 / 1.5), 46, ""));
-    this.menu.add(this.customMenu, this.createSkinButton(24 + 2 * (10 / 1.5), 46, "onepiece"));
-    this.menu.add(this.customMenu, this.createSkinButton(24 + 3 * (10 / 1.5), 46, "swag"));
-    this.menu.add(this.customMenu, this.createSkinButton(24 + 4 * (10 / 1.5), 46, "game"));
-    this.menu.add(this.customMenu, this.createSkinButton(24 + 5 * (10 / 1.5), 46, ""));
-    this.menu.add(this.customMenu, this.createSkinButton(24 + 6 * (10 / 1.5), 46, ""));*/
+    //Save Default Table
+    this.menu.add(this.customMenu, this.createButton("default", 59.5, 83, "Save Default Table", 10));
 
     this.menu.add(this.customMenu, this.createButtonExit(31, 12, "custom"));
   }
@@ -148,6 +167,7 @@ export class CreateGame {
   }
 
   private createButton(type: string, x: number, y: number, label: string, width: number): ElementUI {
+    const close_tab = new Audio(sound_close_tab);
     let color = "black";
     const button: ElementUI = {
       type: type,
@@ -158,6 +178,18 @@ export class CreateGame {
         else if (button.type == "view" && this.view == label.toLowerCase()) color = "red";
         else color = "black";
 
+        
+        if (button.type == "default")
+        {
+            if (this.user.infoPong.skin.default.tableColor == this.tableColor && 
+              this.user.infoPong.skin.default.tableSkin == this.tableSkin)
+            {
+              button.enable = false;
+              return ;
+            }
+            else if (button.enable == false) button.enable = true;
+        }
+
         ctx.fillStyle = "white";
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
@@ -167,11 +199,8 @@ export class CreateGame {
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = "black";
-        ctx.font = "12px 'Press Start 2P', cursive";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(label, button.rectangle.x + button.rectangle.w / 2, button.rectangle.y + button.rectangle.h / 2);
+        this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.65, undefined, "12px 'Press Start 2P', cursive");     
+
       },
       onClick: () => {
         console.log(button.type, label);
@@ -182,6 +211,13 @@ export class CreateGame {
           this.customMenu.visible = true;
           this.background.visible = false;
         }
+        else if (button.type == "default") {
+          this.user.infoPong.skin.default.tableColor = this.tableColor;
+          this.user.infoPong.skin.default.tableSkin = this.tableSkin;
+          //TODO DATABASE
+          //POST_USER_UPDATE_TABLE_DEFAULT_SKIN
+        }
+        close_tab.play();
       },
     };
     return button;
@@ -219,12 +255,20 @@ export class CreateGame {
     return button;
   }
 
-  private createSkinButton(x: number, y: number, skin: string): ElementUI {
+  private createSkinButton(index: number, skin: string, x: number, y: number): ElementUI {
     const skinImage = this.products.get_skin(TypeSkin.Tabble + "_" + skin);
     const button: ElementUI = {
       type: "skin",
       rectangle: { x: x + "%", y: y + "%", w: "5%", h: "10%" },
       draw: (ctx: CanvasRenderingContext2D) => {
+
+        if (index >= 0 && !(this.table_pagination.isIndexInCurrentPage(index))) {
+          if (button.enable)
+            button.enable = false;
+          return;
+        }
+        if (!button.enable)
+          button.enable = true;
 
         ctx.strokeStyle = skin == this.tableSkin ? "red" : "black";
         ctx.lineWidth = 2;
@@ -262,6 +306,9 @@ export class CreateGame {
         ctx.stroke();
       },
       onClick: () => {
+
+        if (index > 0 && !(this.table_pagination.isIndexInCurrentPage(index))) return;
+
         this.tableSkin = skin;
         
         this.skinImage = skinImage;
@@ -284,11 +331,10 @@ export class CreateGame {
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = "black";
-        ctx.font = "30px 'Press Start 2P', cursive";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("Start Game", button.rectangle.x + button.rectangle.w / 2, button.rectangle.y + button.rectangle.h / 2);
+        ctx.fillStyle = "black"
+
+        this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.9, undefined, "30px 'Press Start 2P', cursive");     
+
       },
       onClick: () => {
         this.menu.close();
@@ -316,23 +362,22 @@ export class CreateGame {
     //Tittle
     ctx.fillStyle = "#ffffff";
     ctx.font = "30px 'Press Start 2P', cursive";
-    ctx.textAlign = "center";
-    ctx.fillText("NEW GAME", pos.x + pos.w / 2, pos.y + pos.h * 0.075);
-    ctx.strokeText("NEW GAME", pos.x + pos.w / 2, pos.y + pos.h * 0.075);
+    ctx.fillText("NEW GAME", pos.x + pos.w * 0.3, pos.y + pos.h * 0.075, pos.w * 0.4);
+    ctx.strokeText("NEW GAME", pos.x + pos.w * 0.3, pos.y + pos.h * 0.075, pos.w * 0.4);
 
     //Type
     ctx.fillStyle = "black";
     ctx.font = "18px 'Press Start 2P', cursive";
-    ctx.fillText("Type:", pos.x + pos.w * 0.15, pos.y + pos.h * 0.2);
+    ctx.fillText("Type:", pos.x + pos.w * 0.08, pos.y + pos.h * 0.215, pos.w * 0.14);
 
     //Score
-    ctx.fillText("Score:", pos.x + pos.w * 0.15, pos.y + pos.h * 0.31);
+    ctx.fillText("Score:", pos.x + pos.w * 0.05, pos.y + pos.h * 0.325, pos.w * 0.17);
 
     //View
-    ctx.fillText("View:", pos.x + pos.w * 0.15, pos.y + pos.h * 0.42);
+    ctx.fillText("View:", pos.x + pos.w * 0.08, pos.y + pos.h * 0.435, pos.w * 0.14);
 
     //Table
-    ctx.fillText("Table:", pos.x + pos.w * 0.15, pos.y + pos.h * 0.52);
+    ctx.fillText("Table:", pos.x + pos.w * 0.05, pos.y + pos.h * 0.535, pos.w * 0.17);
 
     //Draw Table
     this.drawTable(ctx, pos.x + pos.w * 0.3, pos.y + pos.h * 0.5, pos.w * 0.5, pos.h * 0.25, pos.w * 0.01, pos.h * 0.01);
@@ -371,25 +416,53 @@ export class CreateGame {
     //Tittle
     ctx.fillStyle = "#ffffff";
     ctx.font = "30px 'Press Start 2P', cursive";
-    ctx.textAlign = "center";
-    ctx.fillText("Custom", pos.x + pos.w / 2, pos.y + pos.h * 0.075);
-    ctx.strokeText("Custom", pos.x + pos.w / 2, pos.y + pos.h * 0.075);
+    ctx.fillText("Custom", pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3);
+    ctx.strokeText("Custom", pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3);
 
     //Type
     ctx.fillStyle = "black";
     ctx.font = "18px 'Press Start 2P', cursive";
-    ctx.fillText("Color:", pos.x + pos.w * 0.5, pos.y + pos.h * 0.175);
+    ctx.fillText("Color:", pos.x + pos.w * 0.425, pos.y + pos.h * 0.175, pos.w * 0.15);
 
     //Skin
-    ctx.fillText("Skin:", pos.x + pos.w * 0.5, pos.y + pos.h * 0.4);
+    ctx.fillText("Skin:", pos.x + pos.w * 0.445, pos.y + pos.h * 0.4, pos.w * 0.14);
 
     //Table
-    ctx.fillText("Table:", pos.x + pos.w * 0.5, pos.y + pos.h * 0.65, pos.w * 0.17);
+    ctx.fillText("Table:", pos.x + pos.w * 0.445, pos.y + pos.h * 0.65, pos.w * 0.14);
 
     this.drawTable(ctx, pos.x + pos.w * 0.25, pos.y + pos.h * 0.7, pos.w * 0.5, pos.h * 0.25, pos.w * 0.01, pos.h * 0.01);
+  }
+
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, rectangle: Rectangle, y: number, max_with?: number, font?: string) {
+    ctx.fillStyle = "#000";
+    ctx.font = font ? font : "12px Arial";
+    ctx.textAlign = "start";
+
+    const begin = rectangle.x + rectangle.w * 0.1;
+    const max = max_with ? max_with : rectangle.w - rectangle.w * 0.2;
+
+    let offset = 0;
+    let offsetmax = 0;
+    const labelWidth = ctx.measureText(label).width;
+    while (begin + offset + labelWidth < begin + max - offset) {
+      offsetmax += rectangle.w * 0.05;
+      if (begin + offsetmax + labelWidth > begin + max - offset) break;
+      offset = offsetmax;
+    }
+
+    ctx.fillText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
   }
 
   get menu(): Menu {
     return this._menu;
   }
 }
+  //Regua
+/* 
+  ctx.strokeRect( pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3, 1);
+
+  ctx.strokeRect(pos.x, pos.y + pos.h / 2, pos.w, 1);
+  ctx.strokeRect(pos.x + pos.w / 2, pos.y, 1, pos.h);
+  ctx.strokeRect(pos.x + pos.w * 0.33, pos.y, 1, pos.h);
+  ctx.strokeRect(pos.x + pos.w * 0.66, pos.y, 1, pos.h);
+*/

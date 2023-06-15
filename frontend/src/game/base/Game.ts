@@ -54,6 +54,20 @@ export class Game {
           x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE,
           y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,
         };
+        //Test
+        const user = userStore().user;
+        user.infoPong.skin.tables.push("onepiece" as never);
+        user.infoPong.skin.tables.push("swag" as never);
+        user.infoPong.skin.tables.push("game" as never);
+        user.infoPong.skin.tables.push("onepiece" as never);
+        user.infoPong.skin.tables.push("swag" as never);
+        user.infoPong.skin.tables.push("game" as never);
+        user.infoPong.skin.tables.push("onepiece" as never);
+        user.infoPong.skin.tables.push("swag" as never);
+        user.infoPong.skin.tables.push("game" as never);
+        user.infoPong.skin.tables.push("onepiece" as never);
+        user.infoPong.skin.tables.push("swag" as never);
+        user.infoPong.skin.tables.push("game" as never);
         Game.instance.addMenu(new CreateGame(data).menu);
       }
       event.preventDefault();

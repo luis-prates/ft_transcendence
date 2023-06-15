@@ -622,7 +622,7 @@ export class YourProfile {
       rectangle: { x: x + "%", y: y + "%", w: "2.5%", h: "12%" },
       draw: (ctx: CanvasRenderingContext2D) => {
         
-        if (index > 0 && !(this.paddle_pagination.isIndexInCurrentPage(index))) {
+        if (index >= 0 && !(this.paddle_pagination.isIndexInCurrentPage(index))) {
           if (button.enable)
             button.enable = false;
           return;

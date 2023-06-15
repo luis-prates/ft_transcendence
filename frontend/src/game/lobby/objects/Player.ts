@@ -61,7 +61,7 @@ export class Player extends Character {
       if (this.select == this) {
         
         const user = userStore().user;
-        /*const history_game_1: Historic = {
+        const history_game_1: Historic = {
           winner: user.nickname,
           loser: "Marvin",
           player1: user.nickname,
@@ -92,7 +92,7 @@ export class Player extends Character {
         user.infoPong.skin.paddles.push("onepiece" as never);
         user.infoPong.skin.paddles.push("pacman" as never);
         user.infoPong.skin.paddles.push("mario" as never);
-        console.log(user.infoPong)*/
+        console.log(user.infoPong);
 
         //TODO DATABASE 
         //Get_User_info(user: User)
