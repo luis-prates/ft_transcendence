@@ -26,4 +26,7 @@ export class AuthDto {
 
 	@IsBase64()
 	image: string;
+
+    @IsString()
+    color: string;
 }
