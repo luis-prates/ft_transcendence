@@ -22,7 +22,7 @@ export class Shop {
     this.menu.add(this.background);
     this.menu.add(this.createButtonExit(10.5, 11));
     this.createAll();
-    this.yourMoney = this.user.wallet;
+    this.yourMoney = this.user.money;
   }
 
   private createBackground(): ElementUI {
@@ -169,7 +169,7 @@ export class Shop {
               if (skin.type == TypeSkin.Paddle) this.user.infoPong.skin.paddles.push(skin.name as never);
               else if (skin.type == TypeSkin.Tabble) this.user.infoPong.skin.tables.push(skin.name as never);
               this.yourMoney -= skin.price;
-              this.user.wallet = this.yourMoney;
+              this.user.money = this.yourMoney;
               buy_sound.play();
               //TODO DATABASE 
               //POST_User_Buy_Skin(user: user, skin: string, price: number)

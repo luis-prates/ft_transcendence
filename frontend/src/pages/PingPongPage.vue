@@ -123,7 +123,7 @@ onMounted(function () {
     //Add info in storage
     if (game.playerNumber == 1 || game.playerNumber == 2) {
 
-      user.wallet += e.max_money;
+      user.money += e.max_money;
       user.infoPong.experience += e.max_exp;
 
       //Up Level!

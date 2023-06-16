@@ -294,7 +294,7 @@ export class Profile {
 	ctx.fillText("Level: " + this.user.infoPong.level, pos.x + pos.w * 0.30, pos.y + pos.h * 0.13, pos.w - (pos.x + pos.w * 0.5));
 
 	//Money
-	ctx.fillText("Money: " + this.user.wallet + "₳", pos.x + pos.w * 0.30, pos.y + pos.h * 0.16, pos.w - (pos.x + pos.w * 0.5));
+	ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.30, pos.y + pos.h * 0.16, pos.w - (pos.x + pos.w * 0.5));
     
 	//Level
 	const wins = this.user.infoPong.historic.filter((history: any) => history.winner == this.user.nickname).length;
