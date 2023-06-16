@@ -111,7 +111,7 @@ let isChatHidden = true;
 
 onMounted(() => {
   toggleChat();
-  addChannel();
+  // addChannel();
 });
 
 const buttonString = ref("⇑"); // Set initial button text

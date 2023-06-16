@@ -48,7 +48,7 @@
         </div>
         <div class="user_info">
           <span>Chat with jassa</span>
-          <p>1767 Messages</p>
+          <p>{{selected?.messages.length + " Messages"}}</p>
         </div>
         <div class="video_cam">
           <button class="config_chat">⚙</button>
@@ -58,17 +58,21 @@
     </div>
 
     <div class="card-body msg_card_body" ref="scrollContainer">
-      <ChatComponentTestStart type="start" mensagem="." time="8:40 AM" />
-      <ChatComponentTestStart type="end" mensagem="Ola" time="8:40 AM" />
-      <ChatComponentTestStart type="start" mensagem="ehehehe" time="8:40 AM" />
-      <ChatComponentTestStart type="start" mensagem="testing" time="8:40 AM" />
-      <ChatComponentTestStart type="start" mensagem="lolol" time="8:40 AM" />
-      <ChatComponentTestStart type="start" mensagem="scroll tes asdasdasd asd asd asd asd t asd asd asdasd asd asd asdasd asd" time="8:40 AM" />
+      <div v-for="(message, index) in selected?.messages" :key="index">
+        <div>
+          <ChatComponentTestStart :nickname="message.nickname" :mensagem="message.message" time="8:40 AM" />
+        </div>
+      </div>
+      <!-- <ChatComponentTestStart nickname="Eduardo" mensagem="." time="8:40 AM" />
+      <ChatComponentTestStart nickname="Eduardo" mensagem="ehehehe" time="8:40 AM" />
+      <ChatComponentTestStart nickname="Pilantra" mensagem="testing" time="8:40 AM" />
+      <ChatComponentTestStart nickname="Arrombado" mensagem="lolol" time="8:40 AM" />
+      <ChatComponentTestStart nickname="Ruben" mensagem="scroll tes asdasdasd asd asd asd asdasdasda sdasdasdasda sdasdasdasdas dasdasdasda sdasdasdasdas dasdasdasdasdasd t asd asd asdasd asd asd asdasd asd" time="8:40 AM" /> -->
     </div>
 
     <div class="card-footer">
       <div class="input-group">
-        <textarea ref="text" name="" class="form-control type_msg" placeholder="Type your message..." style="resize: none"></textarea>
+        <textarea v-model="text" name="" class="form-control type_msg" placeholder="Type your message..." style="resize: none"></textarea>
         <div class="input-group-append">
           <span class="input-group-text send_btn" @click="send"><i class="fas fa-location-arrow"></i>➤</span>
         </div>
@@ -82,10 +86,18 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
-import { ref } from "vue";
 import ChatComponentTestStart from "./ChatComponentTestStart.vue";
 import { defineProps, getCurrentInstance, watch } from "vue";
-import { chatStore, type channel } from "@/stores/chatStore";
+import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
+import { storeToRefs } from "pinia";
+import { userStore } from "@/stores/userStore";
+import socket from "@/socket/Socket";
+import { onMounted, onUnmounted, ref } from "vue";
+
+
+const store = chatStore();
+const user = userStore();
+const { selected } = storeToRefs(store);
 
 // Props declaration
 const props = defineProps({
@@ -105,8 +117,26 @@ const toggleStatus = () => {
 const text = ref();
 
 function send() {
-  console.log(text.value.value);
+  console.log(text.value);
+  if (text.value) {
+    const mensagem: ChatMessage = { objectId: user.user.id, id: user.user.id + "_" + Date.now(), message: text.value.trim(), nickname: "user_" + user.user.id };
+    store.addMessage(selected.value?.objectId, mensagem);
+    socket.emit("send_message", { message: mensagem, objectId: selected.value?.objectId });
+    scrollToBottom();
+  }
+  text.value = "";
 }
+
+onMounted(() => {
+  socket.on("send_message", (data: any) => {
+    store.addMessage(data.objectId, data.message);
+    scrollToBottom();
+  });
+});
+
+onUnmounted(() => {
+  socket.off("send_message");
+});
 
 const scrollContainer = ref<HTMLElement | null>(null);
 
@@ -140,7 +170,6 @@ const handleAvatarChange = (event:any) => {
   channelAvatar.value = file;
 };
 
-const store = chatStore();
 let channelID = 10;
 // Create new channel function
 const createNewChannel = () => {

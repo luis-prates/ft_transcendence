@@ -183,6 +183,7 @@ body,html{
   padding: 10px;
   position: relative;
   min-width: 45px;
+  display: inline-block;
   }
   .msg_cotainer_send{
   margin-top: auto;
