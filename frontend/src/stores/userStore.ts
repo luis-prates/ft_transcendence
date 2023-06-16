@@ -40,7 +40,7 @@ export interface User {
   nickname: string;
   image: string;
   infoPong: InfoPong;
-  wallet: number;
+  money: number;
 }
 
 export const userStore = defineStore("user", () => {
@@ -63,7 +63,7 @@ export const userStore = defineStore("user", () => {
     nickname: "",
     isLogin: false,
     image: "",
-    wallet: 10,
+    money: 10,
     infoPong: {
       avatar: "",
       level: 1,
@@ -107,10 +107,10 @@ export const userStore = defineStore("user", () => {
         user.email = userInfoResponse.data.email;
         user.id = userInfoResponse.data.id;
         user.nickname = userInfoResponse.data.login;
-        user.wallet = userInfoResponse.data.wallet;
+        user.money = userInfoResponse.data.money;
         console.log("user\n", JSON.stringify(user));
         await axios
-          .post("https://unbecoming-fact-production.up.railway.app/auth/signin", user)
+          .post(env.BACKEND_PORT + "/auth/signin", user)
 
           // axios.request(options)
           .then(function (response: any) {
@@ -120,7 +120,7 @@ export const userStore = defineStore("user", () => {
             user.id = response.data.dto.id;
             user.nickname = response.data.dto.nickname;
             user.image = response.data.dto.image;
-            user.wallet = response.data.dto.wallet;
+            user.money = response.data.dto.money;
           })
           .catch(function (error) {
             console.error(error);
@@ -131,6 +131,28 @@ export const userStore = defineStore("user", () => {
         console.error(error);
         user.isLogin = false;
       });
+    // .finally(() => window.location.href = window.location.origin);
+  }
+  
+  async function loginTest() {
+    if (user.isLogin) return;
+    await axios
+      .post(env.BACKEND_PORT + "/auth/signin", user)
+
+      // axios.request(options)
+      .then(function (response: any) {
+        user.access_token_server = response.data.access_token;
+        user.name = response.data.dto.name;
+        user.email = response.data.dto.email;
+        user.id = response.data.dto.id;
+        user.nickname = response.data.dto.nickname;
+        user.image = response.data.dto.image;
+       // user.money = response.data.dto.money;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+    user.isLogin = true;
     // .finally(() => window.location.href = window.location.origin);
   }
 
@@ -152,5 +174,5 @@ export const userStore = defineStore("user", () => {
       .catch((err) => console.error(err));
   }
 
-  return { user, login, update };
+  return { user, login, loginTest, update };
 });
