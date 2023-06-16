@@ -41,7 +41,7 @@ export class Profile {
 		
 		this.menu.add(this.background, this.createButton("challenge", 3.25, 26, "Challenge", 9));
 		this.menu.add(this.background, this.createButton("send_message", 13.25, 26, "Send Message", 9));
-		this.menu.add(this.background, this.createButton("mute", 23.25, 26, "Mute", 9));
+		this.menu.add(this.background, this.createButton("block", 23.25, 26, "Block", 9));
 
 		
     	//Arrow Buttons
@@ -227,8 +227,8 @@ export class Profile {
 				//Send Private Message
 			  	//TODO send priv message
 			}
-			else if (type == "mute") {
-			  	//TODO mute or unmute
+			else if (type == "block") {
+			  	//TODO block or unblock
 				//TODO DATABASE 
 				//Post_User_Mute(user, true)
 				//Post_User_Mute(user, false)
