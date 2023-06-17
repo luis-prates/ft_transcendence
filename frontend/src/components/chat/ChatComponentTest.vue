@@ -12,7 +12,7 @@
         </div>
       </div>
     </div>
-    <div class="card-body msg_card_body" ref="scrollContainer">
+    <div class="card-body msg_card_body">
       <!-- corpo do formulario -->
       <form @submit.prevent="createNewChannel">
         <div class="form-group">
@@ -72,7 +72,7 @@
 
     <div class="card-footer">
       <div class="input-group">
-        <textarea v-model="text" name="" class="form-control type_msg" placeholder="Type your message..." style="resize: none"></textarea>
+        <textarea v-model="text" name="" @keyup.enter="send" class="form-control type_msg" placeholder="Type your message..." style="resize: none"></textarea>
         <div class="input-group-append">
           <span class="input-group-text send_btn" @click="send"><i class="fas fa-location-arrow"></i>➤</span>
         </div>
@@ -87,7 +87,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
 import ChatComponentTestStart from "./ChatComponentTestStart.vue";
-import { defineProps, getCurrentInstance, watch } from "vue";
+import { nextTick, defineProps, getCurrentInstance, watch } from "vue";
 import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
 import { storeToRefs } from "pinia";
 import { userStore } from "@/stores/userStore";
@@ -128,9 +128,12 @@ function send() {
     const mensagem: ChatMessage = { objectId: user.user.id, id: user.user.id + "_" + Date.now(), message: text.value.trim(), nickname: "user_" + user.user.id };
     store.addMessage(selected.value?.objectId, mensagem);
     socket.emit("send_message", { message: mensagem, objectId: selected.value?.objectId });
-    scrollToBottom();
+    text.value = "";
+    // Use nextTick to wait for the DOM to update
+    nextTick(() => {
+      scrollToBottom();
+    });
   }
-  text.value = "";
 }
 
 onMounted(() => {
@@ -147,10 +150,17 @@ onUnmounted(() => {
 const scrollContainer = ref<HTMLElement | null>(null);
 
 watch(
-  () => scrollContainer.value,
-  (newContainer) => {
-    if (newContainer) {
-      scrollToBottom();
+  [() => store.selected?.messages.length, () => props.channelStatus],
+  ([newMessageLength, newChannelStatus], [oldMessageLength, oldChannelStatus]) => {
+    if (
+      newMessageLength !== oldMessageLength ||
+      (newChannelStatus && !oldChannelStatus) ||
+      (scrollContainer.value && scrollContainer.value.scrollTop + scrollContainer.value.clientHeight >= scrollContainer.value.scrollHeight)
+    ) {
+      // Use nextTick to wait for the DOM to update
+      nextTick(() => {
+        scrollToBottom();
+      });
     }
   }
 );
