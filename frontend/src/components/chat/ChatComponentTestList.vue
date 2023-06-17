@@ -26,16 +26,9 @@
         <!-- Users inside the chat selected -->
         <ul class="contacts">
           <li>
-            <div class="d-flex bd-highlight">
-              <div class="img_cont">
-                <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img" />
-                <span class="online_icon offline"></span>
-              </div>
-              <div class="user_info">
-                <span>Ezequiel</span>
-                <p>Offline</p>
-              </div>
-            </div>
+            <u v-for="(user, index) in selected?.users" :key="index">
+              <ChatComponentUsersList :user="user" />
+            </u>
           </li>
         </ul>
       </div>
@@ -48,12 +41,15 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 import ChatItemTestComponent from "./ChatItemTestComponent.vue";
+import ChatComponentUsersList from "./ChatComponentUsersList.vue";
 import { chatStore, type channel } from "@/stores/chatStore";
 import "./App.css";
 import { defineProps, ref, getCurrentInstance, type WebViewHTMLAttributes } from "vue";
 import { onMounted } from 'vue';
+import { storeToRefs } from "pinia";
 
 const store = chatStore();
+const { selected } = storeToRefs(store);
 
 function selectChannel(channel: channel) {
   console.log("Carregou no channel!\n", channel);

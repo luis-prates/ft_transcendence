@@ -8,7 +8,7 @@ export interface ChatMessage {
   nickname: string;
 }
 
-interface ChatUser {
+export interface ChatUser {
   objectId: any;
   avatar: string;
   name: string;

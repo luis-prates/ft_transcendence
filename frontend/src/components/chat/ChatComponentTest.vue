@@ -47,7 +47,7 @@
           <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img" />
         </div>
         <div class="user_info">
-          <span>Chat with jassa</span>
+          <span>{{ getChannelName() }}</span>
           <p>{{selected?.messages.length + " Messages"}}</p>
         </div>
         <div class="video_cam">
@@ -98,6 +98,12 @@ import { onMounted, onUnmounted, ref } from "vue";
 const store = chatStore();
 const user = userStore();
 const { selected } = storeToRefs(store);
+
+// Get channel name from chatStore
+const getChannelName = () => {
+  // console.log("Channel name: " + store.selected?.name);
+  return store.selected?.name;
+};
 
 // Props declaration
 const props = defineProps({
