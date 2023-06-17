@@ -63,11 +63,6 @@
           <ChatComponentTestStart :nickname="message.nickname" :mensagem="message.message" time="8:40 AM" />
         </div>
       </div>
-      <!-- <ChatComponentTestStart nickname="Eduardo" mensagem="." time="8:40 AM" />
-      <ChatComponentTestStart nickname="Eduardo" mensagem="ehehehe" time="8:40 AM" />
-      <ChatComponentTestStart nickname="Pilantra" mensagem="testing" time="8:40 AM" />
-      <ChatComponentTestStart nickname="Arrombado" mensagem="lolol" time="8:40 AM" />
-      <ChatComponentTestStart nickname="Ruben" mensagem="scroll tes asdasdasd asd asd asd asdasdasda sdasdasdasda sdasdasdasdas dasdasdasda sdasdasdasdas dasdasdasdasdasd t asd asd asdasd asd asd asdasd asd" time="8:40 AM" /> -->
     </div>
 
     <div class="card-footer">
