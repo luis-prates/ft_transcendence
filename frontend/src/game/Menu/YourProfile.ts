@@ -40,7 +40,7 @@ export class YourProfile {
   constructor(player: Player) {
     this.player = player;
 
-    this.avatarImage.src = this.user.infoPong.avatar ? this.user.infoPong.avatar : avatarDefault;
+    this.avatarImage.src = this.user.image ? this.user.image : avatarDefault;
 
     this.skinPadle = this.user.infoPong.skin.default.paddle;
     this.skinPadleImage = this.skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
@@ -176,8 +176,8 @@ export class YourProfile {
         ctx.fillText(matche.player2, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
 
         // matche.player1
-        player1Image.src = matche.player1 == this.user.nickname ? this.user.infoPong.avatar : avatarDefault;
-        player2Image.src = matche.player2 == this.user.nickname ? this.user.infoPong.avatar : avatarDefault;
+        player1Image.src = matche.player1 == this.user.nickname ? this.user.image : avatarDefault;
+        player2Image.src = matche.player2 == this.user.nickname ? this.user.image : avatarDefault;
 
         ctx.strokeRect(product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.2, product.rectangle.h * 0.35);
         ctx.strokeRect(
@@ -281,7 +281,7 @@ export class YourProfile {
         this.player.animation.sy !== ((this.avatar_pagination.page - 4 >= 0 ? 1 : 0) * 320) ||
         this.user.infoPong.color !== this.colorChoose ||
         this.user.infoPong.skin.default.paddle !== this.skinPadle ||
-        this.user.infoPong.avatar !== this.avatarImage.src ||
+        this.user.image !== this.avatarImage.src ||
         this.user.nickname !== this.new_nickname))
         {
           ctx.fillStyle = "green";
@@ -315,7 +315,7 @@ export class YourProfile {
             this.player.animation.sy =  (this.avatar_pagination.page - 4 >= 0 ? 1 : 0) * 320;
             this.user.infoPong.color = this.colorChoose;
             this.user.infoPong.skin.default.paddle = this.skinPadle;
-            this.user.infoPong.avatar = this.avatarImage.src ? this.avatarImage.src : this.user.infoPong.avatar;
+            this.user.image = this.avatarImage.src ? this.avatarImage.src : this.user.image;
             this.user.nickname = this.new_nickname;
             //TODO DATABASE 
             //POST_User_update_info(user: User, nickname: string, avatar: number, color: string, paddle_default: string, photo: string)

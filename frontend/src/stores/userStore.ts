@@ -4,6 +4,12 @@ import { env } from "../env";
 import axios from "axios";
 import type { ProductSkin } from "@/game/ping_pong/Skin";
 
+enum UserStatus {
+	OFFLINE,
+	IN_GAME,
+	ONLINE,
+}
+
 export interface Historic {
   winner: string;
   loser: string;
@@ -13,9 +19,8 @@ export interface Historic {
 }
 
 export interface InfoPong {
-  avatar: string;
   level: number;
-  experience: number;
+  xp: number;
   color: string;
   skin: {
     default: {
@@ -35,10 +40,11 @@ export interface User {
   refreshToken: string;
   isLogin: boolean;
   id: number;
-  name: string;
   email: string;
-  nickname: string;
-  image: string;
+  name: string;
+  nickname: string;             //nickName in the Game
+  image: string;                //image Profile
+  avatar: number;               //Avatar in The Lobby           
   infoPong: InfoPong;
   money: number;
 }
@@ -60,14 +66,15 @@ export const userStore = defineStore("user", () => {
     name: "",
     email: "",
     id: 0,
+    status: UserStatus.ONLINE,
     nickname: "",
     isLogin: false,
     image: "",
+    avatar: 0,
     money: 10,
     infoPong: {
-      avatar: "",
       level: 1,
-      experience: 0,
+      xp: 0,
       color: randomColor(),
       skin: {
         default: {
@@ -141,13 +148,27 @@ export const userStore = defineStore("user", () => {
 
       // axios.request(options)
       .then(function (response: any) {
+        console.log("aquiii: ", response)
         user.access_token_server = response.data.access_token;
+        user.id = response.data.dto.id;
+        user.status = response.data.dto.status;
         user.name = response.data.dto.name;
         user.email = response.data.dto.email;
-        user.id = response.data.dto.id;
         user.nickname = response.data.dto.nickname;
         user.image = response.data.dto.image;
-       // user.money = response.data.dto.money;
+        user.money = response.data.dto.money;
+        user.avatar = response.data.dto.avatar;
+        user.infoPong.level = response.data.dto.level;
+        user.infoPong.xp = response.data.dto.xp;
+        user.infoPong.color = response.data.dto.color;
+        user.infoPong.skin.default.tableColor = response.data.dto.tableColorEquipped;
+        user.infoPong.skin.default.tableSkin = response.data.dto.tableSkinEquipped;
+        user.infoPong.skin.default.paddle = response.data.dto.paddleSkinEquipped;
+        user.infoPong.skin.tables =  response.data.dto.tableSkinsOwned;
+        user.infoPong.skin.paddles =  response.data.dto.paddleSkinsOwned;
+        //TODO
+        //user.infoPong.historic = [],
+       console.log(user)
       })
       .catch(function (error) {
         console.error(error);

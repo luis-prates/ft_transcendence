@@ -75,7 +75,7 @@ export class Player extends Character {
           player2: "Marvin2",
           result: 0 + "-" + 3,
         }
-        user.infoPong.historic.push(history_game_1 as never);
+       /* user.infoPong.historic.push(history_game_1 as never);
         user.infoPong.historic.push(history_game_1 as never);
         user.infoPong.historic.push(history_game_1 as never);
         user.infoPong.historic.push(history_game_2 as never);
@@ -92,13 +92,13 @@ export class Player extends Character {
         user.infoPong.skin.paddles.push("onepiece" as never);
         user.infoPong.skin.paddles.push("pacman" as never);
         user.infoPong.skin.paddles.push("mario" as never);
-        console.log(user.infoPong);
+        console.log(user.infoPong);*/
 
         //TODO DATABASE 
         //Get_User_info(user: User)
-       /* Game.instance.addMenu(new Profile(this).menu);
-        Game.instance.addMenu(new LeaderBoard().menu);*/
-        Game.instance.addMenu(new YourProfile(this).menu);
+        Game.instance.addMenu(new Profile(this).menu);
+        Game.instance.addMenu(new LeaderBoard().menu);
+      //  Game.instance.addMenu(new YourProfile(this).menu);
 
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {

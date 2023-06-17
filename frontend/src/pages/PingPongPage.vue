@@ -31,7 +31,7 @@ onMounted(function () {
   socket.emit("entry_game", { 
     objectId: props.objectId, 
     nickname: user.nickname,
-    avatar: user.infoPong.avatar,
+    avatar: user.image,
     color: user.infoPong.color,
     skin: user.infoPong.skin.default.paddle,
   });
@@ -124,12 +124,12 @@ onMounted(function () {
     if (game.playerNumber == 1 || game.playerNumber == 2) {
 
       user.money += e.max_money;
-      user.infoPong.experience += e.max_exp;
+      user.infoPong.xp += e.max_exp;
 
       //Up Level!
-      while (user.infoPong.experience >= user.infoPong.level * 200)
+      while (user.infoPong.xp >= user.infoPong.level * 200)
       {
-        user.infoPong.experience -= user.infoPong.level * 100;
+        user.infoPong.xp -= user.infoPong.level * 100;
 		    user.infoPong.level += 1;
       }
     

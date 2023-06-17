@@ -26,7 +26,7 @@ export class Profile {
 
 		this.player = player;
 
-		this.avatarImage.src = this.user.infoPong.avatar ? this.user.infoPong.avatar : avatarDefault;
+		this.avatarImage.src = this.user.infoPong.image ? this.user.infoPong.image : avatarDefault;
   
 		const skin = new Skin();
 		this.skinPaddle = skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
@@ -109,8 +109,8 @@ export class Profile {
 				product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
 		  
 			 // matche.player1 
-			player1Image.src = matche.player1 == this.user.nickname ? this.user.infoPong.avatar : avatarDefault;
-			player2Image.src = matche.player2 == this.user.nickname ? this.user.infoPong.avatar : avatarDefault;
+			player1Image.src = matche.player1 == this.user.nickname ? this.user.infoPong.image : avatarDefault;
+			player2Image.src = matche.player2 == this.user.nickname ? this.user.infoPong.image : avatarDefault;
 
 			ctx.strokeRect(product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
 			ctx.strokeRect(product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - (product.rectangle.w * 0.295), product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
