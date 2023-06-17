@@ -5,9 +5,9 @@ import axios from "axios";
 import type { ProductSkin } from "@/game/ping_pong/Skin";
 
 enum UserStatus {
-	OFFLINE,
-	IN_GAME,
-	ONLINE,
+	OFFLINE = "OFFLINE",
+	IN_GAME = "IN_GAME",
+	ONLINE = "ONLINE",
 }
 
 export interface Historic {
@@ -168,13 +168,40 @@ export const userStore = defineStore("user", () => {
         user.infoPong.skin.paddles =  response.data.dto.paddleSkinsOwned;
         //TODO
         //user.infoPong.historic = [],
-       console.log(user)
+       console.log("response: " , response.data.dto)
       })
       .catch(function (error) {
         console.error(error);
       });
     user.isLogin = true;
     // .finally(() => window.location.href = window.location.origin);
+  }
+
+  async function updateProfile() {
+    /*let body = {} as any;
+    body.id = user.id;
+    body.email = user.email;
+    body.name = user.name;
+    body.nickName = user.nickname;
+    body.avatar = user.avatar;
+    body.image = user.image;
+    body.color = user.infoPong.color;
+    body.paddleSkinEquipped = user.infoPong.skin.default.paddle;
+    console.log("body\n", body, "\nuser\n", user.access_token_server);
+    const options = {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+      body: new URLSearchParams(body),
+    };*/
+
+    await axios 
+      .post(env.BACKEND_PORT + "/auth/update_profile", user)
+      .then(function (response: any) {
+       console.log("response: " , response)
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
   }
 
   async function update(userUpdate: { name: string; email: string; nickname: string; image: string }) {
@@ -195,5 +222,5 @@ export const userStore = defineStore("user", () => {
       .catch((err) => console.error(err));
   }
 
-  return { user, login, loginTest, update };
+  return { user, login, loginTest, update, updateProfile };
 });

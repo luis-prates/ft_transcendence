@@ -23,8 +23,8 @@ export class Player extends Character {
     this.x = data.x;
     this.y = data.y;
     this.menu = menu;
-    this.animation.sx = 0;
-    this.animation.sy = 0;
+    this.animation.sx = (this.store.user.avatar - 4 >= 0 ? this.store.user.avatar - 4 : this.store.user.avatar) * 144;;
+    this.animation.sy = (this.store.user.avatar - 4 >= 0 ? 1 : 0) * 320;
     this.menu.value?.setAttribute("style", "display: none");
     this.type = "player";
     this.name = "Player_" + Date.now();
@@ -96,9 +96,9 @@ export class Player extends Character {
 
         //TODO DATABASE 
         //Get_User_info(user: User)
-        Game.instance.addMenu(new Profile(this).menu);
-        Game.instance.addMenu(new LeaderBoard().menu);
-      //  Game.instance.addMenu(new YourProfile(this).menu);
+        /*Game.instance.addMenu(new Profile(this).menu);
+        Game.instance.addMenu(new LeaderBoard().menu);*/
+        Game.instance.addMenu(new YourProfile(this).menu);
 
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {

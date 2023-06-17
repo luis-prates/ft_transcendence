@@ -20,6 +20,7 @@ export class YourProfile {
   private customPaddle: ElementUI = this.createCustomPaddle();
 
   private user = userStore().user;
+  private updateProfile = userStore().updateProfile;
   private player: Player;
   private avatarImage = new Image();
 
@@ -311,12 +312,15 @@ export class YourProfile {
       },
       onClick: () => {
         if (type == "save") {
+            this.user.nickname = this.new_nickname;
+            this.user.avatar = this.avatar_pagination.page;
             this.player.animation.sx = (this.avatar_pagination.page - 4 >= 0 ? this.avatar_pagination.page - 4 : this.avatar_pagination.page) * 144;
             this.player.animation.sy =  (this.avatar_pagination.page - 4 >= 0 ? 1 : 0) * 320;
+            this.user.image = this.avatarImage.src ? this.avatarImage.src : this.user.image;
             this.user.infoPong.color = this.colorChoose;
             this.user.infoPong.skin.default.paddle = this.skinPadle;
-            this.user.image = this.avatarImage.src ? this.avatarImage.src : this.user.image;
-            this.user.nickname = this.new_nickname;
+
+            this.updateProfile()
             //TODO DATABASE 
             //POST_User_update_info(user: User, nickname: string, avatar: number, color: string, paddle_default: string, photo: string)
         }
