@@ -61,7 +61,7 @@
     <div class="card-body msg_card_body" ref="scrollContainer">
       <div v-for="(message, index) in selected?.messages" :key="index">
         <div>
-          <ChatComponentTestStart :message="message" :displayUser="index == 0 || message.nickname !=  selected?.messages[index - 1].nickname"/>
+          <ChatContentMessages :message="message" :displayUser="index == 0 || message.nickname !=  selected?.messages[index - 1].nickname"/>
         </div>
       </div>
     </div>
@@ -82,7 +82,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
-import ChatComponentTestStart from "./ChatComponentTestStart.vue";
+import ChatContentMessages from "./ChatContentMessages.vue";
 import { nextTick, defineProps, getCurrentInstance, watch } from "vue";
 import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
 import { storeToRefs } from "pinia";

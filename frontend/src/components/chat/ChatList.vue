@@ -18,7 +18,7 @@
         </div>
         <ul class="contacts" @click="toggleStatus">
           <u v-for="channel in store.channels">
-            <ChatItemTestComponent :channel="channel" @click="selectChannel(channel)" />
+            <ChatListChannels :channel="channel" @click="selectChannel(channel)" />
           </u>
         </ul>
       </div>
@@ -27,7 +27,7 @@
         <ul class="contacts">
           <li>
             <u v-for="(user, index) in selected?.users" :key="index">
-              <ChatComponentUsersList :user="user" />
+              <ChatListUsers :user="user" />
             </u>
           </li>
         </ul>
@@ -40,8 +40,8 @@
 //Bootstrap
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
-import ChatItemTestComponent from "./ChatItemTestComponent.vue";
-import ChatComponentUsersList from "./ChatComponentUsersList.vue";
+import ChatListChannels from "./ChatListChannels.vue";
+import ChatListUsers from "./ChatListUsers.vue";
 import { chatStore, type channel } from "@/stores/chatStore";
 import "./App.css";
 import { defineProps, ref, getCurrentInstance, type WebViewHTMLAttributes } from "vue";

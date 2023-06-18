@@ -1,13 +1,13 @@
 <template>
   <div class="chat">
-    <ChatComponentTest  @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_mensagen" />
-    <ChatComponentTestList @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_list" />
+    <ChatContent  @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_mensagen" />
+    <ChatList @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_list" />
   </div>
 </template>
 
 <script setup lang="ts">
-import ChatComponentTestList from "./ChatComponentTestList.vue";
-import ChatComponentTest from "./ChatComponentTest.vue";
+import ChatList from "./ChatList.vue";
+import ChatContent from "./ChatContent.vue";
 import { onMounted, onUnmounted, ref } from "vue";
 import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
 import socket from "@/socket/Socket";
