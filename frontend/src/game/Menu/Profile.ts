@@ -3,7 +3,7 @@ import { userStore, type Historic } from "@/stores/userStore";
 
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";
-import { Skin, TypeSkin } from "../ping_pong/Skin";
+import { skin, TypeSkin } from "../ping_pong/Skin";
 
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import { AnimationMenu } from "./AnimationMenu";
@@ -26,9 +26,8 @@ export class Profile {
 
 		this.player = player;
 
-		this.avatarImage.src = this.user.infoPong.image ? this.user.infoPong.image : avatarDefault;
+		this.avatarImage.src = this.user.image ? this.user.image : avatarDefault;
   
-		const skin = new Skin();
 		this.skinPaddle = skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
 
 		this.matche_pagination = new PaginationMenu(this.user.infoPong.historic, 4, 2, this.background, this.menu);
@@ -109,8 +108,8 @@ export class Profile {
 				product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
 		  
 			 // matche.player1 
-			player1Image.src = matche.player1 == this.user.nickname ? this.user.infoPong.image : avatarDefault;
-			player2Image.src = matche.player2 == this.user.nickname ? this.user.infoPong.image : avatarDefault;
+			player1Image.src = matche.player1 == this.user.nickname ? this.user.image : avatarDefault;
+			player2Image.src = matche.player2 == this.user.nickname ? this.user.image : avatarDefault;
 
 			ctx.strokeRect(product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
 			ctx.strokeRect(product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - (product.rectangle.w * 0.295), product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);

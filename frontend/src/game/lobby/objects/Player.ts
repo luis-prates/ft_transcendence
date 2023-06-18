@@ -94,9 +94,7 @@ export class Player extends Character {
         user.infoPong.skin.paddles.push("mario" as never);
         console.log(user.infoPong);*/
 
-        //TODO DATABASE 
-        //Get_User_info(user: User)
-        /*Game.instance.addMenu(new Profile(this).menu);
+        /*Game.addMenu(new Profile(this).menu);
         Game.instance.addMenu(new LeaderBoard().menu);*/
         Game.instance.addMenu(new YourProfile(this).menu);
 

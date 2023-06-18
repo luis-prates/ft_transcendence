@@ -24,7 +24,7 @@ export interface ProductSkin {
 	image: HTMLImageElement,
   };
 
-export class Skin {
+class Skin {
 	public skins: ProductSkin [] = [];
 
 	constructor() {
@@ -76,3 +76,5 @@ export class Skin {
 		return new Image();
 	}
 }
+
+export const skin = new Skin()

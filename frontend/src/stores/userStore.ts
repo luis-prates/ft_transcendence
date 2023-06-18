@@ -148,7 +148,6 @@ export const userStore = defineStore("user", () => {
 
       // axios.request(options)
       .then(function (response: any) {
-        console.log("aquiii: ", response)
         user.access_token_server = response.data.access_token;
         user.id = response.data.dto.id;
         user.status = response.data.dto.status;
@@ -178,24 +177,57 @@ export const userStore = defineStore("user", () => {
   }
 
   async function updateProfile() {
-    /*let body = {} as any;
-    body.id = user.id;
+    let body = {} as any;
+   /* body.id = user.id;
     body.email = user.email;
-    body.name = user.name;
-    body.nickName = user.nickname;
+    body.name = user.name;*/
+    body.nickname = user.nickname;
     body.avatar = user.avatar;
     body.image = user.image;
     body.color = user.infoPong.color;
     body.paddleSkinEquipped = user.infoPong.skin.default.paddle;
-    console.log("body\n", body, "\nuser\n", user.access_token_server);
+    //console.log("body\n", body, "\nuser\n", user.access_token_server);
+    
+    //Todo
     const options = {
       method: "PATCH",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
       body: new URLSearchParams(body),
-    };*/
+    };
+    await fetch(env.BACKEND_PORT + "/users/update_profile", options)
+    .then(async (response) => console.log(await response.json()))
+    .catch((err) => console.error(err));
+    // await axios 
+    //   .patch(env.BACKEND_PORT + "/users/update_profile", options)
+    //   .then(function (response: any) {
+    //    console.log("response: " , response)
+    //   })
+    //   .catch(function (error) {
+    //     console.error(error);
+    //   });
+  }
+
+  async function buy_skin() {
+    let body = {} as any;
+    body.id = user.id;
+    body.email = user.email;
+    body.name = user.name;
+    body.nickname = user.nickname;
+    body.avatar = user.avatar;
+    body.image = user.image;
+    body.color = user.infoPong.color;
+    body.paddleSkinEquipped = user.infoPong.skin.default.paddle;
+    //console.log("body\n", body, "\nuser\n", user.access_token_server);
+    
+    //Todo
+    const options = {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+      body: new URLSearchParams(body),
+    };
 
     await axios 
-      .post(env.BACKEND_PORT + "/auth/update_profile", user)
+      .post(env.BACKEND_PORT + "/auth/update_profile", body)
       .then(function (response: any) {
        console.log("response: " , response)
       })
@@ -222,5 +254,5 @@ export const userStore = defineStore("user", () => {
       .catch((err) => console.error(err));
   }
 
-  return { user, login, loginTest, update, updateProfile };
+  return { user, login, loginTest, update, updateProfile, buy_skin };
 });

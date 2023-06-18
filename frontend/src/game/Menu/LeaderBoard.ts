@@ -1,6 +1,4 @@
 import { Menu, type ElementUI, type Rectangle } from "@/game";
-import { ConfirmButton } from "./ConfirmButton";
-import { Skin, TypeSkin, type ProductSkin } from "../ping_pong/Skin";
 
 //Sound
 import sound_close_tab from "@/assets/audio/close.mp3";

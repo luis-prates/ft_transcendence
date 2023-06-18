@@ -136,3 +136,11 @@ enum ChannelType {
     PROTECTED
     DM
 }
+
+
+enum ChannelType {
+	PUBLIC
+    PRIVATE
+    PROTECTED
+    DM
+}

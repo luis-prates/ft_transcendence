@@ -4,7 +4,7 @@ import socket from "@/socket/Socket";
 
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";
-import { Skin, TypeSkin } from "../ping_pong/Skin";
+import { skin, TypeSkin } from "../ping_pong/Skin";
 import { userStore } from "@/stores/userStore";
 import { PaginationMenu } from "./PaginationMenu";
 
@@ -33,7 +33,7 @@ export class CreateGame {
   private tableSkin: string = "";
 
   private skinImage = new Image();
-  private products = new Skin();
+  private products = skin;
   private table_pagination: PaginationMenu;
 
   //  constructor(player: Player) {

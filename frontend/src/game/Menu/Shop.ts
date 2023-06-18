@@ -1,6 +1,6 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
 import { ConfirmButton } from "./ConfirmButton";
-import { Skin, TypeSkin, type ProductSkin } from "../ping_pong/Skin";
+import { skin, TypeSkin, type ProductSkin } from "../ping_pong/Skin";
 
 //Sound
 import sound_caching from "@/assets/audio/caching.mp3";
@@ -12,8 +12,9 @@ export class Shop {
   private _menu = new Menu({ layer: "Global", isFocus: true });
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
-  private products = new Skin();
+  private products = skin;
   private user = userStore().user;
+  private buy_skin = userStore().buy_skin;
   private yourMoney: number = 0;
   private pagination_shop: PaginationMenu;
 
@@ -172,6 +173,7 @@ export class Shop {
               this.user.money = this.yourMoney;
               buy_sound.play();
               //TODO DATABASE 
+              this.buy_skin();
               //POST_User_Buy_Skin(user: user, skin: string, price: number)
             }
           });

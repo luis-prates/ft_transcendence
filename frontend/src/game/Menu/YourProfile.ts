@@ -1,6 +1,6 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
 import { userStore, type Historic } from "@/stores/userStore";
-import { Skin, TypeSkin } from "../ping_pong/Skin";
+import { skin, TypeSkin } from "../ping_pong/Skin";
 import { AnimationMenu } from "./AnimationMenu";
 
 //Audio
@@ -31,7 +31,7 @@ export class YourProfile {
   private new_nickname = "";
 
   //MiniPerfil
-  private skin = new Skin();
+  private skin = skin;
   private avataresImage = new Image();
   private skinPadleImage: HTMLImageElement;
   private colorChoose: string = "";
@@ -320,9 +320,8 @@ export class YourProfile {
             this.user.infoPong.color = this.colorChoose;
             this.user.infoPong.skin.default.paddle = this.skinPadle;
 
+            //DataBase
             this.updateProfile()
-            //TODO DATABASE 
-            //POST_User_update_info(user: User, nickname: string, avatar: number, color: string, paddle_default: string, photo: string)
         }
         if (type == "photo") {
           fileInput.click();

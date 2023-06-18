@@ -14,7 +14,6 @@ import sound_coin from "@/assets/audio/coin.mp3";
 import sound_coins from "@/assets/audio/coins.mp3";
 import music from "@/assets/audio/music_game.mp3";
 import { TablePong } from "@/game/ping_pong";
-import { Skin } from "./Skin";
 import Router from "@/router";
 
 export enum Status {
@@ -50,7 +49,6 @@ export class GamePong {
   };
   backgroundMusic = new Audio(music);
   watchersNumber: number = 0;
-  skins = new Skin();
 
   constructor(canvas: HTMLCanvasElement, width: number, height: number, offSet: number, context: CanvasRenderingContext2D, data: gameRequest, table: TablePong) {
     this.canvas = canvas;

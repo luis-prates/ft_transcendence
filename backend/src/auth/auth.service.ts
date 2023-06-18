@@ -59,44 +59,6 @@ export class AuthService {
 		}
 	}
 
-	async updateProfile(dto: AuthDto) {
-		const hash = await argon.hash(dto.nickname);
-
-		try {
-            // Check if image encoding is correct
-           /* var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-            if (!base64regex.test(dto.image)) {
-                throw new BadRequestException('Image is not base64 encoding');
-            }*/
-
-            // Check if user exists
-			const userExists = await this.prisma.user.findUnique({
-				where: {
-					id: dto.id,
-				},
-			});
-			if (userExists) {
-				const updatedUser = await this.prisma.user.update({
-					where: {
-					  id: dto.id,
-					},
-					data: {
-						nickname: dto.nickname,
-						avatar: dto.avatar,
-						image: dto.image,
-						color: dto.color,
-						paddleSkinEquipped: dto.paddleSkinEquipped,
-					},
-				  });
-			
-				delete updatedUser.hash;
-				return (this.signToken(updatedUser));
-			}
-		} catch (error) {
-			throw error;
-		}
-	}
-
 	async signToken(user: AuthDto)
 		: Promise<{ dto: AuthDto; access_token: string }> {
 		const payload = {

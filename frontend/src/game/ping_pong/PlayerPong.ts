@@ -1,6 +1,7 @@
 import { GamePong } from "@/game/ping_pong/";
 import socket from "@/socket/Socket";
-import { TypeSkin } from "./Skin";
+import { skin, TypeSkin } from "./Skin";
+
 
 //Avatar
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
@@ -32,8 +33,8 @@ export class PlayerPong {
     this.skin.src = "";
   }
 
-  updateSkin(skin: string) {
-    this.skin = this.game.skins.get_skin(TypeSkin.Paddle + "_" + skin);
+  updateSkin(skin_label: string) {
+    this.skin = skin.get_skin(TypeSkin.Paddle + "_" + skin_label);
   }
 
   moveUp(key_press: boolean) {

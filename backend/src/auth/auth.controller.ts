@@ -10,10 +10,4 @@ export class AuthController {
 	signin(@Body() dto: AuthDto) {
 		return (this.authService.signin(dto));
 	}
-
-	@Post('update_profile')
-	updateProfile(@Body() dto: AuthDto) {
-		console.log(dto);
-		return (this.authService.updateProfile(dto));
-	}
 }
