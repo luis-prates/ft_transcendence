@@ -83,7 +83,7 @@ export class MapEdit extends Lobby {
     MapObject.selection = null;
   }
 
-  protected mouseClick(event: MouseEvent) {
+  protected async mouseClick(event: MouseEvent) {
     if (MapObject.action.value == 2) super.mouseClick(event);
   }
 

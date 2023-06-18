@@ -1,16 +1,11 @@
 import { GamePong } from "@/game/ping_pong/";
 import { type updatePlayer } from "./SocketInterface";
 import socket from "@/socket/Socket";
+import { TypeSkin } from "./Skin";
 
 //Avatar
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import avatarMarvin from "@/assets/images/pingpong/marvin.jpg";
-
-//Skins
-import skinPacman from "@/assets/images/skin/line/skin_Pac-Man.png";
-import skinMario from "@/assets/images/skin/line/skin_Mario.jpeg";
-import skinOnePiece from "@/assets/images/skin/line/skin_OnePiece.png";
-import skin42Lisboa from "@/assets/images/skin/line/42-Lisboa.png";
 
 export class PlayerPong {
   game: GamePong;
@@ -38,10 +33,7 @@ export class PlayerPong {
   }
 
   updateSkin(skin: string) {
-    if (skin == "pacman") this.skin.src = skinPacman;
-    else if (skin == "mario") this.skin.src = skinMario;
-    else if (skin == "onepiece") this.skin.src = skinOnePiece;
-    else if (skin == "42Lisboa") this.skin.src = skin42Lisboa;
+    this.skin = this.game.skins.get_skin(TypeSkin.Paddle + "_" + skin);
   }
 
   moveUp() {

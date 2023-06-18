@@ -36,7 +36,7 @@ coverage
 *.njsproj
 *.sln
 *.sw?
-frontend/src/env.ts
+# frontend/src/env.ts
 
 # IDE - VSCode
 .vscode/*

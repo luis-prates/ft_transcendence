@@ -3,6 +3,7 @@ import { Player_Pong } from './PlayerPong';
 import { type gamePoint } from './SocketInterface';
 
 export class Ball {
+  
 	//Macros
 	speedIncrement = 1;
 	speedStart = 5;

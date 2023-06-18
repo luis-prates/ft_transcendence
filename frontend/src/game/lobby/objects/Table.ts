@@ -2,6 +2,7 @@ import { Game, type GameObject, Map } from "@/game";
 import type { GameObjectType } from "@/game/base/GameObject";
 import table from "@/assets/images/lobby/table0.png";
 import Router from "@/router";
+import { CreateGame } from "@/game/Menu/CreateGame";
 
 interface TableOnline {
   objectId?: any;
@@ -83,9 +84,6 @@ export class Table implements GameObject {
   }
 
   interaction(gameObject: GameObject): void {
-    console.log(this.objectId)
-    Router.push(
-      `/game?objectId=${this.objectId}`
-    );
+    Router.push(`/game?objectId=${this.objectId}`);
   }
 }
