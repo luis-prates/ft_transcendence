@@ -8,6 +8,7 @@ export interface gameRequest {
 
 export interface playerInfo {
   objectId: string,
+  userId: number,
   nickname: string,
   avatar: string,
   color: string,

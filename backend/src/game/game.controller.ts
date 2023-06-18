@@ -11,6 +11,7 @@ import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
 import { GetUser } from '../auth/decorator';
 import { GameDto } from './dto';
+import { playerInfo } from '../ping_pong/SocketInterface';
 
 //! deactivated for testing purposes
 //@UseGuards(JwtGuard)
@@ -28,7 +29,7 @@ export class GameController {
 	@Patch('add/:gameId')
 	addGameUser(
 		@Param('gameId', new ParseUUIDPipe()) gameId: string,
-		@Body() body: GameDto,
+		@Body() body: playerInfo,
 	) {
 		return this.gameService.addGameUser(gameId, body);
 	}

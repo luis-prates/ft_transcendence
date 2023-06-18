@@ -21,8 +21,18 @@ class GameStatsDto {
 
 	@IsOptional()
 	@IsNotEmpty()
+	@IsString()
+	winnerName: string;
+
+	@IsOptional()
+	@IsNotEmpty()
 	@IsInt()
 	loserId: number;
+
+	@IsOptional()
+	@IsNotEmpty()
+	@IsString()
+	loserName: string;
 
 	@IsOptional()
 	@IsNotEmpty()

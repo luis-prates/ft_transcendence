@@ -83,7 +83,7 @@ export class GameGateway
 					gameId,
 					this.socketService.gameIdToPlayerId
 						.get(gameId)
-						.filter(playerId => playerId !== userId),
+						.filter(playerId => playerId !== Number(userId)),
 				);
 				this.logger.log(`Removed player ${userId} from game ${gameId}`);
 				this.logger.log(

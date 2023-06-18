@@ -16,8 +16,9 @@ export enum Status {
 	Finish,
 }
 
-const infoBot: playerInfo = {
+export const infoBot: playerInfo = {
 	objectId: '',
+	userId: 6969,
 	nickname: 'Marvin',
 	avatar: 'marvin',
 	color: '#12bab9',
@@ -58,7 +59,7 @@ export class GameClass {
 	}
 
 	//Game Loop 1000 milesecond (1second) for 60 fps
-	async gameLoop() {
+	gameLoop() {
 		// Calculate elapsed time in milliseconds
 		const currentTime = process.hrtime();
 		const diffTime = process.hrtime(this.lastFrameTime);
@@ -82,7 +83,9 @@ export class GameClass {
 		}
 		// Schedule the next game loop
 		setImmediate(() => {
-			this.gameLoop();
+			if (!this.isEndGame()) {
+				this.gameLoop();
+			}
 		});
 	}
 

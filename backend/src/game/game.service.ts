@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameDto } from './dto';
 import { EventEmitter } from 'events';
-import { GameClass } from '../ping_pong/GamePong';
+import { GameClass, infoBot } from '../ping_pong/GamePong';
 import { Player } from '../lobby';
 import { playerInfo } from '../ping_pong/SocketInterface';
 import { PlayerService } from '../player/player.service';
@@ -70,6 +70,11 @@ export class GameService {
 				);
 			}),
 		);
+		// adds bot if bot is true
+		if (body.gameRequest.bot === true) {
+			this.addGameUser(game.id, infoBot);
+		}
+
 		this.logger.debug('GameClass Object created in memory');
 
 		//! perhaps this should be in the gateway?
@@ -90,6 +95,7 @@ export class GameService {
 		if (!game) {
 			throw new ForbiddenException('Game does not exist');
 		}
+		this.addGameUser(info.objectId, info);
 		game.entry_game(player, isPlayer, info);
 	}
 
@@ -98,7 +104,7 @@ export class GameService {
 	// will enable the start game button
 	// when the client clicks the start game button, it will send a request
 	// to the backend to call the start game function, which could be an event
-	async addGameUser(gameId: string, body: GameDto) {
+	async addGameUser(gameId: string, body: playerInfo) {
 		try {
 			const game = await this.prisma.game.update({
 				where: {
@@ -106,7 +112,9 @@ export class GameService {
 				},
 				data: {
 					players: {
-						connect: body.players.map(player => ({ id: player })),
+						connect: {
+							id: body.userId,
+						},
 					},
 				},
 				include: {
