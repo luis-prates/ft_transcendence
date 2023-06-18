@@ -39,7 +39,9 @@ export class Channel {
 				ignorerPlayer === undefined ||
 				clientSocket.objectId !== ignorerPlayer.objectId
 			) {
-				clientSocket.emit(event, data);
+				setTimeout(() => {
+					clientSocket.emit(event, data);
+				}, 2000);
 			}
 		});
 	}
