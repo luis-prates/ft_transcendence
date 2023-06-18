@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserDto } from './dto';
+import { UserBuySkinDto, UserDto } from './dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -71,34 +71,43 @@ export class UserService {
 		}
 	}
 
-	
-	async buySkin(userId: number, dto: UserDto) {
+	async buySkin(userId: number, dto: UserBuySkinDto) {
 
 		try {
-            // Check if image encoding is correct
-           /* var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-            if (!base64regex.test(dto.image)) {
-                throw new BadRequestException('Image is not base64 encoding');
-            }*/
-
-            // Check if user exists
-			const userExists = await this.prisma.user.findUnique({
+			const user = await this.prisma.user.findUnique({
 				where: {
 					id: userId,
 				},
 			});
-			if (userExists) {
+			if (user) {
 				
+				if (user.money - dto.price < 0)
+				{
+					//Erro
+					return ;
+				}
+				let paddleSkins = user.paddleSkinsOwned;
+				let tableSkins = user.tableSkinsOwned;
+
+				if ((dto.typeSkin == 0) && (!paddleSkins.includes(dto.skin)))
+					paddleSkins.push(dto.skin);
+				else if ((dto.typeSkin == 1) && (!tableSkins.includes(dto.skin)))
+					tableSkins.push(dto.skin);
+				else  {
+					//ERRO
+					return ;
+				}
+
+				const money = user.money - dto.price;
+
 				const updatedUser = await this.prisma.user.update({
 					where: {
 					  id: userId,
 					},
 					data: {
-						nickname: dto.nickname,
-						avatar: dto.avatar,
-						image: dto.image,
-						color: dto.color,
-						paddleSkinEquipped: dto.paddleSkinEquipped,
+						money: money,
+						tableSkinsOwned: tableSkins,
+						paddleSkinsOwned: paddleSkins,
 					},
 				  });
 			

@@ -3,7 +3,7 @@ import { User } from '@prisma/client';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
 import { UserService } from './user.service';
-import { UserDto } from './dto';
+import { UserDto, UserBuySkinDto } from './dto';
 
 @UseGuards(JwtGuard)
 @Controller('users')
@@ -27,7 +27,7 @@ export class UserController {
 	}
 
 	@Patch('buy_skin')
-	buySkin(@GetUser('id') userId: number, @Body() dto: UserDto) {
+	buySkin(@GetUser('id') userId: number, @Body() dto: UserBuySkinDto) {
 		console.log(dto);
 		return (this.userService.buySkin(userId, dto));
 	}

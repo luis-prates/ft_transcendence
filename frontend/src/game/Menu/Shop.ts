@@ -172,9 +172,8 @@ export class Shop {
               this.yourMoney -= skin.price;
               this.user.money = this.yourMoney;
               buy_sound.play();
-              //TODO DATABASE 
-              this.buy_skin();
-              //POST_User_Buy_Skin(user: user, skin: string, price: number)
+              //DATABASE
+              this.buy_skin(skin.name, skin.type, skin.price);
             }
           });
         }

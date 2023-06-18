@@ -31,7 +31,6 @@ export class YourProfile {
   private new_nickname = "";
 
   //MiniPerfil
-  private skin = skin;
   private avataresImage = new Image();
   private skinPadleImage: HTMLImageElement;
   private colorChoose: string = "";
@@ -42,9 +41,6 @@ export class YourProfile {
     this.player = player;
 
     this.avatarImage.src = this.user.image ? this.user.image : avatarDefault;
-
-    this.skinPadle = this.user.infoPong.skin.default.paddle;
-    this.skinPadleImage = this.skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
 
     this.matche_pagination = new PaginationMenu(this.user.infoPong.historic, 4, 2, this.background, this.menu);
 
@@ -59,7 +55,7 @@ export class YourProfile {
     this.paddle_pagination = new PaginationMenu(this.user.infoPong.skin.paddles, 4, 4, this.customPaddle);
     this.colorChoose = this.user.infoPong.color;
     this.skinPadle = this.user.infoPong.skin.default.paddle;
-    this.skinPadleImage = this.skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
+    this.skinPadleImage = skin.get_skin(TypeSkin.Paddle + "_" + this.skinPadle);
 
     
     this.menu.add(this.background);
@@ -107,15 +103,17 @@ export class YourProfile {
     page = 0;
     
     this.menu.add(this.customPaddle, this.createSkinButton(-1, "", 35.5 + 1 * (10 / 3), 66.5));
-    this.user.infoPong.skin.paddles.forEach((skin: any, index: number) => {
+    this.user.infoPong.skin.paddles.forEach((skinLabel: any, index: number) => {
       if ((index == 0 ? index + 1 : index) % this.paddle_pagination.max_for_page == 0) page++;
+
+      console.log("padle:'", skinLabel, "'");
 
       const i = index - page * this.paddle_pagination.max_for_page;
 
       const squareX = 35.5 + (i + 2 % this.paddle_pagination.max_for_line) * (10 / 3);
       const squareY = 66.5;
 
-      this.menu.add(this.customPaddle, this.createSkinButton(index, skin, squareX, squareY));
+      this.menu.add(this.customPaddle, this.createSkinButton(index, skinLabel, squareX, squareY));
     });
 
     //Arrow Buttons
@@ -618,8 +616,8 @@ export class YourProfile {
     return button;
   }
 
-  private createSkinButton(index: number, skin: string, x: number, y: number): ElementUI {
-    const skinImage = this.skin.get_skin(TypeSkin.Paddle + "_" + skin);
+  private createSkinButton(index: number, skinLabel: string, x: number, y: number): ElementUI {
+    const skinImage = skin.get_skin(TypeSkin.Paddle + "_" + skinLabel);
     const button: ElementUI = {
       type: "skin",
       rectangle: { x: x + "%", y: y + "%", w: "2.5%", h: "12%" },
@@ -633,12 +631,12 @@ export class YourProfile {
         if (!button.enable)
           button.enable = true;
         
-        ctx.strokeStyle = skin == this.skinPadle ? "red" : "black";
+        ctx.strokeStyle = skinLabel == this.skinPadle ? "red" : "black";
         ctx.lineWidth = 2;
 
         ctx.lineWidth = 3;
 
-        if (skin == "") {
+        if (skinLabel == "") {
           ctx.beginPath();
           ctx.moveTo(button.parent?.parent?.rectangle.x + button.rectangle.x + 5, button.rectangle.y + 5);
           ctx.lineTo(button.parent?.parent?.rectangle.x + button.rectangle.x + 5 + button.rectangle.w - 10, button.rectangle.y + 5 + button.rectangle.h - 10);
@@ -672,7 +670,7 @@ export class YourProfile {
 
         if (index > 0 && !(this.paddle_pagination.isIndexInCurrentPage(index))) return;
 
-        this.skinPadle = skin;
+        this.skinPadle = skinLabel;
         this.skinPadleImage = skinImage;
       },
     };

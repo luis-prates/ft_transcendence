@@ -2,7 +2,7 @@ import { reactive } from "vue";
 import { defineStore } from "pinia";
 import { env } from "../env";
 import axios from "axios";
-import type { ProductSkin } from "@/game/ping_pong/Skin";
+import type { ProductSkin, TypeSkin } from "@/game/ping_pong/Skin";
 
 enum UserStatus {
 	OFFLINE = "OFFLINE",
@@ -178,17 +178,12 @@ export const userStore = defineStore("user", () => {
 
   async function updateProfile() {
     let body = {} as any;
-   /* body.id = user.id;
-    body.email = user.email;
-    body.name = user.name;*/
     body.nickname = user.nickname;
     body.avatar = user.avatar;
     body.image = user.image;
     body.color = user.infoPong.color;
     body.paddleSkinEquipped = user.infoPong.skin.default.paddle;
-    //console.log("body\n", body, "\nuser\n", user.access_token_server);
     
-    //Todo
     const options = {
       method: "PATCH",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -197,43 +192,25 @@ export const userStore = defineStore("user", () => {
     await fetch(env.BACKEND_PORT + "/users/update_profile", options)
     .then(async (response) => console.log(await response.json()))
     .catch((err) => console.error(err));
-    // await axios 
-    //   .patch(env.BACKEND_PORT + "/users/update_profile", options)
-    //   .then(function (response: any) {
-    //    console.log("response: " , response)
-    //   })
-    //   .catch(function (error) {
-    //     console.error(error);
-    //   });
   }
 
-  async function buy_skin() {
+  async function buy_skin(skin: string, type: TypeSkin, price: number) {
     let body = {} as any;
-    body.id = user.id;
-    body.email = user.email;
-    body.name = user.name;
-    body.nickname = user.nickname;
-    body.avatar = user.avatar;
-    body.image = user.image;
-    body.color = user.infoPong.color;
-    body.paddleSkinEquipped = user.infoPong.skin.default.paddle;
-    //console.log("body\n", body, "\nuser\n", user.access_token_server);
+    body.skin = skin;
+    body.typeSkin = type;
+    body.price = price;
     
-    //Todo
     const options = {
       method: "PATCH",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
       body: new URLSearchParams(body),
     };
 
-    await axios 
-      .post(env.BACKEND_PORT + "/auth/update_profile", body)
-      .then(function (response: any) {
-       console.log("response: " , response)
-      })
-      .catch(function (error) {
-        console.error(error);
-      });
+    //TODO
+
+    await fetch(env.BACKEND_PORT + "/users/buy_skin", options)
+    .then(async (response) => console.log("buy_shop:", await response.json()))
+    .catch((err) => console.error(err));
   }
 
   async function update(userUpdate: { name: string; email: string; nickname: string; image: string }) {

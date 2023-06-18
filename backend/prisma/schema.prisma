@@ -136,8 +136,3 @@ enum ChannelType {
     PROTECTED
     DM
 }
-
-enum TypeSkin {
-	PADDLE
-	TABLE
-}
