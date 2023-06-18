@@ -1,6 +1,5 @@
 <template>
   <div class="parent-container">
-
     <div class="d-flex item-box">
       <div class="img_cont">
         <img :src="props.channel.avatar !== '' ? props.channel.avatar : 'https://therichpost.com/wp-content/uploads/2020/06/avatar2.png'" class="user_img" />

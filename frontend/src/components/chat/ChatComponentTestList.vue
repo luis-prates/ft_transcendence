@@ -52,7 +52,6 @@ const store = chatStore();
 const { selected } = storeToRefs(store);
 
 function selectChannel(channel: channel) {
-  console.log("Carregou no channel!\n", channel);
   instance?.emit("update-create-channel", false);
   store.showChannel(channel);
 }
@@ -100,8 +99,6 @@ const toggleStatus = () => {
   const newStatus = !props.channelStatus;
   instance?.emit("update-channel-status", newStatus);
 };
-
-
 
 // Variável para controlar o estado do chat
 let isChatHidden = true;
