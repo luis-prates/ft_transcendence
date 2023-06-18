@@ -7,12 +7,14 @@ import { GameClass } from '../ping_pong/GamePong';
 import { Player } from '../lobby';
 import { playerInfo } from '../ping_pong/SocketInterface';
 import { PlayerService } from '../player/player.service';
+import { Server } from 'socket.io';
 
 @Injectable()
 export class GameService {
 	public events: EventEmitter;
 	private games: GameClass[] = [];
 	private readonly logger = new Logger(GameService.name);
+	private server: Server;
 
 	// TODO: to be added to Game service
 	// private isInLobby = false;
@@ -24,8 +26,18 @@ export class GameService {
 		this.events = new EventEmitter();
 	}
 
+	setServer(server: Server) {
+		this.server = server;
+	}
+
+	getServer(): Server {
+		return this.server;
+	}
+
 	async createGame(body: GameDto) {
-		this.logger.debug(`createGame is called with body: ${body}`);
+		this.logger.debug(
+			`createGame is called with body: ${JSON.stringify(body)}`,
+		);
 		const game = await this.prisma.game.create({
 			data: {
 				gameType: body.gameType,
@@ -39,13 +51,13 @@ export class GameService {
 				players: true,
 			},
 		});
-		this.logger.debug(`game created in database: ${game}`);
+		this.logger.debug(`game created in database: ${JSON.stringify(game)}`);
 		const playerOne = this.playerService.getPlayer(body.players[0]);
 		// objectId same as game.id generated in database?
 		body.gameRequest.objectId = game.id;
 		// new_game equivalent
 		this.games.push(
-			new GameClass(body.gameRequest, () => {
+			new GameClass(body.gameRequest, this.server, () => {
 				// this.events.emit('gameEnded', game);
 				// remove game from games array
 				this.games = this.games.filter(

@@ -1,7 +1,13 @@
+import { Logger } from '@nestjs/common';
 import { Player } from '../lobby';
 import { Ball } from './Ball';
 import { Player_Pong } from './PlayerPong';
 import { type gameRequest, type playerInfo } from './SocketInterface';
+import { GameService } from '../game/game.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
+import { PlayerService } from '../player/player.service';
+import { Server } from 'socket.io';
 
 export enum Status {
 	Waiting,
@@ -19,7 +25,6 @@ const infoBot: playerInfo = {
 };
 
 export class GameClass {
-	games: GameClass[];
 	width = 1000;
 	height = 522;
 	status: number = Status.Waiting;
@@ -32,34 +37,57 @@ export class GameClass {
 	bot = false;
 	onRemove: Function = () => {};
 
-	constructor(gameResquest: gameRequest, onRemove: Function) {
+	private readonly FRAME_RATE: number = 60; // desired frame rate, e.g., 60 FPS
+	private readonly FRAME_DURATION: number = 1000 / this.FRAME_RATE; // duration of a frame in ms
+	private lastFrameTime: [number, number] = process.hrtime();
+
+	private readonly logger = new Logger(GameClass.name);
+	private gameServer: Server;
+
+	constructor(
+		gameResquest: gameRequest,
+		gameServer: Server,
+		onRemove: Function,
+	) {
 		this.data = gameResquest;
 		this.maxPoint = gameResquest.maxScore;
 		this.ball = new Ball(this);
 		this.bot = gameResquest.bot ? gameResquest.bot : this.bot;
 		this.onRemove = onRemove;
+		this.gameServer = gameServer;
 	}
 
 	//Game Loop 1000 milesecond (1second) for 60 fps
-	gameLoop() {
-		if (!this.isEndGame()) {
-			if (this.status == Status.InGame) {
-				this.ball.update();
+	async gameLoop() {
+		// Calculate elapsed time in milliseconds
+		const currentTime = process.hrtime();
+		const diffTime = process.hrtime(this.lastFrameTime);
+		const elapsedTime = diffTime[0] * 1e3 + diffTime[1] * 1e-6;
+
+		// If the elapsed time is greater than frame duration, update the game state
+		if (elapsedTime >= this.FRAME_DURATION) {
+			if (!this.isEndGame()) {
+				if (this.status == Status.InGame) {
+					this.ball.update();
+				}
+				if (this.player1) {
+					this.player1.update();
+				}
+				if (this.player2) {
+					this.player2.update();
+				}
 			}
-			if (this.player1) {
-				this.player1.update();
-			}
-			if (this.player2) {
-				this.player2.update();
-			}
+			// update the last frame time
+			this.lastFrameTime = currentTime;
 		}
-		setTimeout(() => {
+		// Schedule the next game loop
+		setImmediate(() => {
 			this.gameLoop();
-		}, 1000 / 60);
+		});
 	}
 
 	emitStartGame() {
-		this.player1.socket.emitToLobby('start_game', {
+		this.player1.socket.emitToGame('start_game', {
 			player: 1,
 			status: Status.Starting,
 			data: this.data,
@@ -73,7 +101,7 @@ export class GameClass {
 			skin2: this.player2.skin,
 		});
 		if (this.bot == false) {
-			this.player2.socket.emitToLobby('start_game', {
+			this.player2.socket.emitToGame('start_game', {
 				player: 2,
 				status: Status.Starting,
 				data: this.data,
@@ -109,7 +137,7 @@ export class GameClass {
 			this.emitStartGame();
 		} else if (!this.watchers.includes(user)) {
 			this.watchers.push(user);
-			user.emitToLobby('start_game', {
+			user.emitToGame('start_game', {
 				//Game
 				status: this.status,
 				data: this.data,
@@ -156,12 +184,12 @@ export class GameClass {
 		) {
 			this.updateStatus(Status.Finish);
 			if (playerNumber === 1) {
-				this.player1.socket.emitToLobby('end_game', {
+				this.player1.socket.emitToGame('end_game', {
 					objectId: this.data.objectId,
 					result: 'You Win!',
 				});
 				if (this.player2 && this.bot == false) {
-					this.player2.socket.emitToLobby('end_game', {
+					this.player2.socket.emitToGame('end_game', {
 						objectId: this.data.objectId,
 						result: 'You Lose!',
 					});
@@ -171,12 +199,12 @@ export class GameClass {
 					result: this.player1.nickname + ' Win!',
 				});
 			} else if (playerNumber === 2) {
-				this.player1.socket.emitToLobby('end_game', {
+				this.player1.socket.emitToGame('end_game', {
 					objectId: this.data.objectId,
 					result: 'You Lose!',
 				});
 				if (this.player2 && this.bot == false) {
-					this.player2.socket.emitToLobby('end_game', {
+					this.player2.socket.emitToGame('end_game', {
 						objectId: this.data.objectId,
 						result: 'You Win!',
 					});
@@ -187,11 +215,11 @@ export class GameClass {
 				});
 			}
 			//INSERT IN DATABASE
-			this.player1?.socket.offLobby('game_move');
+			this.player1?.socket.offGame('game_move');
 			if (this.player2 != null && this.bot == false) {
-				this.player2?.socket.offLobby('game_move');
+				this.player2?.socket.offGame('game_move');
 			}
-			this.watchers.forEach(watcher => watcher.offLobby('game_move'));
+			this.watchers.forEach(watcher => watcher.offGame('game_move'));
 			this.onRemove();
 		}
 	}
@@ -206,6 +234,7 @@ export class GameClass {
 	//Make the Countdown and Emit for ALL
 	countdown(seconds: number) {
 		console.log(seconds);
+		this.logger.debug(`GamePong data ${this.data}`);
 
 		if (seconds > 0) {
 			this.emitAll('game_counting', seconds);
@@ -231,26 +260,15 @@ export class GameClass {
 
 	//Emit for Players
 	emitPlayers(event: string, data: any): void {
-		if (this.player1) {
-			this.player1.socket.emitToLobby(event, data);
-		}
-		if (this.player2 && !this.bot) {
-			this.player2.socket.emitToLobby(event, data);
-		}
+		this.gameServer
+			.to(`game-${this.data.objectId}-player`)
+			.emit(event, data);
 	}
 	//Emit for Watchers
 	emitWatchers(event: string, data: any): void {
-		if (this.watchers.length <= 0) {
-			return;
-		}
-		this.watchers.forEach(clientSocket => {
-			if (
-				clientSocket.id !== this.player1.socket.id ||
-				clientSocket.id !== this.player2.socket.id
-			) {
-				clientSocket.emitToLobby(event, data);
-			}
-		});
+		this.gameServer
+			.to(`game-${this.data.objectId}-watcher`)
+			.emit(event, data);
 	}
 	//Emit for Players and Watchers
 	emitAll(event: string, data: any): void {
@@ -261,10 +279,9 @@ export class GameClass {
 	entry_game(player: Player, isPlayer: boolean, info: playerInfo) {
 		// || (this.player2 == null && this.bot == false))
 		if (isPlayer) {
-			player.onLobby('game_move', (e: any) => this.game_move(e));
+			player.onGame('game_move', (e: any) => this.game_move(e));
 		}
 		this.addUsers(player, isPlayer, info);
-		console.log(this.games);
 	}
 
 	private game_move(e: any) {

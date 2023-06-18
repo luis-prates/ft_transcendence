@@ -32,7 +32,7 @@ import { SocketModule } from './socket/socket.module';
 		PlayerModule,
 		SocketModule,
 	],
-	controllers: [AppController, FriendshipController, GameController],
-	providers: [AppService, FriendshipService, GameService, LobbyService],
+	controllers: [AppController],
+	providers: [AppService],
 })
 export class AppModule {}

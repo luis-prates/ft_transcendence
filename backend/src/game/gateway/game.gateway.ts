@@ -9,9 +9,8 @@ import {
 	ConnectedSocket,
 } from '@nestjs/websockets';
 import { SocketService } from '../../socket/socket.service';
-import { Server } from 'http';
 import { GameService } from '../game.service';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
 
@@ -21,17 +20,18 @@ export class GameGateway
 {
 	private readonly logger = new Logger(GameGateway.name);
 
+	@WebSocketServer()
+	server: Server;
+
 	constructor(
 		private gameService: GameService,
 		private socketService: SocketService,
 		private playerService: PlayerService,
 	) {}
 
-	@WebSocketServer()
-	server: Server;
-
 	afterInit(server: any) {
 		this.logger.log('Game Gateway initialized');
+		this.gameService.setServer(this.server);
 		//console.log(this.server.maxConnections);
 	}
 
@@ -77,7 +77,7 @@ export class GameGateway
 			// Remove the player from the game
 			const isPlayer = this.socketService.gameIdToPlayerId
 				.get(gameId)
-				.includes(userId);
+				.includes(Number(userId));
 			if (isPlayer) {
 				this.socketService.gameIdToPlayerId.set(
 					gameId,
@@ -113,8 +113,9 @@ export class GameGateway
 		@ConnectedSocket() client: Socket,
 		@MessageBody() body: any,
 	) {
-		this.logger.log(`Enter game received: ${body}`);
-		const { gameId, isPlayer } = body;
+		this.logger.debug(`Enter game received: ${JSON.stringify(body)}`);
+		const isPlayer = body.isPlayer;
+		const gameId = body.objectId;
 		client.data.gameId = gameId;
 		const userId = client.data.userId;
 		const player = this.playerService.getPlayer(userId);
@@ -134,7 +135,10 @@ export class GameGateway
 			);
 			// Join the room for the game
 			client.join(`game-${gameId}-player`);
-			this.gameService.enterGame(player, isPlayer, body.playerInfo);
+			this.logger.debug(
+				`Client ${client.id} Joining game-${gameId}-player`,
+			);
+			this.gameService.enterGame(player, isPlayer, body);
 		}
 		// else, add userId to gameIdToWatcherId map
 		else {

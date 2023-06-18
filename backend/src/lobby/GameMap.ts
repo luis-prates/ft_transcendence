@@ -87,10 +87,8 @@ export class GameMap {
 		// 	}
 		// });
 		if (ignorePlayer) {
-			this.logger.debug('Emitting event to all players, except sender');
 			player.getSocket().to('lobby').emit(event, data);
 		} else {
-			this.logger.debug('Emitting event to all players and sender');
 			player.getSocket().to('lobby').emit(event, data);
 			player.getSocket().emit(event, data);
 		}

@@ -1,52 +1,64 @@
 import { Player } from 'src/lobby';
-import { Game, Status } from './GamePong';
+import { GameClass, Status } from './GamePong';
 import { gameRequest, playerInfo, updatePlayer } from './SocketInterface';
 
 export class Games {
-	private games: Game[] = [];
+	private games: GameClass[] = [];
 
 	public connection(player: Player) {
-		player.on('new_game', (e: gameRequest) => this.new_game(player, e));
-		player.on('entry_game', (e: playerInfo) => this.entry_game(player, e));
+		//! done in game.service.ts
+		player.onLobby('new_game', (e: gameRequest) =>
+			this.new_game(player, e),
+		);
+		//! done in game.service.ts
+		player.onLobby('entry_game', (e: playerInfo) =>
+			this.entry_game(player, e),
+		);
 	}
 
 	new_game(player: Player, e: gameRequest) {
 		console.log('PLAYER_1: ', e);
-		this.games.push(
-			new Game(e, () => {
-				this.games = this.games.filter((g) => g.data.objectId != e.objectId);
-				console.log('remove game: ', this.games.length);
-				player?.map.removeGameObject(e.objectId);
-			}),
-		);
+		// this.games.push(
+		// 	new GameClass(e, () => {
+		// 		this.games = this.games.filter(
+		// 			g => g.data.objectId != e.objectId,
+		// 		);
+		// 		console.log('remove game: ', this.games.length);
+		// 		player?.map.removeGameObject(player, e.objectId);
+		// 	}),
+		// );
 	}
 
 	entry_game(player: Player, info: playerInfo) {
 		console.log(info);
-		const game = this.games.find((g) => g.data.objectId == info.objectId);
+		const game = this.games.find(g => g.data.objectId == info.objectId);
 		if (game) {
-			game.entry_game(player, info);
+			game.entry_game(player, true, info);
 			console.log(this.games);
 		}
 	}
 
 	disconnect(player: Player) {
 		console.log('Socket desconectado:', player.id);
-		function isInGame(game: Game) {
+		function isInGame(game: GameClass) {
 			const disconnect = player.id;
-			if (game.status == Status.Finish)
+			if (game.status == Status.Finish) {
 				return;
-			if (game.player1.socket.id == disconnect)
+			}
+			if (game.player1.socket.id == disconnect) {
 				game.endGame(2);
-			else if (game.player2.socket.id == player.id)
+			} else if (game.player2.socket.id == player.id) {
 				game.endGame(1);
-			const index = game.watchers.findIndex((socket: any) => socket.socket.id === disconnect);
+			}
+			const index = game.watchers.findIndex(
+				(socket: any) => socket.socket.id === disconnect,
+			);
 			if (index !== -1) {
 				game.watchers.splice(index, 1);
 				console.log('Socket removido da lista de watchers');
 				this.emitAll('game_view', this.watchers.length);
 			}
 		}
-		this.games.forEach((game) => isInGame(game));
+		this.games.forEach(game => isInGame(game));
 	}
 }

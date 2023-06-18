@@ -93,12 +93,24 @@ export class Player {
 		this._lobbySocket.emit(event, data);
 	}
 
+	public emitToGame(event: string, data: any): void {
+		this.gameSocket.emit(event, data);
+	}
+
 	public onLobby(event: string, callback: (...args: any[]) => void): void {
 		this._lobbySocket.on(event, callback);
 	}
 
+	public onGame(event: string, callback: (...args: any[]) => void): void {
+		this.gameSocket.on(event, callback);
+	}
+
 	public offLobby(event: string): void {
 		this._lobbySocket.off(event, () => {});
+	}
+
+	public offGame(event: string): void {
+		this.gameSocket.off(event, () => {});
 	}
 
 	public offAll(): void {
