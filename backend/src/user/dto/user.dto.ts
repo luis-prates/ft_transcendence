@@ -84,8 +84,8 @@ export class UserBuySkinDto {
 	@IsString()
 	skin: string;
 	
-	@IsEnum(TypeSkin)
-	Type: TypeSkin;
+	/*@IsEnum(TypeSkin)
+	Type: TypeSkin;*/
 	
 	@Transform(({ value }) => parseInt(value))
 	@IsNumber()

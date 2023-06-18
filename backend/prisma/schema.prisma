@@ -137,10 +137,7 @@ enum ChannelType {
     DM
 }
 
-
-enum ChannelType {
-	PUBLIC
-    PRIVATE
-    PROTECTED
-    DM
+enum TypeSkin {
+	PADDLE
+	TABLE
 }

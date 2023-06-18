@@ -42,7 +42,7 @@ export class CreateGame {
 
     this.tableColor = this.user.infoPong.skin.default.tableColor ? this.user.infoPong.skin.default.tableColor : "#1e8c2f";
     this.tableSkin = this.user.infoPong.skin.default.tableSkin ? this.user.infoPong.skin.default.tableSkin : "";
-    this.skinImage = this.products.get_skin(TypeSkin.Tabble + "_" + this.tableSkin);
+    this.skinImage = this.products.get_skin(TypeSkin.Table + "_" + this.tableSkin);
 
     this.menu.add(this.background);
     
@@ -256,7 +256,7 @@ export class CreateGame {
   }
 
   private createSkinButton(index: number, skin: string, x: number, y: number): ElementUI {
-    const skinImage = this.products.get_skin(TypeSkin.Tabble + "_" + skin);
+    const skinImage = this.products.get_skin(TypeSkin.Table + "_" + skin);
     const button: ElementUI = {
       type: "skin",
       rectangle: { x: x + "%", y: y + "%", w: "5%", h: "10%" },

@@ -111,7 +111,7 @@ export class Shop {
         ctx.fill();
         ctx.stroke();
 
-        if (skin.type == TypeSkin.Tabble && skin.image.complete) {
+        if (skin.type == TypeSkin.Table && skin.image.complete) {
           const scaledWidth = product.rectangle.w * 0.8;
           const scaledHeight = product.rectangle.h * 0.78;
           const pointx = (product.rectangle.w - scaledWidth) / 2;
@@ -161,14 +161,14 @@ export class Shop {
 
         let canBuy: boolean = false;
         if (skin.type == TypeSkin.Paddle && !this.user.infoPong.skin.paddles.includes(skin.name as never)) canBuy = true;
-        else if (skin.type == TypeSkin.Tabble && !this.user.infoPong.skin.tables.includes(skin.name as never)) canBuy = true;
+        else if (skin.type == TypeSkin.Table && !this.user.infoPong.skin.tables.includes(skin.name as never)) canBuy = true;
 
         if (this.yourMoney >= skin.price && canBuy) {
           const confirmButton = new ConfirmButton(skin.tittle, skin.price);
           confirmButton.show((value) => {
             if (value == "CONFIRM") {
               if (skin.type == TypeSkin.Paddle) this.user.infoPong.skin.paddles.push(skin.name as never);
-              else if (skin.type == TypeSkin.Tabble) this.user.infoPong.skin.tables.push(skin.name as never);
+              else if (skin.type == TypeSkin.Table) this.user.infoPong.skin.tables.push(skin.name as never);
               this.yourMoney -= skin.price;
               this.user.money = this.yourMoney;
               buy_sound.play();
