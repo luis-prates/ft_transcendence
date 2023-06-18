@@ -12,7 +12,7 @@ import skin_table_OnePiece from "@/assets/images/skin/table/skin_onepiece.jpg";
 
 export enum TypeSkin {
 	Paddle,
-	Tabble,
+	Table,
 }
 
 export interface ProductSkin {
@@ -24,25 +24,25 @@ export interface ProductSkin {
 	image: HTMLImageElement,
   };
 
-export class Skin {
+class Skin {
 	public skins: ProductSkin [] = [];
 
 	constructor() {
 		this.skins.push(
-			this.createSkin("onepiece", "One Piece", 0, TypeSkin.Paddle),
-			this.createSkin("pacman", "PacMan", 0, TypeSkin.Paddle),
-			this.createSkin("mario", "Mario and Friends", 0, TypeSkin.Paddle),
+			this.createSkin("onepiece", "One Piece", 3, TypeSkin.Paddle),
+			this.createSkin("pacman", "PacMan", 5, TypeSkin.Paddle),
+			this.createSkin("mario", "Mario and Friends", 6, TypeSkin.Paddle),
 			this.createSkin("42Lisboa", "42 Lisboa", 0, TypeSkin.Paddle),
-			this.createSkin("onepiece", "Luffy", 0, TypeSkin.Tabble),
-			this.createSkin("swag", "Swag", 0, TypeSkin.Tabble),
-			this.createSkin("game", "Game Over", 0, TypeSkin.Tabble),
+			this.createSkin("onepiece", "Luffy", 10, TypeSkin.Table),
+			this.createSkin("swag", "Swag", 5, TypeSkin.Table),
+			this.createSkin("game", "Game Over", 5, TypeSkin.Table),
 		)
 	}
 
 	private createSkin(name: string, tittle: string, price: number, type: TypeSkin): ProductSkin {
 		const id = type + "_" + name;
 		const image = new Image();
-		image.src = type == TypeSkin.Paddle ? this.skinPaddleChoose(name) : this.skinTabbleChoose(name);
+		image.src = type == TypeSkin.Paddle ? this.skinPaddleChoose(name) : this.skinTableChoose(name);
 		const newSkin: ProductSkin = {
 			id: id,
 			name: name,
@@ -62,7 +62,7 @@ export class Skin {
     	return "";
   	}
 
-	private skinTabbleChoose(name: string): string {
+	private skinTableChoose(name: string): string {
 		if (name == "onepiece") return skin_table_OnePiece;
 		else if (name == "swag") return skin_table_Swag;
 		else if (name == "game") return skin_table_Game;
@@ -76,3 +76,5 @@ export class Skin {
 		return new Image();
 	}
 }
+
+export const skin = new Skin()

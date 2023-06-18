@@ -1,31 +1,32 @@
 import { UserStatus } from "@prisma/client";
 import { Transform } from "class-transformer";
-import { IsNumber, IsNotEmpty, IsString, IsEmail, IsOptional, IsArray, IsEnum } from "class-validator";
+import { IsArray, IsEmail, IsEnum, IsNumber, IsOptional, IsString } from "class-validator"
 
-export class AuthDto {
-	@Transform(({ value }) => parseInt(value))
-	@IsNumber()
-	@IsNotEmpty()
-	id: number;
 
+
+export class UserDto {
 	@IsEmail()
-	@IsNotEmpty()
-	email: string;
+	@IsOptional()
+	email?: string;
 
 	@IsString()
-	name: string;
+	@IsOptional()
+	name?: string;
 
 	@IsString()
-	@IsNotEmpty()
-	nickname: string;
-
+	@IsOptional()
+	nickname?: string;
+	
 	@IsString()
-	image: string;
+	@IsOptional()
+	image?: string;
 
+	@Transform(({ value }) => parseInt(value))
 	@IsNumber()
 	@IsOptional()
 	money?: number;
 
+	@Transform(({ value }) => parseInt(value))
 	@IsNumber()
 	@IsOptional()
 	avatar?: number;
@@ -34,10 +35,12 @@ export class AuthDto {
 	@IsOptional()
 	infoPong?: object;
 	
+	@Transform(({ value }) => parseInt(value))
 	@IsNumber()
 	@IsOptional()
 	level?: number;
 	
+	@Transform(({ value }) => parseInt(value))
 	@IsNumber()
 	@IsOptional()
 	xp?: number;
@@ -73,5 +76,30 @@ export class AuthDto {
 	@IsEnum(UserStatus)
 	@IsOptional()
 	status?: UserStatus;
+}
+
+
+export class UserBuySkinDto {
+	
+	@IsString()
+	skin: string;
+
+	@Transform(({ value }) => parseInt(value))
+	@IsNumber()
+	typeSkin: number;
+
+
+	@Transform(({ value }) => parseInt(value))
+	@IsNumber()
+	price: number;
+}
+
+export class UserUpdateSkinTableDto {
+	
+	@IsString()
+	skin: string;
+
+	@IsString()
+	color: string;
 
 }

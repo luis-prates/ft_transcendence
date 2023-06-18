@@ -13,7 +13,7 @@
       <button @click="test">Test</button>
     </div>
 
-    <img class="laod" src="@/assets/images/load/load_3.gif" v-if="!isLoad" />
+    <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoad" />
   </div>
   <ChatComponent class="chat_component"/>
 </template>

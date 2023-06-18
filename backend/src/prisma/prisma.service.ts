@@ -4,6 +4,7 @@ import { ChannelType, PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient {
+	friend: any;
 	constructor(config: ConfigService) {
 		super({
 			datasources: {

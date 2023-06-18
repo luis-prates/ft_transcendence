@@ -1,18 +1,15 @@
 import { Character } from "@/game/base/Character";
-import oie_transparent from "@/assets/images/lobby/oie_transparent.png";
 import { Game, Menu, Player } from "@/game";
 import { SpeechBubble } from "../../Menu/SpeechBubble";
 import { Shop } from "../../Menu/Shop";
-import { ConfirmButton } from "@/game/Menu/ConfirmButton";
-import { CreateGame } from "@/game/Menu/CreateGame";
 
 export class Npc extends Character {
   constructor() {
     super();
     this.type = "npc";
     this.animation.sx = 144;
-    this.x = 320;
-    this.y = 680;
+    this.x = 1850;
+    this.y = 700;
   }
 
   private pontoEvento = [

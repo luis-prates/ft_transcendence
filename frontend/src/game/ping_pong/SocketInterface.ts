@@ -39,3 +39,13 @@ export interface gamePoint {
   playerNumber: number;
   score: number;
 }
+
+export interface gameEnd {
+  result: string;
+  exp: number;
+  max_exp: number;
+  money: number;
+  max_money: number;
+  watchers: number;
+  max_watchers: number;
+}

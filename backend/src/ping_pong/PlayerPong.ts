@@ -8,15 +8,17 @@ export class Player_Pong {
 	height = 100;
 	socket: Player;
 	player_n: number;
-	y = 0;
-	x = 0;
-	speed = 8;
-	score = 0;
+	y: number = 0;
+	x: number = 0;
+	speed: number = 5;
+	score: number = 0;
 	nickname: string;
 	avatar: string;
 	fpsUpdate = 0;
 	color: string;
 	skin: string;
+	up: boolean = false;
+	down: boolean = false;
 
 	constructor(
 		game: Game,
@@ -90,7 +92,18 @@ export class Player_Pong {
 				}
 			}
 		}
+		if (!(this.up && this.down))
+		{
+			if (this.up) this.moveUp();
+			else if (this.down) this.moveDown();
+		}
 		this.emitPlayer();
+	}
+
+	reset_keys()
+	{
+		this.up = false;
+		this.down = false;
 	}
 
 	emitPlayer() {
