@@ -228,6 +228,45 @@ export const userStore = defineStore("user", () => {
     .catch((err) => console.error(err));
   }
 
+  async function getUsers() {
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+   
+    return await axios
+      .get(env.BACKEND_PORT + "/users/users", options)
+
+      // axios.request(options)
+      .then(function (response: any) {
+        console.log("LEADERBOARD: " , response.data)
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  async function getUserProfile(userId: number) {
+
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+   
+    return await axios
+      .get(env.BACKEND_PORT + "/users/get_profile/" + userId, options)
+
+      // axios.request(options)
+      .then(function (response: any) {
+        console.log("Profile: " , response.data)
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
   async function update(userUpdate: { name: string; email: string; nickname: string; image: string }) {
     let body = {} as any;
     if (user.name != userUpdate.name) body.name = userUpdate.name;
@@ -246,5 +285,5 @@ export const userStore = defineStore("user", () => {
       .catch((err) => console.error(err));
   }
 
-  return { user, login, loginTest, update, updateProfile, buy_skin, updateTableDefault };
+  return { user, login, loginTest, update, updateProfile, buy_skin, updateTableDefault, getUsers, getUserProfile};
 });
