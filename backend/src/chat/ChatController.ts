@@ -35,7 +35,10 @@ export class Channel {
 
 	public emitAll(event: string, data: any, ignorerPlayer?: Player): void {
 		this.players.forEach((clientSocket) => {
-			if (ignorerPlayer === undefined || clientSocket.objectId !== ignorerPlayer.objectId) clientSocket.emit(event, data);
+			if (ignorerPlayer === undefined || clientSocket.objectId !== ignorerPlayer.objectId) {
+				console.log(`Sending event ${event.toString()} at ${Date.now()}`);
+				setTimeout(() => clientSocket.emit(event, data), 2000);
+			}
 		});
 	}
 
