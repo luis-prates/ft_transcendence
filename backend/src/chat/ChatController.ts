@@ -1,24 +1,24 @@
 import { Player } from 'src/lobby';
 
-interface ChatMessage {
+type ChatMessage = {
 	id: any;
 	objectId: any;
 	message: string;
 	nickname: string;
-}
+};
 
-interface ChatUser {
+type ChatUser = {
 	objectId: any;
 	avatar: string;
 	name: string;
-}
+};
 
 export class Channel {
 	objectId: any = '';
-	name: string = '';
+	name = '';
 	messages: ChatMessage[] = [];
-	password: string = '';
-	avatar: string = '';
+	password = '';
+	avatar = '';
 	players: Player[] = [];
 
 	public join(player: Player): void {
@@ -34,8 +34,13 @@ export class Channel {
 	}
 
 	public emitAll(event: string, data: any, ignorerPlayer?: Player): void {
-		this.players.forEach((clientSocket) => {
-			if (ignorerPlayer === undefined || clientSocket.objectId !== ignorerPlayer.objectId) clientSocket.emit(event, data);
+		this.players.forEach(clientSocket => {
+			if (
+				ignorerPlayer === undefined ||
+				clientSocket.objectId !== ignorerPlayer.objectId
+			) {
+				clientSocket.emit(event, data);
+			}
 		});
 	}
 
@@ -46,7 +51,7 @@ export class Channel {
 			messages: this.messages,
 			avatar: this.avatar,
 			password: this.password,
-			users: this.players.map((e) => {
+			users: this.players.map(e => {
 				const data: ChatUser = {
 					objectId: e.objectId,
 					avatar: e.avatar,
@@ -69,12 +74,16 @@ export class ChatController {
 	}
 
 	public connection(player: Player) {
-		this.channels.forEach((channel) => {
+		this.channels.forEach(channel => {
 			channel.join(player);
 		});
-		player.on('send_message', (data) => {
-			const channel = this.channels.find((e) => e.objectId == data.objectId);
-			if (channel) channel.addMessage(player, data);
+		player.on('send_message', data => {
+			const channel = this.channels.find(
+				e => e.objectId == data.objectId,
+			);
+			if (channel) {
+				channel.addMessage(player, data);
+			}
 			console.log(data);
 		});
 	}

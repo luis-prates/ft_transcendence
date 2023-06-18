@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Res } from '@nestjs/common';
+import { Controller, Get, Param, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Response } from 'express';
 import * as fs from 'fs';
@@ -13,19 +13,28 @@ export class AppController {
 		return this.appService.getHello();
 	}
 
-	@Get('v2/hello/sd')
-	getdfdHello(): string {
-		return this.appService.getHello();
-	}
+	// @Get('v2/hello/sd')
+	// getdfdHello(): string {
+	// 	return this.appService.getHello();
+	// }
 
-	@Post('v2/hello/sd/dsd')
-	d(as): string {
-		return this.appService.getHello();
-	}
+	// @Post('v2/hello/sd/dsd')
+	// d(as): string {
+	// 	return this.appService.getHello();
+	// }
 
 	@Get('v2/image/:imageName')
-	getImage(@Param('imageName') imageName: string, @Res() res: Response): void {
-		const imagePath = path.join(__dirname, './', 'public', 'images', imageName);
+	getImage(
+		@Param('imageName') imageName: string,
+		@Res() res: Response,
+	): void {
+		const imagePath = path.join(
+			__dirname,
+			'./',
+			'public',
+			'images',
+			imageName,
+		);
 		const imageStream = fs.createReadStream(imagePath);
 
 		imageStream.pipe(res);
