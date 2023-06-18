@@ -10,8 +10,7 @@ describe('Chat', () => {
 	let app: INestApplication;
 	let prisma: PrismaService;
 
-	const baseImage =
-		'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='; // The smallest base64 image from https://gist.github.com/ondrek/7413434
+	const baseImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='; // The smallest base64 image from https://gist.github.com/ondrek/7413434
 	// for logging in
 	const dtos: AuthDto[] = Array.from({ length: 4 }, (_, i) => {
 		const id = i + 1; // as your ids start from 1
@@ -270,9 +269,8 @@ describe('Chat', () => {
 		});
 		it('should send a message to the public channel', async () => {
 			// get publicChannelId as a string
-			const publicChannelId =
-				pactum.stash.getDataStore()['publicChannelId'];
-            console.log("publicChannelId is: ", publicChannelId);
+			const publicChannelId = pactum.stash.getDataStore()['publicChannelId'];
+			console.log('publicChannelId is: ', publicChannelId);
 			// emit the message event as user1
 			// clients[0].emit('message', { "channelId": publicChannelId, "message": "Hello World!" });
 			// expect the message to be received by user2 and user3
@@ -280,7 +278,7 @@ describe('Chat', () => {
 				client =>
 					new Promise((resolve, reject) => {
 						const handler = ({ channelId, message }) => {
-                            console.log("channelId is: ", channelId, "message is: ", message);
+							console.log('channelId is: ', channelId, 'message is: ', message);
 							expect(channelId).toBe(publicChannelId);
 							expect(message).toBe('Hello from Public!');
 							resolve(undefined);
@@ -297,8 +295,7 @@ describe('Chat', () => {
 			await Promise.all(messagePromises);
 		});
 		it('should send a message to the private channel', async () => {
-			const privateChannelId =
-				pactum.stash.getDataStore()['privateChannelId'];
+			const privateChannelId = pactum.stash.getDataStore()['privateChannelId'];
 			// We'll make an array of promises for every client that needs to receive the message
 			const messagePromises = clients.slice(1, 3).map(
 				client =>
@@ -326,8 +323,7 @@ describe('Chat', () => {
 			await Promise.all(messagePromises);
 		});
 		it('should send a message to the protected channel', async () => {
-			const protectedChannelId =
-				pactum.stash.getDataStore()['protectedChannelId'];
+			const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
 			// We'll make an array of promises for every client that needs to receive the message
 			const messagePromises = clients.slice(1, 3).map(
 				client =>
@@ -380,75 +376,68 @@ describe('Chat', () => {
 			// the Promise.all method will wait for all the promises to resolve
 			await messagePromise;
 		});
-        it('should not let messages from blocked users be sent to users that blocked them', async () => {
-            await pactum
-                .spec()
-                .post('/blocklist/block/$S{user2Id}')
-                .withHeaders({ Authorization: 'Bearer $S{userAt1}' })
-                .expectStatus(201);
+		it('should not let messages from blocked users be sent to users that blocked them', async () => {
+			await pactum
+				.spec()
+				.post('/blocklist/block/$S{user2Id}')
+				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+				.expectStatus(201);
 
-            const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
-            const user2Id = pactum.stash.getDataStore()['user2Id'];
+			const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
+			const user2Id = pactum.stash.getDataStore()['user2Id'];
 
-            // promise that will resolve if no message is received from user4 to user1 for 1 second
-            const messagePromise = new Promise((resolve, reject) => {
-                // We'll make a handler for each client that will resolve the promise when the message is received
-                const handler = ({
-                    channelId: receivedChannelId,
-                    message,
-                }) => {
-                    // If the blocking user1 receives a message from user4, reject the promise
-                    reject(
-                        new Error(
-                            `User ${user2Id} is blocked but their message was received.`,
-                        ),
-                    );
-                };
-                // once a message by user1 is received, we'll call the handler
-                clients[0].on('message', handler);
-                listeners.push({ client: clients[0], handler });
+			// promise that will resolve if no message is received from user4 to user1 for 1 second
+			const messagePromise = new Promise((resolve, reject) => {
+				// We'll make a handler for each client that will resolve the promise when the message is received
+				const handler = ({ channelId: receivedChannelId, message }) => {
+					// If the blocking user1 receives a message from user4, reject the promise
+					reject(new Error(`User ${user2Id} is blocked but their message was received.`));
+				};
+				// once a message by user1 is received, we'll call the handler
+				clients[0].on('message', handler);
+				listeners.push({ client: clients[0], handler });
 
-                // send message from user2 to user1
-                clients[1].emit('message', {
-                    channelId: protectedChannelId,
-                    message: 'Hello from Blocked User!',
-                });
+				// send message from user2 to user1
+				clients[1].emit('message', {
+					channelId: protectedChannelId,
+					message: 'Hello from Blocked User!',
+				});
 
-                // if no message is received after 1 second, resolve the promise
-                setTimeout(resolve, 1000);
-            });
-        });
-        it('should allow users to receive messages from users that they have unblocked', async () => {
-            // unblock user2
-            await pactum
-                .spec()
-                .delete('/blocklist/block/$S{user2Id}')
-                .withHeaders({ Authorization : 'Bearer $S{userAt1}' })
-                .expectStatus(204)
+				// if no message is received after 1 second, resolve the promise
+				setTimeout(resolve, 1000);
+			});
+		});
+		it('should allow users to receive messages from users that they have unblocked', async () => {
+			// unblock user2
+			await pactum
+				.spec()
+				.delete('/blocklist/block/$S{user2Id}')
+				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+				.expectStatus(204);
 
-            // get channelId
-            const channelId = pactum.stash.getDataStore()['protectedChannelId'];
+			// get channelId
+			const channelId = pactum.stash.getDataStore()['protectedChannelId'];
 
-            // promise that will resolve if a message is received from user4 to user1
-            const messagePromise = new Promise((resolve, reject) => {
-                const handler = ({channelId, message} ) => {
-                    console.log("calling handler");
-                    expect(channelId).toBe(channelId);
-                    expect(message).toBe('Hello from Unblocked User!');
-                    resolve(undefined);
-                }
-                clients[0].on('message', handler);
-                listeners.push({ client: clients[0], handler });
-            });
+			// promise that will resolve if a message is received from user4 to user1
+			const messagePromise = new Promise((resolve, reject) => {
+				const handler = ({ channelId, message }) => {
+					console.log('calling handler');
+					expect(channelId).toBe(channelId);
+					expect(message).toBe('Hello from Unblocked User!');
+					resolve(undefined);
+				};
+				clients[0].on('message', handler);
+				listeners.push({ client: clients[0], handler });
+			});
 
-            // send message from user4 to user1
-            clients[1].emit('message', {
-                channelId: channelId,
-                message: 'Hello from Unblocked User!',
-            });
+			// send message from user4 to user1
+			clients[1].emit('message', {
+				channelId: channelId,
+				message: 'Hello from Unblocked User!',
+			});
 
-            await messagePromise;
-        });
+			await messagePromise;
+		});
 	});
 	describe('Retrieve channels & messages', () => {
 		it('should retrieve all the channels', () => {
@@ -493,8 +482,7 @@ describe('Chat', () => {
 	});
 	describe('Channel management', () => {
 		it('should let a new user join the public channel and receive user-added event', async () => {
-			const publicChannelId =
-				pactum.stash.getDataStore()['publicChannelId'];
+			const publicChannelId = pactum.stash.getDataStore()['publicChannelId'];
 			const user4Id = pactum.stash.getDataStore()['user4Id'];
 			// start listening to 'user-added' event for users 1 to 3 before sending the request
 			const userAddedPromises = clients.slice(0, 3).map(
@@ -524,8 +512,7 @@ describe('Chat', () => {
 				.expectStatus(403);
 		});
 		it('should let a new user leave the public channel and others receive user-removed event', async () => {
-			const publicChannelId =
-				pactum.stash.getDataStore()['publicChannelId'];
+			const publicChannelId = pactum.stash.getDataStore()['publicChannelId'];
 			const user4Id = pactum.stash.getDataStore()['user4Id'];
 			// start listening to 'user-removed' event for users 1 to 3 before sending the request
 			const userRemovedPromises = clients.slice(0, 3).map(
@@ -548,8 +535,7 @@ describe('Chat', () => {
 			await Promise.all(userRemovedPromises);
 		});
 		it('should let a new user join the private channel and receive user-added event', async () => {
-			const privateChannelId =
-				pactum.stash.getDataStore()['privateChannelId'];
+			const privateChannelId = pactum.stash.getDataStore()['privateChannelId'];
 			const user4Id = pactum.stash.getDataStore()['user4Id'];
 			// start listening to 'user-added' event for users 1 to 3 before sending the request
 			const userAddedPromises = clients.slice(0, 3).map(
@@ -572,8 +558,7 @@ describe('Chat', () => {
 			await Promise.all(userAddedPromises);
 		});
 		it('should let users in the private channel receive messages from the new user', async () => {
-			const privateChannelId =
-				pactum.stash.getDataStore()['privateChannelId'];
+			const privateChannelId = pactum.stash.getDataStore()['privateChannelId'];
 			// We'll make an array of promises for every client that needs to receive the message
 			const messagePromises = clients.slice(0, 3).map(
 				client =>
@@ -601,8 +586,7 @@ describe('Chat', () => {
 			await Promise.all(messagePromises);
 		});
 		it('should let the channel owner kick a user from the private channel and others receive a removed-user event', async () => {
-			const privateChannelId =
-				pactum.stash.getDataStore()['privateChannelId'];
+			const privateChannelId = pactum.stash.getDataStore()['privateChannelId'];
 			const user4Id = pactum.stash.getDataStore()['user4Id'];
 			// start listening to 'user-removed' event for users 1 to 3 before sending the request
 			const userRemovedPromises = clients.slice(0, 3).map(
@@ -625,8 +609,7 @@ describe('Chat', () => {
 			await Promise.all(userRemovedPromises);
 		});
 		it('should let a new user join the protected channel and others receive user-added event', async () => {
-			const protectedChannelId =
-				pactum.stash.getDataStore()['protectedChannelId'];
+			const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
 			const user4Id = pactum.stash.getDataStore()['user4Id'];
 			// start listening to 'user-added' event for users 1 to 3 before sending the request
 			const userAddedPromises = clients.slice(0, 3).map(
@@ -651,8 +634,7 @@ describe('Chat', () => {
 		});
 		// TODO: add muted user event
 		it('should mute a user and let others receive a muted-user event', async () => {
-			const protectedChannelId =
-				pactum.stash.getDataStore()['protectedChannelId'];
+			const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
 			const user4Id = pactum.stash.getDataStore()['user4Id'];
 
 			const userMutedPromises = clients.slice(0, 3).map(
@@ -693,17 +675,10 @@ describe('Chat', () => {
 				client =>
 					new Promise((resolve, reject) => {
 						// We'll make a handler for each client that will resolve the promise when the message is received
-						const handler = ({
-							channelId: receivedChannelId,
-							message,
-						}) => {
+						const handler = ({ channelId: receivedChannelId, message }) => {
 							// If any of these clients receives a message from user4, reject the promise
 							if (receivedChannelId === channelId) {
-								reject(
-									new Error(
-										`User ${user4Id} is muted but their message was received.`,
-									),
-								);
+								reject(new Error(`User ${user4Id} is muted but their message was received.`));
 							}
 						};
 						// once a message is received, we'll call the handler
@@ -732,8 +707,7 @@ describe('Chat', () => {
 			}
 		});
 		it('should unmute a user and let others receive a unmuted-user event', async () => {
-			const protectedChannelId =
-				pactum.stash.getDataStore()['protectedChannelId'];
+			const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
 			const user4Id = pactum.stash.getDataStore()['user4Id'];
 
 			const userUnmutedPromises = clients.slice(0, 3).map(
@@ -750,16 +724,13 @@ describe('Chat', () => {
 			);
 			await pactum
 				.spec()
-				.post(
-					'/chat/channels/$S{protectedChannelId}/unmute/$S{user4Id}',
-				)
+				.post('/chat/channels/$S{protectedChannelId}/unmute/$S{user4Id}')
 				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
 				.expectStatus(201);
 			await Promise.all(userUnmutedPromises);
 		});
 		it('should make a user admin and let others receive a promoted-user event', async () => {
-			const protectedChannelId =
-				pactum.stash.getDataStore()['protectedChannelId'];
+			const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
 			const user4Id = pactum.stash.getDataStore()['user4Id'];
 
 			const userPromotedPromises = clients.slice(0, 3).map(
@@ -768,9 +739,7 @@ describe('Chat', () => {
 						const handler = ({ channelId, userId, message }) => {
 							expect(channelId).toBe(protectedChannelId);
 							expect(userId).toBe(user4Id);
-							expect(message).toBe(
-								`User ${user4Id} has been promoted in channel ${protectedChannelId}`,
-							);
+							expect(message).toBe(`User ${user4Id} has been promoted in channel ${protectedChannelId}`);
 							resolve(undefined);
 						};
 						client.on('user-promoted', handler);
@@ -785,8 +754,7 @@ describe('Chat', () => {
 			await Promise.all(userPromotedPromises);
 		});
 		it('should demote a user and let others receive a demoted-user event', async () => {
-			const protectedChannelId =
-				pactum.stash.getDataStore()['protectedChannelId'];
+			const protectedChannelId = pactum.stash.getDataStore()['protectedChannelId'];
 			const user4Id = pactum.stash.getDataStore()['user4Id'];
 
 			const userDemotedPromises = clients.slice(0, 3).map(
@@ -795,9 +763,7 @@ describe('Chat', () => {
 						const handler = ({ channelId, userId, message }) => {
 							expect(channelId).toBe(protectedChannelId);
 							expect(userId).toBe(user4Id);
-							expect(message).toBe(
-								`User ${user4Id} has been demoted in channel ${protectedChannelId}`,
-							);
+							expect(message).toBe(`User ${user4Id} has been demoted in channel ${protectedChannelId}`);
 							resolve(undefined);
 						};
 						client.on('user-demoted', handler);
@@ -806,9 +772,7 @@ describe('Chat', () => {
 			);
 			await pactum
 				.spec()
-				.post(
-					'/chat/channels/$S{protectedChannelId}/users/$S{user4Id}/demote',
-				)
+				.post('/chat/channels/$S{protectedChannelId}/users/$S{user4Id}/demote')
 				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
 				.expectStatus(201);
 			await Promise.all(userDemotedPromises);

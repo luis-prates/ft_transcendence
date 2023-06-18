@@ -22,7 +22,7 @@ async function bootstrap() {
 		pingTimeout: 5000,
 	});
 	const lobby = new Lobby(io);
-	io.on('connection', (socket) => {
+	io.on('connection', socket => {
 		lobby.connection(socket);
 	});
 }

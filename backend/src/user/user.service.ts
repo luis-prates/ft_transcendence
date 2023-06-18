@@ -1,7 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserBuySkinDto, UserDto, UserUpdateSkinTableDto } from './dto';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -34,17 +33,16 @@ export class UserService {
 			throw error;
 		}
 	}*/
-	
-	async updateProfile(userId: number, dto: UserDto) {
 
+	async updateProfile(userId: number, dto: UserDto) {
 		try {
-            // Check if image encoding is correct
-           /* var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+			// Check if image encoding is correct
+			/* var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
             if (!base64regex.test(dto.image)) {
                 throw new BadRequestException('Image is not base64 encoding');
             }*/
 
-            // Check if user exists
+			// Check if user exists
 			const userExists = await this.prisma.user.findUnique({
 				where: {
 					id: userId,
@@ -53,7 +51,7 @@ export class UserService {
 			if (userExists) {
 				const updatedUser = await this.prisma.user.update({
 					where: {
-					  id: userId,
+						id: userId,
 					},
 					data: {
 						nickname: dto.nickname,
@@ -62,19 +60,19 @@ export class UserService {
 						color: dto.color,
 						paddleSkinEquipped: dto.paddleSkinEquipped,
 					},
-				  });
-			
+				});
+
 				delete updatedUser.hash;
-	
-				return (updatedUser);
+
+				return updatedUser;
 			}
 		} catch (error) {
+			throw new ForbiddenException('Error');
 			throw error;
 		}
 	}
 
 	async buySkin(userId: number, dto: UserBuySkinDto) {
-
 		try {
 			const user = await this.prisma.user.findUnique({
 				where: {
@@ -82,49 +80,46 @@ export class UserService {
 				},
 			});
 			if (user) {
-				
-				if (user.money - dto.price < 0)
-				{
+				if (user.money - dto.price < 0) {
 					//Erro
-					return ;
+					return;
 				}
-				let paddleSkins = user.paddleSkinsOwned;
-				let tableSkins = user.tableSkinsOwned;
+				const paddleSkins = user.paddleSkinsOwned;
+				const tableSkins = user.tableSkinsOwned;
 
-				if ((dto.typeSkin == 0) && (!paddleSkins.includes(dto.skin)))
+				if (dto.typeSkin == 0 && !paddleSkins.includes(dto.skin)) {
 					paddleSkins.push(dto.skin);
-				else if ((dto.typeSkin == 1) && (!tableSkins.includes(dto.skin)))
+				} else if (dto.typeSkin == 1 && !tableSkins.includes(dto.skin)) {
 					tableSkins.push(dto.skin);
-				else  {
+				} else {
 					//ERRO
-					return ;
+					return;
 				}
 
 				const money = user.money - dto.price;
 
 				const updatedUser = await this.prisma.user.update({
 					where: {
-					  id: userId,
+						id: userId,
 					},
 					data: {
 						money: money,
 						tableSkinsOwned: tableSkins,
 						paddleSkinsOwned: paddleSkins,
 					},
-				  });
-			
+				});
+
 				delete updatedUser.hash;
-	
-				return (updatedUser);
+
+				return updatedUser;
 			}
 		} catch (error) {
+			throw new ForbiddenException('Error');
 			throw error;
 		}
 	}
 
-	
 	async updateSkinTable(userId: number, dto: UserUpdateSkinTableDto) {
-
 		try {
 			const user = await this.prisma.user.findUnique({
 				where: {
@@ -133,37 +128,34 @@ export class UserService {
 			});
 
 			if (user) {
-				
-				if ((!user.tableSkinsOwned.includes(dto.skin)))
-				{
+				if (!user.tableSkinsOwned.includes(dto.skin)) {
 					//ERRO
-					return ;
+					return;
 				}
 
 				const color = user.tableColorEquipped != dto.color ? dto.color : user.tableColorEquipped;
 				const skin = user.tableSkinEquipped != dto.skin ? dto.skin : user.tableSkinEquipped;
 
-				if (user.tableColorEquipped != color || user.tableSkinEquipped != skin)
-				{
+				if (user.tableColorEquipped != color || user.tableSkinEquipped != skin) {
 					const updatedUser = await this.prisma.user.update({
 						where: {
-						id: userId,
+							id: userId,
 						},
 						data: {
 							tableColorEquipped: color,
 							tableSkinEquipped: skin,
 						},
 					});
-				
+
 					delete updatedUser.hash;
-		
-					return (updatedUser);
+
+					return updatedUser;
 				}
-				return ;
+				return;
 			}
 		} catch (error) {
+			throw new ForbiddenException('Error');
 			throw error;
 		}
 	}
-
 }

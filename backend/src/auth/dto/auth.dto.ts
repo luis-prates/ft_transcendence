@@ -1,6 +1,6 @@
-import { UserStatus } from "@prisma/client";
-import { Transform } from "class-transformer";
-import { IsNumber, IsNotEmpty, IsString, IsEmail, IsOptional, IsArray, IsEnum } from "class-validator";
+import { UserStatus } from '@prisma/client';
+import { Transform } from 'class-transformer';
+import { IsNumber, IsNotEmpty, IsString, IsEmail, IsOptional, IsArray, IsEnum } from 'class-validator';
 
 export class AuthDto {
 	@Transform(({ value }) => parseInt(value))
@@ -29,27 +29,27 @@ export class AuthDto {
 	@IsNumber()
 	@IsOptional()
 	avatar?: number;
-	
+
 	// Info Ping Pong
 	@IsOptional()
 	infoPong?: object;
-	
+
 	@IsNumber()
 	@IsOptional()
 	level?: number;
-	
+
 	@IsNumber()
 	@IsOptional()
 	xp?: number;
-	
+
 	@IsString()
 	@IsOptional()
 	color?: string;
-	
+
 	@IsString()
 	@IsOptional()
 	tableColorEquipped?: string;
-	
+
 	@IsString()
 	@IsOptional()
 	tableSkinEquipped?: string;
@@ -73,5 +73,4 @@ export class AuthDto {
 	@IsEnum(UserStatus)
 	@IsOptional()
 	status?: UserStatus;
-
 }

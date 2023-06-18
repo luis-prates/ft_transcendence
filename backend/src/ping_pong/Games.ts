@@ -14,9 +14,7 @@ export class Games {
 		console.log('PLAYER_1: ', e);
 		this.games.push(
 			new Game(e, () => {
-				this.games = this.games.filter(
-					g => g.data.objectId != e.objectId,
-				);
+				this.games = this.games.filter(g => g.data.objectId != e.objectId);
 				console.log('remove game: ', this.games.length);
 				player?.map.removeGameObject(e.objectId);
 			}),
@@ -44,9 +42,7 @@ export class Games {
 			} else if (game.player2.socket.id == player.id) {
 				game.endGame(1);
 			}
-			const index = game.watchers.findIndex(
-				(socket: any) => socket.socket.id === disconect,
-			);
+			const index = game.watchers.findIndex((socket: any) => socket.socket.id === disconect);
 			if (index !== -1) {
 				game.watchers.splice(index, 1);
 				console.log('Socket removido da lista de watchers');

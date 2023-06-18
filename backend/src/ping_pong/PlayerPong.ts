@@ -8,24 +8,19 @@ export class Player_Pong {
 	height = 100;
 	socket: Player;
 	player_n: number;
-	y: number = 0;
-	x: number = 0;
-	speed: number = 5;
-	score: number = 0;
+	y = 0;
+	x = 0;
+	speed = 5;
+	score = 0;
 	nickname: string;
 	avatar: string;
 	fpsUpdate = 0;
 	color: string;
 	skin: string;
-	up: boolean = false;
-	down: boolean = false;
+	up = false;
+	down = false;
 
-	constructor(
-		game: Game,
-		player_n: number,
-		playerLobby: Player,
-		info?: playerInfo,
-	) {
+	constructor(game: Game, player_n: number, playerLobby: Player, info?: playerInfo) {
 		this.game = game;
 		this.player_n = player_n;
 		this.y = game.height / 2 - this.height / 2;
@@ -72,13 +67,8 @@ export class Player_Pong {
 	update() {
 		if (this.player_n == 3 || this.game.status != Status.InGame) {
 			const ballUporDown =
-				this.game.ball.y -
-				(this.game.ball.y +
-					this.game.ball.speed * Math.sin(this.game.ball.angle));
-			const move =
-				this.game.ball.y +
-				this.game.ball.height / 2 -
-				(this.y + this.height / 2);
+				this.game.ball.y - (this.game.ball.y + this.game.ball.speed * Math.sin(this.game.ball.angle));
+			const move = this.game.ball.y + this.game.ball.height / 2 - (this.y + this.height / 2);
 			if (ballUporDown > 0 && move < this.speed) {
 				this.moveUp();
 			} else if (ballUporDown < 0 && move > this.speed) {
@@ -92,16 +82,17 @@ export class Player_Pong {
 				}
 			}
 		}
-		if (!(this.up && this.down))
-		{
-			if (this.up) this.moveUp();
-			else if (this.down) this.moveDown();
+		if (!(this.up && this.down)) {
+			if (this.up) {
+				this.moveUp();
+			} else if (this.down) {
+				this.moveDown();
+			}
 		}
 		this.emitPlayer();
 	}
 
-	reset_keys()
-	{
+	reset_keys() {
 		this.up = false;
 		this.down = false;
 	}

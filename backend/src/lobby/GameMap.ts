@@ -23,12 +23,8 @@ export class GameMap {
 			player.map.removePlayer(player);
 		}
 		player.map = this;
-		const clientSocket = this.players.find(
-			clientSocket => clientSocket.objectId === player.objectId,
-		);
-		const data: any[] = this.players
-			.filter(e => e.objectId != player.objectId)
-			.map(e => e.data);
+		const clientSocket = this.players.find(clientSocket => clientSocket.objectId === player.objectId);
+		const data: any[] = this.players.filter(e => e.objectId != player.objectId).map(e => e.data);
 		data.push(...this.gameObjets);
 		player.data.x = position?.x || this.map.start_position.x;
 		player.data.y = position?.y || this.map.start_position.y;
@@ -54,7 +50,7 @@ export class GameMap {
 		);
 		player.on(
 			'update_gameobject',
-			function (data : any) : any {
+			function (data: any): any {
 				player.data = data;
 				this.emitAll('update_gameobject', data);
 			}.bind(this),
@@ -63,10 +59,7 @@ export class GameMap {
 
 	public emitAll(event: string, data: any, ignorerPlayer?: Player): void {
 		this.players.forEach(clientSocket => {
-			if (
-				ignorerPlayer === undefined ||
-				clientSocket.objectId !== ignorerPlayer.objectId
-			) {
+			if (ignorerPlayer === undefined || clientSocket.objectId !== ignorerPlayer.objectId) {
 				clientSocket.emit(event, data);
 			}
 		});

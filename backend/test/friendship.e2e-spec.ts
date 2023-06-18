@@ -39,19 +39,9 @@ describe('Friendship', () => {
 		pactum.request.setBaseUrl('http://localhost:3370');
 
 		// create a user
-		await pactum
-			.spec()
-			.post('/auth/signin')
-			.withBody(dto1)
-			.expectStatus(201)
-			.stores('userAt1', 'access_token');
+		await pactum.spec().post('/auth/signin').withBody(dto1).expectStatus(201).stores('userAt1', 'access_token');
 		// create a user
-		await pactum
-			.spec()
-			.post('/auth/signin')
-			.withBody(dto2)
-			.expectStatus(201)
-			.stores('userAt2', 'access_token');
+		await pactum.spec().post('/auth/signin').withBody(dto2).expectStatus(201).stores('userAt2', 'access_token');
 	});
 
 	// Teardown
