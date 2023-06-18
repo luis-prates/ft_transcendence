@@ -6,7 +6,7 @@
       </div>
       <div class="user_info">
         <span>{{ props.channel.name }}</span>
-        <p>{{ props.channel.users.length }}</p>
+        <p>{{ props.channel.users.length + " Users"}}</p>
       </div>
     </div>
   </div>
