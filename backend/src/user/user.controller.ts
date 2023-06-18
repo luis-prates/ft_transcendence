@@ -12,11 +12,11 @@ export class UserController {
 
 	@Get('me')
 	getMe(@GetUser() user: User) {
-		return (user);
+		return user;
 	}
 
 	@Patch()
-	editUser(@GetUser('id') userId:number, @Body() dto: EditUserDto) {
-		return (this.userService.editUser(userId, dto));
+	editUser(@GetUser('id') userId: number, @Body() dto: EditUserDto) {
+		return this.userService.editUser(userId, dto);
 	}
 }
