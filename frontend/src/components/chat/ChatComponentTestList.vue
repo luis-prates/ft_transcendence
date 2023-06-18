@@ -53,6 +53,7 @@ const { selected } = storeToRefs(store);
 
 function selectChannel(channel: channel) {
   console.log("Carregou no channel!\n", channel);
+  instance?.emit("update-create-channel", false);
   store.showChannel(channel);
 }
 

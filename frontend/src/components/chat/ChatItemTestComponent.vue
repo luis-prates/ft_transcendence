@@ -3,8 +3,7 @@
 
     <div class="d-flex item-box">
       <div class="img_cont">
-        <img :src="props.channel.avatar !== '' ? props.channel.avatar : 'https://therichpost.com/wp-content/uploads/2020/06/avatar2.png'" class="rounded-circle user_img" />
-        <span class="online_icon offline"></span>
+        <img :src="props.channel.avatar !== '' ? props.channel.avatar : 'https://therichpost.com/wp-content/uploads/2020/06/avatar2.png'" class="user_img" />
       </div>
       <div class="user_info">
         <span>{{ props.channel.name }}</span>

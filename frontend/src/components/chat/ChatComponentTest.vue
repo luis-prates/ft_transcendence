@@ -41,10 +41,11 @@
     
   </div>
   <div v-else-if="channelStatus" class="card">
+    <!-- Channel Messages here: -->
     <div class="card-header msg_head">
       <div class="d-flex bd-highlight">
         <div class="img_cont">
-          <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img" />
+          <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="user_img" />
         </div>
         <div class="user_info">
           <span>{{ getChannelName() }}</span>
