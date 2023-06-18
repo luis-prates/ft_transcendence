@@ -7,13 +7,13 @@ import {
 } from '@nestjs/websockets';
 import { ChatService } from '../../chat.service';
 import { Server, Socket } from 'socket.io';
-import { TestLogger } from '../../../../test/utils/TestLogger';
+import { Logger } from '@nestjs/common';
 
 @WebSocketGateway(3001, { namespace: 'chat', cors: { origin: '*' } })
 export class ChatGateway implements OnGatewayConnection {
     private userIdToSocketMap: Map<number, Socket> = new Map<number, Socket>();
     private channelIdToUserIds: Map<number, Set<number>> = new Map<number, Set<number>>();
-	private readonly logger = new TestLogger(ChatGateway.name);
+	private readonly logger = new Logger(ChatGateway.name);
 	constructor(private chatService: ChatService) {}
 
 	@WebSocketServer()
