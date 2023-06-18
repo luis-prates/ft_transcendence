@@ -60,7 +60,7 @@
     <div class="card-body msg_card_body" ref="scrollContainer">
       <div v-for="(message, index) in selected?.messages" :key="index">
         <div>
-          <ChatComponentTestStart :nickname="message.nickname" :mensagem="message.message" time="8:40 AM" />
+          <ChatComponentTestStart :message="message" :displayUser="index == 0 || message.nickname !=  selected?.messages[index - 1].nickname"/>
         </div>
       </div>
     </div>
@@ -88,7 +88,6 @@ import { storeToRefs } from "pinia";
 import { userStore } from "@/stores/userStore";
 import socket from "@/socket/Socket";
 import { onMounted, onUnmounted, ref } from "vue";
-
 
 const store = chatStore();
 const user = userStore();

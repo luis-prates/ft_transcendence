@@ -193,7 +193,8 @@ body,html{
   background-color: #78e08f;
   padding: 10px;
   position: relative;
-  min-width: 45px;
+  min-width: 44px;
+  min-height: 44px;
   }
   .msg_time{
   position: absolute;
