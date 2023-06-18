@@ -97,6 +97,37 @@ export class GameService {
 		}
 		this.addGameUser(info.objectId, info);
 		game.entry_game(player, isPlayer, info);
+		if (game.bot || game.player2) {
+			this.updateGame(game.data.objectId, {
+				status: 'STARTED',
+			});
+		}
+	}
+
+	async updateGame(gameId: string, body?: any) {
+		try {
+			const game = await this.prisma.game.update({
+				where: {
+					id: gameId,
+				},
+				data: {
+					gameStats: body?.gameStats,
+					status: body?.status,
+				},
+				include: {
+					players: true,
+				},
+			});
+
+			return game;
+		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2016') {
+					throw new ForbiddenException('Game not found.');
+				}
+				throw error;
+			}
+		}
 	}
 
 	// when the client receives the game object, it will have the players array
