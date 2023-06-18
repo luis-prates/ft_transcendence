@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserBuySkinDto, UserDto } from './dto';
+import { UserBuySkinDto, UserDto, UserUpdateSkinTableDto } from './dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -114,6 +114,50 @@ export class UserService {
 				delete updatedUser.hash;
 	
 				return (updatedUser);
+			}
+		} catch (error) {
+			throw error;
+		}
+	}
+
+	
+	async updateSkinTable(userId: number, dto: UserUpdateSkinTableDto) {
+
+		try {
+			const user = await this.prisma.user.findUnique({
+				where: {
+					id: userId,
+				},
+			});
+
+			if (user) {
+				
+				if ((!user.tableSkinsOwned.includes(dto.skin)))
+				{
+					//ERRO
+					return ;
+				}
+
+				const color = user.tableColorEquipped != dto.color ? dto.color : user.tableColorEquipped;
+				const skin = user.tableSkinEquipped != dto.skin ? dto.skin : user.tableSkinEquipped;
+
+				if (user.tableColorEquipped != color || user.tableSkinEquipped != skin)
+				{
+					const updatedUser = await this.prisma.user.update({
+						where: {
+						id: userId,
+						},
+						data: {
+							tableColorEquipped: color,
+							tableSkinEquipped: skin,
+						},
+					});
+				
+					delete updatedUser.hash;
+		
+					return (updatedUser);
+				}
+				return ;
 			}
 		} catch (error) {
 			throw error;

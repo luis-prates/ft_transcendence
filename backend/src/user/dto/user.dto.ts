@@ -93,3 +93,13 @@ export class UserBuySkinDto {
 	@IsNumber()
 	price: number;
 }
+
+export class UserUpdateSkinTableDto {
+	
+	@IsString()
+	skin: string;
+
+	@IsString()
+	color: string;
+
+}

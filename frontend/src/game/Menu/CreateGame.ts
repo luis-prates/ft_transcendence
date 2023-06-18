@@ -16,6 +16,7 @@ export class CreateGame {
   private customMenu: ElementUI = this.createCustomMenu();
 
   private user = userStore().user;
+  private updateTableSkin = userStore().updateTableDefault;
 
   //  private player: Player;
 
@@ -214,8 +215,8 @@ export class CreateGame {
         else if (button.type == "default") {
           this.user.infoPong.skin.default.tableColor = this.tableColor;
           this.user.infoPong.skin.default.tableSkin = this.tableSkin;
-          //TODO DATABASE
-          //POST_USER_UPDATE_TABLE_DEFAULT_SKIN
+          //DATABASE
+          this.updateTableSkin(this.tableColor, this.tableSkin)
         }
         close_tab.play();
       },

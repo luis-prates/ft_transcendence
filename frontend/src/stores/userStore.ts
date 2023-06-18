@@ -213,6 +213,21 @@ export const userStore = defineStore("user", () => {
     .catch((err) => console.error(err));
   }
 
+  async function updateTableDefault(tableColor: string, tableSkin: string) {
+    let body = {} as any;
+    body.color = tableColor;
+    body.skin = tableSkin;
+    
+    const options = {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+      body: new URLSearchParams(body),
+    };
+    await fetch(env.BACKEND_PORT + "/users/update_table_skin", options)
+    .then(async (response) => console.log(await response.json()))
+    .catch((err) => console.error(err));
+  }
+
   async function update(userUpdate: { name: string; email: string; nickname: string; image: string }) {
     let body = {} as any;
     if (user.name != userUpdate.name) body.name = userUpdate.name;
@@ -231,5 +246,5 @@ export const userStore = defineStore("user", () => {
       .catch((err) => console.error(err));
   }
 
-  return { user, login, loginTest, update, updateProfile, buy_skin };
+  return { user, login, loginTest, update, updateProfile, buy_skin, updateTableDefault };
 });

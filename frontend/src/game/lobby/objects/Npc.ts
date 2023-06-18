@@ -8,8 +8,8 @@ export class Npc extends Character {
     super();
     this.type = "npc";
     this.animation.sx = 144;
-    this.x = 320;
-    this.y = 680;
+    this.x = 1850;
+    this.y = 700;
   }
 
   private pontoEvento = [
