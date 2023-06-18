@@ -32,6 +32,11 @@ export class Game {
 	bot: boolean = false;
 	onRemove: Function = () => {};
 
+	//Loop
+	private readonly FRAME_RATE: number = 60; // desired frame rate, e.g., 60 FPS
+    private readonly FRAME_DURATION: number = 1000 / this.FRAME_RATE; // duration of a frame in ms
+    private lastFrameTime: [number, number] = process.hrtime();
+
 	constructor(gameResquest: gameRequest, onRemove: Function) {
 		this.data = gameResquest;
 		this.maxPoint = gameResquest.maxScore;
@@ -42,15 +47,34 @@ export class Game {
 
 	//Game Loop 1000 milesecond (1second) for 60 fps
 	gameLoop() {
-		if (!this.isEndGame()) {
-			if (this.status == Status.InGame) this.ball.update();
-			if (this.player1) this.player1.update();
-			if (this.player2) this.player2.update();
-		}
-		setTimeout(() => {
-			this.gameLoop();
-		}, 1000 / 60);
-	}
+        // Calculate elapsed time in milliseconds
+        const currentTime = process.hrtime();
+        const diffTime = process.hrtime(this.lastFrameTime);
+        const elapsedTime = diffTime[0] * 1e3 + diffTime[1] * 1e-6;
+
+        // If the elapsed time is greater than frame duration, update the game state
+        if (elapsedTime >= this.FRAME_DURATION) {
+            if (!this.isEndGame()) {
+                if (this.status == Status.InGame) {
+                    this.ball.update();
+                }
+                if (this.player1) {
+                    this.player1.update();
+                }
+                if (this.player2) {
+                    this.player2.update();
+                }
+            }
+            // update the last frame time
+            this.lastFrameTime = currentTime;
+        }
+        // Schedule the next game loop
+        setImmediate(() => {
+            if (!this.isEndGame()) {
+                this.gameLoop();
+            }
+        });
+    }
 
 	emitStartGame() {
 		this.player1.socket.emit('start_game', {

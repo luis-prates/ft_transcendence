@@ -10,7 +10,7 @@ export class Player_Pong {
 	player_n: number;
 	y: number = 0;
 	x: number = 0;
-	speed: number = 10;
+	speed: number = 5;
 	score: number = 0;
 	nickname: string;
 	avatar: string;

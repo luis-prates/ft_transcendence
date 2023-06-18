@@ -19,7 +19,6 @@ export class GameMap {
 	public join(player: Player, position?: { x: number; y: number }): void {
 		GameMap.offAll(player);
 		console.log('join_map: ', player.objectId, this.map.name);
-		console.log('join_map: ', this.map.name);
 		if (player.map) player.map.removePlayer(player);
 		player.map = this;
 		const clientSocket = this.players.find((clientSocket) => clientSocket.objectId === player.objectId);
