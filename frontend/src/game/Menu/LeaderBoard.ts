@@ -1,4 +1,4 @@
-import { Menu, type ElementUI, type Rectangle, Game } from "@/game";
+import { Menu, type ElementUI, type Rectangle, Game, Lobby } from "@/game";
 
 //Sound
 import sound_close_tab from "@/assets/audio/close.mp3";
@@ -7,6 +7,7 @@ import { userStore } from "@/stores/userStore";
 //image
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import { Profile } from "./Profile";
+import { YourProfile } from "./YourProfile";
 
 
 export class LeaderBoard {
@@ -52,6 +53,8 @@ export class LeaderBoard {
       this.menu.add(this.createButtonExit(35.5, 16));
 
       let your_position = 0;
+      let page = 0;
+
       this.users.forEach((user: any, index: number) => {
         console.log(index + ':', user);
         if (index < 10)
@@ -176,12 +179,11 @@ export class LeaderBoard {
         ctx.fillText(nickname, raking.rectangle.x + raking.rectangle.x * 0.2, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.375);
       },
       onClick: () => {
-
-        Game.instance.addMenu(new Profile(id).menu);
-        //TODO DATABASE 
-        //Get_User_info(user: User)
-		    //TODO
-		    //Go to Profile
+        //Go to Profile
+        if (id != this.user.id)
+          Game.instance.addMenu(new Profile(id).menu);
+        else
+          Game.instance.addMenu(new YourProfile(Lobby.getPlayer()).menu);
       },
     };
     return raking;

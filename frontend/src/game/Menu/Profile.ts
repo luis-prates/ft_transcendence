@@ -18,7 +18,7 @@ export class Profile {
   	private your_user = userStore().user;
 	private user: any;
 	
-  	private getProfile = userStore().getUserProfile;
+  	//private getProfile = userStore().getUserProfile;
 	//private player: Player;
 	private avatarImage = new Image();
 	private skinPaddle: any;
@@ -33,57 +33,65 @@ export class Profile {
 
 	async fetchUser(player_id: number) {
 		try {
-		  // Obtenha os usuários da base de dados
-		  const fetchedUser = await userStore().getUserProfile(player_id);
-	  
-		  // Armazene os usuários no array
-		  this.user = fetchedUser;
-	  
-		  
-		this.avatarImage.src = this.user.image ? this.user.image : avatarDefault;
-  
-		this.skinPaddle = skin.get_skin(TypeSkin.Paddle + "_" + this.user.paddleSkinEquipped);
+			this.user = await userStore().getUserProfile(player_id);
 
-		//TODO
-		//this.matche_pagination = new PaginationMenu([], 4, 2, this.background, this.menu);
+			this.avatarImage.src = this.user.image ? this.user.image : avatarDefault;
 
-		this.menu.add(this.background);
-		this.menu.add(this.background, this.createButtonExit(33.5, 6));
+			this.skinPaddle = skin.get_skin(TypeSkin.Paddle + "_" + this.user.paddleSkinEquipped);
 
-		//if is friend the label is "-" if is not friend "+"
-		this.menu.add(this.background, this.createButtonAddFriend("add_friend", 10.5, 23, "+"));
+			this.menu.add(this.background);
+			this.menu.add(this.background, this.createButtonExit(33.5, 6));
+
+			let friend = "";
+			let index = this.your_user.friendsRequests.findIndex((friendship) => friendship.requesteeId === this.user.id);
+			if (index == -1)
+				friend = "+";
+			else
+				friend = "-";
+
+			//TODO verificar se é amigo para ter o botao de remover
+			/*index = this.your_user.friends.findIndex((friendship) => friendship.requesteeId === this.user.id);
+			if (index == -1)
+				friend = "+";
+			else
+				friend = "-";*/
+				
+			//if is friend the label is "-" if is not friend "+"
+			
+			this.menu.add(this.background, this.createButtonAddFriend("add_friend", 10.5, 23, friend));
+			
+			this.menu.add(this.background, this.createButton("challenge", 3.25, 26, "Challenge", 9));
+			this.menu.add(this.background, this.createButton("send_message", 13.25, 26, "Send Message", 9));
+			this.menu.add(this.background, this.createButton("block", 23.25, 26, "Block", 9));
 		
-		this.menu.add(this.background, this.createButton("challenge", 3.25, 26, "Challenge", 9));
-		this.menu.add(this.background, this.createButton("send_message", 13.25, 26, "Send Message", 9));
-		this.menu.add(this.background, this.createButton("block", 23.25, 26, "Block", 9));
+			//TODO Match
+			//this.matche_pagination = new PaginationMenu([], 4, 2, this.background, this.menu);
 
-		
-    	//Arrow Buttons
-    	/*this.menu.add(this.background, this.matche_pagination.createArrowButton("left", 2.5, 33.5, 2));
-    	this.menu.add(this.background, this.matche_pagination.createArrowButton("right", 30.5, 33.5, 2));*/
+    		//Arrow Buttons
+    		/*this.menu.add(this.background, this.matche_pagination.createArrowButton("left", 2.5, 33.5, 2));
+    		this.menu.add(this.background, this.matche_pagination.createArrowButton("right", 30.5, 33.5, 2));
 
-		//TODO
-		const squareW = 10;
-    	const squareH = 8;
-    	const paddingX = 6;
-    	const paddingY = 12;
+			const squareW = 10;
+    		const squareH = 8;
+    		const paddingX = 6;
+    		const paddingY = 12;
 
-    	let page = 0;
+    		let page = 0;
 
-    	/*this.user.infoPong.historic.forEach((matche: any, index: number) => {
-    	  if ((index == 0 ? index + 1 : index) % this.matche_pagination.max_for_page == 0) page++;
+    		this.user.infoPong.historic.forEach((matche: any, index: number) => {
+    		  if ((index == 0 ? index + 1 : index) % this.matche_pagination.max_for_page == 0) page++;
 
-    	  const i = index - page * this.matche_pagination.max_for_page;
+    		  const i = index - page * this.matche_pagination.max_for_page;
 
-    	  const squareX = 1 + (i % this.matche_pagination.max_for_line) * (squareW + paddingX);
-    	  const squareY = 30 + paddingY + Math.floor(i / this.matche_pagination.max_for_line) * (squareH + paddingY);
-    	  this.menu.add(this.background, this.createMatches(index, matche, squareX, squareY));
-    	});*/
+    		  const squareX = 1 + (i % this.matche_pagination.max_for_line) * (squareW + paddingX);
+    		  const squareY = 30 + paddingY + Math.floor(i / this.matche_pagination.max_for_line) * (squareH + paddingY);
+    		  this.menu.add(this.background, this.createMatches(index, matche, squareX, squareY));
+    		});*/
 
 	
 		} catch (error) {
-		  console.error('Erro ao buscar os usuários:', error);
-		  this.menu.close();
+			console.error('Erro ao buscar os usuários:', error);
+			this.menu.close();
 		}
 	  }
 
@@ -236,11 +244,11 @@ export class Profile {
 			},
 			onClick: () => {
 			if (type == "challenge") {
-			  //TODO Created table and send challenge
-			  /*const confirmButton = new CreateGame(this.player);
-			  confirmButton.show((value) => {
-			  if (value == "CONFIRM") buy_sound.play();
-				}); */
+				//TODO Created table and send challenge
+				/*const confirmButton = new CreateGame(this.player);
+				confirmButton.show((value) => {
+				if (value == "CONFIRM") buy_sound.play();
+					}); */
 			}
 			else if (type == "send_message") {
 				//TODO DATABASE 
@@ -263,29 +271,34 @@ export class Profile {
 		type: type,
 		rectangle: { x: x + "%", y: y + "%", w: "1.5%", h: "2%" },
 		draw: (ctx: CanvasRenderingContext2D) => {
-		
-			ctx.fillStyle = "green";
-			  ctx.strokeStyle = "black";
-			  ctx.lineWidth = 2;
+				ctx.fillStyle = label == "+" ? "green" : "red";
+				ctx.strokeStyle = "black";
+				ctx.lineWidth = 2;
 
-			  this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+				this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
 
-			  ctx.fill();
-			  ctx.stroke();
+				ctx.fill();
+				ctx.stroke();
 
-			  ctx.fillStyle = "black";
-			ctx.font = "10px 'Press Start 2P', cursive";
+				ctx.fillStyle = "black";
+				ctx.font = "10px 'Press Start 2P', cursive";
 
-			const labelWidth = ctx.measureText(label).width;
+				const labelWidth = ctx.measureText(label).width;
 
-			  ctx.fillText(label, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w / 2 - labelWidth/2, button.rectangle.y + button.rectangle.h / 2 + 6);
+				ctx.fillText(label, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w / 2 - labelWidth/2, button.rectangle.y + button.rectangle.h / 2 + 6);
 			},
 			onClick: () => {
-				//TODO DATABASE 
-				//Request Friend
-        		//Post_User_Request_Add_Friend(user: User, true)
-				//Or UnFriend
-				//Post_User_Request_Add_Friend(user: User, false)
+
+				if (label == "+")
+				{
+					userStore().sendFriendRequest(this.user.id);
+					label = "-";
+				}
+				else if (label == "-")
+				{
+					userStore().cancelFriendRequest(this.user.id);
+					label = "+";
+				}
 			},
 	  };
 	  return button;

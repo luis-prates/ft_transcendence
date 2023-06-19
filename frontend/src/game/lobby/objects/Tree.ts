@@ -31,8 +31,8 @@ export class Tree implements GameObject {
     if (this.isCollision(Game.getPlayer())) contex.globalAlpha = 0.5;
     contex.drawImage(this.imagem, this.positionDraw.x, this.positionDraw.y);
     contex.globalAlpha = 1;
-    contex.strokeStyle = "blue";
-    contex.strokeRect(this.collisionBox.x, this.collisionBox.y, this.collisionBox.w, this.collisionBox.h);
+   // contex.strokeStyle = "blue";
+   // contex.strokeRect(this.collisionBox.x, this.collisionBox.y, this.collisionBox.w, this.collisionBox.h);
   }
 
   setData(data: any): void {

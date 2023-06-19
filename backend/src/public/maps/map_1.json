@@ -145,13 +145,13 @@
 			"size":32,
 			"start_position":{"x":1813,"y":721},
 			"datas":[
-					{"className":"WaterFont","x":1312,"y":448,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":96,"y":0},{"x":192,"y":0}]},
-					{"className":"WaterFont","x":1312,"y":704,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":96,"y":0},{"x":192,"y":0}]},
-					{"className":"WaterFont","x":2368,"y":384,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":96,"y":0},{"x":192,"y":0}]},
-					{"className":"WaterFont","x":2720,"y":896,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":96,"y":0},{"x":192,"y":0}]},
-					{"className":"WaterFont","x":3424,"y":2752,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":96,"y":0},{"x":192,"y":0}]},
-					{"className":"WaterFont","x":3392,"y":2752,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":96,"y":0},{"x":192,"y":0}]},
-					{"className":"WaterFont","x":3456,"y":2752,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":96,"y":0},{"x":192,"y":0}]},
+					{"className":"WaterFont","x":1312,"y":448,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0}]},
+					{"className":"WaterFont","x":1312,"y":704,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0}]},
+					{"className":"WaterFont","x":2368,"y":384,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0}]},
+					{"className":"WaterFont","x":2720,"y":896,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0}]},
+					{"className":"WaterFont","x":3424,"y":2752,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0}]},
+					{"className":"WaterFont","x":3392,"y":2752,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0}]},
+					{"className":"WaterFont","x":3456,"y":2752,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0}]},
 					{"className":"Tree","x":1312,"y":224},
 					{"className":"Tree","x":480,"y":192},
 					{"className":"Tree","x":64,"y":416},
@@ -213,7 +213,7 @@
 					{"className":"Tree","x":2112,"y":3936},
 					{"className":"Tree","x":2368,"y":3776},
 					{"className":"Tree","x":2400,"y":3936},
-					{"className":"WaterFont","x":480,"y":320,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":96,"y":0},{"x":192,"y":0}]}
+					{"className":"WaterFont","x":480,"y":320,"w":96,"h":64,"sx":-32,"sy":-32,"frames":[{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0}]}
 					],
 		"objectId": "lobby"
 }

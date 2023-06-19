@@ -96,7 +96,7 @@ export class Player extends Character {
 
         /*Game.addMenu(new Profile(this).menu);*/
         Game.instance.addMenu(new LeaderBoard().menu);
-        Game.instance.addMenu(new YourProfile(this).menu);
+       // Game.instance.addMenu(new YourProfile(this).menu);
 
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {
