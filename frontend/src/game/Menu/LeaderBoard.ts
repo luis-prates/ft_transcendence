@@ -1,4 +1,4 @@
-import { Menu, type ElementUI, type Rectangle } from "@/game";
+import { Menu, type ElementUI, type Rectangle, Game, Lobby } from "@/game";
 
 //Sound
 import sound_close_tab from "@/assets/audio/close.mp3";
@@ -6,6 +6,8 @@ import { userStore } from "@/stores/userStore";
 
 //image
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
+import { Profile } from "./Profile";
+import { YourProfile } from "./YourProfile";
 
 
 export class LeaderBoard {
@@ -14,13 +16,16 @@ export class LeaderBoard {
   private background: ElementUI = this.createBackground();
   
   private user = userStore().user;
+ // private getUsers = userStore().getUsers;
+  private users : any | void [] = [];
 
   constructor() {
-    this.menu.add(this.background);
-    this.menu.add(this.createButtonExit(35.5, 16));
+    
+    this.fetchUsers();
 
+    
 	//TODO FOREACH
-	this.menu.add(this.background, this.createRanking(37.5, 16 + 1 * 6, 1, "rteles", avatarDefault));
+	/*this.menu.add(this.background, this.createRanking(37.5, 16 + 1 * 6, 1, "rteles", avatarDefault));
     this.menu.add(this.background, this.createRanking(37.5, 16 + 2 * 6, 2, "onepiece", avatarDefault));
     this.menu.add(this.background, this.createRanking(37.5, 16 + 3 * 6, 3, "pacman", avatarDefault));
     this.menu.add(this.background, this.createRanking(37.5, 16 + 4 * 6, 4, "mario", avatarDefault));
@@ -29,11 +34,41 @@ export class LeaderBoard {
     this.menu.add(this.background, this.createRanking(37.5, 16 + 7 * 6, 7, "cabrita", avatarDefault));
     this.menu.add(this.background, this.createRanking(37.5, 16 + 8 * 6, 8, "ave rara", avatarDefault));
     this.menu.add(this.background, this.createRanking(37.5, 16 + 9 * 6, 9, "luis", avatarDefault));
-    this.menu.add(this.background, this.createRanking(37.5, 16 + 10 * 6, 10, "ezekiel", avatarDefault));
+    this.menu.add(this.background, this.createRanking(37.5, 16 + 10 * 6, 10, "ezekiel", avatarDefault));*/
 
-	//Your Position
-    this.menu.add(this.background, this.createRanking(37.5, 16 + 11 * 6, 11, this.user.nickname, this.user.image));
 
+  }
+
+  async fetchUsers() {
+    try {
+      // Obtenha os usuários da base de dados
+      const fetchedUsers = await userStore().getUsers();
+  
+      // Armazene os usuários no array
+      this.users = fetchedUsers;
+  
+      console.log("users: ", this.users); // Faça o que desejar com o array de usuários
+      
+      this.menu.add(this.background);
+      this.menu.add(this.createButtonExit(35.5, 16));
+
+      let your_position = 0;
+      let page = 0;
+
+      this.users.forEach((user: any, index: number) => {
+        console.log(index + ':', user);
+        if (index < 10)
+          this.menu.add(this.background, this.createRanking(37.5, 16 + (index + 1) * 6, (index + 1), user.nickname, user.image ? user.image : avatarDefault, user.id));
+        if (user.nickname == this.user.nickname)
+          your_position = index + 1;
+      });
+      //Your Position
+      this.menu.add(this.background, this.createRanking(37.5, 16 + 11 * 6, your_position, this.user.nickname, this.user.image, this.user.id));
+  
+    } catch (error) {
+      console.error('Erro ao buscar os usuários:', error);
+      this.menu.close();
+    }
   }
 
   private createBackground(): ElementUI {
@@ -103,7 +138,7 @@ export class LeaderBoard {
     ctx.stroke();
   }
 
-  private createRanking(x: number, y: number, position: number, nickname: string, pic: string): ElementUI {
+  private createRanking(x: number, y: number, position: number, nickname: string, pic: string, id: number): ElementUI {
     const avatar = new Image();
 	avatar.src = pic;
 	const raking: ElementUI = {
@@ -127,25 +162,28 @@ export class LeaderBoard {
 		    	ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
 		    }
 
-		    ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
 		    ctx.strokeRect(raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
+		    ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
       
 		    ctx.fillStyle = "white";
         ctx.strokeStyle = nickname == this.user.nickname ? "red" : "black";
+        
+        ctx.lineWidth = 5;
 
 		    //Posicao
-        ctx.fillText(position.toString(), raking.rectangle.x + raking.rectangle.x * 0.02, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.05);
 		    ctx.strokeText(position.toString(), raking.rectangle.x + raking.rectangle.x * 0.02, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.05);
+        ctx.fillText(position.toString(), raking.rectangle.x + raking.rectangle.x * 0.02, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.05);
       
 		    //Nickname
-        ctx.fillText(nickname, raking.rectangle.x + raking.rectangle.x * 0.2, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.375);
 		    ctx.strokeText(nickname, raking.rectangle.x + raking.rectangle.x * 0.2, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.375);
+        ctx.fillText(nickname, raking.rectangle.x + raking.rectangle.x * 0.2, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.375);
       },
       onClick: () => {
-        //TODO DATABASE 
-        //Get_User_info(user: User)
-		    //TODO
-		    //Go to Profile
+        //Go to Profile
+        if (id != this.user.id)
+          Game.instance.addMenu(new Profile(id).menu);
+        else
+          Game.instance.addMenu(new YourProfile(Lobby.getPlayer()).menu);
       },
     };
     return raking;

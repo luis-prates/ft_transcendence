@@ -15,56 +15,85 @@ export class Profile {
 	private radius: number = 10;
 	private background: ElementUI = this.createBackground();	
 	  
-  	private user = userStore().user;
-	private player: Player;
+  	private your_user = userStore().user;
+	private user: any;
+	
+  	//private getProfile = userStore().getUserProfile;
+	//private player: Player;
 	private avatarImage = new Image();
-	private skinPaddle;
+	private skinPaddle: any;
 
-	private matche_pagination: PaginationMenu;
+	//private matche_pagination: PaginationMenu;
 
-	constructor(player: Player) {
+	constructor(player_id: number) {
 
-		this.player = player;
-
-		this.avatarImage.src = this.user.image ? this.user.image : avatarDefault;
-  
-		this.skinPaddle = skin.get_skin(TypeSkin.Paddle + "_" + this.user.infoPong.skin.default.paddle);
-
-		this.matche_pagination = new PaginationMenu(this.user.infoPong.historic, 4, 2, this.background, this.menu);
-
-		this.menu.add(this.background);
-		this.menu.add(this.background, this.createButtonExit(33.5, 6));
-
-		//if is friend the label is "-" if is not friend "+"
-		this.menu.add(this.background, this.createButtonAddFriend("add_friend", 10.5, 23, "+"));
-		
-		this.menu.add(this.background, this.createButton("challenge", 3.25, 26, "Challenge", 9));
-		this.menu.add(this.background, this.createButton("send_message", 13.25, 26, "Send Message", 9));
-		this.menu.add(this.background, this.createButton("block", 23.25, 26, "Block", 9));
-
-		
-    	//Arrow Buttons
-    	this.menu.add(this.background, this.matche_pagination.createArrowButton("left", 2.5, 33.5, 2));
-    	this.menu.add(this.background, this.matche_pagination.createArrowButton("right", 30.5, 33.5, 2));
-
-		const squareW = 10;
-    	const squareH = 8;
-    	const paddingX = 6;
-    	const paddingY = 12;
-
-    	let page = 0;
-
-    	this.user.infoPong.historic.forEach((matche: any, index: number) => {
-    	  if ((index == 0 ? index + 1 : index) % this.matche_pagination.max_for_page == 0) page++;
-
-    	  const i = index - page * this.matche_pagination.max_for_page;
-
-    	  const squareX = 1 + (i % this.matche_pagination.max_for_line) * (squareW + paddingX);
-    	  const squareY = 30 + paddingY + Math.floor(i / this.matche_pagination.max_for_line) * (squareH + paddingY);
-    	  this.menu.add(this.background, this.createMatches(index, matche, squareX, squareY));
-    	});
-
+		this.fetchUser(player_id);
+		//this.player = player;
 	}
+
+	async fetchUser(player_id: number) {
+		try {
+			this.user = await userStore().getUserProfile(player_id);
+
+			this.avatarImage.src = this.user.image ? this.user.image : avatarDefault;
+
+			this.skinPaddle = skin.get_skin(TypeSkin.Paddle + "_" + this.user.paddleSkinEquipped);
+
+			this.menu.add(this.background);
+			this.menu.add(this.background, this.createButtonExit(33.5, 6));
+
+			let friend = "";
+			let index = this.your_user.friendsRequests.findIndex((friendship) => friendship.requesteeId === this.user.id);
+			if (index == -1)
+				friend = "+";
+			else
+				friend = "-";
+
+			//TODO verificar se é amigo para ter o botao de remover
+			/*index = this.your_user.friends.findIndex((friendship) => friendship.requesteeId === this.user.id);
+			if (index == -1)
+				friend = "+";
+			else
+				friend = "-";*/
+				
+			//if is friend the label is "-" if is not friend "+"
+			
+			this.menu.add(this.background, this.createButtonAddFriend("add_friend", 10.5, 23, friend));
+			
+			this.menu.add(this.background, this.createButton("challenge", 3.25, 26, "Challenge", 9));
+			this.menu.add(this.background, this.createButton("send_message", 13.25, 26, "Send Message", 9));
+			this.menu.add(this.background, this.createButton("block", 23.25, 26, "Block", 9));
+		
+			//TODO Match
+			//this.matche_pagination = new PaginationMenu([], 4, 2, this.background, this.menu);
+
+    		//Arrow Buttons
+    		/*this.menu.add(this.background, this.matche_pagination.createArrowButton("left", 2.5, 33.5, 2));
+    		this.menu.add(this.background, this.matche_pagination.createArrowButton("right", 30.5, 33.5, 2));
+
+			const squareW = 10;
+    		const squareH = 8;
+    		const paddingX = 6;
+    		const paddingY = 12;
+
+    		let page = 0;
+
+    		this.user.infoPong.historic.forEach((matche: any, index: number) => {
+    		  if ((index == 0 ? index + 1 : index) % this.matche_pagination.max_for_page == 0) page++;
+
+    		  const i = index - page * this.matche_pagination.max_for_page;
+
+    		  const squareX = 1 + (i % this.matche_pagination.max_for_line) * (squareW + paddingX);
+    		  const squareY = 30 + paddingY + Math.floor(i / this.matche_pagination.max_for_line) * (squareH + paddingY);
+    		  this.menu.add(this.background, this.createMatches(index, matche, squareX, squareY));
+    		});*/
+
+	
+		} catch (error) {
+			console.error('Erro ao buscar os usuários:', error);
+			this.menu.close();
+		}
+	  }
 
 	private createMatches(index: number, matche: Historic, x: number, y: number): ElementUI {
 
@@ -76,11 +105,11 @@ export class Profile {
 		  rectangle: { x: x + "%", y: y + "%", w: "15%", h: "15%" },
 		  draw: (ctx: CanvasRenderingContext2D) => {
 
-			if (!(this.matche_pagination.isIndexInCurrentPage(index))) {
+			/*if (!(this.matche_pagination.isIndexInCurrentPage(index))) {
 				if (product.enable)
 				  product.enable = false;
 				return;
-			  }
+			  }*/
 			if (!product.enable)
 				product.enable = true;
 
@@ -137,7 +166,7 @@ export class Profile {
 			
 		},
 		  onClick: () => {
-			if (!(this.matche_pagination.isIndexInCurrentPage(index))) return ;
+			//if (!(this.matche_pagination.isIndexInCurrentPage(index))) return ;
 			//DO SOMETHING
 		  },
 		};
@@ -215,11 +244,11 @@ export class Profile {
 			},
 			onClick: () => {
 			if (type == "challenge") {
-			  //TODO Created table and send challenge
-			  /*const confirmButton = new CreateGame(this.player);
-			  confirmButton.show((value) => {
-			  if (value == "CONFIRM") buy_sound.play();
-				}); */
+				//TODO Created table and send challenge
+				/*const confirmButton = new CreateGame(this.player);
+				confirmButton.show((value) => {
+				if (value == "CONFIRM") buy_sound.play();
+					}); */
 			}
 			else if (type == "send_message") {
 				//TODO DATABASE 
@@ -242,29 +271,34 @@ export class Profile {
 		type: type,
 		rectangle: { x: x + "%", y: y + "%", w: "1.5%", h: "2%" },
 		draw: (ctx: CanvasRenderingContext2D) => {
-		
-			ctx.fillStyle = "green";
-			  ctx.strokeStyle = "black";
-			  ctx.lineWidth = 2;
+				ctx.fillStyle = label == "+" ? "green" : "red";
+				ctx.strokeStyle = "black";
+				ctx.lineWidth = 2;
 
-			  this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+				this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
 
-			  ctx.fill();
-			  ctx.stroke();
+				ctx.fill();
+				ctx.stroke();
 
-			  ctx.fillStyle = "black";
-			ctx.font = "10px 'Press Start 2P', cursive";
+				ctx.fillStyle = "black";
+				ctx.font = "10px 'Press Start 2P', cursive";
 
-			const labelWidth = ctx.measureText(label).width;
+				const labelWidth = ctx.measureText(label).width;
 
-			  ctx.fillText(label, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w / 2 - labelWidth/2, button.rectangle.y + button.rectangle.h / 2 + 6);
+				ctx.fillText(label, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w / 2 - labelWidth/2, button.rectangle.y + button.rectangle.h / 2 + 6);
 			},
 			onClick: () => {
-				//TODO DATABASE 
-				//Request Friend
-        		//Post_User_Request_Add_Friend(user: User, true)
-				//Or UnFriend
-				//Post_User_Request_Add_Friend(user: User, false)
+
+				if (label == "+")
+				{
+					userStore().sendFriendRequest(this.user.id);
+					label = "-";
+				}
+				else if (label == "-")
+				{
+					userStore().cancelFriendRequest(this.user.id);
+					label = "+";
+				}
 			},
 	  };
 	  return button;
@@ -290,18 +324,18 @@ export class Profile {
 
     //Level
     ctx.font = "12px 'Press Start 2P', cursive";
-	ctx.fillText("Level: " + this.user.infoPong.level, pos.x + pos.w * 0.30, pos.y + pos.h * 0.13, pos.w - (pos.x + pos.w * 0.5));
+	ctx.fillText("Level: " + this.user.level, pos.x + pos.w * 0.30, pos.y + pos.h * 0.13, pos.w - (pos.x + pos.w * 0.5));
 
 	//Money
 	ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.30, pos.y + pos.h * 0.16, pos.w - (pos.x + pos.w * 0.5));
     
 	//Level
-	const wins = this.user.infoPong.historic.filter((history: any) => history.winner == this.user.nickname).length;
+	/*const wins = this.user.infoPong.historic.filter((history: any) => history.winner == this.user.nickname).length;
 	ctx.fillText("Wins:  " + wins, pos.x + pos.w * 0.30, pos.y + pos.h * 0.19, pos.w - (pos.x + pos.w * 0.5));
 
 	const loses = this.user.infoPong.historic.filter((history: any) => history.loser == this.user.nickname).length
 	ctx.fillText("Loses: " + loses, pos.x + pos.w * 0.30, pos.y + pos.h * 0.22, pos.w - (pos.x + pos.w * 0.5));
-
+*/
     //Avatar
 
 	ctx.strokeStyle = "black";
@@ -334,7 +368,7 @@ export class Profile {
         const pointx = (pos.w - pos.w * 0.15);
         const pointy = (pos.h* 0.07);
         
-        ctx.fillStyle = this.user.infoPong.color;
+        ctx.fillStyle = this.user.color;
         ctx.fillRect(pos.x + pointx, pos.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
       
 

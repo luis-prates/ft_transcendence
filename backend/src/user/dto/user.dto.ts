@@ -96,3 +96,9 @@ export class UserUpdateSkinTableDto {
 	@IsString()
 	color: string;
 }
+
+export class UserProfileDto {
+	@Transform(({ value }) => parseInt(value))
+	@IsNumber()
+	id: number;
+}

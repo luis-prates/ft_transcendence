@@ -50,7 +50,6 @@ export class FriendshipService {
 				(await updatedFriendship).requesteeName
 			} are now friends.`,
 		);
-
 		await this.prisma.friendRequest.delete({
 			where: {
 				requestorId_requesteeId: {

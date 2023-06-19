@@ -60,8 +60,6 @@ onMounted(function () {
 
     if (game.player2.nickname == "Marvin" && e.avatar2 == "marvin") game.player2.avatar.src = avatar_marvin;
 
-
-
     e.skin1 ? game.player1.updateSkin(e.skin1) : "";
     e.skin2 ? game.player2.updateSkin(e.skin2) : "";
 

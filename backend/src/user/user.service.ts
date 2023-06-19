@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserBuySkinDto, UserDto, UserUpdateSkinTableDto } from './dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -67,7 +68,15 @@ export class UserService {
 				return updatedUser;
 			}
 		} catch (error) {
-			throw new ForbiddenException('Error');
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2002') {
+					throw new ForbiddenException(
+						`The User don't Exist. Error: ${error.message.substring(
+							error.message.indexOf('Unique constraint'),
+						)}`,
+					);
+				}
+			}
 			throw error;
 		}
 	}
@@ -114,7 +123,15 @@ export class UserService {
 				return updatedUser;
 			}
 		} catch (error) {
-			throw new ForbiddenException('Error');
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2002') {
+					throw new ForbiddenException(
+						`The User don't Exist. Error: ${error.message.substring(
+							error.message.indexOf('Unique constraint'),
+						)}`,
+					);
+				}
+			}
 			throw error;
 		}
 	}
@@ -154,7 +171,46 @@ export class UserService {
 				return;
 			}
 		} catch (error) {
-			throw new ForbiddenException('Error');
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2002') {
+					throw new ForbiddenException(
+						`The User don't Exist. Error: ${error.message.substring(
+							error.message.indexOf('Unique constraint'),
+						)}`,
+					);
+				}
+			}
+			throw error;
+		}
+	}
+
+	async getUsers(userId: number) {
+		const users = this.prisma.user.findMany();
+
+		return users;
+	}
+
+	async getProfile(userId: number, personId: number) {
+		try {
+			const user = await this.prisma.user.findUnique({
+				where: {
+					id: personId,
+				},
+			});
+
+			if (user) {
+				return user;
+			}
+		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2002') {
+					throw new ForbiddenException(
+						`The User don't Exist. Error: ${error.message.substring(
+							error.message.indexOf('Unique constraint'),
+						)}`,
+					);
+				}
+			}
 			throw error;
 		}
 	}

@@ -10,6 +10,17 @@ enum UserStatus {
 	ONLINE = "ONLINE",
 }
 
+export interface Friendship {
+  createdAt: string;
+  id: number;
+  requesteeId: number;
+  requesteeName: string;
+  requestorId: number;
+  requestorName: string;
+  status: string;
+  updatedAt: string;
+}
+
 export interface Historic {
   winner: string;
   loser: string;
@@ -47,6 +58,9 @@ export interface User {
   avatar: number;               //Avatar in The Lobby           
   infoPong: InfoPong;
   money: number;
+  friends: any,
+  friendsRequests: Friendship[],
+  blocks: any,
 }
 
 export const userStore = defineStore("user", () => {
@@ -87,6 +101,9 @@ export const userStore = defineStore("user", () => {
       },
       historic: [],
     },
+    friends: Array(),
+    friendsRequests: Array(),
+    blocks: Array(),
   });
 
   async function login(authorizationCode: string | undefined) {
@@ -173,6 +190,8 @@ export const userStore = defineStore("user", () => {
         console.error(error);
       });
     user.isLogin = true;
+    getFriends();
+    getFriendRequests();
     // .finally(() => window.location.href = window.location.origin);
   }
 
@@ -206,8 +225,6 @@ export const userStore = defineStore("user", () => {
       body: new URLSearchParams(body),
     };
 
-    //TODO
-
     await fetch(env.BACKEND_PORT + "/users/buy_skin", options)
     .then(async (response) => console.log("buy_shop:", await response.json()))
     .catch((err) => console.error(err));
@@ -228,6 +245,45 @@ export const userStore = defineStore("user", () => {
     .catch((err) => console.error(err));
   }
 
+  async function getUsers() {
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+   
+    return await axios
+      .get(env.BACKEND_PORT + "/users/users", options)
+
+      // axios.request(options)
+      .then(function (response: any) {
+        console.log("LEADERBOARD: " , response.data)
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  async function getUserProfile(userId: number) {
+
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+   
+    return await axios
+      .get(env.BACKEND_PORT + "/users/get_profile/" + userId, options)
+
+      // axios.request(options)
+      .then(function (response: any) {
+        console.log("Profile: " , response.data)
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
   async function update(userUpdate: { name: string; email: string; nickname: string; image: string }) {
     let body = {} as any;
     if (user.name != userUpdate.name) body.name = userUpdate.name;
@@ -245,6 +301,108 @@ export const userStore = defineStore("user", () => {
       .then(async (response) => console.log(await response.json()))
       .catch((err) => console.error(err));
   }
+  
+  
+  async function getFriends() {
 
-  return { user, login, loginTest, update, updateProfile, buy_skin, updateTableDefault };
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+   
+    return await axios
+      .get(env.BACKEND_PORT + "/friendship/friends/", options)
+
+      // axios.request(options)
+      .then(function (response: any) {
+        console.log("Friends: " , response.data)
+        user.friends = response.data.friends;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+  
+  async function getFriendRequests() {
+
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+   
+    return await axios
+      .get(env.BACKEND_PORT + "/friendship/requests/", options)
+      .then(function (response: any) {
+        console.log("FriendsRequests: " , response.data)
+        user.friendsRequests = response.data;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  async function sendFriendRequest(userId: number) {
+
+    const options = {
+      method: "POST",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+   
+    await fetch(env.BACKEND_PORT + "/friendship/send/" + userId, options)
+    .then(async function (response: any) {
+      user.friendsRequests.push(await response.json());
+      console.log(user.friendsRequests);
+    })
+    .catch((err) => console.error(err));
+  }
+
+  //TODO
+  async function cancelFriendRequest(userId: number) {
+
+    const options = {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+   
+    await fetch(env.BACKEND_PORT + "/friendship/cancel/" + userId, options)
+      .then(async function (response: any) {
+
+      const index = user.friendsRequests.findIndex((friendship) => friendship.requesteeId === userId);
+      if (index !== -1) user.friendsRequests.splice(index, 1);
+      console.log("friendRequest: ", user.friendsRequests)
+    })
+    .catch((err) => console.error(err));
+  }
+
+  //TODO
+  async function acceptFriendRequest(userId: number) {
+
+    const options = {
+      method: "POST",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+    
+    console.log("my id: ", user.id, " your id: ", userId);
+    console.log(options);
+   
+    await fetch(env.BACKEND_PORT + "/friendship/send/" + userId, options)
+    .then(async function (response: any) {
+      user.friendsRequests.push(await response.json());
+      console.log(user.friendsRequests);
+    })
+    .catch((err) => console.error(err));
+  }
+  
+
+  return { user, login, loginTest, 
+    
+    //User Information
+    update, updateProfile, buy_skin, updateTableDefault, getUsers, getUserProfile, 
+
+    //Friends
+    getFriends, getFriendRequests, 
+    //Send Request Friend
+    sendFriendRequest, cancelFriendRequest};
 });
