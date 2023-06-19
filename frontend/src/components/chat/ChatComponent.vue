@@ -24,6 +24,8 @@ function toggleTesss() {
 }
 
 onMounted(() => {
+store.getChannels();
+
   socket.on("join_chat", (data: channel) => {
     console.log("join_chat", data);
     store.addChannel(data);
