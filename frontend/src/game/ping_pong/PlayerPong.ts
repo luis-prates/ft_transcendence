@@ -1,11 +1,10 @@
 import { GamePong } from "@/game/ping_pong/";
-import { type updatePlayer } from "./SocketInterface";
 import socket from "@/socket/Socket";
-import { TypeSkin } from "./Skin";
+import { skin, TypeSkin } from "./Skin";
+
 
 //Avatar
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
-import avatarMarvin from "@/assets/images/pingpong/marvin.jpg";
 
 export class PlayerPong {
   game: GamePong;
@@ -19,6 +18,8 @@ export class PlayerPong {
   avatar = new Image();
   color: string;
   skin = new Image();
+  key_w_press: boolean = false;
+  key_s_press: boolean = false;
 
   constructor(game: GamePong, player_n: number, nickname: string, avatar: any) {
     this.game = game;
@@ -32,30 +33,30 @@ export class PlayerPong {
     this.skin.src = "";
   }
 
-  updateSkin(skin: string) {
-    this.skin = this.game.skins.get_skin(TypeSkin.Paddle + "_" + skin);
+  updateSkin(skin_label: string) {
+    this.skin = skin.get_skin(TypeSkin.Paddle + "_" + skin_label);
   }
 
-  moveUp() {
+  moveUp(key_press: boolean) {
+    this.key_w_press = key_press;
     //Emit UP
-    if (this.y > this.game.offSet) {
-      socket.emit("game_move", {
-        objectId: this.game.data.objectId,
-        playerNumber: this.game.playerNumber,
-        move: "up",
-      });
-    }
+    socket.emit("game_move", {
+      objectId: this.game.data.objectId,
+      playerNumber: this.game.playerNumber,
+      move: "up",
+      key: key_press,
+    });
   }
 
-  moveDown() {
+  moveDown(key_press: boolean) {
+    this.key_s_press = key_press;
     //Emit DOWN
-    if (this.y < this.game.height - this.height + this.game.offSet) {
-      socket.emit("game_move", {
-        objectId: this.game.data.objectId,
-        playerNumber: this.game.playerNumber,
-        move: "down",
-      });
-    }
+    socket.emit("game_move", {
+      objectId: this.game.data.objectId,
+      playerNumber: this.game.playerNumber,
+      move: "down",
+      key: key_press,
+    });
   }
 
   point(score: number) {
@@ -64,8 +65,10 @@ export class PlayerPong {
 
   update(input: string[]) {
     if (this.game.playerNumber == 1 || this.game.playerNumber == 2) {
-      if (input.includes("w")) this.moveUp();
-      if (input.includes("s")) this.moveDown();
+      if (input.includes("w") && this.key_w_press == false) this.moveUp(true);
+      if (!(input.includes("w")) && this.key_w_press == true) this.moveUp(false);
+      if (input.includes("s") && this.key_s_press == false) this.moveDown(true);
+      if (!(input.includes("s")) && this.key_s_press == true) this.moveDown(false);
     }
   }
 
@@ -102,12 +105,16 @@ export class PlayerPong {
   drawPhoto(context: CanvasRenderingContext2D) {
     let width: number = 0;
     if (this.player == 2) width = this.game.width - 50;
+    
     try {
       context.drawImage(this.avatar, width != 0 ? width - 25 : 25, 35, 50, 50);
-    } catch {
+    }
+    catch {
       this.avatar.src = avatarDefault;
       context.drawImage(this.avatar, width != 0 ? width - 25 : 25, 35, 50, 50);
     }
+
+
     context.strokeStyle = "black";
     context.lineWidth = 3;
     context.strokeRect(width ? width - 25 : 25, 35, 50, 50);

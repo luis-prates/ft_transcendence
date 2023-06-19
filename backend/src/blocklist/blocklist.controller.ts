@@ -1,13 +1,4 @@
-import {
-	Controller,
-	Delete,
-	Get,
-	HttpCode,
-	Param,
-	ParseIntPipe,
-	Post,
-	UseGuards,
-} from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { GetUser } from '../auth/decorator';
 import { JwtGuard } from '../auth/guard';
@@ -20,20 +11,14 @@ export class BlocklistController {
 
 	// Block a user
 	@Post('block/:id')
-	blockUser(
-		@GetUser() user: User,
-		@Param('id', ParseIntPipe) blockedId: number,
-	): any {
+	blockUser(@GetUser() user: User, @Param('id', ParseIntPipe) blockedId: number): any {
 		return this.blocklistService.blockUser(user, blockedId);
 	}
 
 	// Unblock a user
-    @HttpCode(204)
+	@HttpCode(204)
 	@Delete('block/:id')
-	unblockUser(
-		@GetUser() user: User,
-		@Param('id', ParseIntPipe) blockedId: number,
-	): any {
+	unblockUser(@GetUser() user: User, @Param('id', ParseIntPipe) blockedId: number): any {
 		return this.blocklistService.unblockUser(user, blockedId);
 	}
 

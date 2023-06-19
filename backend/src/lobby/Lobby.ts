@@ -30,6 +30,7 @@ export class Lobby {
 				this.gameMaps.set(map.objectId, map);
 			}
 		});
+		console.log('ada', this.gameMaps);
 	}
 
 	public connection(socket: Socket): void {
@@ -48,15 +49,11 @@ export class Lobby {
 		socket.on(
 			'join_map',
 			function (data: any) {
-				const player = Lobby.players.find(
-					e => e.objectId == data.objectId,
-				);
+				const player = Lobby.players.find(e => e.objectId == data.objectId);
 				if (!player) {
 					return;
 				}
-				this.gameMaps
-					.get(data.map.name)
-					?.join(player, data.map?.position);
+				this.gameMaps.get(data.map.name)?.join(player, data.map?.position);
 			}.bind(this),
 		);
 	}

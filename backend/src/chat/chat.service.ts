@@ -1,9 +1,4 @@
-import {
-	BadRequestException,
-	ForbiddenException,
-	Injectable,
-	NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
@@ -51,9 +46,7 @@ export class ChatService {
 			where: { userId: user.id },
 			select: { channelId: true },
 		});
-		const channelIds = userChannels.map(
-			channelUser => channelUser.channelId,
-		);
+		const channelIds = userChannels.map(channelUser => channelUser.channelId);
 		return this.prisma.message.findMany({
 			where: {
 				channelId: {
@@ -75,26 +68,16 @@ export class ChatService {
 				createChannelDto.name === null ||
 				createChannelDto.name === '')
 		) {
-			throw new BadRequestException(
-				'Channels that are not DMs must have a name.',
-			);
+			throw new BadRequestException('Channels that are not DMs must have a name.');
 		}
 
-		if (
-			createChannelDto.channelType === 'PROTECTED' &&
-			!createChannelDto.password
-		) {
-			throw new BadRequestException(
-				'Protected channels must have a password.',
-			);
+		if (createChannelDto.channelType === 'PROTECTED' && !createChannelDto.password) {
+			throw new BadRequestException('Protected channels must have a password.');
 		}
 
 		try {
 			// Logic for public and private channels
-			if (
-				createChannelDto.channelType == 'PUBLIC' ||
-				createChannelDto.channelType == 'PRIVATE'
-			) {
+			if (createChannelDto.channelType == 'PUBLIC' || createChannelDto.channelType == 'PRIVATE') {
 				// Note: channel name has to be unique for open channels
 				newChannel = await this.prisma.channel.create({
 					data: {
@@ -132,10 +115,7 @@ export class ChatService {
 				// Note: channel name has to be unique for open channels
 				// add encryption here
 				const saltRounds = 10;
-				const hashedPassword = await bcrypt.hash(
-					createChannelDto.password,
-					saltRounds,
-				);
+				const hashedPassword = await bcrypt.hash(createChannelDto.password, saltRounds);
 
 				newChannel = await this.prisma.channel.create({
 					data: {
@@ -170,13 +150,8 @@ export class ChatService {
 			}
 
 			// Logic for DM
-			if (
-				createChannelDto.channelType == 'DM' &&
-				createChannelDto.usersToAdd.length !== 1
-			) {
-				throw new BadRequestException(
-					'DMs can only be created with one other user',
-				);
+			if (createChannelDto.channelType == 'DM' && createChannelDto.usersToAdd.length !== 1) {
+				throw new BadRequestException('DMs can only be created with one other user');
 			}
 
 			if (createChannelDto.channelType == 'DM') {
@@ -197,9 +172,7 @@ export class ChatService {
 					},
 				});
 				if (existingDM) {
-					throw new ConflictException(
-						'DM between these users already exists',
-					);
+					throw new ConflictException('DM between these users already exists');
 				}
 				// Note: no need to set channel name when creating a DM
 				newChannel = await this.prisma.channel.create({
@@ -241,15 +214,9 @@ export class ChatService {
 		} catch (error) {
 			if (error.code === 'P2002') {
 				throw new ConflictException('Channel already exists');
-			} else if (
-				error.code === 'P2025' &&
-				error.meta.cause.includes('User')
-			) {
+			} else if (error.code === 'P2025' && error.meta.cause.includes('User')) {
 				throw new NotFoundException('User not found');
-			} else if (
-				error instanceof ConflictException ||
-				error instanceof BadRequestException
-			) {
+			} else if (error instanceof ConflictException || error instanceof BadRequestException) {
 				throw error;
 			} else {
 				console.log('Error: ', error);
@@ -286,11 +253,7 @@ export class ChatService {
 		return newChannelUser;
 	}
 
-	async removeUserFromChannel(
-		channelId: number,
-		actingUserId: number,
-		removedUserId: number,
-	) {
+	async removeUserFromChannel(channelId: number, actingUserId: number, removedUserId: number) {
 		const removeUser = await this.prisma.channelUser.findUnique({
 			where: {
 				userId_channelId: {
@@ -318,13 +281,8 @@ export class ChatService {
 		});
 
 		// Prevent an admin from kicking another admin or the owner.
-		if (
-			actingUserInChannel.isAdmin &&
-			(removeUser.isAdmin || removedUserId === channel.ownerId)
-		) {
-			throw new ForbiddenException(
-				'You do not have permission to remove this user from the channel',
-			);
+		if (actingUserInChannel.isAdmin && (removeUser.isAdmin || removedUserId === channel.ownerId)) {
+			throw new ForbiddenException('You do not have permission to remove this user from the channel');
 		}
 
 		await this.prisma.channelUser.delete({
@@ -343,11 +301,7 @@ export class ChatService {
 		});
 	}
 
-	async joinChannel(
-		joinChannelDto: JoinChannelDto,
-		channelId: number,
-		user: any,
-	) {
+	async joinChannel(joinChannelDto: JoinChannelDto, channelId: number, user: any) {
 		const { password } = joinChannelDto;
 		const userId = user.id;
 		const channel = await this.prisma.channel.findUnique({
@@ -368,9 +322,7 @@ export class ChatService {
 		}
 
 		if (channel.type == 'PRIVATE') {
-			throw new ForbiddenException(
-				'Cannot join a private channel without an invite',
-			);
+			throw new ForbiddenException('Cannot join a private channel without an invite');
 		}
 
 		const channelUser = await this.prisma.channelUser.findUnique({
@@ -383,9 +335,7 @@ export class ChatService {
 		});
 
 		if (channelUser) {
-			throw new BadRequestException(
-				'User is already part of this channel',
-			);
+			throw new BadRequestException('User is already part of this channel');
 		}
 
 		await this.prisma.channelUser.create({
@@ -405,9 +355,7 @@ export class ChatService {
 		});
 
 		if (!channel) {
-			throw new NotFoundException(
-				`Channel with ID ${channelId} not found`,
-			);
+			throw new NotFoundException(`Channel with ID ${channelId} not found`);
 		}
 
 		if (channel.type == 'DM') {
@@ -553,11 +501,7 @@ export class ChatService {
 	}
 
 	// Demote admins back to normal users
-	async demoteAdmin(
-		actingUserId: number,
-		channelId: number,
-		targetUserId: number,
-	) {
+	async demoteAdmin(actingUserId: number, channelId: number, targetUserId: number) {
 		const actingUserInChannel = await this.prisma.channelUser.findUnique({
 			where: {
 				userId_channelId: {
@@ -568,9 +512,7 @@ export class ChatService {
 		});
 
 		if (!actingUserInChannel || !actingUserInChannel.isAdmin) {
-			throw new ForbiddenException(
-				'You do not have permission to demote this user',
-			);
+			throw new ForbiddenException('You do not have permission to demote this user');
 		}
 
 		const channelUser = await this.prisma.channelUser.findUnique({
@@ -626,9 +568,7 @@ export class ChatService {
 		}
 
 		if (channel.ownerId !== user.id) {
-			throw new ForbiddenException(
-				'Only the channel owner can delete the channel',
-			);
+			throw new ForbiddenException('Only the channel owner can delete the channel');
 		}
 
 		// Delete all ChannelUsers associated with the channel
@@ -656,10 +596,7 @@ export class ChatService {
 	}
 
 	// Change password of a protected channel
-	async changeChannelPassword(
-		joinChannelDto: JoinChannelDto,
-		channelId: number,
-	) {
+	async changeChannelPassword(joinChannelDto: JoinChannelDto, channelId: number) {
 		const channel = await this.prisma.channel.findUnique({
 			where: {
 				id: channelId,
@@ -675,10 +612,7 @@ export class ChatService {
 		}
 
 		const saltRounds = 10;
-		const hashedPassword = await bcrypt.hash(
-			joinChannelDto.password,
-			saltRounds,
-		);
+		const hashedPassword = await bcrypt.hash(joinChannelDto.password, saltRounds);
 
 		await this.prisma.channel.update({
 			where: {
@@ -698,9 +632,7 @@ export class ChatService {
 			select: { channelId: true },
 		});
 		// Extract the channel IDs from the ChannelUser
-		const channelIds = userChannels.map(
-			channelUser => channelUser.channelId,
-		);
+		const channelIds = userChannels.map(channelUser => channelUser.channelId);
 		return channelIds;
 	}
 
@@ -731,16 +663,13 @@ export class ChatService {
 		return channelUser.isMuted;
 	}
 
-    async isUserBlocked(senderId: number, receiverId: number): Promise<boolean> {
-        const blockRecord = await this.prisma.blocklist.findFirst({
-            where: {
-                AND: [
-                    { blockerId: receiverId },
-                    { blockedId: senderId },
-                ]
-            }
-        });
+	async isUserBlocked(senderId: number, receiverId: number): Promise<boolean> {
+		const blockRecord = await this.prisma.blocklist.findFirst({
+			where: {
+				AND: [{ blockerId: receiverId }, { blockedId: senderId }],
+			},
+		});
 
-        return !!blockRecord;
-    }
+		return !!blockRecord;
+	}
 }

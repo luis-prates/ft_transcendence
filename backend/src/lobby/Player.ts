@@ -54,10 +54,7 @@ export class Player {
 				console.log('disconnect: ' + this.objectId);
 				if (this.time && this.map) {
 					this.map.removePlayer(this);
-					Lobby.players = Lobby.players.splice(
-						Lobby.players.indexOf(this),
-						1,
-					);
+					Lobby.players = Lobby.players.splice(Lobby.players.indexOf(this), 1);
 				}
 			}, 30000);
 		});

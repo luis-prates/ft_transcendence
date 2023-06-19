@@ -26,12 +26,23 @@ const store = userStore();
 function tes() {
   console.log("objecId.value: ", objecId.value);
   store.user.id = parseInt(objecId.value);
+  store.user.name = "user_" + objecId.value;
   store.user.nickname = "user_" + objecId.value;
-  socket.emit("connection_lobby", { objectId: objecId.value.toString() });
-  setTimeout(() => {
-    Router.setRoute(Router.ROUTE_ALL);
-    Router.push("/");
-  }, 1000);
+  store.user.money = 0;
+  store.user.email = "user_" + objecId.value + "@gmail.com";
+  store
+        .loginTest()
+        .then(() => {
+        socket.emit("connection_lobby", { objectId: store.user.id.toString() });
+        setTimeout(() => {
+          Router.setRoute(Router.ROUTE_ALL);
+          Router.push("/");
+        }, 1000);
+        console.log(store.user.isLogin);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 }
 
 onMounted(() => {

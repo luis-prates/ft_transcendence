@@ -18,23 +18,37 @@ model User {
 	email					String @unique
 	hash					String
 
+    // UserProfile
 	name					String
 	nickname				String @unique
 	image					String?
+    money                   Int @default(0)
+	avatar					Int @default(0)	//Avatar in The Lobby
+
+	// Info Ping Pong
+    level                   Int @default(1)
+    xp                      Int @default(0)
+    color                   String @default("blue") // this sets the color for player name, player ball and player padel
+    tableColorEquipped      String @default("")
+    tableSkinEquipped       String @default("")
+    paddleSkinEquipped      String @default("")
+    tableSkinsOwned         String[]
+    paddleSkinsOwned        String[]
+    // gameHistory          Games[]
 
 	status					UserStatus @default(OFFLINE) // Offline, In Game, Online
 
-	// lastName String?
-
+    // Friends
 	sentFriendRequests		FriendRequest[] @relation("FriendShipRequestor")
 	receivedFriendRequests	FriendRequest[] @relation("FriendShipRequestee")
 	friends					User[] @relation("Friends")
 	friendsOf				User[] @relation("Friends")
 
-    // TODO: Add blocklist
+    // Blocked Users
     blockedUsers  Blocklist[] @relation("BlockingUsers")
     blockingUsers Blocklist[] @relation("BlockedUsers")
 
+    // Chat
     messages                Message[]
     channels                ChannelUser[]
     ownedChannels           Channel[] @relation("ChannelOwner")
