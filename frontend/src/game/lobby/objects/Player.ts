@@ -10,6 +10,7 @@ import { Profile } from "@/game/Menu/Profile";
 import { YourProfile } from "@/game/Menu/YourProfile";
 import { ConfirmButton } from "@/game/Menu/ConfirmButton";
 import { Shop } from "@/game/Menu/Shop";
+import { YourMenu } from "@/game/Menu/YourMenu";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
@@ -94,9 +95,7 @@ export class Player extends Character {
         user.infoPong.skin.paddles.push("mario" as never);
         console.log(user.infoPong);*/
 
-        /*Game.addMenu(new Profile(this).menu);*/
-        Game.instance.addMenu(new LeaderBoard().menu);
-       // Game.instance.addMenu(new YourProfile(this).menu);
+        Game.instance.addMenu(new YourProfile(this).menu);
 
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {

@@ -458,12 +458,3 @@ export class CreateGame {
     return this._menu;
   }
 }
-  //Regua
-/* 
-  ctx.strokeRect( pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3, 1);
-
-  ctx.strokeRect(pos.x, pos.y + pos.h / 2, pos.w, 1);
-  ctx.strokeRect(pos.x + pos.w / 2, pos.y, 1, pos.h);
-  ctx.strokeRect(pos.x + pos.w * 0.33, pos.y, 1, pos.h);
-  ctx.strokeRect(pos.x + pos.w * 0.66, pos.y, 1, pos.h);
-*/

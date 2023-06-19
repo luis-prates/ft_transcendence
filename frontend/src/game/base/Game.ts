@@ -2,6 +2,7 @@ import { Camera, Player, Menu, type GameObject, Map, listClass } from "@/game";
 import socket from "@/socket/Socket";
 import { userStore } from "@/stores/userStore";
 import { CreateGame } from "../Menu/CreateGame";
+import { YourMenu } from "../Menu/YourMenu";
 
 export class Game {
   public static instance: Game;
@@ -38,6 +39,8 @@ export class Game {
     this.canvas.addEventListener("click", this.mouseClick.bind(this));
     this.canvas.addEventListener("contextmenu", this.mouseClick.bind(this));
     Game.instance = this;
+    //Your Menu
+    Game.instance.addMenu(new YourMenu().menu);
     // Adicione os event listeners para os eventos de drag e drop
     this.canvas.addEventListener("dragover", (event) => event.preventDefault());
     this.canvas.addEventListener("drop", (event) => {
