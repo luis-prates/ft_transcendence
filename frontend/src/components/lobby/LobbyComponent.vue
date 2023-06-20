@@ -15,7 +15,7 @@
 
     <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoad" />
   </div>
-  <ChatComponent v-if="isLoad" style="position: absolute" />
+  <ChatComponent class="chat_component"/>
 </template>
 
 <script setup lang="ts">
@@ -92,6 +92,13 @@ function test() {
   margin: 0;
   padding: 0;
   background-color: rgb(30, 39, 210);
+}
+
+.chat_component
+{
+  width: 70%;
+  height: 60%;
+  right: 0px;
 }
 
 .menu {

@@ -18,32 +18,32 @@ export class FriendshipService {
 				status: FriendReqStatus.ACCEPTED,
 			},
 		});
-		await this.prisma.$transaction([
-			this.prisma.user.update({
-				where: {
-					id: user,
-				},
-				data: {
-					friends: {
-						connect: {
-							id: friend,
-						},
-					},
-				},
-			}),
-			this.prisma.user.update({
-				where: {
-					id: friend,
-				},
-				data: {
-					friends: {
-						connect: {
-							id: user,
-						},
-					},
-				},
-			}),
-		]);
+        await this.prisma.$transaction([
+            this.prisma.user.update({
+                where: {
+                    id: user,
+                },
+                data: {
+                    friends: {
+                        connect: {
+                            id: friend,
+                        },
+                    }
+                },
+            }),
+            this.prisma.user.update({
+                where: {
+                    id: friend,
+                },
+                data: {
+                    friends: {
+                        connect: {
+                            id: user,
+                        },
+                    },
+                },
+            }),
+        ]);
 
 		console.log(`${(await updatedFriendship).requestorName} and ${(await updatedFriendship).requesteeName} are now friends.`);
 
@@ -143,32 +143,32 @@ export class FriendshipService {
 	}
 
 	async deleteFriend(user: number, friend: number) {
-		const [deleteFriend1, deleteFriend2] = await this.prisma.$transaction([
-			this.prisma.user.update({
-				where: {
-					id: user,
-				},
-				data: {
-					friends: {
-						disconnect: {
-							id: friend,
-						},
-					},
-				},
-			}),
-			this.prisma.user.update({
-				where: {
-					id: friend,
-				},
-				data: {
-					friends: {
-						disconnect: {
-							id: user,
-						},
-					},
-				},
-			}),
-		]);
+        const [deleteFriend1, deleteFriend2] = await this.prisma.$transaction([
+            this.prisma.user.update({
+                where: {
+                    id: user,
+                },
+                data: {
+                    friends: {
+                        disconnect: {
+                            id: friend,
+                        },
+                    },
+                },
+            }),
+            this.prisma.user.update({
+                where: {
+                    id: friend,
+                },
+                data: {
+                    friends: {
+                        disconnect: {
+                            id: user,
+                        },
+                    },
+                },
+            }),
+        ]);
 
 		console.log(`${(await deleteFriend1).nickname} and ${(await deleteFriend2).nickname} are no longer friends.`);
 
@@ -195,14 +195,14 @@ export class FriendshipService {
 	}
 
 	async getFriends(user: number) {
-		const friends = this.prisma.user.findUnique({
-			where: {
-				id: user,
-			},
-			select: {
-				friends: true,
-			},
-		});
+        const friends = this.prisma.user.findUnique({
+            where: {
+                id: user,
+            },
+            select: {
+                friends: true,
+            },
+        });
 
 		return friends;
 	}

@@ -35,6 +35,10 @@ function sendMessage() {
 <style scoped lang="scss">
 .box2 {
   background-color: #444653;
+  width: 100%;
+  height: 100%;
+  padding: 0px;
+  margin: 0px;
 
   .buttom {
     button {
@@ -81,7 +85,6 @@ function sendMessage() {
     content: "⌕";
     //margin-right: 50px;
     font-size: 20px;
-    position: fixed;
     right: 6%;
     margin-top: 2%;
   }
