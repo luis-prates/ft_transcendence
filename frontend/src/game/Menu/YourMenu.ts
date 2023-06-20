@@ -1,6 +1,5 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
-import { ConfirmButton } from "./ConfirmButton";
-import { skin, TypeSkin, type ProductSkin } from "../ping_pong/Skin";
+import { LeaderBoard } from "./LeaderBoard";
 
 //Sound
 import sound_close_tab from "@/assets/audio/close.mp3";
@@ -8,15 +7,21 @@ import { userStore } from "@/stores/userStore";
 import { PaginationMenu } from "./PaginationMenu";
 
 //Images
-import battleImage from "@/assets/images/lobby/menu/battle.png";
-import leaderBoardImage from "@/assets/images/lobby/menu/leaderboard.png";
+import battleImage from "@/assets/images/lobby/menu/battle_.png";
+// import leaderBoardImage from "@/assets/images/lobby/menu/leaderboard.png";
+import leaderBoardImage from "@/assets/images/lobby/menu/trofeo.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
-import { LeaderBoard } from "./LeaderBoard";
+import { Messages } from "./Messages";
 
 
 export class YourMenu {
   private _menu = new Menu({ layer: "Global", isFocus: false });
   private background: ElementUI = this.createBackground();
+
+  private battleMenu: boolean = false;
+  private leaderBoardMenu: boolean = false;
+  private messagesMenu: boolean = false;
+
 
   private img_battle = new Image();
   private img_leaderBoard = new Image();
@@ -56,19 +61,6 @@ export class YourMenu {
         ctx.strokeStyle = borderColor;
         ctx.lineWidth = 2;
         ctx.stroke();*/
-
-        
-  //Regua
-
- /* ctx.strokeRect( pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3, 1);
-
-  ctx.strokeRect(pos.x, pos.y + pos.h / 2, pos.w, 1);
-  ctx.strokeRect(pos.x + pos.w / 2, pos.y, 1, pos.h);
-  ctx.strokeRect(pos.x + pos.w * 0.33, pos.y, 1, pos.h);
-  ctx.strokeRect(pos.x + pos.w * 0.66, pos.y, 1, pos.h);*/
-
-
-
       },
     };
     return background;
@@ -120,7 +112,7 @@ export class YourMenu {
           button.rectangle.x + button.rectangle.w * 0.25, 
           button.rectangle.y + button.rectangle.h * 0.05, 
           button.rectangle.w * 0.5, 
-          button.rectangle.h * 0.65);
+          button.rectangle.h * 0.60);
       
 
 			  ctx.fillText(label, 
@@ -131,6 +123,15 @@ export class YourMenu {
 			onClick: () => {
       if (type == "message")
       {
+        if (this.messagesMenu)
+          return ;
+        this.messagesMenu = true;
+        const confirmButton = new Messages();
+        confirmButton.show((value) => {
+          if (value == "EXIT") {
+            this.messagesMenu = false;
+          }
+        });
         //TODO
       }
       else if (type == "battle")
@@ -139,7 +140,15 @@ export class YourMenu {
       }
       else if (type == "leaderboard")
       {
-        Game.instance.addMenu(new LeaderBoard().menu);
+        if (this.leaderBoardMenu)
+          return ;
+        this.leaderBoardMenu = true;
+        const leaderBoard = new LeaderBoard();
+        leaderBoard.show((value) => {
+          if (value == "EXIT") {
+            this.leaderBoardMenu = false;
+          }
+        });
       }
   
 		},

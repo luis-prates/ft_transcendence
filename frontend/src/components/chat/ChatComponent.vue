@@ -1,8 +1,8 @@
 <template>
-  <div class="chat">
+  <!-- <div class="chat">
     <ChatComponentTest  class="chat_mensagen" />
     <ChatComponentTestList class="chat_list" />
-  </div>
+  </div> -->
 </template>
 
 <script setup lang="ts">

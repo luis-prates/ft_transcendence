@@ -15,10 +15,12 @@ export class LeaderBoard {
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
   
+  
   private user = userStore().user;
  // private getUsers = userStore().getUsers;
   private users : any | void [] = [];
-
+  private onResult: (result: any) => void = () => {};
+  
   constructor() {
     
     this.fetchUsers();
@@ -106,6 +108,7 @@ export class LeaderBoard {
       onClick: () => {
         close_tab.play();
         this.menu.close();
+        this.onResult("EXIT");
       },
     };
     return button;
@@ -207,5 +210,10 @@ export class LeaderBoard {
 
   get menu(): Menu {
     return this._menu;
+  }
+
+  public show(onResult: (result: any) => void) {
+    this.onResult = onResult;
+    Game.addMenu(this.menu);
   }
 }

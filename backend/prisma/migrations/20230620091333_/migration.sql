@@ -1,41 +1,49 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "FriendReqStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'BLOCKED', 'CANCELLED');
 
-  - You are about to drop the `friends` table. If the table is not empty, all the data it contains will be lost.
-  - Added the required column `color` to the `users` table without a default value. This is not possible if the table is not empty.
+-- CreateEnum
+CREATE TYPE "UserStatus" AS ENUM ('OFFLINE', 'IN_GAME', 'ONLINE');
 
-*/
 -- CreateEnum
 CREATE TYPE "ChannelType" AS ENUM ('PUBLIC', 'PRIVATE', 'PROTECTED', 'DM');
 
--- DropForeignKey
-ALTER TABLE "friends" DROP CONSTRAINT "friends_friendId_friendName_fkey";
+-- CreateTable
+CREATE TABLE "users" (
+    "id" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "email" TEXT NOT NULL,
+    "hash" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "nickname" TEXT NOT NULL,
+    "image" TEXT,
+    "money" INTEGER NOT NULL DEFAULT 0,
+    "avatar" INTEGER NOT NULL DEFAULT 0,
+    "level" INTEGER NOT NULL DEFAULT 1,
+    "xp" INTEGER NOT NULL DEFAULT 0,
+    "color" TEXT NOT NULL DEFAULT 'blue',
+    "tableColorEquipped" TEXT NOT NULL DEFAULT '',
+    "tableSkinEquipped" TEXT NOT NULL DEFAULT '',
+    "paddleSkinEquipped" TEXT NOT NULL DEFAULT '',
+    "tableSkinsOwned" TEXT[],
+    "paddleSkinsOwned" TEXT[],
+    "status" "UserStatus" NOT NULL DEFAULT 'OFFLINE',
 
--- DropForeignKey
-ALTER TABLE "friends" DROP CONSTRAINT "friends_userId_userName_fkey";
-
--- AlterTable
-ALTER TABLE "users" ADD COLUMN     "color" TEXT NOT NULL,
-ADD COLUMN     "level" INTEGER NOT NULL DEFAULT 1,
-ADD COLUMN     "money" INTEGER NOT NULL DEFAULT 0,
-ADD COLUMN     "paddleSkinEquipped" TEXT,
-ADD COLUMN     "paddleSkinsOwned" TEXT[],
-ADD COLUMN     "tableColorEquipped" TEXT,
-ADD COLUMN     "tableSkinEquipped" TEXT,
-ADD COLUMN     "tableSkinsOwned" TEXT[],
-ADD COLUMN     "xp" INTEGER NOT NULL DEFAULT 0;
-
--- DropTable
-DROP TABLE "friends";
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE "Blocklist" (
+CREATE TABLE "friend_requests" (
     "id" SERIAL NOT NULL,
-    "blockerId" INTEGER NOT NULL,
-    "blockedId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "requestorId" INTEGER NOT NULL,
+    "requestorName" TEXT NOT NULL,
+    "requesteeId" INTEGER NOT NULL,
+    "requesteeName" TEXT NOT NULL,
+    "status" "FriendReqStatus" NOT NULL DEFAULT 'PENDING',
 
-    CONSTRAINT "Blocklist_pkey" PRIMARY KEY ("blockerId","blockedId")
+    CONSTRAINT "friend_requests_pkey" PRIMARY KEY ("requestorId","requesteeId")
 );
 
 -- CreateTable
@@ -53,7 +61,7 @@ CREATE TABLE "Message" (
 CREATE TABLE "Channel" (
     "id" SERIAL NOT NULL,
     "name" TEXT,
-    "hash" TEXT,
+    "password" TEXT,
     "ownerId" INTEGER,
     "type" "ChannelType" NOT NULL,
 
@@ -77,6 +85,24 @@ CREATE TABLE "_Friends" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "users_id_key" ON "users"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_nickname_key" ON "users"("nickname");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_id_nickname_key" ON "users"("id", "nickname");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "friend_requests_id_key" ON "friend_requests"("id");
+
+-- CreateIndex
+CREATE INDEX "friendship_index" ON "friend_requests"("requestorId", "requesteeId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Channel_name_key" ON "Channel"("name");
 
 -- CreateIndex
@@ -86,10 +112,10 @@ CREATE UNIQUE INDEX "_Friends_AB_unique" ON "_Friends"("A", "B");
 CREATE INDEX "_Friends_B_index" ON "_Friends"("B");
 
 -- AddForeignKey
-ALTER TABLE "Blocklist" ADD CONSTRAINT "Blocklist_blockerId_fkey" FOREIGN KEY ("blockerId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "friend_requests" ADD CONSTRAINT "friend_requests_requestorId_requestorName_fkey" FOREIGN KEY ("requestorId", "requestorName") REFERENCES "users"("id", "nickname") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Blocklist" ADD CONSTRAINT "Blocklist_blockedId_fkey" FOREIGN KEY ("blockedId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "friend_requests" ADD CONSTRAINT "friend_requests_requesteeId_requesteeName_fkey" FOREIGN KEY ("requesteeId", "requesteeName") REFERENCES "users"("id", "nickname") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Message" ADD CONSTRAINT "Message_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

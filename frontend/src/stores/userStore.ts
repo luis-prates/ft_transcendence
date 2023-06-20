@@ -395,6 +395,24 @@ export const userStore = defineStore("user", () => {
     .catch((err) => console.error(err));
   }
   
+  //TODO
+  async function rejectFriendRequest(userId: number) {
+
+    const options = {
+      method: "POST",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+    
+    console.log("my id: ", user.id, " your id: ", userId);
+    console.log(options);
+   
+    await fetch(env.BACKEND_PORT + "/friendship/send/" + userId, options)
+    .then(async function (response: any) {
+      user.friendsRequests.push(await response.json());
+      console.log(user.friendsRequests);
+    })
+    .catch((err) => console.error(err));
+  }
 
   return { user, login, loginTest, 
     
@@ -404,5 +422,5 @@ export const userStore = defineStore("user", () => {
     //Friends
     getFriends, getFriendRequests, 
     //Send Request Friend
-    sendFriendRequest, cancelFriendRequest};
+    sendFriendRequest, acceptFriendRequest, cancelFriendRequest, rejectFriendRequest};
 });
