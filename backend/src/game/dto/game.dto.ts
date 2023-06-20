@@ -13,7 +13,7 @@ import {
 	ValidateNested,
 } from 'class-validator';
 
-class GameStatsDto {
+export class GameStatsDto {
 	@IsOptional()
 	@IsNotEmpty()
 	@IsInt()

@@ -190,8 +190,8 @@ enum UserStatus {
 
 enum GameStatus {
 	NOT_STARTED
-	STARTED
-	ENDED
+	IN_PROGESS
+	FINISHED
 }
 
 // !TODO: needs confirmation

@@ -4,10 +4,8 @@ import { Ball } from './Ball';
 import { Player_Pong } from './PlayerPong';
 import { type gameRequest, type playerInfo } from './SocketInterface';
 import { GameService } from '../game/game.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { ConfigService } from '@nestjs/config';
-import { PlayerService } from '../player/player.service';
 import { Server } from 'socket.io';
+import { GameStatus } from '@prisma/client';
 
 export enum Status {
 	Waiting,
@@ -44,10 +42,11 @@ export class GameClass {
 
 	private readonly logger = new Logger(GameClass.name);
 	private gameServer: Server;
+	private gameService: GameService;
 
 	constructor(
 		gameResquest: gameRequest,
-		gameServer: Server,
+		gameService: GameService,
 		onRemove: Function,
 	) {
 		this.data = gameResquest;
@@ -55,7 +54,9 @@ export class GameClass {
 		this.ball = new Ball(this);
 		this.bot = gameResquest.bot ? gameResquest.bot : this.bot;
 		this.onRemove = onRemove;
-		this.gameServer = gameServer;
+
+		this.gameServer = gameService.getServer();
+		this.gameService = gameService;
 	}
 
 	//Game Loop 1000 milesecond (1second) for 60 fps
@@ -90,6 +91,9 @@ export class GameClass {
 	}
 
 	emitStartGame() {
+		this.gameService.updateGame(this.data.objectId, {
+			status: GameStatus.IN_PROGESS,
+		});
 		this.player1.socket.emitToGame('start_game', {
 			player: 1,
 			status: Status.Starting,
@@ -180,44 +184,22 @@ export class GameClass {
 		//console.log('1: ', this.player1.score, ' 2:', this.player2.score);
 	}
 	//End Game
+	//! Send game stats to the client
 	endGame(playerNumber: number) {
 		if (
 			(playerNumber == 1 || playerNumber == 2) &&
 			this.status != Status.Finish
 		) {
 			this.updateStatus(Status.Finish);
-			if (playerNumber === 1) {
-				this.player1.socket.emitToGame('end_game', {
-					objectId: this.data.objectId,
-					result: 'You Win!',
-				});
-				if (this.player2 && this.bot == false) {
-					this.player2.socket.emitToGame('end_game', {
-						objectId: this.data.objectId,
-						result: 'You Lose!',
-					});
-				}
-				this.emitWatchers('end_game', {
-					objectId: this.data.objectId,
-					result: this.player1.nickname + ' Win!',
-				});
-			} else if (playerNumber === 2) {
-				this.player1.socket.emitToGame('end_game', {
-					objectId: this.data.objectId,
-					result: 'You Lose!',
-				});
-				if (this.player2 && this.bot == false) {
-					this.player2.socket.emitToGame('end_game', {
-						objectId: this.data.objectId,
-						result: 'You Win!',
-					});
-				}
-				this.emitWatchers('end_game', {
-					objectId: this.data.objectId,
-					result: this.player2.nickname + ' Win!',
-				});
-			}
 			//INSERT IN DATABASE
+			this.logger.debug('Game End');
+
+			if (playerNumber === 1) {
+				this.updateGameStatsForWinner(this.player1, this.player2);
+			} else if (playerNumber === 2) {
+				this.updateGameStatsForWinner(this.player2, this.player1);
+			}
+
 			this.player1?.socket.offGame('game_move');
 			if (this.player2 != null && this.bot == false) {
 				this.player2?.socket.offGame('game_move');
@@ -226,6 +208,44 @@ export class GameClass {
 			this.onRemove();
 		}
 	}
+
+	private updateGameStatsForWinner(winner: Player_Pong, loser: Player_Pong) {
+		if (winner.player_n !== 3) {
+			winner.socket.emitToGame('end_game', {
+				objectId: this.data.objectId,
+				result: 'You Win!',
+			});
+		}
+		if (loser.player_n !== 3) {
+			loser.socket.emitToGame('end_game', {
+				objectId: this.data.objectId,
+				result: 'You Lose!',
+			});
+		}
+		this.emitWatchers('end_game', {
+			objectId: this.data.objectId,
+			result: winner.nickname + ' Win!',
+		});
+		this.logger.debug(`Game End. Winner player ${winner.nickname}`);
+
+		this.updateGameStats({
+			status: GameStatus.FINISHED,
+			gameStats: {
+				winnerId: winner.userId,
+				winnerName: winner.nickname,
+				winnerScore: winner.score,
+				loserId: loser.userId,
+				loserName: loser.nickname,
+				loserScore: loser.score,
+			},
+		});
+	}
+
+	async updateGameStats(body: any) {
+		this.logger.debug(`Updating gameStats with ${body}`);
+		await this.gameService.updateGame(this.data.objectId, body);
+	}
+
 	//Update Status and Emit for ALL
 	updateStatus(status: number) {
 		if (this.status != status) {
@@ -236,9 +256,6 @@ export class GameClass {
 	}
 	//Make the Countdown and Emit for ALL
 	countdown(seconds: number) {
-		console.log(seconds);
-		this.logger.debug(`GamePong data ${this.data}`);
-
 		if (seconds > 0) {
 			this.emitAll('game_counting', seconds);
 

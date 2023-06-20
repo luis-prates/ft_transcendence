@@ -17,6 +17,7 @@ export class Player_Pong {
 	fpsUpdate = 0;
 	color: string;
 	skin: string;
+	userId: number;
 
 	constructor(
 		game: GameClass,
@@ -39,6 +40,7 @@ export class Player_Pong {
 		this.avatar = info.avatar;
 		this.color = info.color;
 		this.skin = info.skin;
+		this.userId = info.userId;
 	}
 
 	moveUp() {

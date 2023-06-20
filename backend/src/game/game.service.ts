@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { GameStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameDto } from './dto';
 import { EventEmitter } from 'events';
@@ -57,7 +57,7 @@ export class GameService {
 		body.gameRequest.objectId = game.id;
 		// new_game equivalent
 		this.games.push(
-			new GameClass(body.gameRequest, this.server, () => {
+			new GameClass(body.gameRequest, this, () => {
 				// this.events.emit('gameEnded', game);
 				// remove game from games array
 				this.games = this.games.filter(
@@ -97,15 +97,15 @@ export class GameService {
 		}
 		this.addGameUser(info.objectId, info);
 		game.entry_game(player, isPlayer, info);
-		if (game.bot || game.player2) {
-			this.updateGame(game.data.objectId, {
-				status: 'STARTED',
-			});
-		}
 	}
 
 	async updateGame(gameId: string, body?: any) {
 		try {
+			this.logger.debug(
+				`updateGame for game ${gameId} is called with body: ${JSON.stringify(
+					body,
+				)}`,
+			);
 			const game = await this.prisma.game.update({
 				where: {
 					id: gameId,
@@ -121,6 +121,7 @@ export class GameService {
 
 			return game;
 		} catch (error) {
+			this.logger.error(error);
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				if (error.code === 'P2016') {
 					throw new ForbiddenException('Game not found.');
