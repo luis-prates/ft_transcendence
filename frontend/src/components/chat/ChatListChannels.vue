@@ -1,11 +1,13 @@
 <template>
-  <div class="item">
-    <div style="width: 70px">
-      <img class="avatar" :src="props.channel.avatar || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541'" />
-    </div>
-    <div style="width: 70px; font-family: monospace">
-      <h3 class="name">{{ props.channel.name }}</h3>
-      <!-- <h5 class="status"><span :class="props.channel.status"></span>{{ props.channel.status }}</h5> -->
+  <div class="parent-container">
+    <div class="d-flex item-box">
+      <div class="img_cont">
+        <img :src="props.channel.avatar !== '' ? props.channel.avatar : 'https://therichpost.com/wp-content/uploads/2020/06/avatar2.png'" class="user_img" />
+      </div>
+      <div class="user_info">
+        <span>{{ props.channel.name }}</span>
+        <p>{{ props.channel.users.length + " Users"}}</p>
+      </div>
     </div>
   </div>
 </template>

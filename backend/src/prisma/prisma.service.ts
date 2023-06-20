@@ -15,12 +15,12 @@ export class PrismaService extends PrismaClient {
 		});
 	}
 
-    async onModuleInit() {
+	async onModuleInit() {
 		await this.setupDb();
 	}
 
-    // On startup
-    async setupDb() {
+	// On startup
+	async setupDb() {
 		const globalChannelName = 'global';
 
 		const existingGlobalChannel = await this.channel.findUnique({
@@ -30,26 +30,33 @@ export class PrismaService extends PrismaClient {
 		if (!existingGlobalChannel) {
 			await this.channel.create({
 				data: {
-                    id: 1,
+					// id: 1, // we want this for normal mode but not for testing
 					name: globalChannelName,
 					type: ChannelType.PUBLIC,
 				},
 			});
+			console.log('Global channel created');
 		}
 	}
 
-    // When shutting down
+	// When shutting down
 	cleanDb() {
-		return (this.$transaction([
-            // friend requests
-            this.friendRequest.deleteMany(),
+		return this.$transaction([
+			// friend requests
+			this.friendRequest.deleteMany(),
 
-            // channel
-            this.channelUser.deleteMany(),
-            this.channel.deleteMany(),
+			// blocklist
+			this.blocklist.deleteMany(),
 
-            // user
+			// messages
+			this.message.deleteMany(),
+
+			// channel
+			this.channelUser.deleteMany(),
+			this.channel.deleteMany(),
+
+			// user
 			this.user.deleteMany(),
-		]));
+		]);
 	}
 }

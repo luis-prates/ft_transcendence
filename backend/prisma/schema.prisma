@@ -44,8 +44,11 @@ model User {
 	friends					User[] @relation("Friends")
 	friendsOf				User[] @relation("Friends")
 
-    // TODO: Add blocklist
+    // Blocked Users
+    blockedUsers  Blocklist[] @relation("BlockingUsers")
+    blockingUsers Blocklist[] @relation("BlockedUsers")
 
+    // Chat
     messages                Message[]
     channels                ChannelUser[]
     ownedChannels           Channel[] @relation("ChannelOwner")
@@ -72,6 +75,16 @@ model FriendRequest {
 	@@map("friend_requests")
 }
 
+model Blocklist {
+    id           Int @default(autoincrement())
+    blockerId    Int
+    blocker      User @relation("BlockingUsers", fields: [blockerId], references: [id])
+    blockedId    Int
+    blocked      User @relation("BlockedUsers", fields: [blockedId], references: [id])
+    createdAt    DateTime @default(now())
+    @@id([blockerId, blockedId])
+}
+
 model Message {
     id                      Int @id @default(autoincrement())
     content                 String
@@ -85,7 +98,7 @@ model Message {
 model Channel {
     id                      Int @id @default(autoincrement())
     name                    String? @unique
-    password                String?
+    hash                    String?
     messages                Message[]
     users                   ChannelUser[]
     ownerId                 Int?

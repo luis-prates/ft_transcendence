@@ -12,30 +12,30 @@ export class UserController {
 
 	@Get('me')
 	getMe(@GetUser() user: User) {
-		return (user);
+		return user;
 	}
 
 	/*@Patch()
 	editUser(@GetUser('id') userId:number, @Body() dto: UserDto) {
 		return (this.userService.editUser(userId, dto));
 	}*/
-	
+
 	@Patch('update_profile')
 	updateProfile(@GetUser('id') userId: number, @Body() dto: UserDto) {
-		console.log("update_profile:", dto);
-		return (this.userService.updateProfile(userId, dto));
+		console.log('update_profile:', dto);
+		return this.userService.updateProfile(userId, dto);
 	}
 
 	@Patch('buy_skin')
 	buySkin(@GetUser('id') userId: number, @Body() dto: UserBuySkinDto) {
 		console.log(dto);
-		return (this.userService.buySkin(userId, dto));
+		return this.userService.buySkin(userId, dto);
 	}
 
 	@Patch('update_table_skin')
 	updateSkinTable(@GetUser('id') userId: number, @Body() dto: UserUpdateSkinTableDto) {
-		console.log("updateSkinTable:", dto);
-		return (this.userService.updateSkinTable(userId, dto));
+		console.log('updateSkinTable:', dto);
+		return this.userService.updateSkinTable(userId, dto);
 	}
 
 	@Get('users')

@@ -9,43 +9,43 @@ import { JwtGuard } from '../auth/guard';
 export class FriendshipController {
 	constructor(private friendshipService: FriendshipService) {}
 
-    @HttpCode(201)
+	@HttpCode(201)
 	@Post('accept/:id')
 	acceptFriendRequest(@GetUser() user: User, @Param('id', ParseIntPipe) friend: number) {
-		return (this.friendshipService.acceptFriendRequest(user.id, friend));
+		return this.friendshipService.acceptFriendRequest(user.id, friend);
 	}
 
-    @HttpCode(204)
+	@HttpCode(204)
 	@Delete('reject/:id')
 	rejectFriendRequest(@GetUser() user: User, @Param('id', ParseIntPipe) friend: number) {
-		return (this.friendshipService.rejectFriendRequest(user.id, friend));
+		return this.friendshipService.rejectFriendRequest(user.id, friend);
 	}
 
-    @HttpCode(201)
+	@HttpCode(201)
 	@Post('send/:id')
 	sendFriendRequest(@GetUser() user: User, @Param('id', ParseIntPipe) friend: number) {
-		return (this.friendshipService.sendFriendRequest(user, friend));
+		return this.friendshipService.sendFriendRequest(user, friend);
 	}
 
-    @HttpCode(204)
+	@HttpCode(204)
 	@Delete('cancel/:id')
 	cancelFriendRequest(@GetUser() user: User, @Param('id', ParseIntPipe) friend: number) {
-		return (this.friendshipService.cancelFriendRequest(user.id, friend));
+		return this.friendshipService.cancelFriendRequest(user.id, friend);
 	}
 
-    @HttpCode(204)
+	@HttpCode(204)
 	@Delete('unfriend/:id')
 	deleteFriend(@GetUser() user: User, @Param('id', ParseIntPipe) friend: number) {
-		return (this.friendshipService.deleteFriend(user.id, friend));
+		return this.friendshipService.deleteFriend(user.id, friend);
 	}
 
 	@Get('friends')
 	getFriends(@GetUser() user: User) {
-		return (this.friendshipService.getFriends(user.id));
+		return this.friendshipService.getFriends(user.id);
 	}
 
 	@Get('requests')
 	getFriendRequests(@GetUser() user: User) {
-		return (this.friendshipService.getFriendRequests(user.id));
+		return this.friendshipService.getFriendRequests(user.id);
 	}
 }

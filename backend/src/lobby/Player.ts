@@ -1,24 +1,24 @@
 import { Lobby } from './Lobby';
 import { GameMap } from './GameMap';
 import { Socket } from 'socket.io';
-export interface PathNode {
+export type PathNode = {
 	x: number;
 	y: number;
 	direction: number;
-}
+};
 
-export interface PlayerData {
+export type PlayerData = {
 	className: string;
 	name: string;
 	objectId: number;
 	x: number;
 	y: number;
 	animation: { name: string; isStop: boolean };
-}
+};
 
 export class Player {
 	private _socket: Socket;
-	avatar: string = '';
+	avatar = '';
 	name: string = 'name_' + Date.now();
 	map: GameMap | null = null;
 	data: PlayerData = {
@@ -29,7 +29,7 @@ export class Player {
 		y: 64,
 		animation: { name: 'walk_bottom', isStop: true },
 	};
-	time: number = 0;
+	time = 0;
 
 	constructor(socket: Socket, objectId: number) {
 		this.setSocket(socket);
