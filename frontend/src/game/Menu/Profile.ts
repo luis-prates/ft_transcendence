@@ -30,6 +30,8 @@ export class Profile {
 	private isYourFriend: boolean = false;
 	private heSendARequestFriend: boolean = false;
 
+	private isBlocked : boolean = false;
+
 	//private matche_pagination: PaginationMenu;
 
 	constructor(player_id: number) {
@@ -67,6 +69,11 @@ export class Profile {
 			
 			this.menu.add(this.background, this.createButton("challenge", 3.25, 26, "Challenge", 9));
 			this.menu.add(this.background, this.createButton("send_message", 13.25, 26, "Send Message", 9));
+
+			index = this.your_user.block.findIndex((block) => block.blockedId == this.user.id);
+			this.isBlocked = index == -1 ? false : true;
+			console.log("is Block: ", this.isBlocked)
+
 			this.menu.add(this.background, this.createButton("block", 23.25, 26, "Block", 9));
 		
 			//TODO Match
@@ -216,6 +223,9 @@ export class Profile {
 		rectangle: { x: x + "%", y: y + "%", w: width + "%", h: "4.5%" },
 		draw: (ctx: CanvasRenderingContext2D) => {
 		
+			if (type == "block")
+				label = this.isBlocked ? "Unblock" : "Block";
+
 			ctx.fillStyle = "white";
 			ctx.strokeStyle = color;
 			ctx.lineWidth = 2;
@@ -261,10 +271,17 @@ export class Profile {
 			  	//TODO send priv message
 			}
 			else if (type == "block") {
-			  	//TODO block or unblock
-				//TODO DATABASE 
-				//Post_User_Mute(user, true)
-				//Post_User_Mute(user, false)
+
+				if (this.isBlocked)
+				{
+					userStore().unblockUser(this.user.id);
+					this.isBlocked = false;
+				}
+				else
+				{
+					userStore().blockUser(this.user.id);
+					this.isBlocked = true;
+				}
 			}
 		},
 	  };
@@ -279,7 +296,6 @@ export class Profile {
 		yourFriendImg.src = yourFriendImage;
 		const msgImg = new Image();
 		msgImg.src = messageImage;
-	  	
 		const button: ElementUI = {
 			type: type,
 			rectangle: { x: x + "%", y: y + "%", w: "4%", h: "2.5%" },
@@ -287,6 +303,7 @@ export class Profile {
 				ctx.fillStyle = this.isYourFriend ? "orange" : (this.heSendARequestFriend ? "grey" : (label == "+" ? "green" : "red"));
 				ctx.strokeStyle = "black";
 				ctx.lineWidth = 2;
+				const labelFriend = this.isYourFriend ? "Remove Friend" : (this.heSendARequestFriend ? "You have a Request" : (label == "+" ? "Add Friend" : "Cancel Request"));
 
 				
 				this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
@@ -307,10 +324,15 @@ export class Profile {
 				ctx.fillStyle = "black";
 				ctx.font = "10px 'Press Start 2P', cursive";
 
-				if (this.heSendARequestFriend && msgImg.complete)
-					ctx.drawImage(msgImg, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.5, button.rectangle.y + button.rectangle.h * 0.05, button.rectangle.w * 0.4, button.rectangle.h * 0.925);
+				if (this.heSendARequestFriend)
+				{
+					if (msgImg.complete)
+						ctx.drawImage(msgImg, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.5, button.rectangle.y + button.rectangle.h * 0.05, button.rectangle.w * 0.4, button.rectangle.h * 0.925);
+				}
 				else
 					ctx.fillText(label, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.7, button.rectangle.y + button.rectangle.h / 2 + 6);
+			
+				ctx.fillText(labelFriend, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 1.1, button.rectangle.y + button.rectangle.h / 2 + 6, button.rectangle.w * 1.25);
 			},
 			onClick: () => {
 

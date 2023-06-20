@@ -10,6 +10,11 @@ enum UserStatus {
 	ONLINE = "ONLINE",
 }
 
+export interface Block {
+  blockedId: number;
+  blockerId: number;
+}
+
 export interface Friendship {
   createdAt: string;
   id: number;
@@ -60,7 +65,7 @@ export interface User {
   money: number;
   friends: any,
   friendsRequests: Friendship[],
-  blocks: any,
+  block: Block[],
 }
 
 export const userStore = defineStore("user", () => {
@@ -103,7 +108,7 @@ export const userStore = defineStore("user", () => {
     },
     friends: Array(),
     friendsRequests: Array(),
-    blocks: Array(),
+    block: Array(),
   });
 
   async function login(authorizationCode: string | undefined) {
@@ -192,6 +197,7 @@ export const userStore = defineStore("user", () => {
     user.isLogin = true;
     getFriends();
     getFriendRequests();
+    getBlockedUsers();
     // .finally(() => window.location.href = window.location.origin);
   }
 
@@ -358,7 +364,6 @@ export const userStore = defineStore("user", () => {
     .catch((err) => console.error(err));
   }
 
-  //TODO
   async function cancelFriendRequest(userId: number) {
 
     const options = {
@@ -425,6 +430,57 @@ export const userStore = defineStore("user", () => {
     .catch((err) => console.error(err));
   }
 
+  async function getBlockedUsers() {
+
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+   
+    return await axios
+      .get(env.BACKEND_PORT + "/blocklist/", options)
+      .then(function (response: any) {
+        console.log("Block: " , response.data)
+        user.block = response.data;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  async function blockUser(userId: number) {
+
+    const options = {
+      method: "POST",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+   
+    await fetch(env.BACKEND_PORT + "/blocklist/block/" + userId, options)
+    .then(async function (response: any) {
+      user.friends.push(await response.json());
+      console.log(user.friends);
+    })
+    .catch((err) => console.error(err));
+  }
+  
+  async function unblockUser(userId: number) {
+
+    const options = {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+   
+    await fetch(env.BACKEND_PORT + "/blocklist/block/" + userId, options)
+    .then(async function (response: any) {
+      
+      const index = user.block.findIndex((block) => block == userId);
+      if (index !== -1) user.friendsRequests.splice(index, 1);
+      console.log("Block: ", userId, ": ", user.block)
+    })
+    .catch((err) => console.error(err));
+  }
+
   return { user, login, loginTest, 
     
     //User Information
@@ -434,5 +490,9 @@ export const userStore = defineStore("user", () => {
     getFriends, getFriendRequests, 
 
     //Send Request Friend
-    sendFriendRequest, acceptFriendRequest, cancelFriendRequest, rejectFriendRequest, deleteFriend};
+    sendFriendRequest, acceptFriendRequest, cancelFriendRequest, rejectFriendRequest, deleteFriend,
+
+    //Block
+    getBlockedUsers, blockUser, unblockUser
+  };
 });

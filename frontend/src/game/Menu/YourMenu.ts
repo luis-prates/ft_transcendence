@@ -75,6 +75,9 @@ export class YourMenu {
     else if (type == "leaderboard")
       img = this.img_leaderBoard;
 
+    const numberOfFriendRequest = this.user.friendsRequests.filter((friendship) => friendship.requesteeId === this.user.id).length;
+    let notification = numberOfFriendRequest == 0 ? "" : (numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99" );
+
 	  const button: ElementUI = {
 		type: type,
 		rectangle: { x: x + "%", y: y + "%", w: "4%", h: "7%" },
@@ -113,7 +116,18 @@ export class YourMenu {
           button.rectangle.y + button.rectangle.h * 0.05, 
           button.rectangle.w * 0.5, 
           button.rectangle.h * 0.60);
+
+        
+        if (type == "message")
+        {
+          ctx.fillStyle = "red";
+  			  ctx.fillText(notification, 
+            button.rectangle.x + button.rectangle.w * 0.60, 
+            button.rectangle.y + button.rectangle.h * 0.6, 
+            button.rectangle.w * 0.16);
+        }
       
+        ctx.fillStyle = "black";
 
 			  ctx.fillText(label, 
 			  button.rectangle.x + button.rectangle.w * 0.1 + offset,
@@ -123,8 +137,9 @@ export class YourMenu {
 			onClick: () => {
       if (type == "message")
       {
-        if (this.messagesMenu)
+        if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
           return ;
+        notification = "";
         this.messagesMenu = true;
         const confirmButton = new Messages();
         confirmButton.show((value) => {
@@ -132,15 +147,16 @@ export class YourMenu {
             this.messagesMenu = false;
           }
         });
-        //TODO
       }
       else if (type == "battle")
       {
+        if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
+          return ;
         //Todo 
       }
       else if (type == "leaderboard")
       {
-        if (this.leaderBoardMenu)
+        if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
           return ;
         this.leaderBoardMenu = true;
         const leaderBoard = new LeaderBoard();
@@ -150,7 +166,6 @@ export class YourMenu {
           }
         });
       }
-  
 		},
 	  };
 	  return button;
