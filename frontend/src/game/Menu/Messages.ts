@@ -21,6 +21,7 @@ export class Messages {
   private functions = userStore();
  // private getUsers = userStore().getUsers;
   private friendRequests : any | void [] = [];
+  private response: any | void [] = [];
   private onResult: (result: any) => void = () => {};
   
   constructor() {
@@ -47,7 +48,7 @@ export class Messages {
 
       this.friendRequests.forEach((request: Friendship, index: number) => {
         if ((index == 0 ? index + 1 : index) % 8 == 0) page++;
-  
+        this.response[index] = -1;
         const i = index - page * this.pagination_request.max_for_page;
           
         this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, request.requestorName, request.requestorId));
@@ -143,7 +144,7 @@ export class Messages {
           invite.enable = true;
         
         ctx.font = "bold 18px Arial";
-        ctx.fillStyle = "gold";
+        ctx.fillStyle = this.response[index] == -1 ? "gold" : (this.response[index] == 1 ? "green" : "red");
         ctx.strokeStyle = "black";
         ctx.lineWidth = 2;
 
@@ -157,6 +158,7 @@ export class Messages {
 		    //Nickname
 		    ctx.strokeText(nickname, invite.rectangle.x + invite.rectangle.x * 0.025, invite.rectangle.y + invite.parent?.rectangle.y * 0.225, invite.rectangle.w * 0.375);
         ctx.fillText(nickname, invite.rectangle.x + invite.rectangle.x * 0.025, invite.rectangle.y + invite.parent?.rectangle.y * 0.225, invite.rectangle.w * 0.375);
+        ctx.lineWidth = 2;
       },
       onClick: () => {
         if (!(this.pagination_request.isIndexInCurrentPage(index))) return ;
@@ -182,6 +184,8 @@ export class Messages {
         }
         if (!button.enable)
           button.enable = true;
+        if (this.response[index] > -1)
+          button.visible = false;
 
         ctx.fillStyle = label == "Accept" ? "green" : "red";
         ctx.strokeStyle = "black";
@@ -199,9 +203,15 @@ export class Messages {
 
         close_tab.play();
         if (button.type == "Accept")
+        {
           this.functions.acceptFriendRequest(id);
+          this.response[index] = 1;
+        }
         else if (button.type == "Reject")
+        {
           this.functions.rejectFriendRequest(id);
+          this.response[index] = 0;
+        }
       },
     };
     return button;

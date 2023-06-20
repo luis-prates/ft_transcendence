@@ -315,7 +315,7 @@ export const userStore = defineStore("user", () => {
 
       // axios.request(options)
       .then(function (response: any) {
-        console.log("Friends: " , response.data)
+        console.log("Friends: " , response.data.friends)
         user.friends = response.data.friends;
         return response.data;
       })
@@ -376,40 +376,51 @@ export const userStore = defineStore("user", () => {
     .catch((err) => console.error(err));
   }
 
-  //TODO
   async function acceptFriendRequest(userId: number) {
 
     const options = {
       method: "POST",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
-    
-    console.log("my id: ", user.id, " your id: ", userId);
-    console.log(options);
    
-    await fetch(env.BACKEND_PORT + "/friendship/send/" + userId, options)
+    await fetch(env.BACKEND_PORT + "/friendship/accept/" + userId, options)
     .then(async function (response: any) {
-      user.friendsRequests.push(await response.json());
-      console.log(user.friendsRequests);
+      user.friends.push(await response.json());
+      console.log(user.friends);
     })
     .catch((err) => console.error(err));
   }
   
-  //TODO
   async function rejectFriendRequest(userId: number) {
 
     const options = {
-      method: "POST",
+      method: "DELETE",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
-    
-    console.log("my id: ", user.id, " your id: ", userId);
-    console.log(options);
    
-    await fetch(env.BACKEND_PORT + "/friendship/send/" + userId, options)
+    await fetch(env.BACKEND_PORT + "/friendship/reject/" + userId, options)
     .then(async function (response: any) {
-      user.friendsRequests.push(await response.json());
-      console.log(user.friendsRequests);
+      
+      const index = user.friendsRequests.findIndex((friendship) => friendship.requestorId == userId);
+      if (index !== -1) user.friendsRequests.splice(index, 1);
+      console.log("Reject: ", userId, ": ", user.friendsRequests)
+    })
+    .catch((err) => console.error(err));
+  }
+  
+  async function deleteFriend(userId: number) {
+
+    const options = {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+   
+    await fetch(env.BACKEND_PORT + "/friendship/unfriend/" + userId, options)
+    .then(async function (response: any) {
+      
+			const index = user.friends.findIndex((friendship) => friendship.id === userId);
+      if (index !== -1) user.friendsRequests.splice(index, 1);
+      console.log("Unfriend: ", userId, ": ", user.friendsRequests)
     })
     .catch((err) => console.error(err));
   }
@@ -421,6 +432,7 @@ export const userStore = defineStore("user", () => {
 
     //Friends
     getFriends, getFriendRequests, 
+
     //Send Request Friend
-    sendFriendRequest, acceptFriendRequest, cancelFriendRequest, rejectFriendRequest};
+    sendFriendRequest, acceptFriendRequest, cancelFriendRequest, rejectFriendRequest, deleteFriend};
 });
