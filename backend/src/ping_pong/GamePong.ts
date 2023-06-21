@@ -169,6 +169,8 @@ export class GameClass {
 	}
 	//When one of the Players make a Point
 	makePoint(playerNumber: number) {
+		this.player1.reset_keys();
+		this.player2.reset_keys();
 		this.emitAll('game_update_point', {
 			objectId: this.data.objectId,
 			playerNumber: playerNumber,
@@ -308,15 +310,19 @@ export class GameClass {
 		if (this.status == Status.InGame) {
 			if (e.playerNumber == 1) {
 				if (e.move == 'up') {
-					this.player1.moveUp();
+					this.player1.up =
+						e.key != this.player1.up ? e.key : this.player1.up;
 				} else if (e.move == 'down') {
-					this.player1.moveDown();
+					this.player1.down =
+						e.key != this.player1.down ? e.key : this.player1.down;
 				}
 			} else if (e.playerNumber == 2) {
 				if (e.move == 'up') {
-					this.player2.moveUp();
+					this.player2.up =
+						e.key != this.player2.up ? e.key : this.player2.up;
 				} else if (e.move == 'down') {
-					this.player2.moveDown();
+					this.player2.down =
+						e.key != this.player2.down ? e.key : this.player2.down;
 				}
 			}
 		}

@@ -21,7 +21,6 @@ export class RolesGuard implements CanActivate {
 		}
 
 		const request = context.switchToHttp().getRequest();
-		console.log(request.headers);
 		const userId = request.user?.id;
 		const channelId = Number(request.params['channelId']);
 

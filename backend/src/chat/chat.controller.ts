@@ -133,6 +133,17 @@ export class ChatController {
 		return this.chatService.muteUser(Number(channelId), Number(userId));
 	}
 
+	// Unmute user
+	@Post(':channelId/unmute/:userId')
+	@UseGuards(RolesGuard)
+	@Roles('admin', 'owner')
+	async unmuteUser(
+		@Param('channelId') channelId: string,
+		@Param('userId') userId: string,
+	) {
+		return this.chatService.unmuteUser(Number(channelId), Number(userId));
+	}
+
 	// Make someone admin if you are the owner
 	@Post(':channelId/admin/:userId')
 	@UseGuards(RolesGuard)
@@ -157,6 +168,20 @@ export class ChatController {
 			Number(req.user.id),
 			Number(channelId),
 			Number(userId),
+		);
+	}
+
+	// Change channel password
+	@Post(':channelId/password')
+	@UseGuards(RolesGuard)
+	@Roles('admin', 'owner')
+	async changePassword(
+		@Param('channelId') channelId: string,
+		@Body() joinChannelDto: JoinChannelDto,
+	) {
+		return this.chatService.changeChannelPassword(
+			joinChannelDto,
+			Number(channelId),
 		);
 	}
 }

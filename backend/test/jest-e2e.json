@@ -9,5 +9,6 @@
     "testRegex": "(/__tests__/.*|(\\.|/)(e2e-spec))\\.ts?$",
     "transform": {
         "^.+\\.(t|j)s$": "ts-jest"
-    }
+    },
+    "testTimeout": 2500
 }

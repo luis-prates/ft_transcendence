@@ -1,25 +1,29 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
 import { ConfirmButton } from "./ConfirmButton";
-import { Skin, TypeSkin, type ProductSkin } from "../ping_pong/Skin";
+import { skin, TypeSkin, type ProductSkin } from "../ping_pong/Skin";
 
 //Sound
 import sound_caching from "@/assets/audio/caching.mp3";
 import sound_close_tab from "@/assets/audio/close.mp3";
 import { userStore } from "@/stores/userStore";
+import { PaginationMenu } from "./PaginationMenu";
 
 export class Shop {
   private _menu = new Menu({ layer: "Global", isFocus: true });
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
-  private products = new Skin();
+  private products = skin;
   private user = userStore().user;
+  private buy_skin = userStore().buy_skin;
   private yourMoney: number = 0;
+  private pagination_shop: PaginationMenu;
 
   constructor() {
+    this.pagination_shop = new PaginationMenu(this.products.skins, 15, 5);
     this.menu.add(this.background);
     this.menu.add(this.createButtonExit(10.5, 11));
     this.createAll();
-    this.yourMoney = this.user.wallet;
+    this.yourMoney = this.user.money;
   }
 
   private createBackground(): ElementUI {
@@ -40,23 +44,61 @@ export class Shop {
     const paddingX = 6;
     const paddingY = 9;
 
-    this.products.skins.forEach((skin, index) => {
-    // Loop para desenhar os quadrados de produtos
-      const squareX = 10 + 3 + (index % 5) * (squareW + paddingX);
-      const squareY = 10 + paddingY + Math.floor(index / 5) * (squareH + paddingY);
+    let page = 0;
 
-      this.menu.add(this.createProduct(skin, squareX, squareY));
+    this.products.skins.forEach((skin, index) => {
+      if ((index == 0 ? index + 1 : index) % 15 == 0) page++;
+
+      const i = index - page * this.pagination_shop.max_for_page;
+
+      // Loop para desenhar os quadrados de produtos
+      const squareX = 10 + 3 + (i % this.pagination_shop.max_for_line) * (squareW + paddingX);
+      const squareY = 10 + paddingY + Math.floor(i / this.pagination_shop.max_for_line) * (squareH + paddingY);
+
+      this.menu.add(this.createProduct(index, skin, squareX, squareY));
     });
+
+    //Arrow Buttons
+    this.menu.add(this.pagination_shop.createArrowButton("left", 11, 85, 2));
+    this.menu.add(this.pagination_shop.createArrowButton("right", 87, 85, 2));
   }
 
-  private createProduct(skin: ProductSkin, x: number, y: number): ElementUI {
-   
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, rectangle: Rectangle, y: number, max_with?: number, font?: string) {
+    ctx.fillStyle = "#000";
+    ctx.font = font ? font : "12px Arial";
+    ctx.textAlign = "start";
+
+    const begin = rectangle.x + rectangle.w * 0.1;
+    const max = max_with ? max_with : rectangle.w - rectangle.w * 0.2;
+
+    let offset = 0;
+    let offsetmax = 0;
+    const labelWidth = ctx.measureText(label).width;
+    while (begin + offset + labelWidth < begin + max - offset) {
+      offsetmax += rectangle.w * 0.05;
+      if (begin + offsetmax + labelWidth > begin + max - offset) break;
+      offset = offsetmax;
+    }
+
+    ctx.fillText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
+  }
+
+  private createProduct(index: number, skin: ProductSkin, x: number, y: number): ElementUI {
     const buy_sound = new Audio(sound_caching);
 
     const product: ElementUI = {
       type: "image",
       rectangle: { x: x + "%", y: y + "%", w: "10%", h: "15%" },
       draw: (ctx: CanvasRenderingContext2D) => {
+        
+        if (!(this.pagination_shop.isIndexInCurrentPage(index))) {
+          if (product.enable)
+            product.enable = false;
+          return;
+        }
+        if (!product.enable)
+          product.enable = true;
+
         const offSetTittle = this.background.rectangle.y * 0.05;
         const offSetPrice = this.background.rectangle.y * 0.2;
 
@@ -69,7 +111,7 @@ export class Shop {
         ctx.fill();
         ctx.stroke();
 
-        if (skin.type == TypeSkin.Tabble && skin.image.complete) {
+        if (skin.type == TypeSkin.Table && skin.image.complete) {
           const scaledWidth = product.rectangle.w * 0.8;
           const scaledHeight = product.rectangle.h * 0.78;
           const pointx = (product.rectangle.w - scaledWidth) / 2;
@@ -81,13 +123,13 @@ export class Shop {
             product.rectangle.y + pointy - this.background.rectangle.y * 0.78 * 0.015,
             scaledWidth + this.background.rectangle.y * 0.78 * 0.03,
             scaledHeight + this.background.rectangle.y * 0.78 * 0.03
-            );
-            
+          );
+
           ctx.fillStyle = "#1e8c2f";
           ctx.fillRect(product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth, scaledHeight);
-            
+
           if (skin.image.complete) ctx.drawImage(skin.image, product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth, scaledHeight);
-          
+
           ctx.fillStyle = "white";
           //Midle Line
           ctx.fillRect(product.rectangle.x + pointx, product.rectangle.y + pointy + (scaledHeight / 2 - this.background.rectangle.y * 0.78 * 0.01), scaledWidth, this.background.rectangle.y * 0.78 * 0.02);
@@ -109,34 +151,29 @@ export class Shop {
           ctx.strokeRect(product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
         }
 
-        // Desenha o título do produto acima do quadrado
-        ctx.fillStyle = "#000";
-        ctx.font = "12px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText((skin.type == TypeSkin.Paddle ? "Paddle " : "Table ") + skin.tittle, product.rectangle.x + product.rectangle.w / 2, product.rectangle.y - offSetTittle);
+        this.fillTextCenter(ctx, (skin.type == TypeSkin.Paddle ? "Paddle " : "Table ") + skin.tittle, product.rectangle, product.rectangle.y - offSetTittle);
 
-        // Desenha o preço do produto abaixo do quadrado
-        ctx.fillStyle = "#000";
-        ctx.font = "12px Arial";
-        ctx.textAlign = "center";
-        //548₳
-        ctx.fillText(skin.price == 0 ? "FREE" : skin.price.toString() + "₳", product.rectangle.x + product.rectangle.w / 2, product.rectangle.y + product.rectangle.h + offSetPrice);
+        this.fillTextCenter(ctx, skin.price == 0 ? "FREE" : skin.price.toString() + "₳", product.rectangle, product.rectangle.y + product.rectangle.h + offSetPrice);
       },
       onClick: () => {
 
+        if (!(this.pagination_shop.isIndexInCurrentPage(index))) return ;
+
         let canBuy: boolean = false;
         if (skin.type == TypeSkin.Paddle && !this.user.infoPong.skin.paddles.includes(skin.name as never)) canBuy = true;
-        else if (skin.type == TypeSkin.Tabble && !this.user.infoPong.skin.tables.includes(skin.name as never)) canBuy = true;
+        else if (skin.type == TypeSkin.Table && !this.user.infoPong.skin.tables.includes(skin.name as never)) canBuy = true;
 
-        if (this.yourMoney >= skin.price && canBuy)
-        {
-          const confirmButton = new ConfirmButton(skin.tittle, 0);
+        if (this.yourMoney >= skin.price && canBuy) {
+          const confirmButton = new ConfirmButton(skin.tittle, skin.price);
           confirmButton.show((value) => {
             if (value == "CONFIRM") {
               if (skin.type == TypeSkin.Paddle) this.user.infoPong.skin.paddles.push(skin.name as never);
-              else if (skin.type == TypeSkin.Tabble) this.user.infoPong.skin.tables.push(skin.name as never);
+              else if (skin.type == TypeSkin.Table) this.user.infoPong.skin.tables.push(skin.name as never);
               this.yourMoney -= skin.price;
+              this.user.money = this.yourMoney;
               buy_sound.play();
+              //DATABASE
+              this.buy_skin(skin.name, skin.type, skin.price);
             }
           });
         }
@@ -149,12 +186,13 @@ export class Shop {
     const close_tab = new Audio(sound_close_tab);
     const button: ElementUI = {
       type: "exit",
-      rectangle: { x: x + "%", y: y + "%", w: "3%", h: "3%" },
+      rectangle: { x: x + "%", y: y + "%", w: "1.5%", h: "3%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        ctx.strokeStyle = "#8B4513";
-        ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
-
+        ctx.strokeStyle = "black";
+        ctx.fillStyle = "red";
         ctx.lineWidth = 3;
+        ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
+        ctx.fillRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
 
         ctx.beginPath();
         ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
@@ -175,7 +213,7 @@ export class Shop {
   }
 
   public draw(ctx: CanvasRenderingContext2D, pos: Rectangle) {
-    const backgroundColor = "#D2B48C"; // Cor de fundo castanho
+    const backgroundColor = "rgba(210, 180, 140, 0.6)"; // Cor de fundo castanho
     const borderColor = "#8B4513"; // Cor de contorno mais escuro
 
     // Desenha o corpo do balão com cor de fundo castanho
@@ -189,43 +227,24 @@ export class Shop {
     ctx.stroke();
 
     // Escreve "Shop" no topo do balão
-    //2ctx.fillStyle = '#000';
     ctx.font = "bold 22px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("Shop", pos.x + pos.w / 2, pos.y + pos.h * 0.05);
-    ctx.strokeText("Shop", pos.x + pos.w / 2, pos.y + pos.h * 0.05);
+    ctx.fillStyle = "gold";
+    ctx.fillText("Shop", pos.x + pos.w * 0.475, pos.y + pos.h * 0.05, pos.w * 0.05);
+    ctx.strokeText("Shop", pos.x + pos.w * 0.475, pos.y + pos.h * 0.05, pos.w * 0.05);
 
     // Adiciona sublinhado ao título
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(pos.x + pos.w / 2 - 30, pos.y + pos.h * 0.06); // Posição inicial do sublinhado
-    ctx.lineTo(pos.x + pos.w / 2 + 30, pos.y + pos.h * 0.06); // Posição final do sublinhado
+    ctx.moveTo(pos.x + pos.w / 2 - 30, pos.y + pos.h * 0.06);
+    ctx.lineTo(pos.x + pos.w / 2 + 30, pos.y + pos.h * 0.06);
     ctx.stroke();
-  }
 
-  private static drawMessage(ctx: CanvasRenderingContext2D, pos: Rectangle, message: string) {
-    ctx.font = "12px Arial";
-    ctx.fillStyle = "black";
-
-    const words = message.split(" ");
-    const lineLength = 46; // Comprimento máximo da linha
-
-    let line = 0;
-    let currentLine = "";
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-      const testLine = currentLine + word + " ";
-
-      if (testLine.length > lineLength) {
-        ctx.fillText(currentLine, pos.x + 10, pos.y + 20 + line);
-        currentLine = word + " ";
-        line += 16; // Ajuste a altura da nova linha conforme necessário
-      } else {
-        currentLine = testLine;
-      }
-    }
-
-    ctx.fillText(currentLine, pos.x + 10, pos.y + 20 + line);
+    ctx.font = "bold 18px Arial";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+    ctx.strokeText("Your Money: " + this.yourMoney + "₳", pos.x + pos.w * 0.055, pos.y + pos.h * 0.05, pos.w * 0.15);
+    ctx.fillText("Your Money: " + this.yourMoney + "₳", pos.x + pos.w * 0.055, pos.y + pos.h * 0.05, pos.w * 0.15);
+    ctx.lineWidth = 2;
   }
 
   roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {

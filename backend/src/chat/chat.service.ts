@@ -7,9 +7,9 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
-import { ChannelType } from 'src/types';
 import { Channel } from '@prisma/client';
 import { EventEmitter } from 'events';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ChatService {
@@ -130,42 +130,39 @@ export class ChatService {
 			// Logic for protected channels
 			if (createChannelDto.channelType == 'PROTECTED') {
 				// Note: channel name has to be unique for open channels
-				const data: {
-					name: string;
-					type: ChannelType;
-					ownerId: number;
-					password?: string;
-					users?: any;
-				} = {
-					name: createChannelDto.name,
-					type: createChannelDto.channelType,
-					ownerId: user.id,
-				};
-
-				// add password
-				data.password = createChannelDto.password;
-
-				// add users connection
-				data.users = {
-					create: {
-						user: {
-							connect: {
-								id: user.id,
-							},
-						},
-						isAdmin: true,
-					},
-					...createChannelDto.usersToAdd.map(id => ({
-						user: {
-							connect: {
-								id: id,
-							},
-						},
-					})),
-				};
+				// add encryption here
+				const saltRounds = 10;
+				const hashedPassword = await bcrypt.hash(
+					createChannelDto.password,
+					saltRounds,
+				);
 
 				newChannel = await this.prisma.channel.create({
-					data: data,
+					data: {
+						name: createChannelDto.name,
+						type: createChannelDto.channelType,
+						ownerId: user.id,
+						hash: hashedPassword,
+						users: {
+							create: [
+								{
+									user: {
+										connect: {
+											id: user.id,
+										},
+									},
+									isAdmin: true,
+								},
+								...createChannelDto.usersToAdd.map(id => ({
+									user: {
+										connect: {
+											id: id,
+										},
+									},
+								})),
+							],
+						},
+					},
 					include: {
 						users: true,
 					},
@@ -242,8 +239,8 @@ export class ChatService {
 				});
 			}
 		} catch (error) {
-			if (error.code === 'P2002' && error.meta.target.includes('name')) {
-				throw new ConflictException('Channel name already exists');
+			if (error.code === 'P2002') {
+				throw new ConflictException('Channel already exists');
 			} else if (
 				error.code === 'P2025' &&
 				error.meta.cause.includes('User')
@@ -363,8 +360,17 @@ export class ChatService {
 			throw new NotFoundException('Channel not found');
 		}
 
-		if (channel.type == 'PRIVATE' && channel.password !== password) {
-			throw new BadRequestException('Password is incorrect');
+		if (channel.type == 'PROTECTED') {
+			const isMatch = await bcrypt.compare(password, channel.hash);
+			if (!isMatch) {
+				throw new BadRequestException('Password is incorrect');
+			}
+		}
+
+		if (channel.type == 'PRIVATE') {
+			throw new ForbiddenException(
+				'Cannot join a private channel without an invite',
+			);
 		}
 
 		const channelUser = await this.prisma.channelUser.findUnique({
@@ -460,6 +466,11 @@ export class ChatService {
 			throw new NotFoundException('User is not part of this channel');
 		}
 
+		// if muser is already muted, throw error
+		if (channelUser.isMuted) {
+			throw new BadRequestException('User is already muted');
+		}
+
 		// Mute the user
 		await this.prisma.channelUser.update({
 			where: {
@@ -472,6 +483,43 @@ export class ChatService {
 				isMuted: true,
 			},
 		});
+		// emit event that user was muted
+		this.events.emit('user-muted-in-channel', { channelId, userId });
+	}
+
+	async unmuteUser(channelId: number, userId: number) {
+		const channelUser = await this.prisma.channelUser.findUnique({
+			where: {
+				userId_channelId: {
+					channelId: channelId,
+					userId: userId,
+				},
+			},
+		});
+
+		if (!channelUser) {
+			throw new NotFoundException('User is not part of this channel');
+		}
+
+		// if user is already unmuted, throw error
+		if (!channelUser.isMuted) {
+			throw new BadRequestException('User is already unmuted');
+		}
+
+		// Unmute the user
+		await this.prisma.channelUser.update({
+			where: {
+				userId_channelId: {
+					channelId: channelId,
+					userId: userId,
+				},
+			},
+			data: {
+				isMuted: false,
+			},
+		});
+		// emit event that user was unmuted
+		this.events.emit('user-unmuted-in-channel', { channelId, userId });
 	}
 
 	async makeAdmin(channelId: number, userId: number) {
@@ -500,6 +548,8 @@ export class ChatService {
 				isAdmin: true,
 			},
 		});
+		// emit an event someone was promoted to admin
+		this.events.emit('user-promoted-in-channel', { channelId, userId });
 	}
 
 	// Demote admins back to normal users
@@ -547,6 +597,12 @@ export class ChatService {
 			data: {
 				isAdmin: false,
 			},
+		});
+
+		// emit an event someone was demoted from admin
+		this.events.emit('user-demoted-in-channel', {
+			channelId,
+			userId: targetUserId,
 		});
 	}
 
@@ -599,6 +655,41 @@ export class ChatService {
 		}
 	}
 
+	// Change password of a protected channel
+	async changeChannelPassword(
+		joinChannelDto: JoinChannelDto,
+		channelId: number,
+	) {
+		const channel = await this.prisma.channel.findUnique({
+			where: {
+				id: channelId,
+			},
+		});
+
+		if (!channel) {
+			throw new NotFoundException('Channel not found');
+		}
+
+		if (channel.type !== 'PROTECTED') {
+			throw new BadRequestException('Channel is not protected');
+		}
+
+		const saltRounds = 10;
+		const hashedPassword = await bcrypt.hash(
+			joinChannelDto.password,
+			saltRounds,
+		);
+
+		await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				hash: hashedPassword,
+			},
+		});
+	}
+
 	// BELOW IS FOR WEBSOCKETS
 	async getUserChannels(userId: number): Promise<number[]> {
 		// Fetch the ChannelUser entities for this user
@@ -621,5 +712,35 @@ export class ChatService {
 				channelId: channelId,
 			},
 		});
+	}
+
+	async isUserMutedInChannel(userId: number, channelId: number) {
+		const channelUser = await this.prisma.channelUser.findUnique({
+			where: {
+				userId_channelId: {
+					channelId: channelId,
+					userId: userId,
+				},
+			},
+		});
+
+		if (!channelUser) {
+			throw new NotFoundException('User is not part of this channel');
+		}
+
+		return channelUser.isMuted;
+	}
+
+	async isUserBlocked(
+		senderId: number,
+		receiverId: number,
+	): Promise<boolean> {
+		const blockRecord = await this.prisma.blocklist.findFirst({
+			where: {
+				AND: [{ blockerId: receiverId }, { blockedId: senderId }],
+			},
+		});
+
+		return !!blockRecord;
 	}
 }

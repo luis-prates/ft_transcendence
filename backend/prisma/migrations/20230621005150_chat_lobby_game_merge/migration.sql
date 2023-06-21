@@ -1,11 +1,5 @@
-/*
-  Warnings:
-
-  - A unique constraint covering the columns `[id,nickname]` on the table `users` will be added. If there are existing duplicate values, this will fail.
-
-*/
 -- CreateEnum
-CREATE TYPE "ChannelType" AS ENUM ('PRIVATE', 'PUBLIC', 'DM');
+CREATE TYPE "ChannelType" AS ENUM ('PUBLIC', 'PRIVATE', 'PROTECTED', 'DM');
 
 -- CreateEnum
 CREATE TYPE "FriendReqStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'BLOCKED', 'CANCELLED');
@@ -14,13 +8,35 @@ CREATE TYPE "FriendReqStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'BLOCK
 CREATE TYPE "UserStatus" AS ENUM ('OFFLINE', 'IN_GAME', 'ONLINE');
 
 -- CreateEnum
-CREATE TYPE "GameStatus" AS ENUM ('NOT_STARTED', 'STARTED', 'ENDED');
+CREATE TYPE "GameStatus" AS ENUM ('NOT_STARTED', 'IN_PROGESS', 'FINISHED');
 
 -- CreateEnum
-CREATE TYPE "GameType" AS ENUM ('PUBLIC', 'PRIVATE', 'PROTECTED');
+CREATE TYPE "GameType" AS ENUM ('PUBLIC', 'PRIVATE', 'PROTECTED', 'DM');
 
--- AlterTable
-ALTER TABLE "users" ADD COLUMN     "status" "UserStatus" NOT NULL DEFAULT 'OFFLINE';
+-- CreateTable
+CREATE TABLE "users" (
+    "id" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "email" TEXT NOT NULL,
+    "hash" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "nickname" TEXT NOT NULL,
+    "image" TEXT,
+    "money" INTEGER NOT NULL DEFAULT 0,
+    "avatar" INTEGER NOT NULL DEFAULT 0,
+    "level" INTEGER NOT NULL DEFAULT 1,
+    "xp" INTEGER NOT NULL DEFAULT 0,
+    "color" TEXT NOT NULL DEFAULT 'blue',
+    "tableColorEquipped" TEXT NOT NULL DEFAULT '',
+    "tableSkinEquipped" TEXT NOT NULL DEFAULT '',
+    "paddleSkinEquipped" TEXT NOT NULL DEFAULT '',
+    "tableSkinsOwned" TEXT[],
+    "paddleSkinsOwned" TEXT[],
+    "status" "UserStatus" NOT NULL DEFAULT 'OFFLINE',
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "friend_requests" (
@@ -37,35 +53,45 @@ CREATE TABLE "friend_requests" (
 );
 
 -- CreateTable
-CREATE TABLE "Message" (
+CREATE TABLE "Blocklist" (
+    "id" SERIAL NOT NULL,
+    "blockerId" INTEGER NOT NULL,
+    "blockedId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Blocklist_pkey" PRIMARY KEY ("blockerId","blockedId")
+);
+
+-- CreateTable
+CREATE TABLE "messages" (
     "id" SERIAL NOT NULL,
     "content" TEXT NOT NULL,
     "userId" INTEGER NOT NULL,
     "channelId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "messages_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Channel" (
+CREATE TABLE "channels" (
     "id" SERIAL NOT NULL,
     "name" TEXT,
-    "password" TEXT,
+    "hash" TEXT,
     "ownerId" INTEGER,
     "type" "ChannelType" NOT NULL,
 
-    CONSTRAINT "Channel_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "channels_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "ChannelUser" (
+CREATE TABLE "channel_users" (
     "userId" INTEGER NOT NULL,
     "channelId" INTEGER NOT NULL,
     "isMuted" BOOLEAN NOT NULL DEFAULT false,
     "isAdmin" BOOLEAN NOT NULL DEFAULT false,
 
-    CONSTRAINT "ChannelUser_pkey" PRIMARY KEY ("userId","channelId")
+    CONSTRAINT "channel_users_pkey" PRIMARY KEY ("userId","channelId")
 );
 
 -- CreateTable
@@ -107,13 +133,25 @@ CREATE TABLE "_GameToUser" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "users_id_key" ON "users"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_nickname_key" ON "users"("nickname");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_id_nickname_key" ON "users"("id", "nickname");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "friend_requests_id_key" ON "friend_requests"("id");
 
 -- CreateIndex
 CREATE INDEX "friendship_index" ON "friend_requests"("requestorId", "requesteeId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Channel_name_key" ON "Channel"("name");
+CREATE UNIQUE INDEX "channels_name_key" ON "channels"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "games_id_key" ON "games"("id");
@@ -133,9 +171,6 @@ CREATE UNIQUE INDEX "_GameToUser_AB_unique" ON "_GameToUser"("A", "B");
 -- CreateIndex
 CREATE INDEX "_GameToUser_B_index" ON "_GameToUser"("B");
 
--- CreateIndex
-CREATE UNIQUE INDEX "users_id_nickname_key" ON "users"("id", "nickname");
-
 -- AddForeignKey
 ALTER TABLE "friend_requests" ADD CONSTRAINT "friend_requests_requestorId_requestorName_fkey" FOREIGN KEY ("requestorId", "requestorName") REFERENCES "users"("id", "nickname") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -143,19 +178,25 @@ ALTER TABLE "friend_requests" ADD CONSTRAINT "friend_requests_requestorId_reques
 ALTER TABLE "friend_requests" ADD CONSTRAINT "friend_requests_requesteeId_requesteeName_fkey" FOREIGN KEY ("requesteeId", "requesteeName") REFERENCES "users"("id", "nickname") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Message" ADD CONSTRAINT "Message_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Blocklist" ADD CONSTRAINT "Blocklist_blockerId_fkey" FOREIGN KEY ("blockerId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Message" ADD CONSTRAINT "Message_channelId_fkey" FOREIGN KEY ("channelId") REFERENCES "Channel"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Blocklist" ADD CONSTRAINT "Blocklist_blockedId_fkey" FOREIGN KEY ("blockedId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Channel" ADD CONSTRAINT "Channel_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "messages" ADD CONSTRAINT "messages_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ChannelUser" ADD CONSTRAINT "ChannelUser_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "messages" ADD CONSTRAINT "messages_channelId_fkey" FOREIGN KEY ("channelId") REFERENCES "channels"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ChannelUser" ADD CONSTRAINT "ChannelUser_channelId_fkey" FOREIGN KEY ("channelId") REFERENCES "Channel"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "channels" ADD CONSTRAINT "channels_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "channel_users" ADD CONSTRAINT "channel_users_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "channel_users" ADD CONSTRAINT "channel_users_channelId_fkey" FOREIGN KEY ("channelId") REFERENCES "channels"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_Friends" ADD CONSTRAINT "_Friends_A_fkey" FOREIGN KEY ("A") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

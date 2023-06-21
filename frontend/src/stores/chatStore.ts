@@ -1,5 +1,8 @@
 import { reactive, ref } from "vue";
 import { defineStore } from "pinia";
+import { userStore } from "./userStore";
+import { env } from "@/env";
+import axios from "axios";
 
 export interface ChatMessage {
   id: string;
@@ -8,7 +11,7 @@ export interface ChatMessage {
   nickname: string;
 }
 
-interface ChatUser {
+export interface ChatUser {
   objectId: any;
   avatar: string;
   name: string;
@@ -26,6 +29,7 @@ export interface channel {
 export const chatStore = defineStore("chat", () => {
   const channels = reactive<channel[]>([]);
   const selected = ref<channel | undefined>(undefined);
+  const user = userStore().user;
 
   function addChannel(channel: channel) {
     const channelSelected = channels.find((c) => c.objectId === channel.objectId);
@@ -52,5 +56,37 @@ export const chatStore = defineStore("chat", () => {
     selected.value = channel;
   }
 
-  return { channels, selected, addChannel, showChannel, addMessage };
+  async function getChannels() {
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+    await fetch
+      (env.BACKEND_PORT + "chat/channels", options)
+
+      // axios.request(options)
+      .then(function (response: any) {
+        console.log("response: ", response);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  // async function createChannel(channel : channel) {
+  //   let body = {} as any;
+  //   body.color = tableColor;
+  //   body.skin = tableSkin;
+
+  //   const options = {
+  //     method: "PATCH",
+  //     headers: { Authorization: `Bearer ${user.access_token_server}` },
+  //     body: new URLSearchParams(body),
+  //   };
+  //   await fetch(env.BACKEND_PORT + "/users/update_table_skin", options)
+  //   .then(async (response) => console.log(await response.json()))
+  //   .catch((err) => console.error(err));
+  // }
+
+  return { channels, selected, addChannel, showChannel, addMessage, getChannels };
 });

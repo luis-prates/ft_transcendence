@@ -1,4 +1,3 @@
-import { Lobby } from './Lobby';
 import { GameMap } from './GameMap';
 import { Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';

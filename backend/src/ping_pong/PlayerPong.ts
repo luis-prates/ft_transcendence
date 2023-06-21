@@ -10,7 +10,7 @@ export class Player_Pong {
 	player_n: number;
 	y = 0;
 	x = 0;
-	speed = 8;
+	speed = 5;
 	score = 0;
 	nickname: string;
 	avatar: string;
@@ -18,6 +18,8 @@ export class Player_Pong {
 	color: string;
 	skin: string;
 	userId: number;
+	up = false;
+	down = false;
 
 	constructor(
 		game: GameClass,
@@ -92,7 +94,19 @@ export class Player_Pong {
 				}
 			}
 		}
+		if (!(this.up && this.down)) {
+			if (this.up) {
+				this.moveUp();
+			} else if (this.down) {
+				this.moveDown();
+			}
+		}
 		this.emitPlayer();
+	}
+
+	reset_keys() {
+		this.up = false;
+		this.down = false;
 	}
 
 	emitPlayer() {

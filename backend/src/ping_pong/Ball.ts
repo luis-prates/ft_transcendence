@@ -116,6 +116,11 @@ export class Ball {
 		if (this.y < 0 || this.y + this.height > this.game.height) {
 			// Inverte a direção da bola
 			this.angle = -this.angle;
+			if (this.dir == 1) {
+				this.emitBall();
+			} else if (this.dir === 2) {
+				this.emitBall();
+			}
 			this.emitSound('wall');
 		}
 	}
@@ -176,6 +181,8 @@ export class Ball {
 			x: this.x,
 			y: this.y,
 			dir: this.dir,
+			// speed: this.speed,
+			// angle: this.angle,
 		});
 	}
 	emitSound(sound: string) {
