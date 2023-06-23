@@ -30,7 +30,6 @@ export class Lobby {
 				this.gameMaps.set(map.objectId, map);
 			}
 		});
-		console.log('ada', this.gameMaps);
 	}
 
 	public connection(socket: Socket): void {
