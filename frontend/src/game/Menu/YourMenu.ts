@@ -12,6 +12,7 @@ import battleImage from "@/assets/images/lobby/menu/battle_.png";
 import leaderBoardImage from "@/assets/images/lobby/menu/trofeo.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
 import { Messages } from "./Messages";
+import { MessageList } from "./MessageList";
 
 
 export class YourMenu {

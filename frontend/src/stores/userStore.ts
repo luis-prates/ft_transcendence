@@ -262,7 +262,7 @@ export const userStore = defineStore("user", function () {
 
       // axios.request(options)
       .then(function (response: any) {
-        console.log("LEADERBOARD: ", response.data);
+        console.log("Users: ", response.data);
         return response.data;
       })
       .catch(function (error) {
