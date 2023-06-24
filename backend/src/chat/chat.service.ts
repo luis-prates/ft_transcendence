@@ -20,7 +20,21 @@ export class ChatService {
 	}
 
 	async getChannels(): Promise<Channel[]> {
-		return this.prisma.channel.findMany();
+		return this.prisma.channel.findMany({
+			include: {
+				users: {
+					select: {
+						user: {
+							select: {
+								id: true,
+								nickname: true,
+								image: true,
+							},
+						},
+					},
+				},
+			},
+		});
 	}
 
 	async getChannelsByUser(user: any) {

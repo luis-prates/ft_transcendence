@@ -87,12 +87,15 @@ import { nextTick, defineProps, getCurrentInstance, watch } from "vue";
 import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
 import { storeToRefs } from "pinia";
 import { userStore } from "@/stores/userStore";
-import socket from "@/socket/Socket";
+import { socketClass } from "@/socket/Socket";
 import { onMounted, onUnmounted, ref } from "vue";
+import type { Socket } from "socket.io-client";
 
 const store = chatStore();
 const user = userStore();
 const { selected } = storeToRefs(store);
+
+const socket: Socket = socketClass.getLobbySocket();
 
 // Get channel name from chatStore
 const getChannelName = () => {

@@ -61,6 +61,7 @@ export interface User {
   friends: any,
   friendsRequests: Friendship[],
   blocks: any,
+  isPlayer: boolean;
 }
 
 export const userStore = defineStore("user", () => {
@@ -73,6 +74,7 @@ export const userStore = defineStore("user", () => {
     return color;
   };
 
+  //! wallet - should it be deleted?
   const user = reactive({
     access_token_server: "",
     accessToken: "",
@@ -86,6 +88,7 @@ export const userStore = defineStore("user", () => {
     image: "",
     avatar: 0,
     money: 10,
+	isPlayer: true,
     infoPong: {
       level: 1,
       xp: 0,
@@ -297,7 +300,7 @@ export const userStore = defineStore("user", () => {
       body: new URLSearchParams(body),
     };
 
-    await fetch("https://unbecoming-fact-production.up.railway.app/users", options)
+    await fetch(env.BACKEND_PORT + "/users", options)
       .then(async (response) => console.log(await response.json()))
       .catch((err) => console.error(err));
   }

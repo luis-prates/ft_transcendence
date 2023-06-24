@@ -1,20 +1,25 @@
-import socket from "@/socket/Socket";
 import { Game, Map, Menu, Npc, type ElementUI, type Player } from "@/game";
+import { io, type Socket } from "socket.io-client";
+import { env } from "../../env";
+import { userStore } from "../../stores/userStore";
+import { socketClass } from "../../socket/Socket";
 
 export class Lobby extends Game {
   private list_update_gameobject: any[] = [];
+  private user = userStore().user;
+  public lobbySocket: Socket = socketClass.getLobbySocket();
 
   constructor(map: Map, player: Player) {
     super(map, player);
     this.addGameObject(new Npc());
-    socket.on("new_gameobject", (data: any) => {
+	this.lobbySocket.on("new_gameobject", (data: any) => {
       this.addGameObjectData(data);
       console.log("new_gameobject", data);
     });
 
-    socket.on("update_gameobject", (data: any) => this.list_update_gameobject.push(data));
+    this.lobbySocket.on("update_gameobject", (data: any) => this.list_update_gameobject.push(data));
 
-    socket.on("remove_gameobject", (data: any) => {
+    this.lobbySocket.on("remove_gameobject", (data: any) => {
       for (let gameObject of this.gameObjets) {
         if (gameObject.objectId == data.objectId) {
           if (gameObject.destroy) gameObject.destroy();
@@ -44,8 +49,8 @@ export class Lobby extends Game {
 
   destructor(): void {
     super.destructor();
-    socket.off("new_gameobject");
-    socket.off("update_gameobject");
-    socket.off("remove_gameobject");
+    this.lobbySocket.off("new_gameobject");
+    this.lobbySocket.off("update_gameobject");
+    this.lobbySocket.off("remove_gameobject");
   }
 }

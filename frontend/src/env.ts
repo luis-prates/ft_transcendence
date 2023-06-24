@@ -11,4 +11,6 @@ export const env = {
   //Image Store API (https://api.imgbb.com/)
   IMAGE_API_KEY: "d9a1c108b92558d90d3b1bd9f59a507c",
   REDIRECT_URI_42_API: "",
+  LOBBY_SERVER_URL: "ws://localhost:3001/lobby",
+  GAME_SERVER_URL: "ws://localhost:3001/game",
 };

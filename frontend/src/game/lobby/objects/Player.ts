@@ -1,5 +1,5 @@
 import { Character } from "../../base/Character";
-import socket from "@/socket/Socket";
+import { socketClass } from "@/socket/Socket";
 import { Map } from "./Map";
 import { Game } from "@/game/base/Game";
 import type { GameObject } from "@/game/base/GameObject";
@@ -10,11 +10,13 @@ import { Profile } from "@/game/Menu/Profile";
 import { YourProfile } from "@/game/Menu/YourProfile";
 import { ConfirmButton } from "@/game/Menu/ConfirmButton";
 import { Shop } from "@/game/Menu/Shop";
+import type { Socket } from "socket.io-client";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
   private menu: Ref<HTMLDivElement | undefined>;
   private store: any;
+  public socket: Socket = socketClass.getLobbySocket();
 
   constructor(menu: Ref<HTMLDivElement | undefined>, data: any) {
     super();
@@ -29,7 +31,7 @@ export class Player extends Character {
     this.type = "player";
     this.name = "Player_" + Date.now();
     console.log("Player", data);
-    socket.emit("new_player", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop, sx: this.animation.sx, sy: this.animation.sy} });
+    this.socket.emit("new_player", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop, sx: this.animation.sx, sy: this.animation.sy} });
   }
 
   draw(contex: CanvasRenderingContext2D): void {

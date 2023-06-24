@@ -1,10 +1,15 @@
 import { GamePong } from "@/game/ping_pong/";
-import socket from "@/socket/Socket";
 import { skin, TypeSkin } from "./Skin";
 
 
 //Avatar
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
+import { type updatePlayer } from "./SocketInterface";
+import { socketClass } from "@/socket/Socket";
+
+//Avatar
+import avatarMarvin from "@/assets/images/pingpong/marvin.jpg";
+import type { Socket } from "socket.io-client";
 
 export class PlayerPong {
   game: GamePong;
@@ -20,6 +25,7 @@ export class PlayerPong {
   skin = new Image();
   key_w_press: boolean = false;
   key_s_press: boolean = false;
+  socket: Socket = socketClass.getGameSocket();
 
   constructor(game: GamePong, player_n: number, nickname: string, avatar: any) {
     this.game = game;
@@ -40,23 +46,23 @@ export class PlayerPong {
   moveUp(key_press: boolean) {
     this.key_w_press = key_press;
     //Emit UP
-    socket.emit("game_move", {
-      objectId: this.game.data.objectId,
-      playerNumber: this.game.playerNumber,
-      move: "up",
-      key: key_press,
-    });
+	this.socket.emit("game_move", {
+	  objectId: this.game.data.objectId,
+	  playerNumber: this.game.playerNumber,
+	  move: "up",
+	  key: key_press,
+	});
   }
 
   moveDown(key_press: boolean) {
     this.key_s_press = key_press;
     //Emit DOWN
-    socket.emit("game_move", {
-      objectId: this.game.data.objectId,
-      playerNumber: this.game.playerNumber,
-      move: "down",
-      key: key_press,
-    });
+	this.socket.emit("game_move", {
+	  objectId: this.game.data.objectId,
+	  playerNumber: this.game.playerNumber,
+	  move: "down",
+	  key: key_press,
+	});
   }
 
   point(score: number) {
