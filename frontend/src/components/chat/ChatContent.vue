@@ -51,7 +51,7 @@
         </div>
         <div class="user_info">
           <span>{{ getChannelName() }}</span>
-          <p>{{selected?.messages.length + " Messages"}}</p>
+          <p>{{selected?.messages?.length + " Messages"}}</p>
         </div>
         <div class="video_cam">
           <button class="config_chat">⚙</button>
@@ -156,7 +156,7 @@ onUnmounted(() => {
 const scrollContainer = ref<HTMLElement | null>(null);
 
 watch(
-  [() => store.selected?.messages.length, () => props.channelStatus],
+  [() => store.selected?.messages?.length, () => props.channelStatus],
   ([newMessageLength, newChannelStatus], [oldMessageLength, oldChannelStatus]) => {
     if (
       newMessageLength !== oldMessageLength ||
@@ -228,6 +228,7 @@ const createNewChannel = async () => {
       errorMessage.value = 'Failed to create channel. Channel name is already taken';
       // Display error message in the form or take any other action
     } else {
+      console.log("Error response: " + response);
       errorMessage.value = 'Failed to create channel. Please try again.';
     }
   } catch (error) {
