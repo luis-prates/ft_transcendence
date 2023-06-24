@@ -7,6 +7,7 @@ export const env = {
   REDIRECT_URI: "http://localhost:5173/",
   SERVER_API_URL: "https://unbecoming-fact-production.up.railway.app/",
   SERVER_URL: "ws://localhost:3000",
+  CHAT_URL: "ws://localhost:3001/chat",
   BACKEND_PORT: "http://localhost:3000",
   //Image Store API (https://api.imgbb.com/)
   IMAGE_API_KEY: "d9a1c108b92558d90d3b1bd9f59a507c",
