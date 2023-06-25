@@ -35,11 +35,7 @@ export class Player {
 	time = 0;
 	private readonly logger = new Logger(Player.name);
 
-	constructor(
-		socket: Socket,
-		objectId: number,
-		private playerService?: PlayerService,
-	) {
+	constructor(socket: Socket, objectId: number, private playerService?: PlayerService) {
 		this.logger.debug(`new player with objectId: ${objectId}`);
 		this.setSocket(socket);
 		this.data.objectId = objectId;

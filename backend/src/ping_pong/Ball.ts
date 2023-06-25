@@ -22,10 +22,7 @@ export class Ball {
 		this.y = this.game.height / 2 - this.height / 2;
 		this.dir = Math.floor(Math.random() * 2) + 1;
 		this.speed = this.speedStart;
-		this.angle =
-			this.dir === 1
-				? this.generateRandomAngle(135, 225)
-				: this.generateRandomAngle(-45, 45);
+		this.angle = this.dir === 1 ? this.generateRandomAngle(135, 225) : this.generateRandomAngle(-45, 45);
 	}
 
 	generateRandomAngle(minAngle: number, maxAngle: number) {
@@ -39,29 +36,20 @@ export class Ball {
 		// Verifica se a bola colidiu com a raquete do jogador 1
 		if (this.dir == 1) {
 			const isBallHorizontallyWithinPlayer1 =
-				this.x >= this.game.player1.x &&
-				this.x <= this.game.player1.x + this.game.player1.width;
+				this.x >= this.game.player1.x && this.x <= this.game.player1.x + this.game.player1.width;
 			const isBallVerticallyWithinPlayer1 =
-				this.y >= this.game.player1.y &&
-				this.y <= this.game.player1.y + this.game.player1.height;
+				this.y >= this.game.player1.y && this.y <= this.game.player1.y + this.game.player1.height;
 			const isBallBottomWithinPlayer1 =
 				this.y + this.height >= this.game.player1.y &&
-				this.y + this.height <=
-					this.game.player1.y + this.game.player1.height;
-			if (
-				isBallHorizontallyWithinPlayer1 &&
-				(isBallVerticallyWithinPlayer1 || isBallBottomWithinPlayer1)
-			) {
+				this.y + this.height <= this.game.player1.y + this.game.player1.height;
+			if (isBallHorizontallyWithinPlayer1 && (isBallVerticallyWithinPlayer1 || isBallBottomWithinPlayer1)) {
 				// Inverte a direção da bola
 				this.angle = Math.PI - this.angle;
 
 				// Ajusta o ângulo com base no ponto de contato na raquete
 				const relativeIntersectY =
-					this.game.player1.y +
-					this.game.player1.height / 2 -
-					(this.y + this.height / 2);
-				const normalizedRelativeIntersectionY =
-					relativeIntersectY / (this.game.player1.height / 2);
+					this.game.player1.y + this.game.player1.height / 2 - (this.y + this.height / 2);
+				const normalizedRelativeIntersectionY = relativeIntersectY / (this.game.player1.height / 2);
 				this.angle -= normalizedRelativeIntersectionY * (Math.PI / 4);
 
 				this.angle += random;
@@ -76,32 +64,22 @@ export class Ball {
 		else if (this.dir === 2) {
 			const isBallHorizontallyWithinPlayer2 =
 				this.x + this.width >= this.game.player2.x &&
-				this.x + this.width <=
-					this.game.player2.x + this.game.player2.width;
+				this.x + this.width <= this.game.player2.x + this.game.player2.width;
 			const isBallVerticallyWithinPlayer2 =
-				this.y >= this.game.player2.y &&
-				this.y <= this.game.player2.y + this.game.player2.height;
+				this.y >= this.game.player2.y && this.y <= this.game.player2.y + this.game.player2.height;
 			const isBallBottomWithinPlayer2 =
 				this.y + this.height >= this.game.player2.y &&
-				this.y + this.height <=
-					this.game.player2.y + this.game.player2.height;
+				this.y + this.height <= this.game.player2.y + this.game.player2.height;
 
-			if (
-				isBallHorizontallyWithinPlayer2 &&
-				(isBallVerticallyWithinPlayer2 || isBallBottomWithinPlayer2)
-			) {
+			if (isBallHorizontallyWithinPlayer2 && (isBallVerticallyWithinPlayer2 || isBallBottomWithinPlayer2)) {
 				// Inverte a direção da bola
 				this.angle = Math.PI - this.angle;
 
 				// Ajusta o ângulo com base no ponto de contato na raquete
 				const relativeIntersectY =
-					this.game.player2.y +
-					this.game.player2.height / 2 -
-					(this.y + this.height / 2);
-				const normalizedRelativeIntersectionY =
-					relativeIntersectY / (this.game.player2.height / 2);
-				this.angle =
-					normalizedRelativeIntersectionY * (Math.PI / 4) + Math.PI;
+					this.game.player2.y + this.game.player2.height / 2 - (this.y + this.height / 2);
+				const normalizedRelativeIntersectionY = relativeIntersectY / (this.game.player2.height / 2);
+				this.angle = normalizedRelativeIntersectionY * (Math.PI / 4) + Math.PI;
 
 				this.angle += random;
 

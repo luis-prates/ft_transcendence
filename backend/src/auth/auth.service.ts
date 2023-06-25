@@ -1,9 +1,4 @@
-import {
-	ForbiddenException,
-	Injectable,
-	NotFoundException,
-	Logger,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthDto } from './dto/auth.dto';
 import * as argon from 'argon2';
@@ -15,11 +10,7 @@ import { ConfigService } from '@nestjs/config';
 export class AuthService {
 	private readonly logger = new Logger(AuthService.name);
 
-	constructor(
-		private prisma: PrismaService,
-		private jwt: JwtService,
-		private config: ConfigService,
-	) {}
+	constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService) {}
 
 	async signin(dto: AuthDto) {
 		const hash = await argon.hash(dto.nickname);
@@ -81,9 +72,7 @@ export class AuthService {
 		}
 	}
 
-	async signToken(
-		user: AuthDto,
-	): Promise<{ dto: AuthDto; access_token: string }> {
+	async signToken(user: AuthDto): Promise<{ dto: AuthDto; access_token: string }> {
 		const payload = {
 			sub: user.id,
 			nickname: user.nickname,

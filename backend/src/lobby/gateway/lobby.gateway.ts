@@ -13,9 +13,7 @@ import { LobbyService } from '../lobby.service';
 import { Logger, UnauthorizedException } from '@nestjs/common';
 
 @WebSocketGateway(3001, { namespace: 'lobby', cors: { origin: '*' } })
-export class LobbyGateway
-	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	private readonly logger = new Logger(LobbyGateway.name);
 
 	@WebSocketServer()
@@ -54,16 +52,11 @@ export class LobbyGateway
 	}
 
 	@SubscribeMessage('join_map')
-	async joinMap(
-		@ConnectedSocket() client: Socket,
-		@MessageBody() payload: any,
-	) {
+	async joinMap(@ConnectedSocket() client: Socket, @MessageBody() payload: any) {
 		this.lobbyService.joinMap(client, payload);
 	}
 
 	handleDisconnect(client: Socket) {
-		this.logger.debug(
-			`Client disconnected: ${client.id} from lobby namespace`,
-		);
+		this.logger.debug(`Client disconnected: ${client.id} from lobby namespace`);
 	}
 }

@@ -27,10 +27,7 @@ export class LobbyService {
 	}
 
 	public connection(socket: Socket, payload: any): void {
-		const player: Player = this.playerService.onSocketConnected(
-			socket,
-			payload,
-		);
+		const player: Player = this.playerService.onSocketConnected(socket, payload);
 		//! done in game.service.ts
 		// this.game.connection(player);
 		this.chatController.connection(player);
@@ -40,17 +37,13 @@ export class LobbyService {
 	public joinMap(socket: Socket, payload: any): void {
 		this.logger.debug('join_map event received');
 		//this.logger.debug('data received: ' + JSON.stringify(data));
-		this.logger.debug(
-			`players count: ${this.playerService.getPlayerCount()}`,
-		);
+		this.logger.debug(`players count: ${this.playerService.getPlayerCount()}`);
 		const player = this.playerService.getPlayer(Number(payload.userId));
 		if (!player) {
 			this.logger.debug('player not found');
 			return;
 		}
 		this.logger.debug('player found');
-		this.gameMaps
-			.get(payload.map.name)
-			?.join(player, payload.map?.position);
+		this.gameMaps.get(payload.map.name)?.join(player, payload.map?.position);
 	}
 }

@@ -44,11 +44,7 @@ export class GameClass {
 	private gameServer: Server;
 	private gameService: GameService;
 
-	constructor(
-		gameResquest: gameRequest,
-		gameService: GameService,
-		onRemove: Function,
-	) {
+	constructor(gameResquest: gameRequest, gameService: GameService, onRemove: Function) {
 		this.data = gameResquest;
 		this.maxPoint = gameResquest.maxScore;
 		this.ball = new Ball(this);
@@ -188,10 +184,7 @@ export class GameClass {
 	//End Game
 	//! Send game stats to the client
 	endGame(playerNumber: number) {
-		if (
-			(playerNumber == 1 || playerNumber == 2) &&
-			this.status != Status.Finish
-		) {
+		if ((playerNumber == 1 || playerNumber == 2) && this.status != Status.Finish) {
 			this.updateStatus(Status.Finish);
 			//INSERT IN DATABASE
 			this.logger.debug('Game End');
@@ -270,10 +263,7 @@ export class GameClass {
 	}
 	//Verific if the game is Ending
 	isEndGame() {
-		if (
-			this.player1.score >= this.maxPoint ||
-			this.player2.score >= this.maxPoint
-		) {
+		if (this.player1.score >= this.maxPoint || this.player2.score >= this.maxPoint) {
 			return true;
 		}
 		return false;
@@ -281,15 +271,11 @@ export class GameClass {
 
 	//Emit for Players
 	emitPlayers(event: string, data: any): void {
-		this.gameServer
-			.to(`game-${this.data.objectId}-player`)
-			.emit(event, data);
+		this.gameServer.to(`game-${this.data.objectId}-player`).emit(event, data);
 	}
 	//Emit for Watchers
 	emitWatchers(event: string, data: any): void {
-		this.gameServer
-			.to(`game-${this.data.objectId}-watcher`)
-			.emit(event, data);
+		this.gameServer.to(`game-${this.data.objectId}-watcher`).emit(event, data);
 	}
 	//Emit for Players and Watchers
 	emitAll(event: string, data: any): void {
@@ -309,19 +295,15 @@ export class GameClass {
 		if (this.status == Status.InGame) {
 			if (e.playerNumber == 1) {
 				if (e.move == 'up') {
-					this.player1.up =
-						e.key != this.player1.up ? e.key : this.player1.up;
+					this.player1.up = e.key != this.player1.up ? e.key : this.player1.up;
 				} else if (e.move == 'down') {
-					this.player1.down =
-						e.key != this.player1.down ? e.key : this.player1.down;
+					this.player1.down = e.key != this.player1.down ? e.key : this.player1.down;
 				}
 			} else if (e.playerNumber == 2) {
 				if (e.move == 'up') {
-					this.player2.up =
-						e.key != this.player2.up ? e.key : this.player2.up;
+					this.player2.up = e.key != this.player2.up ? e.key : this.player2.up;
 				} else if (e.move == 'down') {
-					this.player2.down =
-						e.key != this.player2.down ? e.key : this.player2.down;
+					this.player2.down = e.key != this.player2.down ? e.key : this.player2.down;
 				}
 			}
 		}

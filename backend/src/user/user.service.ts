@@ -98,10 +98,7 @@ export class UserService {
 
 				if (dto.typeSkin == 0 && !paddleSkins.includes(dto.skin)) {
 					paddleSkins.push(dto.skin);
-				} else if (
-					dto.typeSkin == 1 &&
-					!tableSkins.includes(dto.skin)
-				) {
+				} else if (dto.typeSkin == 1 && !tableSkins.includes(dto.skin)) {
 					tableSkins.push(dto.skin);
 				} else {
 					//ERRO
@@ -153,19 +150,10 @@ export class UserService {
 					return;
 				}
 
-				const color =
-					user.tableColorEquipped != dto.color
-						? dto.color
-						: user.tableColorEquipped;
-				const skin =
-					user.tableSkinEquipped != dto.skin
-						? dto.skin
-						: user.tableSkinEquipped;
+				const color = user.tableColorEquipped != dto.color ? dto.color : user.tableColorEquipped;
+				const skin = user.tableSkinEquipped != dto.skin ? dto.skin : user.tableSkinEquipped;
 
-				if (
-					user.tableColorEquipped != color ||
-					user.tableSkinEquipped != skin
-				) {
+				if (user.tableColorEquipped != color || user.tableSkinEquipped != skin) {
 					const updatedUser = await this.prisma.user.update({
 						where: {
 							id: userId,

@@ -19,10 +19,7 @@ export class GameService {
 	// TODO: to be added to Game service
 	// private isInLobby = false;
 
-	constructor(
-		private prisma: PrismaService,
-		private playerService: PlayerService,
-	) {
+	constructor(private prisma: PrismaService, private playerService: PlayerService) {
 		this.events = new EventEmitter();
 	}
 
@@ -35,9 +32,7 @@ export class GameService {
 	}
 
 	async createGame(body: GameDto) {
-		this.logger.debug(
-			`createGame is called with body: ${JSON.stringify(body)}`,
-		);
+		this.logger.debug(`createGame is called with body: ${JSON.stringify(body)}`);
 		const game = await this.prisma.game.create({
 			data: {
 				gameType: body.gameType,
@@ -60,14 +55,9 @@ export class GameService {
 			new GameClass(body.gameRequest, this, () => {
 				// this.events.emit('gameEnded', game);
 				// remove game from games array
-				this.games = this.games.filter(
-					g => g.data.objectId !== body.gameRequest.objectId,
-				);
+				this.games = this.games.filter(g => g.data.objectId !== body.gameRequest.objectId);
 				this.logger.log(`Game ${game.id} ended and removed.`);
-				playerOne?.map?.removeGameObject(
-					playerOne,
-					body.gameRequest.objectId,
-				);
+				playerOne?.map?.removeGameObject(playerOne, body.gameRequest.objectId);
 			}),
 		);
 		// adds bot if bot is true
@@ -101,11 +91,7 @@ export class GameService {
 
 	async updateGame(gameId: string, body?: any) {
 		try {
-			this.logger.debug(
-				`updateGame for game ${gameId} is called with body: ${JSON.stringify(
-					body,
-				)}`,
-			);
+			this.logger.debug(`updateGame for game ${gameId} is called with body: ${JSON.stringify(body)}`);
 			const game = await this.prisma.game.update({
 				where: {
 					id: gameId,

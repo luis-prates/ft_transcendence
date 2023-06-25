@@ -20,9 +20,7 @@ export class GameMap {
 
 	public join(player: Player, position?: { x: number; y: number }): void {
 		GameMap.offAll(player);
-		this.logger.debug(
-			`player ${player.objectId} joined map: ${this.map.objectId}`,
-		);
+		this.logger.debug(`player ${player.objectId} joined map: ${this.map.objectId}`);
 		//TODO: player.map.map.objectId needs to be cleaned up
 		if (player.map && player.map.map.objectId !== this.map.objectId) {
 			player.map.removePlayer(player);
@@ -72,12 +70,7 @@ export class GameMap {
 		);
 	}
 
-	public emitAll(
-		event: string,
-		data: any,
-		player: Player,
-		ignorePlayer: boolean,
-	): void {
+	public emitAll(event: string, data: any, player: Player, ignorePlayer: boolean): void {
 		// this.playerService.getPlayers().forEach(clientSocket => {
 		// 	if (
 		// 		ignorerPlayer === undefined ||
@@ -104,12 +97,7 @@ export class GameMap {
 
 	public removeGameObject(player: Player, objectId: string): void {
 		this.gameObjets = this.gameObjets.filter(e => e.objectId != objectId);
-		this.emitAll(
-			'remove_gameobject',
-			{ objectId: objectId },
-			player,
-			false,
-		);
+		this.emitAll('remove_gameobject', { objectId: objectId }, player, false);
 	}
 
 	public get objectId(): string {

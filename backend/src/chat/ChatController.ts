@@ -35,10 +35,7 @@ export class Channel {
 
 	public emitAll(event: string, data: any, ignorerPlayer?: Player): void {
 		this.players.forEach(clientSocket => {
-			if (
-				ignorerPlayer === undefined ||
-				clientSocket.objectId !== ignorerPlayer.objectId
-			) {
+			if (ignorerPlayer === undefined || clientSocket.objectId !== ignorerPlayer.objectId) {
 				clientSocket.emitToLobby(event, data);
 			}
 		});
@@ -78,9 +75,7 @@ export class ChatController {
 			channel.join(player);
 		});
 		player.onLobby('send_message', data => {
-			const channel = this.channels.find(
-				e => e.objectId == data.objectId,
-			);
+			const channel = this.channels.find(e => e.objectId == data.objectId);
 			if (channel) {
 				channel.addMessage(player, data);
 			}

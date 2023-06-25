@@ -15,9 +15,7 @@ import { Logger } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
 
 @WebSocketGateway(3001, { namespace: 'game', cors: { origin: '*' } })
-export class GameGateway
-	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	private readonly logger = new Logger(GameGateway.name);
 
 	@WebSocketServer()
@@ -43,11 +41,7 @@ export class GameGateway
 
 	handleConnection(@ConnectedSocket() client: Socket, ...args: any[]) {
 		const { query } = client.handshake;
-		this.logger.log(
-			`Client connected on /game namespace: ${
-				client.id
-			}, userId: ${JSON.stringify(query)}`,
-		);
+		this.logger.log(`Client connected on /game namespace: ${client.id}, userId: ${JSON.stringify(query)}`);
 		const userId = Number(query.userId);
 		// set the current socket to the player game socket
 		this.logger.debug(`UserId is ${userId}`);
@@ -73,44 +67,31 @@ export class GameGateway
 		if (client.data.gameId) {
 			const gameId = client.data.gameId;
 			// Remove the player from the game
-			const isPlayer = this.socketService.gameIdToPlayerId
-				.get(gameId)
-				.includes(Number(userId));
+			const isPlayer = this.socketService.gameIdToPlayerId.get(gameId).includes(Number(userId));
 			if (isPlayer) {
 				this.socketService.gameIdToPlayerId.set(
 					gameId,
-					this.socketService.gameIdToPlayerId
-						.get(gameId)
-						.filter(playerId => playerId !== Number(userId)),
+					this.socketService.gameIdToPlayerId.get(gameId).filter(playerId => playerId !== Number(userId)),
 				);
 				this.logger.log(`Removed player ${userId} from game ${gameId}`);
 				this.logger.log(
-					`Current players in game ${gameId}: ${this.socketService.gameIdToPlayerId.get(
-						gameId,
-					)}`,
+					`Current players in game ${gameId}: ${this.socketService.gameIdToPlayerId.get(gameId)}`,
 				);
 				// Leave the room for the game
 				client.leave(`game-${gameId}-player`);
 			} else {
 				this.socketService.gameIdToWatcherId.set(
 					gameId,
-					this.socketService.gameIdToWatcherId
-						.get(gameId)
-						.filter(watcherId => watcherId !== userId),
+					this.socketService.gameIdToWatcherId.get(gameId).filter(watcherId => watcherId !== userId),
 				);
-				this.logger.log(
-					`Removed watcher ${userId} from game ${gameId}`,
-				);
+				this.logger.log(`Removed watcher ${userId} from game ${gameId}`);
 				client.leave(`game-${gameId}-watcher`);
 			}
 		}
 	}
 
 	@SubscribeMessage('entry_game')
-	handleEnterGame(
-		@ConnectedSocket() client: Socket,
-		@MessageBody() body: any,
-	) {
+	handleEnterGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.logger.debug(`Enter game received: ${JSON.stringify(body)}`);
 		const isPlayer = body.isPlayer;
 		const gameId = body.objectId;
@@ -126,16 +107,10 @@ export class GameGateway
 				userId,
 			]);
 			this.logger.log(`Added player ${userId} to game ${gameId}`);
-			this.logger.log(
-				`Current players in game ${gameId}: ${this.socketService.gameIdToPlayerId.get(
-					gameId,
-				)}`,
-			);
+			this.logger.log(`Current players in game ${gameId}: ${this.socketService.gameIdToPlayerId.get(gameId)}`);
 			// Join the room for the game
 			client.join(`game-${gameId}-player`);
-			this.logger.debug(
-				`Client ${client.id} Joining game-${gameId}-player`,
-			);
+			this.logger.debug(`Client ${client.id} Joining game-${gameId}-player`);
 			this.gameService.enterGame(player, isPlayer, body);
 		}
 		// else, add userId to gameIdToWatcherId map

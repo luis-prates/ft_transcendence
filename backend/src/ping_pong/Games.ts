@@ -7,13 +7,9 @@ export class Games {
 
 	public connection(player: Player) {
 		//! done in game.service.ts
-		player.onLobby('new_game', (e: gameRequest) =>
-			this.new_game(player, e),
-		);
+		player.onLobby('new_game', (e: gameRequest) => this.new_game(player, e));
 		//! done in game.service.ts
-		player.onLobby('entry_game', (e: playerInfo) =>
-			this.entry_game(player, e),
-		);
+		player.onLobby('entry_game', (e: playerInfo) => this.entry_game(player, e));
 	}
 
 	new_game(player: Player, e: gameRequest) {
@@ -50,9 +46,7 @@ export class Games {
 			} else if (game.player2.socket.id == player.id) {
 				game.endGame(1);
 			}
-			const index = game.watchers.findIndex(
-				(socket: any) => socket.socket.id === disconnect,
-			);
+			const index = game.watchers.findIndex((socket: any) => socket.socket.id === disconnect);
 			if (index !== -1) {
 				game.watchers.splice(index, 1);
 				console.log('Socket removido da lista de watchers');

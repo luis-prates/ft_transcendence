@@ -6,14 +6,14 @@ export type gameRequest = {
 	bot: boolean;
 };
 
-export interface playerInfo {
+export type playerInfo = {
 	objectId: string;
 	userId: number;
 	nickname: string;
 	avatar: string;
 	color: string;
 	skin: string;
-}
+};
 
 export type updatePlayer = {
 	objectId: string;
