@@ -1,6 +1,6 @@
 import { GameClass } from './GamePong';
 import { Player_Pong } from './PlayerPong';
-import { type gamePoint } from './SocketInterface';
+import { type gamePoint } from '../../socket/SocketInterface';
 
 export class Ball {
 	//Macros

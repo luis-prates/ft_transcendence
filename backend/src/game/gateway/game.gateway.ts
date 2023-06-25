@@ -27,19 +27,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		private playerService: PlayerService,
 	) {}
 
-	afterInit(server: any) {
+	async afterInit(server: any) {
 		this.logger.log('Game Gateway initialized');
 		this.gameService.setServer(this.server);
 	}
 
 	@SubscribeMessage('message')
-	handleMessage(@MessageBody() body: any) {
+	async handleMessage(@MessageBody() body: any) {
 		this.logger.log(`Message received: ${body}`);
 		this.server.emit('message', body);
 		// return 'Hello world!';
 	}
 
-	handleConnection(@ConnectedSocket() client: Socket, ...args: any[]) {
+	async handleConnection(@ConnectedSocket() client: Socket, ...args: any[]) {
 		const { query } = client.handshake;
 		this.logger.log(`Client connected on /game namespace: ${client.id}, userId: ${JSON.stringify(query)}`);
 		const userId = Number(query.userId);
@@ -56,7 +56,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		client.data.userId = userId;
 	}
 
-	handleDisconnect(@ConnectedSocket() client: Socket) {
+	async handleDisconnect(@ConnectedSocket() client: Socket) {
 		const userId = this.playerService.getUserIdFromGameSocket(client);
 		this.logger.log(`Client disconnected on /game namespace: ${userId}`);
 		const player = this.playerService.getPlayer(userId);
@@ -91,7 +91,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	@SubscribeMessage('entry_game')
-	handleEnterGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+	async handleEnterGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.logger.debug(`Enter game received: ${JSON.stringify(body)}`);
 		const isPlayer = body.isPlayer;
 		const gameId = body.objectId;

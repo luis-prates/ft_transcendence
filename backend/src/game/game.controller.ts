@@ -3,7 +3,7 @@ import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
 import { GetUser } from '../auth/decorator';
 import { GameDto } from './dto';
-import { playerInfo } from '../ping_pong/SocketInterface';
+import { playerInfo } from '../socket/SocketInterface';
 
 //! deactivated for testing purposes
 //@UseGuards(JwtGuard)

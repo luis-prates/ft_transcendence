@@ -1,6 +1,6 @@
-import { Player } from '../player/Player';
+import { Player } from '../../player/Player';
 import { GameClass, Status } from './GamePong';
-import { playerInfo } from './SocketInterface';
+import { playerInfo } from '../../socket/SocketInterface';
 
 export class Player_Pong {
 	game: GameClass;

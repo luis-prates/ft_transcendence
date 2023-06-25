@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Games } from '../ping_pong/Games';
+import { Games } from '../game/ping_pong/Games';
 import { ChatController } from '../chat/ChatController';
 import { GameMap } from './GameMap';
 import { Player } from '../player/Player';
@@ -30,7 +30,7 @@ export class LobbyService {
 		const player: Player = this.playerService.onSocketConnected(socket, payload);
 		//! done in game.service.ts
 		// this.game.connection(player);
-		this.chatController.connection(player);
+		//this.chatController.connection(player);
 		this.logger.debug(`new connection: ${player.objectId}`);
 	}
 

@@ -1,11 +1,11 @@
 import { Logger } from '@nestjs/common';
 import { Ball } from './Ball';
 import { Player_Pong } from './PlayerPong';
-import { type gameRequest, type playerInfo } from './SocketInterface';
-import { GameService } from '../game/game.service';
+import { type gameRequest, type playerInfo } from '../../socket/SocketInterface';
+import { GameService } from '../game.service';
 import { Server } from 'socket.io';
 import { GameStatus } from '@prisma/client';
-import { Player } from '../player/Player';
+import { Player } from '../../player/Player';
 
 export enum Status {
 	Waiting,

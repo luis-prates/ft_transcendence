@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Player } from './Player';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class PlayerService {
@@ -8,6 +9,11 @@ export class PlayerService {
 	//! lobby only socket map
 	private sockets: Map<number, Socket> = new Map<number, Socket>();
 	private readonly logger = new Logger(Player.name);
+
+	constructor(private prismaService: PrismaService) {
+		this.logger.log('PlayerService initialized');
+		//! feed from database maybe?
+	}
 
 	//TODO: add namespace to keys maybe?
 	createPlayer(socket: Socket, payload: any): Player {

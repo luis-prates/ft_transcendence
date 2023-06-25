@@ -1,6 +1,6 @@
-import { Player } from '../player/Player';
+import { Player } from '../../player/Player';
 import { GameClass, Status } from './GamePong';
-import { gameRequest, playerInfo, updatePlayer } from './SocketInterface';
+import { gameRequest, playerInfo, updatePlayer } from '../../socket/SocketInterface';
 
 export class Games {
 	private games: GameClass[] = [];
