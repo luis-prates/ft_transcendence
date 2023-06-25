@@ -1,4 +1,4 @@
-import { Player } from 'src/lobby';
+import { Player } from '../player/Player';
 
 type ChatMessage = {
 	id: any;

@@ -80,7 +80,8 @@ function addChannel() {
     avatar: "",
     password: "",
     messages: [], // initialize with an empty array of messages
-    users: [] // initialize with an empty array of users
+    users: [], // initialize with an empty array of users
+	type: "", //! needs to be changed
   };
 
   store.addChannel(newChannel);

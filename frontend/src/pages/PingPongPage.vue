@@ -11,7 +11,7 @@ import { GamePong, TablePong, Status } from "@/game/ping_pong";
 import { onMounted, onUnmounted, ref } from "vue";
 import { type gameRequest, type updatePlayer, type updateBall, type gamePoint, type gameEnd } from "@/game/ping_pong/SocketInterface";
 import { userStore, type Historic } from "@/stores/userStore";
-import { socketClass } from "@/socket/Socket";
+import { socketClass } from "@/socket/SocketClass";
 
 import avatar_marvin from "@/assets/images/pingpong/marvin.jpg";
 

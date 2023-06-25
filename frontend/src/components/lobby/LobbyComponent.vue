@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
-import { socketClass } from "@/socket/Socket";
+import { socketClass } from "@/socket/SocketClass";
 import { userStore } from "@/stores/userStore";
 import ChatComponent from "@/components/chat/ChatComponent.vue";
 

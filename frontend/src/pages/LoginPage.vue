@@ -11,7 +11,7 @@ import { onMounted } from "vue";
 import { userStore } from "../stores/userStore";
 import Router from "../router/index";
 import { ref } from "vue";
-import { socketClass } from "@/socket/Socket";
+import { socketClass } from "@/socket/SocketClass";
 import { env } from "@/env";
 import type { Socket } from "socket.io-client";
 

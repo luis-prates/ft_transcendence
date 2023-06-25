@@ -1,5 +1,5 @@
 import { Character } from "../../base/Character";
-import { socketClass } from "@/socket/Socket";
+import { socketClass } from "@/socket/SocketClass";
 import { Map } from "./Map";
 import { Game } from "@/game/base/Game";
 import type { GameObject } from "@/game/base/GameObject";

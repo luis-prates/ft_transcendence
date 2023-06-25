@@ -2,7 +2,7 @@ import { Character } from "@/game/base/Character";
 import { Map } from "@/game/lobby/objects/Map";
 import type { GameObject } from "../base/GameObject";
 import { Game } from "..";
-import { socketClass } from "@/socket/Socket";
+import { socketClass } from "@/socket/SocketClass";
 import type { Socket } from "socket.io-client";
 
 export type eventCompleted = (objectDestination: GameObject | undefined) => void;

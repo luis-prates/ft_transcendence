@@ -1,7 +1,7 @@
-import { GameMap } from './GameMap';
+import { GameMap } from '../lobby/GameMap';
 import { Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
-import { PlayerService } from '../player/player.service';
+import { PlayerService } from './player.service';
 export type PathNode = {
 	x: number;
 	y: number;

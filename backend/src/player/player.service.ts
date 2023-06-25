@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
-import { Player } from '../lobby';
+import { Player } from './Player';
 
 @Injectable()
 export class PlayerService {

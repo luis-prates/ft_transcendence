@@ -24,6 +24,7 @@ export interface channel {
   password?: string;
   messages: ChatMessage[];
   users: ChatUser[];
+  type: string;
 }
 
 export const chatStore = defineStore("chat", () => {
@@ -61,32 +62,54 @@ export const chatStore = defineStore("chat", () => {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
-    await fetch
-      (env.BACKEND_PORT + "/chat/channels", options)
+    await axios
+      .get(env.BACKEND_PORT + "/chat/channels", options)
 
       // axios.request(options)
       .then(function (response: any) {
-        console.log("response: ", response);
+        console.log("response: ", response.data);
       })
       .catch(function (error) {
         console.error(error);
       });
   }
 
-  // async function createChannel(channel : channel) {
-  //   let body = {} as any;
-  //   body.color = tableColor;
-  //   body.skin = tableSkin;
+  async function createChannel(channel: channel) {
+    const createChannelDto = {
+      name: channel.name,
+      usersToAdd: channel.users,
+      channelType: channel.type,
+      password: channel.password ? channel.password : undefined,
+    };
+    console.log("createChannelDto:", createChannelDto);
 
-  //   const options = {
-  //     method: "PATCH",
-  //     headers: { Authorization: `Bearer ${user.access_token_server}` },
-  //     body: new URLSearchParams(body),
-  //   };
-  //   await fetch(env.BACKEND_PORT + "/users/update_table_skin", options)
-  //   .then(async (response) => console.log(await response.json()))
-  //   .catch((err) => console.error(err));
-  // }
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.access_token_server}`,
+      },
+      body: JSON.stringify(createChannelDto),
+    };
+    try {
+      const response = await fetch(`${env.BACKEND_PORT}/chat/channels`, options);
+      const data = await response.json();
+      console.log("CREATE CHANNEL:", data);
 
-  return { channels, selected, addChannel, showChannel, addMessage, getChannels };
+      // Check if the response indicates a successful operation
+      if (response.ok) {
+        // Return any relevant data here if needed
+        return false;
+      } else if (response.status == 409) {
+        return "409";
+      } else {
+        return true;
+      }
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  return { channels, selected, addChannel, showChannel, addMessage, getChannels, createChannel };
 });

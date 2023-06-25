@@ -1,6 +1,7 @@
 import type { GameObject, GameObjectType } from "@/game/base/GameObject";
 import { Map } from "@/game";
-import socket from "@/socket/Socket";
+import { socketClass } from "@/socket/SocketClass";
+import type { Socket } from "socket.io-client";
 
 export class Door implements GameObject {
   type: GameObjectType = "door";
@@ -13,6 +14,7 @@ export class Door implements GameObject {
   isSelect: boolean = false;
   mapName: string = "";
   mapPosition: { x: number; y: number } = { x: 0, y: 0 };
+  public lobbySocket: Socket = socketClass.getLobbySocket();
 
   constructor(data: { x: number; y: number; objectId: number; mapName: string; mapPosition: { x: number; y: number } }) {
     this.setData(data);
@@ -33,7 +35,7 @@ export class Door implements GameObject {
 
   interaction(gameObject: GameObject): void {
     console.log("door -> interaction", gameObject);
-    socket.emit("join_map", { objectId: gameObject.objectId, map: { name: "house", position: { x: 300, y: 300 } } });
+    this.lobbySocket.emit("join_map", { objectId: gameObject.objectId, map: { name: "house", position: { x: 300, y: 300 } } });
   }
 
   public getPointEvent(): { x: number; y: number } {

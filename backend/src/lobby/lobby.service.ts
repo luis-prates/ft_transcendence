@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Games } from '../ping_pong/Games';
 import { ChatController } from '../chat/ChatController';
 import { GameMap } from './GameMap';
-import { Player } from './Player';
+import { Player } from '../player/Player';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Socket } from 'socket.io';
@@ -16,7 +16,6 @@ export class LobbyService {
 	private readonly logger = new Logger(LobbyService.name);
 
 	constructor(private playerService: PlayerService) {
-		console.log('lobby from service created');
 		const pathMap = path.join(__dirname, '..', 'public', 'maps');
 		const files = fs.readdirSync(pathMap);
 		files.forEach(file => {

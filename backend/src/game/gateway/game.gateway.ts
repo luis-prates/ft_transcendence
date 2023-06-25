@@ -32,7 +32,6 @@ export class GameGateway
 	afterInit(server: any) {
 		this.logger.log('Game Gateway initialized');
 		this.gameService.setServer(this.server);
-		//console.log(this.server.maxConnections);
 	}
 
 	@SubscribeMessage('message')
@@ -43,7 +42,6 @@ export class GameGateway
 	}
 
 	handleConnection(@ConnectedSocket() client: Socket, ...args: any[]) {
-		console.log('On Connect');
 		const { query } = client.handshake;
 		this.logger.log(
 			`Client connected on /game namespace: ${

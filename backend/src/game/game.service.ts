@@ -4,10 +4,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { GameDto } from './dto';
 import { EventEmitter } from 'events';
 import { GameClass, infoBot } from '../ping_pong/GamePong';
-import { Player } from '../lobby';
 import { playerInfo } from '../ping_pong/SocketInterface';
 import { PlayerService } from '../player/player.service';
 import { Server } from 'socket.io';
+import { Player } from '../player/Player';
 
 @Injectable()
 export class GameService {
@@ -64,7 +64,7 @@ export class GameService {
 					g => g.data.objectId !== body.gameRequest.objectId,
 				);
 				this.logger.log(`Game ${game.id} ended and removed.`);
-				playerOne?.map.removeGameObject(
+				playerOne?.map?.removeGameObject(
 					playerOne,
 					body.gameRequest.objectId,
 				);

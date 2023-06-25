@@ -30,13 +30,14 @@ import { Game, Map } from "@/game";
 import img from "@/assets/images/lobby/layer_1.png";
 import { MapEdit } from "@/game/base/editor/MapEdit.js";
 import { MapObject } from "@/game/base/editor/MapObject.js";
-import socket from "@/socket/Socket";
+import { socketClass } from "@/socket/SocketClass";
 import { userStore } from "@/stores/userStore";
 
 const store = userStore();
 const game = ref<HTMLDivElement>();
 const file = ref<HTMLInputElement>();
 let lobby: MapEdit | null = null;
+const socket = socketClass.getLobbySocket();
 
 onMounted(() => {
   // const imagem = new Image();

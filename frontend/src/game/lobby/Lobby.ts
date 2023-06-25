@@ -2,7 +2,7 @@ import { Game, Map, Menu, Npc, type ElementUI, type Player } from "@/game";
 import { io, type Socket } from "socket.io-client";
 import { env } from "../../env";
 import { userStore } from "../../stores/userStore";
-import { socketClass } from "../../socket/Socket";
+import { socketClass } from "../../socket/SocketClass";
 
 export class Lobby extends Game {
   private list_update_gameobject: any[] = [];

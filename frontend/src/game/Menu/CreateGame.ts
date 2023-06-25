@@ -1,6 +1,6 @@
 import { Menu, type ElementUI, type Rectangle, Game } from "@/game";
 import Router from "@/router";
-import { socketClass } from "@/socket/Socket";
+import { socketClass } from "@/socket/SocketClass";
 
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";

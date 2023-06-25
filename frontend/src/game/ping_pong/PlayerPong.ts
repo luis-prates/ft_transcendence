@@ -5,7 +5,7 @@ import { skin, TypeSkin } from "./Skin";
 //Avatar
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import { type updatePlayer } from "./SocketInterface";
-import { socketClass } from "@/socket/Socket";
+import { socketClass } from "@/socket/SocketClass";
 
 //Avatar
 import avatarMarvin from "@/assets/images/pingpong/marvin.jpg";

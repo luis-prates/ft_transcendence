@@ -1,4 +1,4 @@
-import { Player } from '../lobby';
+import { Player } from '../player/Player';
 import { GameClass, Status } from './GamePong';
 import { playerInfo } from './SocketInterface';
 

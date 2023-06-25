@@ -1,11 +1,11 @@
 import { Logger } from '@nestjs/common';
-import { Player } from '../lobby';
 import { Ball } from './Ball';
 import { Player_Pong } from './PlayerPong';
 import { type gameRequest, type playerInfo } from './SocketInterface';
 import { GameService } from '../game/game.service';
 import { Server } from 'socket.io';
 import { GameStatus } from '@prisma/client';
+import { Player } from '../player/Player';
 
 export enum Status {
 	Waiting,
@@ -253,7 +253,6 @@ export class GameClass {
 		if (this.status != status) {
 			this.status = status;
 			this.emitAll('game_update_status', status);
-			console.log('Status: ', this.status);
 		}
 	}
 	//Make the Countdown and Emit for ALL
