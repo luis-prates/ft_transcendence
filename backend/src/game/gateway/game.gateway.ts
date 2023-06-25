@@ -14,7 +14,7 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
 
-@WebSocketGateway(3001, { namespace: 'game', cors: { origin: '*' } })
+@WebSocketGateway({ namespace: 'game', cors: { origin: '*' } })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	private readonly logger = new Logger(GameGateway.name);
 

@@ -12,7 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { LobbyService } from '../lobby.service';
 import { Logger, UnauthorizedException } from '@nestjs/common';
 
-@WebSocketGateway(3001, { namespace: 'lobby', cors: { origin: '*' } })
+@WebSocketGateway({ namespace: 'lobby', cors: { origin: '*' } })
 export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	private readonly logger = new Logger(LobbyGateway.name);
 
