@@ -69,23 +69,22 @@ const createChannel = () => {
 };
 
 //Testing the number of cahnnels created//Remover depois do backend devolver o objectId do channel em questao
-let maxObjectId = 0;
+// let maxObjectId = 0;
 
-//Buttom + addChannel
-function addChannel() {
-  maxObjectId++;
-  const newChannel: channel = {
-    objectId: maxObjectId,
-    name: "New Channel",
-    avatar: "",
-    password: "",
-    messages: [], // initialize with an empty array of messages
-    users: [], // initialize with an empty array of users
-	type: "", //! needs to be changed
-  };
+// //Buttom + addChannel
+// function addChannel() {
+//   maxObjectId++;
+//   const newChannel: channel = {
+//     objectId: maxObjectId,
+//     name: "New Channel",
+//     avatar: "",
+//     password: "",
+//     messages: [], // initialize with an empty array of messages
+//     users: [] // initialize with an empty array of users
+//   };
 
-  store.addChannel(newChannel);
-}
+//   store.addChannel(newChannel);
+// }
 
 // Props declaration
 const props = defineProps({
