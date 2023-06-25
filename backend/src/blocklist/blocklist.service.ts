@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	ConflictException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotFoundError } from 'rxjs';
 
@@ -29,6 +34,22 @@ export class BlocklistService {
 					blocked: {
 						connect: {
 							id: blockedId,
+						},
+					},
+				},
+				include: {
+					blocker: {
+						select: {
+							id: true,
+							nickname: true,
+							image: true,
+						},
+					},
+					blocked: {
+						select: {
+							id: true,
+							nickname: true,
+							image: true,
 						},
 					},
 				},
@@ -73,6 +94,22 @@ export class BlocklistService {
 						blockedId: blockedId,
 					},
 				},
+				include: {
+					blocker: {
+						select: {
+							id: true,
+							nickname: true,
+							image: true,
+						},
+					},
+					blocked: {
+						select: {
+							id: true,
+							nickname: true,
+							image: true,
+						},
+					},
+				},
 			});
 			return unblock;
 		} catch (error) {
@@ -88,6 +125,15 @@ export class BlocklistService {
 			where: {
 				blockerId: user.id,
 			},
+			include: {
+				blocked: {
+					select: {
+						id: true,
+						nickname: true,
+						image: true,
+					},
+				},
+			},
 		});
 
 		return blockedUsers;
@@ -97,6 +143,15 @@ export class BlocklistService {
 		const blockedBy = await this.prisma.blocklist.findMany({
 			where: {
 				blockedId: user.id,
+			},
+			include: {
+				blocker: {
+					select: {
+						id: true,
+						nickname: true,
+						image: true,
+					},
+				},
 			},
 		});
 

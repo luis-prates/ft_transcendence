@@ -62,8 +62,8 @@ export const chatStore = defineStore("chat", () => {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
-    await axios
-      .get(env.BACKEND_PORT + "/chat/channels", options)
+    await fetch
+      (env.BACKEND_PORT + "/chat/channels", options)
 
       // axios.request(options)
       .then(function (response: any) {
