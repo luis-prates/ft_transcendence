@@ -145,7 +145,7 @@ export class UserService {
 			});
 
 			if (user) {
-				if (!user.tableSkinsOwned.includes(dto.skin)) {
+				if (!user.tableSkinsOwned.includes(dto.skin) && dto.skin != "") {
 					//ERRO
 					return;
 				}
