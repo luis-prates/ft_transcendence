@@ -12,6 +12,32 @@ export class PlayerService {
 
 	constructor(private prismaService: PrismaService) {
 		this.logger.log('PlayerService initialized');
+		//TODO: Improve this, use Marvin/bot identifier instead of 6969
+		this.prismaService.user
+			.findUnique({
+				where: {
+					id: 6969,
+				},
+			})
+			.then(user => {
+				if (!user) {
+					this.prismaService.user
+						.create({
+							data: {
+								id: 6969,
+								name: 'Marvin',
+								nickname: 'Marvin',
+								email: 'marvin@marvin.com',
+								image: 'asffgasgasdg',
+								hash: 'asdgasdgasdg',
+							},
+						})
+						.then(user => {
+							this.logger.log(`created bot user: ${user.id}`);
+						});
+				}
+			});
+
 		//! feed from database maybe?
 	}
 
