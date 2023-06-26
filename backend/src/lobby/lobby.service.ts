@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Games } from '../game/ping_pong/Games';
-import { ChatController } from '../chat/ChatController';
 import { GameMap } from './GameMap';
 import { Player } from '../player/Player';
 import * as path from 'path';
@@ -12,7 +11,6 @@ import { PlayerService } from '../player/player.service';
 export class LobbyService {
 	public game: Games = new Games();
 	private gameMaps: Map<string, GameMap> = new Map<string, GameMap>();
-	public chatController: ChatController = new ChatController();
 	private readonly logger = new Logger(LobbyService.name);
 
 	constructor(private playerService: PlayerService) {
