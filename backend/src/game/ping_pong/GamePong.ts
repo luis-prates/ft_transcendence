@@ -3,6 +3,7 @@ import { Ball } from './Ball';
 import { Player_Pong } from './PlayerPong';
 import { type gameRequest, type playerInfo } from '../../socket/SocketInterface';
 import { GameService } from '../game.service';
+import { UserService } from '../../user/user.service';
 import { Server } from 'socket.io';
 import { GameStatus } from '@prisma/client';
 import { Player } from '../../player/Player';
@@ -43,6 +44,7 @@ export class GameClass {
 	private readonly logger = new Logger(GameClass.name);
 	private gameServer: Server;
 	private gameService: GameService;
+	//private userService: UserService;
 
 	constructor(gameResquest: gameRequest, gameService: GameService, onRemove: Function) {
 		this.data = gameResquest;
@@ -53,6 +55,9 @@ export class GameClass {
 
 		this.gameServer = gameService.getServer();
 		this.gameService = gameService;
+
+		/*this.userService = new UserService
+		this.userService.setServer(this.gameServer);*/
 	}
 
 	//Game Loop 1000 milesecond (1second) for 60 fps
@@ -209,18 +214,46 @@ export class GameClass {
 			winner.socket.emitToGame('end_game', {
 				objectId: this.data.objectId,
 				result: 'You Win!',
+				exp: 0,
+				max_exp: this.maxPoint * (this.bot ? 50 : this.player2.score == 0 ? 150 : 100),
+				money: 0,
+				max_money: this.maxPoint * (this.bot ? 2 : this.player2.score == 0 ? 5 : 3),
+				watchers: 0,
+				max_watchers: this.watchers.length,
 			});
+			this.updatePlayerStats(winner.userId, {
+				xp: this.maxPoint * (this.bot ? 50 : this.player2.score == 0 ? 150 : 100),
+				money: this.maxPoint * (this.bot ? 2 : this.player2.score == 0 ? 5 : 3),
+			})
 		}
 		if (loser.player_n !== 3) {
 			loser.socket.emitToGame('end_game', {
 				objectId: this.data.objectId,
 				result: 'You Lose!',
+				exp: 0,
+				max_exp: this.player2.score == 0 ? 10 : this.player2.score * (this.bot ? 10 : 20),
+				money: 0,
+				max_money: this.player2.score == 0 ? 1 : this.player2.score * (this.bot ? 1 : 2),
+				watchers: 0,
+				max_watchers: this.watchers.length,
 			});
+			this.updatePlayerStats(loser.userId, {
+				xp: this.maxPoint * (this.bot ? 50 : this.player2.score == 0 ? 150 : 100),
+				money: this.maxPoint * (this.bot ? 2 : this.player2.score == 0 ? 5 : 3),
+			})
 		}
 		this.emitWatchers('end_game', {
 			objectId: this.data.objectId,
 			result: winner.nickname + ' Win!',
+			exp: 0,
+			max_exp: 0,
+			money: 0,
+			max_money: 0,
+			watchers: 0,
+			max_watchers: 0,
 		});
+
+
 		this.logger.debug(`Game End. Winner player ${winner.nickname}`);
 
 		this.updateGameStats({
@@ -239,6 +272,12 @@ export class GameClass {
 	async updateGameStats(body: any) {
 		this.logger.debug(`Updating gameStats with ${body}`);
 		await this.gameService.updateGame(this.data.objectId, body);
+	}
+
+	async updatePlayerStats(player_id: number, body: any) {
+		this.logger.debug(`Updating ${player_id} Status with ${body}`);
+		
+		//await this.userService.updateStats(player_id, body);
 	}
 
 	//Update Status and Emit for ALL
