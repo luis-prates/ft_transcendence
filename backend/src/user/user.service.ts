@@ -145,7 +145,7 @@ export class UserService {
 			});
 
 			if (user) {
-				if (!user.tableSkinsOwned.includes(dto.skin) && dto.skin != "") {
+				if (!user.tableSkinsOwned.includes(dto.skin) && dto.skin != '') {
 					//ERRO
 					return;
 				}
@@ -214,7 +214,7 @@ export class UserService {
 			throw error;
 		}
 	}
-	
+
 	async updateStats(userId: number, dto: UserUpdateStatsDto) {
 		try {
 			const user = await this.prisma.user.findUnique({
@@ -223,22 +223,21 @@ export class UserService {
 				},
 			});
 			if (user) {
-
+				const userMoney = user.money + dto.money;
 				let user_xp = user.xp + dto.xp;
 				let user_level = user.level;
 
-				while (user_xp >= user_level * 200)
-     			{
-     			  	user_xp -= user_level * 100;
+				while (user_xp >= user_level * 200) {
+					user_xp -= user_level * 100;
 					user_level += 1;
-     			}
+				}
 
 				const updatedUser = await this.prisma.user.update({
 					where: {
 						id: userId,
 					},
 					data: {
-						money: user.money + dto.money,
+						money: userMoney,
 						xp: user_xp,
 						level: user_level,
 					},
@@ -262,4 +261,3 @@ export class UserService {
 		}
 	}
 }
-

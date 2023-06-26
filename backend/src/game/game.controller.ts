@@ -1,9 +1,10 @@
-import { Body, Controller, HttpCode, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseIntPipe, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
 import { GetUser } from '../auth/decorator';
 import { GameDto } from './dto';
 import { playerInfo } from '../socket/SocketInterface';
+import { GameStatus } from '@prisma/client';
 
 //! deactivated for testing purposes
 //@UseGuards(JwtGuard)
@@ -33,5 +34,15 @@ export class GameController {
 	@Patch('update/:gameId')
 	endGame(@Param('gameId', new ParseUUIDPipe()) gameId: string, @Body() body: GameDto) {
 		return this.gameService.endGame(gameId, body);
+	}
+
+	@Get(':userId')
+	getUserGames(@Param('userId', new ParseIntPipe()) userId: number) {
+		return this.gameService.getUserGames(userId);
+	}
+
+	@Get('active')
+	getActiveGames(status: GameStatus) {
+		return this.gameService.getActiveGames(status);
 	}
 }

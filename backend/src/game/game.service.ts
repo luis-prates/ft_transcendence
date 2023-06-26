@@ -8,6 +8,7 @@ import { playerInfo } from '../socket/SocketInterface';
 import { PlayerService } from '../player/player.service';
 import { Server } from 'socket.io';
 import { Player } from '../player/Player';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class GameService {
@@ -19,7 +20,7 @@ export class GameService {
 	// TODO: to be added to Game service
 	// private isInLobby = false;
 
-	constructor(private prisma: PrismaService, private playerService: PlayerService) {
+	constructor(private prisma: PrismaService, private playerService: PlayerService, private userService: UserService) {
 		this.events = new EventEmitter();
 	}
 
@@ -52,7 +53,7 @@ export class GameService {
 		body.gameRequest.objectId = game.id;
 		// new_game equivalent
 		this.games.push(
-			new GameClass(body.gameRequest, this, () => {
+			new GameClass(body.gameRequest, this, this.userService, () => {
 				// this.events.emit('gameEnded', game);
 				// remove game from games array
 				this.games = this.games.filter(g => g.data.objectId !== body.gameRequest.objectId);
@@ -203,5 +204,47 @@ export class GameService {
 				throw error;
 			}
 		}
+	}
+
+	async getUserGames(userId: number) {
+		this.prisma.game.findMany({
+			where: {
+				players: {
+					some: {
+						id: userId,
+					},
+				},
+				status: GameStatus.FINISHED,
+			},
+			include: {
+				players: {
+					select: {
+						id: true,
+						nickname: true,
+						image: true,
+					},
+				},
+			},
+		});
+	}
+
+	async getActiveGames(status: GameStatus) {
+		if (status === GameStatus.FINISHED) {
+			throw new ForbiddenException('Cannot get finished games.');
+		}
+		return this.prisma.game.findMany({
+			where: {
+				status,
+			},
+			include: {
+				players: {
+					select: {
+						id: true,
+						nickname: true,
+						image: true,
+					},
+				},
+			},
+		});
 	}
 }
