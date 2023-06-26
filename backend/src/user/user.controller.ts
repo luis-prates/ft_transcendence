@@ -3,7 +3,7 @@ import { User } from '@prisma/client';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
 import { UserService } from './user.service';
-import { UserDto, UserBuySkinDto, UserUpdateSkinTableDto, UserProfileDto } from './dto';
+import { UserDto, UserBuySkinDto, UserUpdateSkinTableDto, UserProfileDto, UserUpdateStatsDto } from './dto';
 
 @UseGuards(JwtGuard)
 @Controller('users')
@@ -40,12 +40,16 @@ export class UserController {
 
 	@Get('users')
 	getUsers(@GetUser() user: User) {
-		return (this.userService.getUsers(user.id));
+		return this.userService.getUsers(user.id);
 	}
 
 	@Get('get_profile/:id')
 	getProfile(@GetUser() user: User, @Param('id', ParseIntPipe) personId: number) {
-		return (this.userService.getProfile(user.id, personId));
+		return this.userService.getProfile(user.id, personId);
 	}
 
+	@Post('updateStats')
+	updateStats(@GetUser('id') userId: number, @Body() dto: UserUpdateStatsDto) {
+		return this.userService.updateStats(userId, dto);
+	}
 }

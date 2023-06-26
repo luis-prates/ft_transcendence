@@ -8,6 +8,7 @@ export type gameRequest = {
 
 export type playerInfo = {
 	objectId: string;
+	userId: number;
 	nickname: string;
 	avatar: string;
 	color: string;

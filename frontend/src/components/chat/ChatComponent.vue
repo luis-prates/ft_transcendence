@@ -10,13 +10,16 @@ import ChatList from "./ChatList.vue";
 import ChatContent from "./ChatContent.vue";
 import { onMounted, onUnmounted, ref } from "vue";
 import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
-import socket from "@/socket/Socket";
+import { userStore } from "@/stores/userStore";
 import { provide } from 'vue';//channelStatus
+import { socketClass } from "@/socket/SocketClass";
 
 const store = chatStore();
+const user = userStore();
 
 const showTesss = ref(false);
 const showbuttom = ref(false);
+const socket = socketClass.getLobbySocket();
 
 function toggleTesss() {
   showTesss.value = !showTesss.value;
@@ -24,7 +27,9 @@ function toggleTesss() {
 }
 
 onMounted(() => {
-store.getChannels();
+  socketClass.setChatSocket({ query: { userId: user.user.id } });//testing chatSocket
+  
+  store.getChannels();
 
   socket.on("join_chat", (data: channel) => {
     console.log("join_chat", data);

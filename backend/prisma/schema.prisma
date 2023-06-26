@@ -2,12 +2,12 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+	provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
 }
 
 model User {
@@ -18,46 +18,51 @@ model User {
 	email					String @unique
 	hash					String
 
-    // UserProfile
+	// UserProfile
 	name					String
 	nickname				String @unique
 	image					String?
-    money                   Int @default(0)
+	money					Int @default(0)
 	avatar					Int @default(0)	//Avatar in The Lobby
 
 	// Info Ping Pong
-    level                   Int @default(1)
-    xp                      Int @default(0)
-    color                   String @default("blue") // this sets the color for player name, player ball and player padel
-    tableColorEquipped      String @default("")
-    tableSkinEquipped       String @default("")
-    paddleSkinEquipped      String @default("")
-    tableSkinsOwned         String[]
-    paddleSkinsOwned        String[]
-    // gameHistory          Games[]
+	level					Int @default(1)
+	xp						Int @default(0)
+	color					String @default("blue") // this sets the color for player name, player ball and player padel
+	tableColorEquipped		String @default("")
+	tableSkinEquipped		String @default("")
+	paddleSkinEquipped		String @default("")
+	tableSkinsOwned			String[]
+	paddleSkinsOwned		String[]
+	// gameHistory			Games[]
 
 	status					UserStatus @default(OFFLINE) // Offline, In Game, Online
 
-    // Friends
+	// Friends
 	sentFriendRequests		FriendRequest[] @relation("FriendShipRequestor")
 	receivedFriendRequests	FriendRequest[] @relation("FriendShipRequestee")
 	friends					User[] @relation("Friends")
 	friendsOf				User[] @relation("Friends")
 
-    // Blocked Users
-    blockedUsers  Blocklist[] @relation("BlockingUsers")
-    blockingUsers Blocklist[] @relation("BlockedUsers")
+	// Game
+	games					Game[] //@relation("WonGames")
+	//lostGames				Game[] @relation("LostGames")
 
-    // Chat
-    messages                Message[]
-    channels                ChannelUser[]
-    ownedChannels           Channel[] @relation("ChannelOwner")
+	// Blocked Users
+	blockedUsers			Blocklist[] @relation("BlockingUsers")
+	blockingUsers			Blocklist[] @relation("BlockedUsers")	
+
+	// Chat
+	messages				Message[]
+	channels				ChannelUser[]
+	ownedChannels			Channel[] @relation("ChannelOwner")
+
 	@@unique([id, nickname])
 	@@map("users")
 }
 
 model FriendRequest {
-	id						Int @unique @default(autoincrement())
+	id						String @unique @default(uuid())
 	createdAt				DateTime @default(now())
 	updatedAt				DateTime @updatedAt
 
@@ -76,45 +81,124 @@ model FriendRequest {
 }
 
 model Blocklist {
-    id           Int @default(autoincrement())
-    blockerId    Int
-    blocker      User @relation("BlockingUsers", fields: [blockerId], references: [id])
-    blockedId    Int
-    blocked      User @relation("BlockedUsers", fields: [blockedId], references: [id])
-    createdAt    DateTime @default(now())
-    @@id([blockerId, blockedId])
+	id						Int @default(autoincrement())
+	blockerId				Int
+	blocker					User @relation("BlockingUsers", fields: [blockerId], references: [id])
+	blockedId				Int
+	blocked					User @relation("BlockedUsers", fields: [blockedId], references: [id])
+	createdAt				DateTime @default(now())
+	@@id([blockerId, blockedId])
 }
 
 model Message {
-    id                      Int @id @default(autoincrement())
-    content                 String
-    userId                  Int
-    user                    User @relation(fields: [userId], references: [id])
-    channelId               Int
-    channel                 Channel @relation(fields: [channelId], references: [id])
-    createdAt               DateTime @default(now())
+	id						Int @id @default(autoincrement())
+	content					String
+	userId					Int
+	user					User @relation(fields: [userId], references: [id])
+	channelId				Int
+	channel					Channel @relation(fields: [channelId], references: [id])
+	createdAt				DateTime @default(now())
+
+	@@map("messages")
 }
 
 model Channel {
-    id                      Int @id @default(autoincrement())
-    name                    String? @unique
-    hash                    String?
-    messages                Message[]
-    users                   ChannelUser[]
-    ownerId                 Int?
-    owner                   User? @relation("ChannelOwner", fields: [ownerId], references: [id])
+	id						Int @id @default(autoincrement())
+	name					String? @unique
+	hash					String?
+	messages				Message[]
+	users					ChannelUser[]
+	ownerId					Int?
+	owner					User? @relation("ChannelOwner", fields: [ownerId], references: [id])
 	type					ChannelType // Public, Private, Protected, DM
+
+	@@map("channels")
 }
 
 model ChannelUser {
-    userId                  Int
-    user                    User @relation(fields: [userId], references: [id])
-    channelId               Int
-    channel                 Channel @relation(fields: [channelId], references: [id])
-    isMuted                 Boolean @default(false)
-    isAdmin                 Boolean @default(false)
-    @@id([userId, channelId])
+	userId					Int
+	user					User @relation(fields: [userId], references: [id])
+	channelId				Int
+	channel					Channel @relation(fields: [channelId], references: [id])
+	isMuted					Boolean @default(false)
+	isAdmin					Boolean @default(false)	
+	@@id([userId, channelId])
+	@@map("channel_users")
 }
+
+enum ChannelType {
+	PUBLIC
+	PRIVATE
+	PROTECTED
+	DM
+}
+
+// model Game {
+// 	id Int @id @unique @default(autoincrement())
+// 	createdAt DateTime @default(now())
+// 	updatedAt DateTime @updatedAt
+
+
+// TODO: need to check how spectators will be handled
+model Game {
+	id						String @id @unique @default(uuid())
+	createdAt				DateTime @default(now())
+	updatedAt				DateTime @updatedAt
+
+	status					GameStatus @default(NOT_STARTED) // 0: not started, 1: started, 2: ended
+	players					User[] //@relation("WonGames", fields: [winnerId], references: [id])
+	
+
+	gameStats				Json? // winnerId, loserId, winnerScore, loserScore, gameTime, gameDate, gameType
+	gameType				GameType // Public, Private, Protected
+
+	@@map("games")
+}
+
+// model Chat {
+// 	id Int @id @unique @default(autoincrement())
+// 	createdAt DateTime @default(now())
+// 	updatedAt DateTime @updatedAt
+
+// 	//messages Message[]
+// 	users User[]
+
+// 	channelName String @unique
+// 	// channel mode may be in front end (public, private, protected by password)
+// 	password String? // if protected
+
+// 	channelOwnerId Int
+// 	channelOwner User[] @relation("channelOwner", fields: [channelOwnerId], references: [id])
+// 	channelAdminId Int
+// 	channelAdmin User[] @relation("channelAdmin", fields: [channelAdminId], references: [id])
+// 	channelMuteId Int
+// 	channelMute User[] @relation("channelMute", fields: [channelMuteId], references: [id])
+// 	channelBanId Int
+// 	channelBan User[] @relation("channelBan", fields: [channelBanId], references: [id])
+// }
+
+// name to be decided
+// TODO: work on it
+model Customization {
+	id						String @unique @default(uuid())
+	createdAt				DateTime @default(now())
+	updatedAt				DateTime @updatedAt
+
+	userId					Int
+	object					String
+
+	// avatar
+	category				String // avatar, background, paddle
+
+	name					String
+
+	type					String
+
+	description				String
+
+	price					Int
+}
+
 
 enum FriendReqStatus {
 	PENDING
@@ -130,9 +214,16 @@ enum UserStatus {
 	ONLINE
 }
 
-enum ChannelType {
+enum GameStatus {
+	NOT_STARTED
+	IN_PROGESS
+	FINISHED
+}
+
+// !TODO: needs confirmation
+enum GameType {
 	PUBLIC
-    PRIVATE
-    PROTECTED
-    DM
+	PRIVATE
+	PROTECTED
+	DM
 }

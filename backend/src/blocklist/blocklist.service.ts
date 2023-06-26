@@ -32,6 +32,22 @@ export class BlocklistService {
 						},
 					},
 				},
+				include: {
+					blocker: {
+						select: {
+							id: true,
+							nickname: true,
+							image: true,
+						},
+					},
+					blocked: {
+						select: {
+							id: true,
+							nickname: true,
+							image: true,
+						},
+					},
+				},
 			});
 			return block;
 		} catch (error) {
@@ -73,6 +89,22 @@ export class BlocklistService {
 						blockedId: blockedId,
 					},
 				},
+				include: {
+					blocker: {
+						select: {
+							id: true,
+							nickname: true,
+							image: true,
+						},
+					},
+					blocked: {
+						select: {
+							id: true,
+							nickname: true,
+							image: true,
+						},
+					},
+				},
 			});
 			return unblock;
 		} catch (error) {
@@ -88,6 +120,15 @@ export class BlocklistService {
 			where: {
 				blockerId: user.id,
 			},
+			include: {
+				blocked: {
+					select: {
+						id: true,
+						nickname: true,
+						image: true,
+					},
+				},
+			},
 		});
 
 		return blockedUsers;
@@ -97,6 +138,15 @@ export class BlocklistService {
 		const blockedBy = await this.prisma.blocklist.findMany({
 			where: {
 				blockedId: user.id,
+			},
+			include: {
+				blocker: {
+					select: {
+						id: true,
+						nickname: true,
+						image: true,
+					},
+				},
 			},
 		});
 

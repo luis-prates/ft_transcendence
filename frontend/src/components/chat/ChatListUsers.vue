@@ -5,7 +5,7 @@
       <span class="online_icon offline"></span>
     </div>
     <div class="user_info">
-      <span>{{ props.user.name }}</span>
+      <span>{{ props.user.nickname }}</span>
       <p>Offline</p>
     </div>
   </div>

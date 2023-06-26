@@ -1,9 +1,9 @@
-import { Player } from '../lobby';
-import { Game, Status } from './GamePong';
-import { playerInfo } from './SocketInterface';
+import { Player } from '../../player/Player';
+import { GameClass, Status } from './GamePong';
+import { playerInfo } from '../../socket/SocketInterface';
 
 export class Player_Pong {
-	game: Game;
+	game: GameClass;
 	width = 30;
 	height = 100;
 	socket: Player;
@@ -17,10 +17,11 @@ export class Player_Pong {
 	fpsUpdate = 0;
 	color: string;
 	skin: string;
+	userId: number;
 	up = false;
 	down = false;
 
-	constructor(game: Game, player_n: number, playerLobby: Player, info?: playerInfo) {
+	constructor(game: GameClass, player_n: number, playerLobby: Player, info?: playerInfo) {
 		this.game = game;
 		this.player_n = player_n;
 		this.y = game.height / 2 - this.height / 2;
@@ -36,6 +37,7 @@ export class Player_Pong {
 		this.avatar = info.avatar;
 		this.color = info.color;
 		this.skin = info.skin;
+		this.userId = info.userId;
 	}
 
 	moveUp() {

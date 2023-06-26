@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsEnum, MinLength, isNotEmpty, IsArray, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsEnum, MinLength, IsArray, IsNumber } from 'class-validator';
 import { ChannelType } from '../../types';
 
 export class CreateChannelDto {
