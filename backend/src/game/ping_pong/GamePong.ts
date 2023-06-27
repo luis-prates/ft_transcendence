@@ -98,28 +98,40 @@ export class GameClass {
 			player: 1,
 			status: Status.Starting,
 			data: this.data,
-			nickname1: this.player1.nickname,
-			avatar1: this.player1.avatar,
-			color1: this.player1.color,
-			skin1: this.player1.skin,
-			nickname2: this.player2.nickname,
-			avatar2: this.player2.avatar,
-			color2: this.player2.color,
-			skin2: this.player2.skin,
+			player1: {
+				id: this.player1.userId,
+				nickname: this.player1.nickname,
+				avatar: this.player1.avatar,
+				color: this.player1.color,
+				skin: this.player1.skin,
+			},
+			player2: {
+				id: this.player2.userId,
+				nickname: this.player2.nickname,
+				avatar: this.player2.avatar,
+				color: this.player2.color,
+				skin: this.player2.skin,
+			},
 		});
 		if (this.bot == false) {
 			this.player2.socket.emitToGame('start_game', {
 				player: 2,
 				status: Status.Starting,
 				data: this.data,
-				nickname1: this.player1.nickname,
-				avatar1: this.player1.avatar,
-				color1: this.player1.color,
-				skin1: this.player1.skin,
-				nickname2: this.player2.nickname,
-				avatar2: this.player2.avatar,
-				color2: this.player2.color,
-				skin2: this.player2.skin,
+				player1: {
+					id: this.player1.userId,
+					nickname: this.player1.nickname,
+					avatar: this.player1.avatar,
+					color: this.player1.color,
+					skin: this.player1.skin,
+				},
+				player2: {
+					id: this.player2.userId,
+					nickname: this.player2.nickname,
+					avatar: this.player2.avatar,
+					color: this.player2.color,
+					skin: this.player2.skin,
+				},
 			});
 		}
 		console.log('emit_start_game');
@@ -145,17 +157,22 @@ export class GameClass {
 		} else if (!this.watchers.includes(user)) {
 			this.watchers.push(user);
 			user.emitToGame('start_game', {
-				//Game
-				status: this.status,
+				status: Status.Starting,
 				data: this.data,
-				nickname1: this.player1.nickname,
-				avatar1: this.player1.avatar,
-				color1: this.player1.color,
-				skin1: this.player1.skin,
-				nickname2: this.player2.nickname,
-				avatar2: this.player2.avatar,
-				color2: this.player2.color,
-				skin2: this.player2.skin,
+				player1: {
+					id: this.player1.userId,
+					nickname: this.player1.nickname,
+					avatar: this.player1.avatar,
+					color: this.player1.color,
+					skin: this.player1.skin,
+				},
+				player2: {
+					id: this.player2.userId,
+					nickname: this.player2.nickname,
+					avatar: this.player2.avatar,
+					color: this.player2.color,
+					skin: this.player2.skin,
+				},
 			});
 			this.emitAll('game_view', this.watchers.length);
 		}
@@ -209,16 +226,24 @@ export class GameClass {
 	}
 
 	private updateGameStatsForWinner(winner: Player_Pong, loser: Player_Pong) {
+
+		const gameResults = {
+			winnerId: winner.userId,
+			winnerName: winner.nickname,
+			winnerScore: winner.score,
+			loserId: loser.userId,
+			loserName: loser.nickname,
+			loserScore: loser.score,
+		};
+
 		if (winner.player_n !== 3) {
 			winner.socket.emitToGame('end_game', {
 				objectId: this.data.objectId,
 				result: 'You Win!',
-				exp: 0,
-				max_exp: this.maxPoint * (this.bot ? 50 : winner.score == 0 ? 150 : 100),
-				money: 0,
-				max_money: this.maxPoint * (this.bot ? 2 : winner.score == 0 ? 5 : 3),
-				watchers: 0,
-				max_watchers: this.watchers.length,
+				exp: this.maxPoint * (this.bot ? 50 : winner.score == 0 ? 150 : 100),
+				money: this.maxPoint * (this.bot ? 2 : winner.score == 0 ? 5 : 3),
+				watchers: this.watchers.length,
+				gameResults,
 			});
 			this.updatePlayerStats(winner.userId, {
 				xp: this.maxPoint * (this.bot ? 50 : winner.score == 0 ? 150 : 100),
@@ -229,41 +254,29 @@ export class GameClass {
 			loser.socket.emitToGame('end_game', {
 				objectId: this.data.objectId,
 				result: 'You Lose!',
-				exp: 0,
-				max_exp: loser.score == 0 ? 10 : loser.score * (this.bot ? 10 : 20),
-				money: 0,
-				max_money: loser.score == 0 ? 1 : loser.score * (this.bot ? 1 : 2),
-				watchers: 0,
-				max_watchers: this.watchers.length,
+				exp: loser.score == 0 ? 10 : loser.score * (this.bot ? 10 : 20),
+				money: loser.score == 0 ? 1 : loser.score * (this.bot ? 1 : 2),
+				watchers: this.watchers.length,
+				gameResults,
 			});
 			this.updatePlayerStats(loser.userId, {
-				xp: this.maxPoint * (this.bot ? 50 : loser.score == 0 ? 150 : 100),
-				money: this.maxPoint * (this.bot ? 2 : loser.score == 0 ? 5 : 3),
+				xp: loser.score == 0 ? 10 : loser.score * (this.bot ? 10 : 20),
+				money: loser.score == 0 ? 1 : loser.score * (this.bot ? 1 : 2),
 			});
 		}
 		this.emitWatchers('end_game', {
 			objectId: this.data.objectId,
 			result: winner.nickname + ' Win!',
 			exp: 0,
-			max_exp: 0,
 			money: 0,
-			max_money: 0,
 			watchers: 0,
-			max_watchers: 0,
 		});
 
 		this.logger.debug(`Game End. Winner player ${winner.nickname}`);
 
 		this.updateGameStats({
 			status: GameStatus.FINISHED,
-			gameStats: {
-				winnerId: winner.userId,
-				winnerName: winner.nickname,
-				winnerScore: winner.score,
-				loserId: loser.userId,
-				loserName: loser.nickname,
-				loserScore: loser.score,
-			},
+			gameStats: gameResults,
 		});
 	}
 

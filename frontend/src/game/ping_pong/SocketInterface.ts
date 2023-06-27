@@ -1,3 +1,5 @@
+import type { Status } from "./GamePong";
+
 export interface gameRequest {
   objectId: string,
   maxScore: number,
@@ -43,9 +45,32 @@ export interface gamePoint {
 export interface gameEnd {
   result: string;
   exp: number;
-  max_exp: number;
   money: number;
-  max_money: number;
   watchers: number;
-  max_watchers: number;
+  gameResults: ResultGame;
+}
+
+interface ResultGame {
+  winnerId: number,
+  winnerName: string,
+  winnerScore: number,
+  loserId: number,
+  loserName: string,
+  loserScore: number,
+}
+
+export interface GameStart {
+  player: number;
+  status: Status;
+  data: any;
+  player1: PlayerData;
+  player2: PlayerData;
+}
+
+interface PlayerData {
+  id: number;
+  nickname: string;
+  avatar: string;
+  color: string;
+  skin: string;
 }

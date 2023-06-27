@@ -41,12 +41,22 @@ export class GamePong {
   endGame: gameEnd = {
     result: "",
     exp: 0,
-    max_exp: 500,
     money: 0,
-    max_money: 10,
     watchers: 0,
-    max_watchers: 10,
+    gameResults: {
+      winnerId: 0,
+      winnerName: "",
+      winnerScore: 0,
+      loserId: 0,
+      loserName: "",
+      loserScore: 0,
+    }
   };
+  cur: any = {
+    exp: 0,
+    money: 0,
+    watchers: 0,
+  }
   backgroundMusic = new Audio(music);
   watchersNumber: number = 0;
 
@@ -64,7 +74,6 @@ export class GamePong {
     this.data = data;
 
     this.canvas.addEventListener("click", (event) => this.handleClick(event, this));
-
   }
   //Update Input Keys
   update() {
@@ -155,16 +164,16 @@ export class GamePong {
   //Animation Loop 1000 milesecond (1second) for 10 fps
 	animation_points() {
     
-    let gain_exp = Math.ceil(this.endGame.max_exp / 10);
-    gain_exp = this.endGame.exp + gain_exp > this.endGame.max_exp ? this.endGame.max_exp - gain_exp : gain_exp;
+    let gain_exp = Math.ceil(this.endGame.exp / 10);
+    gain_exp = this.cur.exp + gain_exp > this.endGame.exp ? this.endGame.exp - gain_exp : gain_exp;
 
-    this.endGame.max_exp > this.endGame.exp ? this.endGame.exp += gain_exp : (this.endGame.max_money > this.endGame.money ? this.endGame.money++ : 
-      (this.endGame.max_watchers > this.endGame.watchers ? this.endGame.watchers++ : 0 ));
+    this.endGame.exp > this.cur.exp ? this.cur.exp += gain_exp : (this.endGame.money > this.cur.money ? this.cur.money++ : 
+      (this.endGame.watchers > this.cur.watchers ? this.cur.watchers++ : 0 ));
       
     new Audio(sound_coin).play();
 		
     setTimeout(() => {
-      if (!(this.endGame.exp == this.endGame.max_exp && this.endGame.money == this.endGame.max_money && this.endGame.watchers == this.endGame.max_watchers))
+      if (!(this.cur.exp == this.endGame.exp && this.cur.money == this.endGame.money && this.cur.watchers == this.endGame.watchers))
 			  this.animation_points();
 		}, 1000 / 10);
 	}
@@ -202,9 +211,9 @@ export class GamePong {
     this.context.strokeText("Money:", 85 + (this.width - 180) / 8, 470);
     this.context.strokeText("Watchers:", 85 + (this.width - 180) / 8, 530);
 
-    this.context.strokeText("+" + this.endGame.exp.toString() + " Exp", 85 + (this.width - 180) / 1.85, 410);
-    this.context.strokeText("+" + this.endGame.money.toString() + "₳", 85 + (this.width - 180) / 1.85, 470);
-    this.context.strokeText(this.endGame.watchers.toString(), 85 + (this.width - 180) / 1.85, 530);
+    this.context.strokeText("+" + this.cur.exp.toString() + " Exp", 85 + (this.width - 180) / 1.85, 410);
+    this.context.strokeText("+" + this.cur.money.toString() + "₳", 85 + (this.width - 180) / 1.85, 470);
+    this.context.strokeText(this.cur.watchers.toString(), 85 + (this.width - 180) / 1.85, 530);
     
 
     this.context.fillText("Experience:", 85 + (this.width - 180) / 8, 410);
@@ -213,9 +222,9 @@ export class GamePong {
     
     this.context.fillStyle = "white";
     
-    this.context.fillText("+" + this.endGame.exp.toString() + " Exp", 85 + (this.width - 180) / 1.85, 410);
-    this.context.fillText("+" + this.endGame.money.toString() + "₳", 85 + (this.width - 180) / 1.85, 470);
-    this.context.fillText(this.endGame.watchers.toString(), 85 + (this.width - 180) / 1.85, 530);
+    this.context.fillText("+" + this.cur.exp.toString() + " Exp", 85 + (this.width - 180) / 1.85, 410);
+    this.context.fillText("+" + this.cur.money.toString() + "₳", 85 + (this.width - 180) / 1.85, 470);
+    this.context.fillText(this.cur.watchers.toString(), 85 + (this.width - 180) / 1.85, 530);
 
   }
   
@@ -224,7 +233,7 @@ export class GamePong {
     this.context.font = "30px 'Press Start 2P', cursive";
 
     //Button "Go Back!"
-    if ((this.playerNumber != 1 && this.playerNumber != 2) || this.endGame.exp == this.endGame.max_exp && this.endGame.money == this.endGame.max_money && this.endGame.watchers == this.endGame.max_watchers)
+    if ((this.playerNumber != 1 && this.playerNumber != 2) || this.cur.exp == this.endGame.exp && this.cur.money == this.endGame.money && this.cur.watchers == this.endGame.watchers)
     { 
       this.context.fillStyle = "yellow";
       this.context.strokeRect(this.width / 2 - 140, 575, 280, 50);
@@ -279,13 +288,13 @@ export class GamePong {
     if (game.status != Status.Finish)
       return ;
 
-    const isgetall = (game.endGame.exp == game.endGame.max_exp && game.endGame.money == game.endGame.max_money && game.endGame.watchers == game.endGame.max_watchers);
+    const isgetall = (game.cur.exp == game.endGame.exp && game.cur.money == game.endGame.money && game.cur.watchers == game.endGame.watchers);
 
     if (!isgetall)
     {
-      game.endGame.exp = game.endGame.max_exp;
-      game.endGame.money = game.endGame.max_money;
-      game.endGame.watchers = game.endGame.max_watchers;
+      game.cur.exp = game.endGame.exp;
+      game.cur.money = game.endGame.money;
+      game.cur.watchers = game.endGame.watchers;
     }
     else
     {
@@ -334,9 +343,9 @@ export class GamePong {
     }
 
     if (mouseX >= 0 && mouseX <= game.canvas.width && mouseY >= 0 && mouseY <= game.canvas.height) {
-      game.endGame.exp = game.endGame.max_exp;
-      game.endGame.money = game.endGame.max_money;
-      game.endGame.watchers = game.endGame.max_watchers; 
+      game.endGame.exp = game.endGame.exp;
+      game.endGame.money = game.endGame.money;
+      game.endGame.watchers = game.endGame.watchers; 
     }
 
     // if ( isgetall && (mouseX >= game.width / 2 - 140 && mouseX <= game.width / 2 + 140  && mouseY >= 575 && mouseY <= 625)) {

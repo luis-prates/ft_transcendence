@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { GamePong, TablePong, Status } from "@/game/ping_pong";
 import { onMounted, onUnmounted, ref } from "vue";
-import { type gameRequest, type updatePlayer, type updateBall, type gamePoint, type gameEnd } from "@/game/ping_pong/SocketInterface";
+import { type gameRequest, type updatePlayer, type updateBall, type gamePoint, type gameEnd, type GameStart } from "@/game/ping_pong/SocketInterface";
 import { userStore, type Historic } from "@/stores/userStore";
 import { socketClass } from "@/socket/SocketClass";
 
@@ -53,26 +53,30 @@ onMounted(function () {
   const game = new GamePong(canvas, canvas.width, canvas.height - 228, 164, ctx, props as gameRequest, tableBoard);
   console.log(props);
 
-  socket.on("start_game", (e: any) => {
-    console.log(e);
+  socket.on("start_game", (e: GameStart) => {
+    console.log("Start:", e);
     console.log(game);
     game.audio("music_play");
 
     game.table.color = e.data.table;
     game.table.skin.src = e.data.tableSkin ? e.data.tableSkin : "";
 
-    game.player1.nickname = e.nickname1 ? e.nickname1 : game.player1.nickname;
-    game.player1.color = e.color1;
-    game.player1.avatar.src = e.avatar1 ? e.avatar1 : game.player1.avatar.src;
+    //Player 1
+    game.player1.id = e.player1.id;
+    game.player1.nickname = e.player1.nickname ? e.player1.nickname : game.player1.nickname;
+    game.player1.color = e.player1.color;
+    game.player1.avatar.src = e.player1.avatar ? e.player1.avatar : game.player1.avatar.src;
 
-    game.player2.nickname = e.nickname2 ? e.nickname2 : game.player1.nickname;;
-    game.player2.color = e.color2;
-    game.player2.avatar.src = e.avatar2 ? e.avatar2 : game.player2.avatar.src;
+    //Player 2
+    game.player2.id = e.player2.id;
+    game.player2.nickname =  e.player2.nickname ?  e.player2.nickname : game.player1.nickname;;
+    game.player2.color =  e.player2.color;
+    game.player2.avatar.src =  e.player2.avatar ?  e.player2.avatar : game.player2.avatar.src;
 
-    if (game.player2.nickname == "Marvin" && e.avatar2 == "marvin") game.player2.avatar.src = avatar_marvin;
+    if (game.player2.nickname == "Marvin" && e.player2.avatar == "marvin") game.player2.avatar.src = avatar_marvin;
 
-    e.skin1 ? game.player1.updateSkin(e.skin1) : "";
-    e.skin2 ? game.player2.updateSkin(e.skin2) : "";
+    e.player1.skin ? game.player1.updateSkin(e.player1.skin) : "";
+    e.player2.skin ? game.player2.updateSkin(e.player2.skin) : "";
 
     game.status = e.status;
     status.value = e.status;
@@ -132,8 +136,8 @@ onMounted(function () {
     //Add info in storage
     if (game.playerNumber == 1 || game.playerNumber == 2) {
 
-      user.money += e.max_money;
-      user.infoPong.xp += e.max_exp;
+      user.money += e.money;
+      user.infoPong.xp += e.exp;
 
       //Up Level!
       while (user.infoPong.xp >= user.infoPong.level * 200)
@@ -143,33 +147,39 @@ onMounted(function () {
       }
     
       //TODO ATUALIZAR O Historico
-      const player_2 = game.playerNumber == 1 ? game.player2 : game.player1;
-      /*const winner = e.result == "You Win!" ? user : player_2;
-      const loser = e.result != "You Win!" ? user : player_2;
+      const player_1 = game.playerNumber == 1 ? game.player1 : game.player2;
+      const player_2 = game.playerNumber == 2 ? game.player2 : game.player1;
 
       const history_game: Historic = {
-        gameStats: {
-          loserId: , 
-          loserName: string,
-          loserScore: number,
-          winnerId: number,
-          winnerName: string,
-          winnerScore: number,
-        };
-        gameType: string;
-        id: string;
-        players: {
-          id: number;
-          nickname: string;
-          image: string;
-        }[];
-        winner: e.result == "You Win!" ? user.nickname : player_2.nickname,
-        loser: e.result == "You Lose!" ? user.nickname : player_2.nickname,
-        player1: game.player1.nickname,
-        player2: game.player2.nickname,
-        result: game.player1.score + "-" + game.player2.score,
+        gameStats: e.gameResults,
+        gameType: "PUBLIC",
+        id: "0",
+        players: [],
       }
-      user.infoPong.historic.push(history_game as never);*/
+      
+      const player1_historic: {
+        id: number;
+        nickname: string;
+        image: string;
+      } = {
+        id: player_1.id,
+        nickname: player_1.nickname,
+        image: player_1.avatar.src,
+      };
+
+      const player2_historic: {
+        id: number;
+        nickname: string;
+        image: string;
+      } = {
+        id: player_2.id,
+        nickname: player_2.nickname,
+        image: player_2.avatar.src,
+      };
+      history_game.players.push(player1_historic);
+      history_game.players.push(player2_historic);
+
+      user.infoPong.historic.push(history_game as never);
 
       game.animation_points();
     }

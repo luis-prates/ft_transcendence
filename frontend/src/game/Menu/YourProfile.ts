@@ -138,97 +138,80 @@ export class YourProfile {
 	  this.menu.add(this.background, this.createPencilButton(26.5, 9, 2, 3));
   }
 
-  private createMatches(index: number, matche: Historic, x: number, y: number): ElementUI {
-    const player1Image = new Image();
-    const player2Image = new Image();
+	private createMatches(index: number, matche: Historic, x: number, y: number): ElementUI {
+		const player1 = matche.players[0].id == matche.gameStats.winnerId ? matche.players[0] : matche.players[1];
+		const player2 = matche.players[0] == player1 ? matche.players[1] : matche.players[0];
+	
+		const player1Image = player1.id == this.user.id ? this.avatarImage : new Image();
+		const player2Image = player2.id == this.user.id ? this.avatarImage : new Image();
 
-    const player1 = matche.players[0].id == matche.gameStats.winnerId ? matche.players[0] : matche.players[1];
-    const player2 = matche.players[0] == player1 ? matche.players[1] : matche.players[0];
+		player1Image.src = player1.image;
+		player2Image.src = player2.image;
 
-    const product: ElementUI = {
-      type: "image",
-      rectangle: { x: x + "%", y: y + "%", w: "15%", h: "15%" },
-      draw: (ctx: CanvasRenderingContext2D) => {
+		const product: ElementUI = {
+		  type: "image",
+		  rectangle: { x: x + "%", y: y + "%", w: "15%", h: "15%" },
+		  draw: (ctx: CanvasRenderingContext2D) => {
+
+			if (!(this.matche_pagination.isIndexInCurrentPage(index))) {
+				if (product.enable)
+				  product.enable = false;
+				return;
+			  }
+			if (!product.enable)
+				product.enable = true;
+
+			const offSetTittle = this.background.rectangle.y * 1.75;
+	
+			ctx.fillStyle = matche.gameStats.winnerId == this.user.id ? "gold" : "silver";
+			ctx.strokeStyle = "#000";
+			ctx.lineWidth = 2;
+	
+			this.roundRect(ctx, product.parent?.rectangle.x + product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h, 10);
+	
+			ctx.fill();
+			ctx.stroke();
+
+			ctx.fillStyle = "#000";
+			ctx.font = "20px 'Press Start 2P', cursive";
+
+			ctx.fillText(matche.gameStats.winnerScore + "-" + matche.gameStats.loserScore, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
+
+			ctx.fillText(matche.gameStats.winnerName, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
+	
+			ctx.fillText(matche.gameStats.loserName, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
+
+			ctx.strokeRect(product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
+			ctx.strokeRect(product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - (product.rectangle.w * 0.295), product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
+
+			if (player1Image.complete)
+				ctx.drawImage(player1Image, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
+			if (player2Image.complete)
+				ctx.drawImage(player2Image, product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - (product.rectangle.w * 0.295), product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
+			
         
-        if (!(this.matche_pagination.isIndexInCurrentPage(index))) {
-          if (product.enable)
-            product.enable = false;
-          return;
-        }
-        if (!product.enable)
-          product.enable = true;
-
-        const offSetTittle = this.background.rectangle.y * 1.75;
-
-        ctx.fillStyle = "silver";
-        ctx.strokeStyle = "#000";
-        ctx.lineWidth = 2;
-
-        this.roundRect(ctx, product.parent?.rectangle.x + product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h, 10);
-
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = "#000";
-        ctx.font = "20px 'Press Start 2P', cursive";
-
-        ctx.fillText(matche.gameStats.winnerScore + "-" + matche.gameStats.loserScore, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
-
-        ctx.fillText(matche.gameStats.winnerName, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
-
-        ctx.fillText(matche.gameStats.loserName, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
-
-        // matche.player1
-        player1Image.src = player1.image;
-        player2Image.src = player2.image;
-
-        player1Image.src = player1Image.complete ? player1Image.src : avatarDefault;
-        player2Image.src = player2Image.complete ? player2Image.src : avatarDefault;
-
-        ctx.strokeRect(product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.2, product.rectangle.h * 0.35);
-        ctx.strokeRect(
-          product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - product.rectangle.w * 0.295,
-          product.rectangle.y + product.rectangle.h * 0.3,
-          product.rectangle.w * 0.2,
-          product.rectangle.h * 0.35
-        );
-
-        ctx.drawImage(
-          player1Image,
-          product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095,
-          product.rectangle.y + product.rectangle.h * 0.3,
-          product.rectangle.w * 0.2,
-          product.rectangle.h * 0.35
-        );
-        ctx.drawImage(
-          player2Image,
-          product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - product.rectangle.w * 0.295,
-          product.rectangle.y + product.rectangle.h * 0.3,
-          product.rectangle.w * 0.2,
-          product.rectangle.h * 0.35
-        );
-
-        ctx.lineWidth = 5;
-        ctx.strokeText(
-          matche.gameStats.winnerId == this.user.id ? "WIN!" : "LOSE.",
-          product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
-          product.rectangle.y + product.rectangle.h * 0.12,
-          product.rectangle.w * 0.3
-        );
-        ctx.fillStyle = matche.gameStats.winnerId == this.user.id ? "gold" : "grey";
-        ctx.fillText(
-          matche.gameStats.winnerId == this.user.id ? "WIN!" : "LOSE.",
-          product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
-          product.rectangle.y + product.rectangle.h * 0.12,
-          product.rectangle.w * 0.3
-        );
-      },
-      onClick: () => {
-        //See the Profile
-      },
-    };
-    return product;
-  }
+			ctx.lineWidth = 4;
+      ctx.strokeText(
+				matche.gameStats.winnerId == this.user.id ? "WIN!" : "LOST.",
+				product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
+				product.rectangle.y + product.rectangle.h * 0.12,
+				product.rectangle.w * 0.3
+			  );
+			  ctx.fillStyle = matche.gameStats.winnerId == this.user.id ? "gold" : "grey";
+			  ctx.fillText(
+				matche.gameStats.winnerId == this.user.id ? "WIN!" : "LOST.",
+				product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
+				product.rectangle.y + product.rectangle.h * 0.12,
+				product.rectangle.w * 0.3
+			  );
+		},
+		  onClick: () => {
+			//if (!(this.matche_pagination.isIndexInCurrentPage(index))) return ;
+			//DO SOMETHING
+		  },
+		};
+		return product;
+	}	
 
   private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
     const r = x + width;

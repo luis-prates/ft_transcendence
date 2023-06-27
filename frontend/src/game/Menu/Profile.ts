@@ -110,14 +110,11 @@ export class Profile {
 		const player1 = matche.players[0].id == matche.gameStats.winnerId ? matche.players[0] : matche.players[1];
 		const player2 = matche.players[0] == player1 ? matche.players[1] : matche.players[0];
 	
-		const player1Image = new Image();
-		const player2Image = new Image();
+		const player1Image = player1.id == this.user.id ? this.avatarImage : new Image();
+		const player2Image = player2.id == this.user.id ? this.avatarImage : new Image();
 
 		player1Image.src = player1.image;
 		player2Image.src = player2.image;
-
-		player1Image.src = player1Image.complete ? player1Image.src : avatarDefault;
-		player2Image.src = player2Image.complete ? player2Image.src : avatarDefault;
 
 		const product: ElementUI = {
 		  type: "image",
@@ -134,7 +131,7 @@ export class Profile {
 
 			const offSetTittle = this.background.rectangle.y * 1.75;
 	
-			ctx.fillStyle = "silver";
+			ctx.fillStyle = matche.gameStats.winnerId == this.user.id ? "gold" : "silver";
 			ctx.strokeStyle = "#000";
 			ctx.lineWidth = 2;
 	
@@ -155,8 +152,10 @@ export class Profile {
 			ctx.strokeRect(product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
 			ctx.strokeRect(product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - (product.rectangle.w * 0.295), product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
 
-			ctx.drawImage(player2Image, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
-			ctx.drawImage(player2Image, product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - (product.rectangle.w * 0.295), product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
+			if (player1Image.complete)
+				ctx.drawImage(player1Image, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
+			if (player2Image.complete)
+				ctx.drawImage(player2Image, product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - (product.rectangle.w * 0.295), product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
 			ctx.strokeText(
 				matche.gameStats.winnerId == this.user.id ? "WIN!" : "LOSE.",
 				product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
