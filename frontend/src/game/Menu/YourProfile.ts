@@ -142,6 +142,9 @@ export class YourProfile {
     const player1Image = new Image();
     const player2Image = new Image();
 
+    const player1 = matche.players[0].id == matche.gameStats.winnerId ? matche.players[0] : matche.players[1];
+    const player2 = matche.players[0] == player1 ? matche.players[1] : matche.players[0];
+
     const product: ElementUI = {
       type: "image",
       rectangle: { x: x + "%", y: y + "%", w: "15%", h: "15%" },
@@ -169,15 +172,18 @@ export class YourProfile {
         ctx.fillStyle = "#000";
         ctx.font = "20px 'Press Start 2P', cursive";
 
-        ctx.fillText(matche.result, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
+        ctx.fillText(matche.gameStats.winnerScore + "-" + matche.gameStats.loserScore, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
 
-        ctx.fillText(matche.player1, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
+        ctx.fillText(matche.gameStats.winnerName, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
 
-        ctx.fillText(matche.player2, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
+        ctx.fillText(matche.gameStats.loserName, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
 
         // matche.player1
-        player1Image.src = matche.player1 == this.user.nickname ? this.user.image : avatarDefault;
-        player2Image.src = matche.player2 == this.user.nickname ? this.user.image : avatarDefault;
+        player1Image.src = player1.image;
+        player2Image.src = player2.image;
+
+        player1Image.src = player1Image.complete ? player1Image.src : avatarDefault;
+        player2Image.src = player2Image.complete ? player2Image.src : avatarDefault;
 
         ctx.strokeRect(product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.2, product.rectangle.h * 0.35);
         ctx.strokeRect(
@@ -188,7 +194,7 @@ export class YourProfile {
         );
 
         ctx.drawImage(
-          player2Image,
+          player1Image,
           product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095,
           product.rectangle.y + product.rectangle.h * 0.3,
           product.rectangle.w * 0.2,
@@ -202,33 +208,24 @@ export class YourProfile {
           product.rectangle.h * 0.35
         );
 
-        /*if (player1Image.complete) 
-			else {
-				player1Image.src = avatarDefault;
-				ctx.drawImage(player1Image, product.rectangle.x + product.parent?.rectangle.w * 0.5, product.rectangle.y, product.rectangle.w, product.rectangle.h);
-			}*/
-
-        /*if (player2Image.complete) ctx.drawImage(player2Image, product.rectangle.x + this.background.rectangle.x * 0.25, product.rectangle.y, this.background.rectangle.x * 2, this.background.rectangle.y * 1.75);
-			else {
-				player2Image.src = avatarDefault;
-				ctx.drawImage(player2Image, product.rectangle.w - this.background.rectangle.x * 1.25, product.rectangle.y, this.background.rectangle.x * 2, this.background.rectangle.y * 1.75);
-			}*/
         ctx.lineWidth = 5;
         ctx.strokeText(
-          matche.winner == this.user.nickname ? "WIN!" : "LOSE.",
+          matche.gameStats.winnerId == this.user.id ? "WIN!" : "LOSE.",
           product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
           product.rectangle.y + product.rectangle.h * 0.12,
           product.rectangle.w * 0.3
         );
-        ctx.fillStyle = matche.winner == this.user.nickname ? "gold" : "grey";
+        ctx.fillStyle = matche.gameStats.winnerId == this.user.id ? "gold" : "grey";
         ctx.fillText(
-          matche.winner == this.user.nickname ? "WIN!" : "LOSE.",
+          matche.gameStats.winnerId == this.user.id ? "WIN!" : "LOSE.",
           product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
           product.rectangle.y + product.rectangle.h * 0.12,
           product.rectangle.w * 0.3
         );
       },
-      onClick: () => {},
+      onClick: () => {
+        //See the Profile
+      },
     };
     return product;
   }
@@ -383,10 +380,10 @@ export class YourProfile {
     ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.3, pos.y + pos.h * 0.16, pos.w - (pos.x + pos.w * 0.5));
 
     //Level
-    const wins = this.user.infoPong.historic.filter((history: any) => history.winner == this.user.nickname).length;
+    const wins = this.user.infoPong.historic.filter((history: Historic) => history.gameStats.winnerId == this.user.id).length;
     ctx.fillText("Wins:  " + wins, pos.x + pos.w * 0.3, pos.y + pos.h * 0.19, pos.w - (pos.x + pos.w * 0.5));
 
-    const loses = this.user.infoPong.historic.filter((history: any) => history.loser == this.user.nickname).length;
+    const loses = this.user.infoPong.historic.filter((history: Historic) => history.gameStats.loserId == this.user.id).length;
     ctx.fillText("Loses: " + loses, pos.x + pos.w * 0.3, pos.y + pos.h * 0.22, pos.w - (pos.x + pos.w * 0.5));
 
     //Avatar

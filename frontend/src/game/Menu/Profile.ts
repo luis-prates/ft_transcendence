@@ -22,8 +22,6 @@ export class Profile {
   	private your_user = userStore().user;
 	private user: any;
 	
-  	//private getProfile = userStore().getUserProfile;
-	//private player: Player;
 	private avatarImage = new Image();
 	private skinPaddle: any;
 
@@ -32,12 +30,13 @@ export class Profile {
 
 	private isBlocked : boolean = false;
 
-	//private matche_pagination: PaginationMenu;
+	private matche_pagination: PaginationMenu = new PaginationMenu([], 4, 2, this.background, this.menu);;
+
+	private historic: Historic[] = [];
 
 	constructor(player_id: number) {
 
 		this.fetchUser(player_id);
-		//this.player = player;
 	}
 
 	async fetchUser(player_id: number) {
@@ -47,14 +46,14 @@ export class Profile {
 			await userStore().getFriends();
 			await userStore().getFriendRequests();
 
+			this.historic = await userStore().getUserGames(this.user.id);
+
 			this.avatarImage.src = this.user.image ? this.user.image : avatarDefault;
 
 			this.skinPaddle = skin.get_skin(TypeSkin.Paddle + "_" + this.user.paddleSkinEquipped);
 
 			this.menu.add(this.background);
 			this.menu.add(this.background, this.createButtonExit(33.5, 6));
-
-
 
 			let index = this.your_user.friends.findIndex((friendship) => friendship.id === this.user.id);
 			this.isYourFriend = index == -1 ? false : true;
@@ -77,10 +76,10 @@ export class Profile {
 			this.menu.add(this.background, this.createButton("block", 23.25, 26, "Block", 9));
 		
 			//TODO Match
-			//this.matche_pagination = new PaginationMenu([], 4, 2, this.background, this.menu);
+			this.matche_pagination = new PaginationMenu(this.historic, 4, 2, this.background, this.menu);
 
     		//Arrow Buttons
-    		/*this.menu.add(this.background, this.matche_pagination.createArrowButton("left", 2.5, 33.5, 2));
+    		this.menu.add(this.background, this.matche_pagination.createArrowButton("left", 2.5, 33.5, 2));
     		this.menu.add(this.background, this.matche_pagination.createArrowButton("right", 30.5, 33.5, 2));
 
 			const squareW = 10;
@@ -90,7 +89,7 @@ export class Profile {
 
     		let page = 0;
 
-    		this.user.infoPong.historic.forEach((matche: any, index: number) => {
+    		this.historic.forEach((matche: any, index: number) => {
     		  if ((index == 0 ? index + 1 : index) % this.matche_pagination.max_for_page == 0) page++;
 
     		  const i = index - page * this.matche_pagination.max_for_page;
@@ -98,7 +97,7 @@ export class Profile {
     		  const squareX = 1 + (i % this.matche_pagination.max_for_line) * (squareW + paddingX);
     		  const squareY = 30 + paddingY + Math.floor(i / this.matche_pagination.max_for_line) * (squareH + paddingY);
     		  this.menu.add(this.background, this.createMatches(index, matche, squareX, squareY));
-    		});*/
+    		});
 
 	
 		} catch (error) {
@@ -108,20 +107,28 @@ export class Profile {
 	  }
 
 	private createMatches(index: number, matche: Historic, x: number, y: number): ElementUI {
-
+		const player1 = matche.players[0].id == matche.gameStats.winnerId ? matche.players[0] : matche.players[1];
+		const player2 = matche.players[0] == player1 ? matche.players[1] : matche.players[0];
+	
 		const player1Image = new Image();
 		const player2Image = new Image();
+
+		player1Image.src = player1.image;
+		player2Image.src = player2.image;
+
+		player1Image.src = player1Image.complete ? player1Image.src : avatarDefault;
+		player2Image.src = player2Image.complete ? player2Image.src : avatarDefault;
 
 		const product: ElementUI = {
 		  type: "image",
 		  rectangle: { x: x + "%", y: y + "%", w: "15%", h: "15%" },
 		  draw: (ctx: CanvasRenderingContext2D) => {
 
-			/*if (!(this.matche_pagination.isIndexInCurrentPage(index))) {
+			if (!(this.matche_pagination.isIndexInCurrentPage(index))) {
 				if (product.enable)
 				  product.enable = false;
 				return;
-			  }*/
+			  }
 			if (!product.enable)
 				product.enable = true;
 
@@ -139,43 +146,30 @@ export class Profile {
 			ctx.fillStyle = "#000";
 			ctx.font = "20px 'Press Start 2P', cursive";
 
-			ctx.fillText(matche.result, product.parent?.rectangle.x + 
-			product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
+			ctx.fillText(matche.gameStats.winnerScore + "-" + matche.gameStats.loserScore, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
 
-			ctx.fillText(matche.player1, product.parent?.rectangle.x + 
-				product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
-
-			ctx.fillText(matche.player2, product.parent?.rectangle.x + 
-				product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
-		  
-			 // matche.player1 
-			player1Image.src = matche.player1 == this.user.nickname ? this.user.image : avatarDefault;
-			player2Image.src = matche.player2 == this.user.nickname ? this.user.image : avatarDefault;
+			ctx.fillText(matche.gameStats.winnerName, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
+	
+			ctx.fillText(matche.gameStats.loserName, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
 
 			ctx.strokeRect(product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
 			ctx.strokeRect(product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - (product.rectangle.w * 0.295), product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
 
 			ctx.drawImage(player2Image, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
 			ctx.drawImage(player2Image, product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - (product.rectangle.w * 0.295), product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
-
-			/*if (player1Image.complete) 
-			else {
-				player1Image.src = avatarDefault;
-				ctx.drawImage(player1Image, product.rectangle.x + product.parent?.rectangle.w * 0.5, product.rectangle.y, product.rectangle.w, product.rectangle.h);
-			}*/
-
-			/*if (player2Image.complete) ctx.drawImage(player2Image, product.rectangle.x + this.background.rectangle.x * 0.25, product.rectangle.y, this.background.rectangle.x * 2, this.background.rectangle.y * 1.75);
-			else {
-				player2Image.src = avatarDefault;
-				ctx.drawImage(player2Image, product.rectangle.w - this.background.rectangle.x * 1.25, product.rectangle.y, this.background.rectangle.x * 2, this.background.rectangle.y * 1.75);
-			}*/
-			ctx.lineWidth = 5;
-			ctx.strokeText(matche.winner == this.user.nickname ? "WIN!" : "LOSE.", product.parent?.rectangle.x + 
-				product.rectangle.x + product.rectangle.w * 0.35, product.rectangle.y + product.rectangle.h * 0.12, product.rectangle.w * 0.3)
-			ctx.fillStyle = matche.winner == this.user.nickname ? "gold" : "grey";
-			ctx.fillText(matche.winner == this.user.nickname ? "WIN!" : "LOSE.", product.parent?.rectangle.x + 
-				product.rectangle.x + product.rectangle.w * 0.35, product.rectangle.y + product.rectangle.h * 0.12, product.rectangle.w * 0.3);
-			
+			ctx.strokeText(
+				matche.gameStats.winnerId == this.user.id ? "WIN!" : "LOSE.",
+				product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
+				product.rectangle.y + product.rectangle.h * 0.12,
+				product.rectangle.w * 0.3
+			  );
+			  ctx.fillStyle = matche.gameStats.winnerId == this.user.id ? "gold" : "grey";
+			  ctx.fillText(
+				matche.gameStats.winnerId == this.user.id ? "WIN!" : "LOSE.",
+				product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
+				product.rectangle.y + product.rectangle.h * 0.12,
+				product.rectangle.w * 0.3
+			  );
 		},
 		  onClick: () => {
 			//if (!(this.matche_pagination.isIndexInCurrentPage(index))) return ;
@@ -386,12 +380,12 @@ export class Profile {
 	ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.30, pos.y + pos.h * 0.16, pos.w - (pos.x + pos.w * 0.5));
     
 	//Level
-	/*const wins = this.user.infoPong.historic.filter((history: any) => history.winner == this.user.nickname).length;
+    const wins = this.historic.filter((history: Historic) => history.gameStats.winnerId == this.user.id).length;
 	ctx.fillText("Wins:  " + wins, pos.x + pos.w * 0.30, pos.y + pos.h * 0.19, pos.w - (pos.x + pos.w * 0.5));
 
-	const loses = this.user.infoPong.historic.filter((history: any) => history.loser == this.user.nickname).length
+    const loses = this.historic.filter((history: Historic) => history.gameStats.loserId == this.user.id).length;
 	ctx.fillText("Loses: " + loses, pos.x + pos.w * 0.30, pos.y + pos.h * 0.22, pos.w - (pos.x + pos.w * 0.5));
-*/
+
 	ctx.fillText("Wins:  ", pos.x + pos.w * 0.30, pos.y + pos.h * 0.19, pos.w - (pos.x + pos.w * 0.5));
 	ctx.fillText("Loses: ", pos.x + pos.w * 0.30, pos.y + pos.h * 0.22, pos.w - (pos.x + pos.w * 0.5));
     //Avatar

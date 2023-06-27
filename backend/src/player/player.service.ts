@@ -28,7 +28,7 @@ export class PlayerService {
 								name: 'Marvin',
 								nickname: 'Marvin',
 								email: 'marvin@marvin.com',
-								image: 'asffgasgasdg',
+								image: '@/frontend/src/assets/images/pingpong/marvin.jpg',
 								hash: 'asdgasdgasdg',
 							},
 						})

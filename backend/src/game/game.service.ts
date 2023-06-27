@@ -207,7 +207,7 @@ export class GameService {
 	}
 
 	async getUserGames(userId: number) {
-		this.prisma.game.findMany({
+		return this.prisma.game.findMany({
 			where: {
 				players: {
 					some: {
@@ -225,6 +225,9 @@ export class GameService {
 					},
 				},
 			},
+			orderBy: {
+				createdAt: 'desc',
+			}
 		});
 	}
 

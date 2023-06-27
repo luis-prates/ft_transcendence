@@ -27,11 +27,21 @@ export interface Friendship {
 }
 
 export interface Historic {
-  winner: string;
-  loser: string;
-  player1: string;
-  player2: string;
-  result: string;
+  gameStats: {
+    loserId: number, 
+    loserName: string,
+    loserScore: number,
+    winnerId: number,
+    winnerName: string,
+    winnerScore: number,
+  };
+  gameType: string;
+  id: string;
+  players: {
+    id: number;
+    nickname: string;
+    image: string;
+  }[];
 }
 
 export interface InfoPong {
@@ -201,6 +211,8 @@ export const userStore = defineStore("user", function () {
     getFriends();
     getFriendRequests();
     getBlockedUsers();
+    getUserGames(user.id);
+    console.log("USER: ", user);
     // .finally(() => window.location.href = window.location.origin);
   }
 
@@ -503,6 +515,28 @@ export const userStore = defineStore("user", function () {
       });
   }
 
+  async function getUserGames(userId: number) {
+    
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .get(env.BACKEND_PORT + "/game/" + userId, options)
+
+      // axios.request(options)
+      .then(function (response: any) {
+        console.log("Games: ", response.data);
+        if (user.id == userId)
+          user.infoPong.historic = response.data;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+}
+
     /* async function createChannel() {
       const createChannelDto = {
         name: "asdasdasdas",
@@ -528,6 +562,8 @@ export const userStore = defineStore("user", function () {
       }
     }*/
 
+
+
   return {
     user, login, loginTest,
 
@@ -541,6 +577,9 @@ export const userStore = defineStore("user", function () {
     sendFriendRequest, acceptFriendRequest, cancelFriendRequest, rejectFriendRequest, deleteFriend,
 
     //Block
-    getBlockedUsers, blockUser, unblockUser, getBlockedBy
+    getBlockedUsers, blockUser, unblockUser, getBlockedBy,
+
+    //Game
+    getUserGames,
   };
 });

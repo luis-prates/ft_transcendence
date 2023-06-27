@@ -142,15 +142,34 @@ onMounted(function () {
 		    user.infoPong.level += 1;
       }
     
+      //TODO ATUALIZAR O Historico
       const player_2 = game.playerNumber == 1 ? game.player2 : game.player1;
+      /*const winner = e.result == "You Win!" ? user : player_2;
+      const loser = e.result != "You Win!" ? user : player_2;
+
       const history_game: Historic = {
+        gameStats: {
+          loserId: , 
+          loserName: string,
+          loserScore: number,
+          winnerId: number,
+          winnerName: string,
+          winnerScore: number,
+        };
+        gameType: string;
+        id: string;
+        players: {
+          id: number;
+          nickname: string;
+          image: string;
+        }[];
         winner: e.result == "You Win!" ? user.nickname : player_2.nickname,
         loser: e.result == "You Lose!" ? user.nickname : player_2.nickname,
         player1: game.player1.nickname,
         player2: game.player2.nickname,
         result: game.player1.score + "-" + game.player2.score,
       }
-      user.infoPong.historic.push(history_game as never);
+      user.infoPong.historic.push(history_game as never);*/
 
       game.animation_points();
     }
