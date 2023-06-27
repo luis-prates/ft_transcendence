@@ -2,15 +2,17 @@ import { Menu, type ElementUI, type Rectangle, Game, Lobby } from "@/game";
 
 //Sound
 import sound_close_tab from "@/assets/audio/close.mp3";
-import { userStore } from "@/stores/userStore";
+import { userStore, type Historic } from "@/stores/userStore";
 
 //image
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
+import vsImage from "@/assets/images/lobby/menu/vs.png";
+
 import { Profile } from "./Profile";
 import { YourProfile } from "./YourProfile";
 
 
-export class LeaderBoard {
+export class BattleBoard {
   private _menu = new Menu({ layer: "Global", isFocus: false });
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
@@ -44,12 +46,11 @@ export class LeaderBoard {
   async fetchUsers() {
     try {
       // Obtenha os usuários da base de dados
-      const fetchedUsers = await userStore().getUsers();
+      const games : Historic[] = await userStore().getUserGames(this.user.id);
   
       // Armazene os usuários no array
-      this.users = fetchedUsers;
   
-      console.log("users: ", this.users); // Faça o que desejar com o array de usuários
+      console.log("games: ", games); // Faça o que desejar com o array de usuários
       
       this.menu.add(this.background);
       this.menu.add(this.createButtonExit(35.5, 16));
@@ -57,17 +58,16 @@ export class LeaderBoard {
       let your_position = 0;
       let page = 0;
 
-      this.users.forEach((user: any, index: number) => {
-        console.log(index + ':', user);
-        if (index < 10)
-          this.menu.add(this.background, this.createRanking(37.5, 16 + (index + 1) * 6, (index + 1), user.nickname, user.image ? user.image : avatarDefault, user.id));
-        if (user.nickname == this.user.nickname)
-          your_position = index + 1;
+      games.forEach((game: Historic, index: number) => {
+        console.log(index + ':', game);
+        if (index < 7)
+          this.menu.add(this.background, this.createBattle(index, 32.5, 13 + (index + 1) * 9.25, game.players[0], game.players[1]));
       });
       //Your Position
-      this.menu.add(this.background, this.createRanking(37.5, 16 + 11 * 6, your_position, this.user.nickname, this.user.image, this.user.id));
-  
-    } catch (error) {
+      //this.menu.add(this.background, this.createBattle(37.5, 16 + 11 * 6, your_position, this.user.nickname, this.user.image, this.user.id));
+    }
+    catch (error) 
+    {
       console.error('Erro ao buscar os usuários:', error);
       this.menu.close();
       this.onResult("EXIT");
@@ -77,7 +77,7 @@ export class LeaderBoard {
   private createBackground(): ElementUI {
     const background: ElementUI = {
       type: "image",
-      rectangle: { x: "35%", y: "15%", w: "30%", h: "73%" },
+      rectangle: { x: "30%", y: "10%", w: "40%", h: "78%" },
       draw: (context: any) => {
         this.draw(context, background.rectangle);
       },
@@ -129,11 +129,11 @@ export class LeaderBoard {
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    ctx.font = "bold 24px Arial";
+    ctx.font = "18px 'Press Start 2P', cursive";
     ctx.textAlign = "start";
 	  ctx.fillStyle = "gold";
-    ctx.fillText("Leader Board", pos.x + pos.w * 0.33, pos.y + pos.h * 0.05, pos.w * 0.33);
-    ctx.strokeText("Leader Board", pos.x + pos.w * 0.33, pos.y + pos.h * 0.05, pos.w * 0.33);
+    ctx.fillText("Battle Board", pos.x + pos.w * 0.33, pos.y + pos.h * 0.05, pos.w * 0.33);
+    ctx.strokeText("Battle Board", pos.x + pos.w * 0.33, pos.y + pos.h * 0.05, pos.w * 0.33);
 
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -142,48 +142,44 @@ export class LeaderBoard {
     ctx.stroke();
   }
 
-  private createRanking(x: number, y: number, position: number, nickname: string, pic: string, id: number): ElementUI {
-    const avatar = new Image();
-	avatar.src = pic;
-	const raking: ElementUI = {
-      type: "ranking",
-      rectangle: { x: x + "%", y: y + "%", w: "25%", h: "5%" },
+  private createBattle(index: number, x: number, y: number, player1: any, player2?: any): ElementUI {
+    const image_vs = new Image();
+    image_vs.src = vsImage;
+
+	  const battle: ElementUI = {
+      type: "battle",
+      rectangle: { x: x + "%", y: y + "%", w: "35%", h: "7.5%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        ctx.fillStyle = position == 1 ? "gold" : (position == 2 ? "silver" : (position == 3 ? "#CD7F32" : "grey"));
-        ctx.strokeStyle = nickname == this.user.nickname ? "red" : "black";
+        ctx.fillStyle = "#CD7F32";
+        ctx.strokeStyle = "black";
         ctx.lineWidth = 2;
 
-        this.roundRect(ctx, raking.rectangle.x, raking.rectangle.y, raking.rectangle.w, raking.rectangle.h, this.radius);
+        this.roundRect(ctx, battle.rectangle.x, battle.rectangle.y, battle.rectangle.w, battle.rectangle.h, this.radius);
 		
         ctx.fill();
         ctx.stroke();
 
-		    try {
-		    	ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
-		    }
-		    catch {
-		    	avatar.src = avatarDefault;
-		    	ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
-		    }
 
-		    ctx.strokeRect(raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
-		    ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
+		    //ctx.strokeRect(battle.rectangle.x + battle.rectangle.x * 0.075, battle.rectangle.y + battle.parent?.rectangle.y * 0.035, battle.rectangle.w * 0.1, battle.rectangle.h * 0.8);
+		    
+        ctx.drawImage(image_vs, battle.rectangle.x + battle.rectangle.w * 0.4, battle.rectangle.y + battle.parent?.rectangle.y * 0.035, battle.rectangle.w * 0.15, battle.rectangle.h * 0.8);
       
 		    ctx.fillStyle = "white";
-        ctx.strokeStyle = nickname == this.user.nickname ? "red" : "black";
+        ctx.strokeStyle = "black";
         
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 7;
 
-		    //Posicao
-		    ctx.strokeText(position.toString(), raking.rectangle.x + raking.rectangle.x * 0.02, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.05);
-        ctx.fillText(position.toString(), raking.rectangle.x + raking.rectangle.x * 0.02, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.05);
-      
 		    //Nickname
-		    ctx.strokeText(nickname, raking.rectangle.x + raking.rectangle.x * 0.2, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.375);
-        ctx.fillText(nickname, raking.rectangle.x + raking.rectangle.x * 0.2, raking.rectangle.y + raking.parent?.rectangle.y * 0.225, raking.rectangle.w * 0.375);
+		    ctx.strokeText(player1.nickname, battle.rectangle.x + battle.rectangle.w * 0.05, battle.rectangle.y + battle.rectangle.w * 0.1, battle.rectangle.w * 0.375);
+        ctx.fillText(player1.nickname, battle.rectangle.x + battle.rectangle.w * 0.05, battle.rectangle.y + battle.rectangle.w * 0.1, battle.rectangle.w * 0.375);
+      
+        ctx.strokeText(player2.nickname, battle.rectangle.x + battle.rectangle.w * 0.65, battle.rectangle.y + battle.rectangle.w * 0.1, battle.rectangle.w * 0.375);
+        ctx.fillText(player2.nickname, battle.rectangle.x + battle.rectangle.w * 0.65, battle.rectangle.y + battle.rectangle.w * 0.1, battle.rectangle.w * 0.375);
+     
+      
       },
       onClick: () => {
-        let confirmButton;
+        /*let confirmButton;
         if (id != this.user.id)
           confirmButton = new Profile(id);
         else
@@ -195,10 +191,10 @@ export class LeaderBoard {
             this._menu.visible = true;
             this._menu.enable = true;
           }
-        });
+        });*/
       },
     };
-    return raking;
+    return battle;
   }
 
   roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {

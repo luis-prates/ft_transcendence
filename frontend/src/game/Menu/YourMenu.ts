@@ -12,8 +12,7 @@ import battleImage from "@/assets/images/lobby/menu/battle_.png";
 import leaderBoardImage from "@/assets/images/lobby/menu/trofeo.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
 import { Messages } from "./Messages";
-import { MessageList } from "./MessageList";
-
+import { BattleBoard } from "./BattleBoard";
 
 export class YourMenu {
   private _menu = new Menu({ layer: "Global", isFocus: false });
@@ -136,38 +135,46 @@ export class YourMenu {
 			  button.rectangle.w - (button.rectangle.w * 0.2) - offset);
 			},
 			onClick: () => {
-      if (type == "message")
-      {
-        if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
-          return ;
-        notification = "";
-        this.messagesMenu = true;
-        const confirmButton = new Messages();
-        confirmButton.show((value) => {
-          if (value == "EXIT") {
-            this.messagesMenu = false;
-          }
-        });
-      }
-      else if (type == "battle")
-      {
-        if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
-          return ;
-        //Todo 
-      }
-      else if (type == "leaderboard")
-      {
-        if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
-          return ;
-        this.leaderBoardMenu = true;
-        const leaderBoard = new LeaderBoard();
-        leaderBoard.show((value) => {
-          if (value == "EXIT") {
-            this.leaderBoardMenu = false;
-          }
-        });
-      }
-		},
+        if (type == "message")
+        {
+          if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
+            return ;
+          notification = "";
+          this.messagesMenu = true;
+          const confirmButton = new Messages();
+          confirmButton.show((value) => {
+            if (value == "EXIT") {
+              this.messagesMenu = false;
+            }
+          });
+        }
+        else if (type == "battle")
+        {
+          if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
+            return ;
+          if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
+            return ;
+          this.battleMenu = true;
+          const battleBoard = new BattleBoard();
+          battleBoard.show((value) => {
+            if (value == "EXIT") {
+              this.battleMenu = false;
+            }
+          });
+        }
+        else if (type == "leaderboard")
+        {
+          if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
+            return ;
+          this.leaderBoardMenu = true;
+          const leaderBoard = new LeaderBoard();
+          leaderBoard.show((value) => {
+            if (value == "EXIT") {
+              this.leaderBoardMenu = false;
+            }
+          });
+        }
+		  },
 	  };
 	  return button;
 	}

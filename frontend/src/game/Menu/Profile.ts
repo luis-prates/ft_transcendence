@@ -1,4 +1,4 @@
-import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
+import { Menu, type ElementUI, type Rectangle, Game, Player, Lobby } from "@/game";
 import { userStore, type Historic } from "@/stores/userStore";
 
 //Audio
@@ -12,6 +12,7 @@ import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import friendImage from "@/assets/images/lobby/menu/friend.png";
 import yourFriendImage from "@/assets/images/lobby/menu/your_friend.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
+import { YourProfile } from "./YourProfile";
 
 export class Profile {
 	private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -33,6 +34,8 @@ export class Profile {
 	private matche_pagination: PaginationMenu = new PaginationMenu([], 4, 2, this.background, this.menu);;
 
 	private historic: Historic[] = [];
+
+	private onResult: (result: any) => void = () => {};
 
 	constructor(player_id: number) {
 
@@ -103,6 +106,7 @@ export class Profile {
 		} catch (error) {
 			console.error('Erro ao buscar os usuários:', error);
 			this.menu.close();
+			this.onResult("EXIT");
 		}
 	  }
 
@@ -171,8 +175,23 @@ export class Profile {
 			  );
 		},
 		  onClick: () => {
-			//if (!(this.matche_pagination.isIndexInCurrentPage(index))) return ;
-			//DO SOMETHING
+			if (!(this.matche_pagination.isIndexInCurrentPage(index))) return ;
+
+			const player_match_id = matche.players[0].id == this.user.id ? matche.players[1].id : matche.players[0].id;
+			
+			let confirmButton;
+			if (player_match_id != this.user.id)
+        	  confirmButton = new Profile(player_match_id);
+        	else
+        	  confirmButton = new YourProfile(Lobby.getPlayer());
+        	this._menu.visible = false;
+        	this._menu.enable = false;
+        	confirmButton.show((value) => {
+        	  if (value == "EXIT") {
+				this._menu.close();
+				this.onResult("EXIT");
+        	  }
+        	});
 		  },
 		};
 		return product;
@@ -442,15 +461,7 @@ export class Profile {
 
       ctx.fillStyle = "white";
 	  ctx.fillText("Matches", pos.x + pos.w * 0.35, pos.y + pos.h * 0.425, pos.w * 0.275);
-        
-    /*if (this.avataresImage.complete) ctx.drawImage(this.avataresImage, 
-      ((this.chooseAvatar - 4 >= 0 ? this.chooseAvatar - 4 : this.chooseAvatar) * 144) + 48, //+3
-      (this.chooseAvatar - 4 >= 0 ? 1 : 0) * 320, //+4
-      48, 80,
-      pos.x + pos.w * 0.05, 
-      pos.y + pos.h * 0.04,
-      pos.w * 0.4,
-      pos.h * 0.80);*/
+
 	}
 
 	private createButtonExit(x: number, y: number): ElementUI {
@@ -479,6 +490,7 @@ export class Profile {
 		onClick: () => {
 		  close_tab.play();
 		  this.menu.close();
+		  this.onResult("EXIT");
 		},
 	  };
 	  return button;
@@ -488,4 +500,8 @@ export class Profile {
 	  return this._menu;
 	}
 
+	public show(onResult: (result: any) => void) {
+		this.onResult = onResult;
+		Game.addMenu(this.menu);
+	}
 }

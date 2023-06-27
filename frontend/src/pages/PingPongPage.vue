@@ -39,12 +39,12 @@ onMounted(function () {
 	socket = socketClass.getGameSocket();
   socket.emit("entry_game", { 
     objectId: props.objectId,
-	userId: user.id, 
+	  userId: user.id, 
     nickname: user.nickname,
     avatar: user.image,
     color: user.infoPong.color,
     skin: user.infoPong.skin.default.paddle,
-	isPlayer: user.isPlayer,
+	  isPlayer: user.isPlayer,
   });
 
   console.log("pros: ", props);

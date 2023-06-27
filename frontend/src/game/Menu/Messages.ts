@@ -131,14 +131,16 @@ export class Messages {
 
         ctx.lineWidth = 2;
       },
-      onClick: () => {        
+      onClick: () => {
         const confirmButton = new MessageList(type);
         this._menu.visible = false;
+        this._menu.enable = false;
         confirmButton.show((value) => {
           if (value == "EXIT") {
             this._menu.visible = true;
+            this._menu.enable = true;
           }
-      });
+        });
       },
     };
     return button;

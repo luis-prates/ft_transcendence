@@ -36,7 +36,8 @@ export class YourProfile {
   private skinPadleImage: HTMLImageElement;
   private colorChoose: string = "";
   private skinPadle: string = "";
-
+  
+  private onResult: (result: any) => void = () => {};
 
   constructor(player: Player) {
     this.player = player;
@@ -454,7 +455,8 @@ export class YourProfile {
           this.menu.close();
           const inputName = document.getElementById("inputName") as HTMLInputElement;
           inputName.disabled = true;
-          inputName.style.display = "none";
+          inputName.style.display = "none";        
+          this.onResult("EXIT");
         }
       },
     };
@@ -737,5 +739,10 @@ export class YourProfile {
 
   get menu(): Menu {
     return this._menu;
+  }
+
+  public show(onResult: (result: any) => void) {
+    this.onResult = onResult;
+    Game.addMenu(this.menu);
   }
 }
