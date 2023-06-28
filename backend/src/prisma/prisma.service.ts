@@ -4,6 +4,7 @@ import { ChannelType, PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient {
+	friend: any;
 	constructor(config: ConfigService) {
 		super({
 			datasources: {
@@ -44,8 +45,8 @@ export class PrismaService extends PrismaClient {
 			// friend requests
 			this.friendRequest.deleteMany(),
 
-            // blocklist
-            this.blocklist.deleteMany(),
+			// blocklist
+			this.blocklist.deleteMany(),
 
 			// messages
 			this.message.deleteMany(),

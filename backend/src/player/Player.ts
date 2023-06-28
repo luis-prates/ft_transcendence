@@ -1,0 +1,124 @@
+import { GameMap } from '../lobby/GameMap';
+import { Socket } from 'socket.io';
+import { Logger } from '@nestjs/common';
+import { PlayerService } from './player.service';
+export type PathNode = {
+	x: number;
+	y: number;
+	direction: number;
+};
+
+export type PlayerData = {
+	className: string;
+	name: string;
+	objectId: number;
+	x: number;
+	y: number;
+	animation: { name: string; isStop: boolean };
+};
+
+// Is objectId supposed to be the user ID?
+export class Player {
+	private _lobbySocket: Socket;
+	gameSocket: Socket | null = null;
+	avatar = '';
+	name: string = 'name_' + Date.now();
+	map: GameMap | null = null;
+	data: PlayerData = {
+		className: 'Character',
+		name: '',
+		objectId: 0,
+		x: 64,
+		y: 64,
+		animation: { name: 'walk_bottom', isStop: true },
+	};
+	time = 0;
+	private readonly logger = new Logger(Player.name);
+
+	constructor(socket: Socket, objectId: number, private playerService?: PlayerService) {
+		this.logger.debug(`new player with objectId: ${objectId}`);
+		this.setSocket(socket);
+		this.data.objectId = objectId;
+		this.time = Date.now();
+	}
+
+	get objectId(): number {
+		return this.data.objectId;
+	}
+
+	getSocket(): Socket {
+		return this._lobbySocket;
+	}
+
+	setSocket(value: Socket) {
+		this.logger.debug(`setSocket: ${value.id}`);
+		this.time = 0;
+		value.on('disconnect', () => {
+			this.time = Date.now();
+			setTimeout(() => {
+				console.log('disconnect: ' + this.objectId);
+				if (this.time && this.map) {
+					//! this is the first call to remove player
+					//! need to fix infinite loop that starts here
+					this.map.removePlayer(this);
+					//! useless since I'm removing it on the line above
+					// Lobby.players = Lobby.players.splice(
+					// 	Lobby.players.indexOf(this),
+					// 	1,
+					// );
+				}
+			}, 30000);
+		});
+		this._lobbySocket = value;
+	}
+
+	setGameSocket(value: Socket) {
+		this.gameSocket = value;
+	}
+
+	getGameSocket(): Socket {
+		return this.gameSocket;
+	}
+
+	public get id(): string {
+		return this._lobbySocket.id;
+	}
+
+	public emitToLobby(event: string, data: any): void {
+		this._lobbySocket.emit(event, data);
+	}
+
+	public emitToGame(event: string, data: any): void {
+		this.gameSocket.emit(event, data);
+	}
+
+	public onLobby(event: string, callback: (...args: any[]) => void): void {
+		this._lobbySocket.on(event, callback);
+	}
+
+	public onGame(event: string, callback: (...args: any[]) => void): void {
+		this.gameSocket.on(event, callback);
+	}
+
+	public offLobby(event: string): void {
+		this._lobbySocket.off(event, () => {});
+	}
+
+	public offGame(event: string): void {
+		this.gameSocket.off(event, () => {});
+	}
+
+	public offAll(): void {
+		// this._socket.offAll();
+	}
+
+	public destroy(): void {
+		this.offAll();
+		this._lobbySocket.disconnect();
+		this.gameSocket?.disconnect();
+		// this.playerService.players = Lobby.players.splice(Lobby.players.indexOf(this), 1);
+		// this.playerService?.removePlayer(this);
+		//! need to check this
+		this.map?.removePlayer(this);
+	}
+}

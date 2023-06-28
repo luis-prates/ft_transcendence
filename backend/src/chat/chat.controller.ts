@@ -1,14 +1,4 @@
-import {
-	Body,
-	Controller,
-	Get,
-	Param,
-	Post,
-	UseGuards,
-	Request,
-	Delete,
-	HttpCode,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards, Request, Delete, HttpCode } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtGuard } from '../auth/guard';
 import { RolesGuard } from './roleguard';
@@ -49,10 +39,7 @@ export class ChatController {
 	// Create a channel
 	@HttpCode(201)
 	@Post()
-	async createChannel(
-		@Body() createChannelDto: CreateChannelDto,
-		@Request() req: any,
-	) {
+	async createChannel(@Body() createChannelDto: CreateChannelDto, @Request() req: any) {
 		return this.chatService.createChannel(createChannelDto, req.user);
 	}
 
@@ -68,14 +55,8 @@ export class ChatController {
 	@Post(':channelId/users/:userId')
 	@UseGuards(RolesGuard)
 	@Roles('admin', 'owner')
-	async addUserToChannel(
-		@Param('channelId') channelId: string,
-		@Param('userId') userId: string,
-	) {
-		return this.chatService.addUserToChannel(
-			Number(channelId),
-			Number(userId),
-		);
+	async addUserToChannel(@Param('channelId') channelId: string, @Param('userId') userId: string) {
+		return this.chatService.addUserToChannel(Number(channelId), Number(userId));
 	}
 
 	// Remove user from channel
@@ -88,11 +69,7 @@ export class ChatController {
 		@Request() req: any,
 		@Param('userId') userId: string,
 	) {
-		return this.chatService.removeUserFromChannel(
-			Number(channelId),
-			Number(req.user.id),
-			Number(userId),
-		);
+		return this.chatService.removeUserFromChannel(Number(channelId), Number(req.user.id), Number(userId));
 	}
 
 	// Join a channel by Id
@@ -103,11 +80,7 @@ export class ChatController {
 		@Request() req: any,
 	) {
 		// Overwrite channelId from the DTO with the one from the URL.
-		return this.chatService.joinChannel(
-			joinChannelDto,
-			Number(channelId),
-			req.user,
-		);
+		return this.chatService.joinChannel(joinChannelDto, Number(channelId), req.user);
 	}
 
 	// Leave a channel by Id
@@ -115,10 +88,7 @@ export class ChatController {
 	@UseGuards(RolesGuard)
 	@Roles('member')
 	@Delete(':channelId/leave')
-	async leaveChannel(
-		@Param('channelId') channelId: string,
-		@Request() req: any,
-	) {
+	async leaveChannel(@Param('channelId') channelId: string, @Request() req: any) {
 		return this.chatService.leaveChannel(Number(channelId), req.user);
 	}
 
@@ -126,10 +96,7 @@ export class ChatController {
 	@Post(':channelId/mute/:userId')
 	@UseGuards(RolesGuard)
 	@Roles('admin', 'owner')
-	async muteUser(
-		@Param('channelId') channelId: string,
-		@Param('userId') userId: string,
-	) {
+	async muteUser(@Param('channelId') channelId: string, @Param('userId') userId: string) {
 		return this.chatService.muteUser(Number(channelId), Number(userId));
 	}
 
@@ -137,10 +104,7 @@ export class ChatController {
 	@Post(':channelId/unmute/:userId')
 	@UseGuards(RolesGuard)
 	@Roles('admin', 'owner')
-	async unmuteUser(
-		@Param('channelId') channelId: string,
-		@Param('userId') userId: string,
-	) {
+	async unmuteUser(@Param('channelId') channelId: string, @Param('userId') userId: string) {
 		return this.chatService.unmuteUser(Number(channelId), Number(userId));
 	}
 
@@ -148,10 +112,7 @@ export class ChatController {
 	@Post(':channelId/admin/:userId')
 	@UseGuards(RolesGuard)
 	@Roles('owner')
-	async makeAdmin(
-		@Param('channelId') channelId: string,
-		@Param('userId') userId: string,
-	) {
+	async makeAdmin(@Param('channelId') channelId: string, @Param('userId') userId: string) {
 		return this.chatService.makeAdmin(Number(channelId), Number(userId));
 	}
 
@@ -159,29 +120,15 @@ export class ChatController {
 	@Post(':channelId/users/:userId/demote')
 	@UseGuards(RolesGuard)
 	@Roles('admin', 'owner')
-	async demoteAdmin(
-		@Request() req: any,
-		@Param('channelId') channelId: string,
-		@Param('userId') userId: string,
-	) {
-		return this.chatService.demoteAdmin(
-			Number(req.user.id),
-			Number(channelId),
-			Number(userId),
-		);
+	async demoteAdmin(@Request() req: any, @Param('channelId') channelId: string, @Param('userId') userId: string) {
+		return this.chatService.demoteAdmin(Number(req.user.id), Number(channelId), Number(userId));
 	}
 
 	// Change channel password
 	@Post(':channelId/password')
 	@UseGuards(RolesGuard)
 	@Roles('admin', 'owner')
-	async changePassword(
-		@Param('channelId') channelId: string,
-		@Body() joinChannelDto: JoinChannelDto,
-	) {
-		return this.chatService.changeChannelPassword(
-			joinChannelDto,
-			Number(channelId),
-		);
+	async changePassword(@Param('channelId') channelId: string, @Body() joinChannelDto: JoinChannelDto) {
+		return this.chatService.changeChannelPassword(joinChannelDto, Number(channelId));
 	}
 }

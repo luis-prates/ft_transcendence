@@ -1,12 +1,4 @@
-import {
-	IsNotEmpty,
-	IsOptional,
-	IsEnum,
-	MinLength,
-	isNotEmpty,
-	IsArray,
-	IsNumber,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsEnum, MinLength, IsArray, IsNumber } from 'class-validator';
 import { ChannelType } from '../../types';
 
 export class CreateChannelDto {
@@ -22,8 +14,7 @@ export class CreateChannelDto {
 
 	@IsOptional()
 	@MinLength(3, {
-		message:
-			'Password is too short. Minimum length is $constraint1 characters, but actual is $value',
+		message: 'Password is too short. Minimum length is $constraint1 characters, but actual is $value',
 	})
 	password: string;
 }
@@ -31,8 +22,7 @@ export class CreateChannelDto {
 export class JoinChannelDto {
 	@IsOptional()
 	@MinLength(3, {
-		message:
-			'Password is too short. Minimum length is $constraint1 characters, but actual is $value',
+		message: 'Password is too short. Minimum length is $constraint1 characters, but actual is $value',
 	})
 	password: string;
 }

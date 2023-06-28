@@ -10,9 +10,10 @@
 import { onMounted } from "vue";
 import { userStore } from "../stores/userStore";
 import Router from "../router/index";
-import { ref, defineProps } from "vue";
-import socket from "@/socket/Socket";
+import { ref } from "vue";
+import { socketClass } from "@/socket/SocketClass";
 import { env } from "@/env";
+import type { Socket } from "socket.io-client";
 
 const props = defineProps({
   code: String,
@@ -20,18 +21,36 @@ const props = defineProps({
 
 const name = "LoginPage";
 const objecId = ref("");
+let socket: Socket | any = null;
 
 const store = userStore();
 
 function tes() {
-  console.log("objecId.value: ", objecId.value);
+  console.log("objecId.value in nessage box 1: ", objecId.value);
   store.user.id = parseInt(objecId.value);
+  store.user.name = "user_" + objecId.value;
   store.user.nickname = "user_" + objecId.value;
-  socket.emit("connection_lobby", { objectId: objecId.value.toString() });
-  setTimeout(() => {
-    Router.setRoute(Router.ROUTE_ALL);
-    Router.push("/");
-  }, 1000);
+  store.user.money = 0;
+  store.user.email = "user_" + objecId.value + "@gmail.com";
+  store
+        .loginTest()
+        .then(() => {
+		socketClass.setLobbySocket({
+			query: {
+				userId: store.user.id,
+			}
+		});
+		socket = socketClass.getLobbySocket();
+  		socket.emit("connection_lobby", { userId: objecId.value, objectId: objecId.value.toString() });
+  		setTimeout(() => {
+    		Router.setRoute(Router.ROUTE_ALL);
+    		Router.push("/");
+  		}, 1000);
+        console.log(store.user.isLogin);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 }
 
 onMounted(() => {
@@ -39,7 +58,8 @@ onMounted(() => {
     store
       .login(props.code)
       .then(() => {
-        socket.emit("connection_lobby", { objectId: store.user.id.toString() });
+		console.log("objecId.value in nessage box 2: ", objecId.value);
+        socket.emit("connection_lobby", { userId: objecId.value, objectId: store.user.id.toString() });
         setTimeout(() => {
           Router.setRoute(Router.ROUTE_ALL);
           Router.push("/");

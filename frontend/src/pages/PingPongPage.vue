@@ -3,18 +3,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
   <div class="box" href>
     <canvas id="canvas1"></canvas>
-    <router-link v-if="status == Status.Finish" class="exitGame" to="/">
-      <h4>Exit</h4>
-    </router-link>
   </div>
 </template>
 
 <script setup lang="ts">
 import { GamePong, TablePong, Status } from "@/game/ping_pong";
-import { onMounted, onUnmounted, ref, defineProps } from "vue";
-import socket from "@/socket/Socket";
-import { type gameRequest, type updatePlayer, type updateBall, type gamePoint } from "@/game/ping_pong/SocketInterface";
-import { userStore } from "@/stores/userStore";
+import { onMounted, onUnmounted, ref } from "vue";
+import { type gameRequest, type updatePlayer, type updateBall, type gamePoint, type gameEnd } from "@/game/ping_pong/SocketInterface";
+import { userStore, type Historic } from "@/stores/userStore";
+import { socketClass } from "@/socket/SocketClass";
 
 import avatar_marvin from "@/assets/images/pingpong/marvin.jpg";
 
@@ -24,6 +21,8 @@ const props = defineProps({
 
 const status = ref(Status.Waiting);
 
+let socket = socketClass.getGameSocket();
+
 onMounted(function () {
   const canvas = document.getElementById("canvas1") as HTMLCanvasElement;
   const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -31,18 +30,27 @@ onMounted(function () {
   canvas.height = 750;
 
   const user = userStore().user;
+  if (!socket)
+	socketClass.setGameSocket({
+		query: {
+			userId: user.id,
+		}
+	});
+	socket = socketClass.getGameSocket();
   socket.emit("entry_game", { 
-    objectId: props.objectId, 
+    objectId: props.objectId,
+	userId: user.id, 
     nickname: user.nickname,
-    avatar: user.infoPong.avatar,
+    avatar: user.image,
     color: user.infoPong.color,
     skin: user.infoPong.skin.default.paddle,
+	isPlayer: user.isPlayer,
   });
 
   console.log("pros: ", props);
   
   const tableBoard = new TablePong(canvas.width, canvas.height, "DarkSlateBlue", "#1e8c2f");
-  const game = new GamePong(canvas.width, canvas.height - 228, 164, ctx, props as gameRequest, tableBoard);
+  const game = new GamePong(canvas, canvas.width, canvas.height - 228, 164, ctx, props as gameRequest, tableBoard);
   console.log(props);
 
   socket.on("start_game", (e: any) => {
@@ -115,11 +123,38 @@ onMounted(function () {
     game.updateWatchers(e);
   });
 
-  socket.on("end_game", (e: any) => {
+  socket.on("end_game", (e: gameEnd) => {
     status.value = Status.Finish;
     game.updateStatus(Status.Finish);
     console.log(e);
-    game.endMessage = e.result;
+    game.endGame = e;
+
+    //Add info in storage
+    if (game.playerNumber == 1 || game.playerNumber == 2) {
+
+      user.money += e.max_money;
+      user.infoPong.xp += e.max_exp;
+
+      //Up Level!
+      while (user.infoPong.xp >= user.infoPong.level * 200)
+      {
+        user.infoPong.xp -= user.infoPong.level * 100;
+		    user.infoPong.level += 1;
+      }
+    
+      const player_2 = game.playerNumber == 1 ? game.player2 : game.player1;
+      const history_game: Historic = {
+        winner: e.result == "You Win!" ? user.nickname : player_2.nickname,
+        loser: e.result == "You Lose!" ? user.nickname : player_2.nickname,
+        player1: game.player1.nickname,
+        player2: game.player2.nickname,
+        result: game.player1.score + "-" + game.player2.score,
+      }
+      user.infoPong.historic.push(history_game as never);
+
+      game.animation_points();
+    }
+
     game.audio("music_stop");
   });
 
@@ -163,20 +198,6 @@ onMounted(function () {
   transform: translate(-50%, 5%);
   max-width: 100%;
   max-height: 100%;
-}
-.exitGame {
-  position: absolute;
-  top: 65%;
-  left: 40%;
-  width: 20%;
-  height: 30px;
-  border-radius: 5px;
-  border-color: blue;
-  background-color: aqua;
-  * {
-    align-items: center;
-    text-align: center;
-  }
 }
 </style>
 
