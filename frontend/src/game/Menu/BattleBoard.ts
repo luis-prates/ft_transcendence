@@ -2,7 +2,7 @@ import { Menu, type ElementUI, type Rectangle, Game, Lobby } from "@/game";
 
 //Sound
 import sound_close_tab from "@/assets/audio/close.mp3";
-import { userStore, type Historic } from "@/stores/userStore";
+import { userStore, type Historic, GameStatus } from "@/stores/userStore";
 
 //image
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
@@ -29,7 +29,7 @@ export class BattleBoard {
 
   async fetchUsers() {
     try {
-          const games : Historic[] = await userStore().getUserGames(this.user.id);
+          const games : Historic[] = await userStore().getGames(GameStatus.NOT_STARTED);
 
           this.pagination_battles = new PaginationMenu(games, 7, 1);
 

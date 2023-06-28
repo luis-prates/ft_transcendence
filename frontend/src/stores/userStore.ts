@@ -4,6 +4,12 @@ import { env } from "../env";
 import axios from "axios";
 import type { ProductSkin, TypeSkin } from "@/game/ping_pong/Skin";
 
+export enum GameStatus {
+	NOT_STARTED,
+	IN_PROGESS,
+	FINISHED,
+}
+
 enum UserStatus {
   OFFLINE = "OFFLINE",
   IN_GAME = "IN_GAME",
@@ -534,7 +540,31 @@ export const userStore = defineStore("user", function () {
       .catch(function (error) {
         console.error(error);
       });
-}
+  }
+
+  
+  async function getGames(status: number) {
+    let body = {} as any;
+    body.status = status;
+
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+      body: new URLSearchParams(body),
+    };
+
+    return await axios
+      .get(env.BACKEND_PORT + "/game/active", options)
+
+      // axios.request(options)
+      .then(function (response: any) {
+        console.log("Games: ", response.data);
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
 
     /* async function createChannel() {
       const createChannelDto = {
@@ -579,6 +609,6 @@ export const userStore = defineStore("user", function () {
     getBlockedUsers, blockUser, unblockUser, getBlockedBy,
 
     //Game
-    getUserGames,
+    getUserGames, getGames,
   };
 });
