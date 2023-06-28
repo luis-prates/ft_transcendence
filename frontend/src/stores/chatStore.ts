@@ -83,9 +83,9 @@ export const chatStore = defineStore("chat", () => {
       console.log("response: ", responseData);
 
       // Transform the response data into an array of channels
-      const transformedChannels = responseData.map((channelData) => {
+      const transformedChannels = responseData.map((channelData: any) => {
         const transformedUsers =
-          channelData.users?.map((user) => ({
+          channelData.users?.map((user: any) => ({
             id: user.user.id ?? "",
             avatar: user.user.avatar ?? "",
             nickname: user.user.nickname ?? "",
@@ -103,7 +103,7 @@ export const chatStore = defineStore("chat", () => {
       // Update the channels array with the transformed data
       channels.splice(0, channels.length, ...transformedChannels);
       console.log("RESULTADO DO GETCHANNELS: ", channels);
-      console.log("RESULTADO DOS USERS: ", channels[1].users[0]);
+      console.log("RESULTADO DOS USERS: ", channels[0].users);
     } catch (error) {
       console.error(error);
     }
@@ -134,7 +134,7 @@ export const chatStore = defineStore("chat", () => {
       // Check if the response indicates a successful operation
       if (response.ok) {
         // Return any relevant data here if needed
-		store.getChannels();
+		  getChannels();
         return false;
       } else if (response.status == 409) {
         return "409"; //409 == Conflit error (same name || same id?)

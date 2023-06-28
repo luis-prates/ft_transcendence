@@ -15,7 +15,7 @@ export class MessageList {
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
   
-  private pagination_list: PaginationMenu;
+  private pagination_list: any | PaginationMenu;
   private users: any | void [] = [];
   private user = userStore().user;
   private functions = userStore();
@@ -25,7 +25,6 @@ export class MessageList {
   
   constructor(tittle: string) {
     this.title = tittle;
-    this.pagination_list = new PaginationMenu([], 8, 1);
     this.fetchOtherUsers();
     this.fetchUsers();
   }
@@ -63,7 +62,7 @@ export class MessageList {
       let page = 0;
 
       this.usersList.forEach((request: any, index: number) => {
-        if ((index == 0 ? index + 1 : index) % 8 == 0) page++;
+        if ((index == 0 ? index + 1 : index) % this.pagination_list.max_for_page == 0) page++;
         this.response[index] = -1;
         const i = index - page * this.pagination_list.max_for_page;
         

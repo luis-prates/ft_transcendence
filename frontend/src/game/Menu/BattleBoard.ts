@@ -7,9 +7,9 @@ import { userStore, type Historic } from "@/stores/userStore";
 //image
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import vsImage from "@/assets/images/lobby/menu/vs.png";
+import battleImage from "@/assets/images/lobby/menu/battle.png";
 
-import { Profile } from "./Profile";
-import { YourProfile } from "./YourProfile";
+import { PaginationMenu } from "./PaginationMenu";
 
 
 export class BattleBoard {
@@ -17,54 +17,39 @@ export class BattleBoard {
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
   
+  private pagination_battles: any | PaginationMenu;
   
   private user = userStore().user;
- // private getUsers = userStore().getUsers;
-  private users : any | void [] = [];
+
   private onResult: (result: any) => void = () => {};
   
   constructor() {
-    
     this.fetchUsers();
-
-    
-	//TODO FOREACH
-	/*this.menu.add(this.background, this.createRanking(37.5, 16 + 1 * 6, 1, "rteles", avatarDefault));
-    this.menu.add(this.background, this.createRanking(37.5, 16 + 2 * 6, 2, "onepiece", avatarDefault));
-    this.menu.add(this.background, this.createRanking(37.5, 16 + 3 * 6, 3, "pacman", avatarDefault));
-    this.menu.add(this.background, this.createRanking(37.5, 16 + 4 * 6, 4, "mario", avatarDefault));
-    this.menu.add(this.background, this.createRanking(37.5, 16 + 5 * 6, 5, "eduxx", avatarDefault));
-    this.menu.add(this.background, this.createRanking(37.5, 16 + 6 * 6, 6, "maria", avatarDefault));
-    this.menu.add(this.background, this.createRanking(37.5, 16 + 7 * 6, 7, "cabrita", avatarDefault));
-    this.menu.add(this.background, this.createRanking(37.5, 16 + 8 * 6, 8, "ave rara", avatarDefault));
-    this.menu.add(this.background, this.createRanking(37.5, 16 + 9 * 6, 9, "luis", avatarDefault));
-    this.menu.add(this.background, this.createRanking(37.5, 16 + 10 * 6, 10, "ezekiel", avatarDefault));*/
-
-
   }
 
   async fetchUsers() {
     try {
-      // Obtenha os usuários da base de dados
-      const games : Historic[] = await userStore().getUserGames(this.user.id);
-  
-      // Armazene os usuários no array
-  
-      console.log("games: ", games); // Faça o que desejar com o array de usuários
-      
-      this.menu.add(this.background);
-      this.menu.add(this.createButtonExit(35.5, 16));
+          const games : Historic[] = await userStore().getUserGames(this.user.id);
 
-      let your_position = 0;
-      let page = 0;
+          this.pagination_battles = new PaginationMenu(games, 7, 1);
 
-      games.forEach((game: Historic, index: number) => {
-        console.log(index + ':', game);
-        if (index < 7)
-          this.menu.add(this.background, this.createBattle(index, 32.5, 13 + (index + 1) * 9.25, game.players[0], game.players[1]));
-      });
-      //Your Position
-      //this.menu.add(this.background, this.createBattle(37.5, 16 + 11 * 6, your_position, this.user.nickname, this.user.image, this.user.id));
+          console.log("games: ", games); // Faça o que desejar com o array de usuários
+
+          this.menu.add(this.background);
+          this.menu.add(this.createButtonExit(30.5, 11));
+
+          let page = 0;
+
+          games.forEach((game: Historic, index: number) => {
+            if ((index == 0 ? index + 1 : index) % this.pagination_battles.max_for_page == 0) page++;
+            const i = index - page * this.pagination_battles.max_for_page;
+
+            this.menu.add(this.background, this.createBattle(index, 32.5, 10 + (i + 1) * 9.25, game.players[0], game.players[1]));
+          });
+
+           //Arrow Buttons
+          this.menu.add(this.pagination_battles.createArrowButton("left", 46.5, 30 + 9 * 6, 2));
+          this.menu.add(this.pagination_battles.createArrowButton("right", 51.5, 30 + 9 * 6, 2));
     }
     catch (error) 
     {
@@ -75,11 +60,35 @@ export class BattleBoard {
   }
 
   private createBackground(): ElementUI {
+    const battle_image = new Image();
+    battle_image.src = battleImage;
+
+
     const background: ElementUI = {
       type: "image",
-      rectangle: { x: "30%", y: "10%", w: "40%", h: "78%" },
-      draw: (context: any) => {
-        this.draw(context, background.rectangle);
+      rectangle: { x: "30%", y: "10%", w: "40%", h: "80%" },
+      draw: (ctx: any) => {
+        const pos = background.rectangle
+        const backgroundColor = 'rgba(192, 192, 192, 0.6)'; // Cor de fundo castanho
+        const borderColor = "#8B4513"; // Cor de contorno mais escuro
+      
+        // Desenha o corpo do balão com cor de fundo castanho
+        ctx.fillStyle = backgroundColor;
+        this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
+        ctx.fill();
+    
+        // Desenha o contorno do balão com cor mais escura
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    
+        if (battle_image.complete)
+          ctx.drawImage(battle_image, pos.x + pos.w * 0.01, pos.y + pos.h * 0.01, pos.w * 0.98, pos.h * 0.98);
+        
+        ctx.lineWidth = 5;
+        ctx.textAlign = "start";
+        ctx.fillStyle = "gold";
+        this.fillTextCenter(ctx, "Battle Board", pos.x + pos.w * 0.3, pos.y + pos.h * 0.095, pos.w * 0.39, pos.h * 0.07, undefined, "'Press Start 2P', cursive", true);
       },
     };
     return background;
@@ -89,12 +98,12 @@ export class BattleBoard {
     const close_tab = new Audio(sound_close_tab);
     const button: ElementUI = {
       type: "exit",
-      rectangle: { x: x + "%", y: y + "%", w: "3%", h: "3%" },
+      rectangle: { x: x + "%", y: y + "%", w: "2.5%", h: "3%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        ctx.strokeStyle = "#8B4513";
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "red";
         ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
 
-        ctx.lineWidth = 3;
 
         ctx.beginPath();
         ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
@@ -115,42 +124,27 @@ export class BattleBoard {
     return button;
   }
 
-  public draw(ctx: CanvasRenderingContext2D, pos: Rectangle) {
-    const backgroundColor = 'rgba(192, 192, 192, 0.6)'; // Cor de fundo castanho
-    const borderColor = "#8B4513"; // Cor de contorno mais escuro
-	
-    // Desenha o corpo do balão com cor de fundo castanho
-    ctx.fillStyle = backgroundColor;
-    this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
-    ctx.fill();
-
-    // Desenha o contorno do balão com cor mais escura
-    ctx.strokeStyle = borderColor;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    ctx.font = "18px 'Press Start 2P', cursive";
-    ctx.textAlign = "start";
-	  ctx.fillStyle = "gold";
-    ctx.fillText("Battle Board", pos.x + pos.w * 0.33, pos.y + pos.h * 0.05, pos.w * 0.33);
-    ctx.strokeText("Battle Board", pos.x + pos.w * 0.33, pos.y + pos.h * 0.05, pos.w * 0.33);
-
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(pos.x + pos.w / 2 - 30, pos.y + pos.h * 0.06);
-    ctx.lineTo(pos.x + pos.w / 2 + 30, pos.y + pos.h * 0.06);
-    ctx.stroke();
-  }
-
   private createBattle(index: number, x: number, y: number, player1: any, player2?: any): ElementUI {
     const image_vs = new Image();
     image_vs.src = vsImage;
+    const image_player1 = new Image();
+    const image_player2 = new Image();
+    image_player1.src = player1.image;
+    image_player2.src = player2.image;
 
 	  const battle: ElementUI = {
       type: "battle",
       rectangle: { x: x + "%", y: y + "%", w: "35%", h: "7.5%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        ctx.fillStyle = "#CD7F32";
+
+        if (!(this.pagination_battles.isIndexInCurrentPage(index))) {
+            battle.enable = false;
+          return;
+        }
+        if (!battle.enable)
+          battle.enable = true;
+
+        ctx.fillStyle = "rgba(205, 127, 50, 0.8)";
         ctx.strokeStyle = "black";
         ctx.lineWidth = 2;
 
@@ -159,39 +153,25 @@ export class BattleBoard {
         ctx.fill();
         ctx.stroke();
 
-
-		    //ctx.strokeRect(battle.rectangle.x + battle.rectangle.x * 0.075, battle.rectangle.y + battle.parent?.rectangle.y * 0.035, battle.rectangle.w * 0.1, battle.rectangle.h * 0.8);
-		    
-        ctx.drawImage(image_vs, battle.rectangle.x + battle.rectangle.w * 0.4, battle.rectangle.y + battle.parent?.rectangle.y * 0.035, battle.rectangle.w * 0.15, battle.rectangle.h * 0.8);
+		    if (image_vs.complete)
+          ctx.drawImage(image_vs, battle.rectangle.x + battle.rectangle.w * 0.425, battle.rectangle.y + battle.rectangle.h * 0.125, battle.rectangle.w * 0.15, battle.rectangle.h * 0.8);
       
 		    ctx.fillStyle = "white";
         ctx.strokeStyle = "black";
         
         ctx.lineWidth = 7;
 
-		    //Nickname
-		    ctx.strokeText(player1.nickname, battle.rectangle.x + battle.rectangle.w * 0.05, battle.rectangle.y + battle.rectangle.w * 0.1, battle.rectangle.w * 0.375);
-        ctx.fillText(player1.nickname, battle.rectangle.x + battle.rectangle.w * 0.05, battle.rectangle.y + battle.rectangle.w * 0.1, battle.rectangle.w * 0.375);
-      
-        ctx.strokeText(player2.nickname, battle.rectangle.x + battle.rectangle.w * 0.65, battle.rectangle.y + battle.rectangle.w * 0.1, battle.rectangle.w * 0.375);
-        ctx.fillText(player2.nickname, battle.rectangle.x + battle.rectangle.w * 0.65, battle.rectangle.y + battle.rectangle.w * 0.1, battle.rectangle.w * 0.375);
-     
-      
+        this.fillTextCenter(ctx, player1.nickname, battle.rectangle.x + battle.rectangle.w * 0.09, battle.rectangle.y + battle.rectangle.h * 0.7, battle.rectangle.w * 0.375,  battle.rectangle.h * 0.4, undefined, "'Press Start 2P', cursive", true)
+        this.fillTextCenter(ctx, player2.nickname, battle.rectangle.x + battle.rectangle.w * 0.575, battle.rectangle.y + battle.rectangle.h * 0.7, battle.rectangle.w * 0.375,  battle.rectangle.h * 0.4, undefined, "'Press Start 2P', cursive", true)
+        
+        if (image_player1.complete)
+        this.drawImageCircle(ctx, image_player1, battle.rectangle.x + battle.rectangle.w * 0.0135, battle.rectangle.y + battle.rectangle.h * 0.125, battle.rectangle.w * 0.095, battle.rectangle.h * 0.8, true);
+          
+        if (image_player2.complete)
+          this.drawImageCircle(ctx, image_player2, battle.rectangle.x + battle.rectangle.w * 0.89, battle.rectangle.y + battle.rectangle.h * 0.125, battle.rectangle.w * 0.095, battle.rectangle.h * 0.8, true);
       },
       onClick: () => {
-        /*let confirmButton;
-        if (id != this.user.id)
-          confirmButton = new Profile(id);
-        else
-          confirmButton = new YourProfile(Lobby.getPlayer());
-        this._menu.visible = false;
-        this._menu.enable = false;
-        confirmButton.show((value) => {
-          if (value == "EXIT") {
-            this._menu.visible = true;
-            this._menu.enable = true;
-          }
-        });*/
+        //Entrar na Partida
       },
     };
     return battle;
@@ -213,6 +193,52 @@ export class BattleBoard {
     ctx.closePath();
   }
 
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
+    ctx.font = font ? h + "px " + font : h + "px Arial";
+    ctx.textAlign = "start";
+    
+    const begin = x + w * 0.1;
+    const max = max_with ? max_with : w - w * 0.2;
+
+    let offset = 0;
+    let offsetmax = 0;
+    const labelWidth = ctx.measureText(label).width;
+    while (begin + offset + labelWidth < begin + max - offset) {
+      offsetmax += w * 0.05;
+      if (begin + offsetmax + labelWidth > begin + max - offset) break;
+      offset = offsetmax;
+    }
+
+    if (stroke)
+      ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+  }
+
+   private drawImageCircle(ctx: CanvasRenderingContext2D, image: HTMLImageElement, dx: number, dy: number, dw: number, dh: number, stroke?: boolean)
+  {
+    const centerX = dx + dw / 2;
+    const centerY = dy + dh / 2;
+    const radius = Math.min(dw, dh) / 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.closePath();
+
+    if (stroke)
+    {
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+    ctx.clip();
+    
+    ctx.drawImage(image, centerX - radius, centerY - radius, radius * 2, radius * 2);
+
+    
+    ctx.restore();
+  }
+
   get menu(): Menu {
     return this._menu;
   }
@@ -222,3 +248,16 @@ export class BattleBoard {
     Game.addMenu(this.menu);
   }
 }
+
+
+//Regua
+
+/* ctx.strokeRect( x + w * 0.1, y, w - w * 0.2 - offset, 1);
+  
+  ctx.strokeRect( x + w * 0.1, y - h, 1, h );
+  ctx.strokeRect( x + w * 0.1, y - h, w - w * 0.2 - offset, 1);
+  
+  ctx.strokeRect(x, y + h / 2, w, 1);
+  ctx.strokeRect(x + w / 2, y, 1, h);
+  ctx.strokeRect(x + w * 0.33, y, 1, h);
+  ctx.strokeRect(x + w * 0.66, y, 1, h);*/

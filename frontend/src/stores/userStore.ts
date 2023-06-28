@@ -183,35 +183,34 @@ export const userStore = defineStore("user", function () {
 
       // axios.request(options)
       .then(function (response: any) {
+        console.log("response: ", response.data);
+        
         user.access_token_server = response.data.access_token;
-        user.id = response.data.dto.id;
-        user.status = response.data.dto.status;
-        user.name = response.data.dto.name;
-        user.email = response.data.dto.email;
-        user.nickname = response.data.dto.nickname;
-        user.image = response.data.dto.image;
-        user.money = response.data.dto.money;
-        user.avatar = response.data.dto.avatar;
-        user.infoPong.level = response.data.dto.level;
-        user.infoPong.xp = response.data.dto.xp;
-        user.infoPong.color = response.data.dto.color;
-        user.infoPong.skin.default.tableColor = response.data.dto.tableColorEquipped;
-        user.infoPong.skin.default.tableSkin = response.data.dto.tableSkinEquipped;
-        user.infoPong.skin.default.paddle = response.data.dto.paddleSkinEquipped;
-        user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
-        user.infoPong.skin.paddles = response.data.dto.paddleSkinsOwned;
-        //TODO
-        //user.infoPong.historic = [],
-        console.log("response: ", response.data.dto);
+        user.id = response.data.user.id;
+        user.status = response.data.user.status;
+        user.name = response.data.user.name;
+        user.email = response.data.user.email;
+        user.nickname = response.data.user.nickname;
+        user.image = response.data.user.image;
+        user.money = response.data.user.money;
+        user.avatar = response.data.user.avatar;
+        user.infoPong.level = response.data.user.level;
+        user.infoPong.xp = response.data.user.xp;
+        user.infoPong.color = response.data.user.color;
+        user.infoPong.skin.default.tableColor = response.data.user.tableColorEquipped;
+        user.infoPong.skin.default.tableSkin = response.data.user.tableSkinEquipped;
+        user.infoPong.skin.default.paddle = response.data.user.paddleSkinEquipped;
+        user.infoPong.skin.tables = response.data.user.tableSkinsOwned;
+        user.infoPong.skin.paddles = response.data.user.paddleSkinsOwned;
+        getFriends();
+        getFriendRequests();
+        getBlockedUsers();
+        getUserGames(user.id);
       })
       .catch(function (error) {
         console.error(error);
       });
     user.isLogin = true;
-    getFriends();
-    getFriendRequests();
-    getBlockedUsers();
-    getUserGames(user.id);
     console.log("USER: ", user);
     // .finally(() => window.location.href = window.location.origin);
   }
