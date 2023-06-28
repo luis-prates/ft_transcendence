@@ -101,6 +101,8 @@ const { selected } = storeToRefs(store);
 
 socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
+console.log("Socket criado na instancia do componente: ", chatSocket);
+
 
 // Get channel name from chatStore
 const getChannelName = () => {
@@ -131,9 +133,10 @@ const text = ref();
 function send() {
   console.log("Chat Emit event: ", text.value);
   if (text.value) {
-    const mensagem: ChatMessage = { objectId: user.user.id, id: user.user.id + "_" + Date.now(), message: text.value.trim(), nickname: "user_" + user.user.id };
-    store.addMessage(selected.value?.objectId, mensagem);
-    socket.emit("send_message", { message: mensagem, objectId: selected.value?.objectId });
+    const message = text.value.trim();
+    //store.addMessage(selected.value?.objectId, menreceived message fromsagem);
+    const channelId = selected.value?.objectId;
+    chatSocket.emit("message", { message: message, channelId: channelId });
     text.value = "";
     // Use nextTick to wait for the DOM to update
     nextTick(() => {
@@ -142,15 +145,24 @@ function send() {
   }
 }
 
+
 onMounted(() => {
-  socket.on("send_message", (data: any) => {
-    store.addMessage(data.objectId, data.message);
-    scrollToBottom();
-  });
+  //const chatSocket: Socket = socketClass.getChatSocket();
+  //console.log("Socket criado onMounted: ", chatSocket);
+ /* chatSocket.on('message', (data: { channelId: string, message: string }) => {
+    const { channelId, message } = data;
+    
+    console.log(`Received message in channel ${channelId}: ${message}`);
+  });*/
+  // chatSocket.on("message", (data: any) => {
+  //   store.addMessage(data.objectId, data.message);
+  //   scrollToBottom();
+  // });
 });
 
 onUnmounted(() => {
-  socket.off("send_message");
+  //socket.off("send_message");
+  //chatSocket.off("message");
 });
 
 const scrollContainer = ref<HTMLElement | null>(null);

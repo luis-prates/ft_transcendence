@@ -6,7 +6,7 @@ import axios from "axios";
 
 export interface ChatMessage {
   id: string;
-  objectId: any;
+  objectId: number;
   message: string;
   nickname: string;
 }
@@ -33,18 +33,25 @@ export const chatStore = defineStore("chat", () => {
   const user = userStore().user;
 
   function addChannel(channel: channel) {
-    const channelSelected = channels.find((c) => c.objectId === channel.objectId);
+    const channelSelected = channels.find((c) => {
+      console.log("Comparing objectId: ", c.objectId, " with ", objectId);
+      return c.objectId === objectId;
+    });
     if (channelSelected) {
       channelSelected.messages = channel.messages;
       channelSelected.users = channel.users;
     } else channels.push(channel);
   }
 
-  function addMessage(objectId: string, message: ChatMessage) {
+  function addMessage(objectId: number, message: ChatMessage) {
     const channelSelected = channels.find((c) => c.objectId === objectId);
+    console.log("channelSelected: ", channelSelected);
+    console.log("ObjectId: ", objectId);
     if (channelSelected && message) {
       channelSelected.messages.push(message);
+      console.log("Vai adicionar a messagem ao chat");
     }
+    console.log("Os channels do store: ", channels);
   }
 
   function activateMessage(message: ChatMessage) {
@@ -62,7 +69,7 @@ export const chatStore = defineStore("chat", () => {
         });
         const messages = response.data;
         // Process the messages as needed
-        selected.messages = messages;
+        selected.value.messages = messages;
         console.log("RESPOSTA DO SERVER: ", messages);
       } catch (error) {
         console.error(error);
@@ -97,6 +104,7 @@ export const chatStore = defineStore("chat", () => {
           password: channelData.password ?? "",
           users: transformedUsers,
           type: channelData.type ?? "",
+          messages: [], // Add an empty messages array
         };
       });
 
@@ -134,7 +142,7 @@ export const chatStore = defineStore("chat", () => {
       // Check if the response indicates a successful operation
       if (response.ok) {
         // Return any relevant data here if needed
-        store.getChannels();
+        //store.getChannels();
         return false;
       } else if (response.status == 409) {
         return "409"; //409 == Conflit error (same name || same id?)

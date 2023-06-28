@@ -295,6 +295,7 @@ export class ChatGateway implements OnGatewayConnection {
 						const socket = this.userIdToSocketMap.get(userId);
 						socket.emit('message', {
 							channelId: channelId,
+							senderId: senderId,
 							message: message,
 						});
 					} else {
