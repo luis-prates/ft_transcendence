@@ -22,6 +22,19 @@ model User {
 	name					String
 	nickname				String @unique
 	image					String?
+	money					Int @default(0)
+	avatar					Int @default(0)	//Avatar in The Lobby
+
+	// Info Ping Pong
+	level					Int @default(1)
+	xp						Int @default(0)
+	color					String @default("blue") // this sets the color for player name, player ball and player padel
+	tableColorEquipped		String @default("")
+	tableSkinEquipped		String @default("")
+	paddleSkinEquipped		String @default("")
+	tableSkinsOwned			String[]
+	paddleSkinsOwned		String[]
+	// gameHistory			Games[]
 
 	status					UserStatus @default(OFFLINE) // Offline, In Game, Online
 
@@ -31,11 +44,19 @@ model User {
 	friends					User[] @relation("Friends")
 	friendsOf				User[] @relation("Friends")
 
-    // TODO: Add blocklist
-    blockedUsers  Blocklist[] @relation("BlockingUsers")
-    blockingUsers Blocklist[] @relation("BlockedUsers")
+	// Game
+	games					Game[] //@relation("WonGames")
+	//lostGames				Game[] @relation("LostGames")
 
-    // Chat
+	// Blocked Users
+	blockedUsers			Blocklist[] @relation("BlockingUsers")
+	blockingUsers			Blocklist[] @relation("BlockedUsers")
+
+	// Chat
+	messages				Message[]
+	channels				ChannelUser[]
+	ownedChannels			Channel[] @relation("ChannelOwner")
+
 	@@unique([id, nickname])
 	@@map("users")
 }
