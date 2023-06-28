@@ -10,26 +10,33 @@ import vsImage from "@/assets/images/lobby/menu/vs.png";
 import battleImage from "@/assets/images/lobby/menu/battle.png";
 
 import { PaginationMenu } from "./PaginationMenu";
+import Router from "@/router";
 
 
-export class BattleBoard {
+export class BattleList {
   private _menu = new Menu({ layer: "Global", isFocus: false });
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
   
   private pagination_battles: any | PaginationMenu;
+  private type: string;
   
-  private user = userStore().user;
-
   private onResult: (result: any) => void = () => {};
   
-  constructor() {
-    this.fetchUsers();
+  constructor(type: string) {
+    this.type = type;
+    let status;
+    if (type == "Waiting")
+      status = GameStatus.NOT_STARTED;
+    else
+      status = GameStatus.IN_PROGESS;
+
+    this.fetchUsers(status);
   }
 
-  async fetchUsers() {
+  async fetchUsers(status: GameStatus) {
     try {
-          const games : Historic[] = await userStore().getGames(GameStatus.NOT_STARTED);
+          const games : Historic[] = await userStore().getGames(status);
 
           this.pagination_battles = new PaginationMenu(games, 7, 1);
 
@@ -44,7 +51,7 @@ export class BattleBoard {
             if ((index == 0 ? index + 1 : index) % this.pagination_battles.max_for_page == 0) page++;
             const i = index - page * this.pagination_battles.max_for_page;
 
-            this.menu.add(this.background, this.createBattle(index, 32.5, 10 + (i + 1) * 9.25, game.players[0], game.players[1]));
+            this.menu.add(this.background, this.createBattle(index, 32.5, 10 + (i + 1) * 9.25, game));
           });
 
            //Arrow Buttons
@@ -62,7 +69,6 @@ export class BattleBoard {
   private createBackground(): ElementUI {
     const battle_image = new Image();
     battle_image.src = battleImage;
-
 
     const background: ElementUI = {
       type: "image",
@@ -88,7 +94,7 @@ export class BattleBoard {
         ctx.lineWidth = 5;
         ctx.textAlign = "start";
         ctx.fillStyle = "gold";
-        this.fillTextCenter(ctx, "Battle Board", pos.x + pos.w * 0.3, pos.y + pos.h * 0.095, pos.w * 0.39, pos.h * 0.07, undefined, "'Press Start 2P', cursive", true);
+        this.fillTextCenter(ctx, this.type, pos.x + pos.w * 0.3, pos.y + pos.h * 0.095, pos.w * 0.39, pos.h * 0.07, undefined, "'Press Start 2P', cursive", true);
       },
     };
     return background;
@@ -103,7 +109,6 @@ export class BattleBoard {
         ctx.lineWidth = 3;
         ctx.strokeStyle = "red";
         ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
-
 
         ctx.beginPath();
         ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
@@ -124,13 +129,15 @@ export class BattleBoard {
     return button;
   }
 
-  private createBattle(index: number, x: number, y: number, player1: any, player2?: any): ElementUI {
+  private createBattle(index: number, x: number, y: number, game: Historic): ElementUI {
     const image_vs = new Image();
     image_vs.src = vsImage;
     const image_player1 = new Image();
     const image_player2 = new Image();
-    image_player1.src = player1.image;
-    image_player2.src = player2.image;
+    if (game.players[0]) 
+      image_player1.src = game.players[0].image;
+    if (game.players[1])
+      image_player2.src = game.players[1]?.image;
 
 	  const battle: ElementUI = {
       type: "battle",
@@ -161,16 +168,22 @@ export class BattleBoard {
         
         ctx.lineWidth = 7;
 
-        this.fillTextCenter(ctx, player1.nickname, battle.rectangle.x + battle.rectangle.w * 0.09, battle.rectangle.y + battle.rectangle.h * 0.7, battle.rectangle.w * 0.375,  battle.rectangle.h * 0.4, undefined, "'Press Start 2P', cursive", true)
-        this.fillTextCenter(ctx, player2.nickname, battle.rectangle.x + battle.rectangle.w * 0.575, battle.rectangle.y + battle.rectangle.h * 0.7, battle.rectangle.w * 0.375,  battle.rectangle.h * 0.4, undefined, "'Press Start 2P', cursive", true)
-        
-        if (image_player1.complete)
-        this.drawImageCircle(ctx, image_player1, battle.rectangle.x + battle.rectangle.w * 0.0135, battle.rectangle.y + battle.rectangle.h * 0.125, battle.rectangle.w * 0.095, battle.rectangle.h * 0.8, true);
-          
-        if (image_player2.complete)
-          this.drawImageCircle(ctx, image_player2, battle.rectangle.x + battle.rectangle.w * 0.89, battle.rectangle.y + battle.rectangle.h * 0.125, battle.rectangle.w * 0.095, battle.rectangle.h * 0.8, true);
-      },
+        if (game.players[0])
+        {
+          this.fillTextCenter(ctx, game.players[0].nickname, battle.rectangle.x + battle.rectangle.w * 0.1, battle.rectangle.y + battle.rectangle.h * 0.7, battle.rectangle.w * 0.35,  battle.rectangle.h * 0.4, undefined, "'Press Start 2P', cursive", true)      
+          if (image_player1.complete)
+            this.drawImageCircle(ctx, image_player1, battle.rectangle.x + battle.rectangle.w * 0.0135, battle.rectangle.y + battle.rectangle.h * 0.125, battle.rectangle.w * 0.095, battle.rectangle.h * 0.8, true);
+        }
+        if (game.players[1])
+        {
+          this.fillTextCenter(ctx, game.players[1].nickname, battle.rectangle.x + battle.rectangle.w * 0.55, battle.rectangle.y + battle.rectangle.h * 0.7, battle.rectangle.w * 0.35,  battle.rectangle.h * 0.4, undefined, "'Press Start 2P', cursive", true)
+          if (image_player2.complete)
+            this.drawImageCircle(ctx, image_player2, battle.rectangle.x + battle.rectangle.w * 0.89, battle.rectangle.y + battle.rectangle.h * 0.125, battle.rectangle.w * 0.095, battle.rectangle.h * 0.8, true);
+ 
+        }
+     },
       onClick: () => {
+        Router.push(`/game?objectId=${game.id}`);
         //Entrar na Partida
       },
     };

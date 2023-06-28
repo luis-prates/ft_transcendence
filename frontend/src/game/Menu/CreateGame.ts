@@ -358,21 +358,16 @@ export class CreateGame {
             gameType: "PUBLIC",
             players: [ this.user.id ],
             gameRequest: { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" },
-        }		//,
-        //   {
-        //     headers: {
-        //       Authorization: `Bearer ${this.user.access_token_server}`,
-        //     },
-        //   }
+        }
         );
-		console.log(`Axios Response: ${JSON.stringify(gameCreate.data)}`);
-		console.log('Axios Post Request completed. Emitting new_game event.');
-		this.data.objectId = gameCreate.data.id;
+		    console.log(`Axios Response: ${JSON.stringify(gameCreate.data)}`);
+		    console.log('Axios Post Request completed. Emitting new_game event.');
+		    this.data.objectId = gameCreate.data.id;
         //! this should be unnecessary now. Post request above does the same
 		// this.gameSocket.emit("new_game", { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
         console.log('Emitting new_gameobject event.');
-		this.lobbySocket.emit("new_gameobject", this.data);
-		console.log('Emitting new_gameobject event completed.');
+		    this.lobbySocket.emit("new_gameobject", this.data);
+		    console.log('Emitting new_gameobject event completed.');
         Router.push(`/game?objectId=${this.data.objectId}`);
       },
     };

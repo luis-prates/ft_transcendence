@@ -13,6 +13,7 @@ import { GameService } from '../game.service';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
+import { GameClass } from '../ping_pong/GamePong';
 
 @WebSocketGateway({ namespace: 'game', cors: { origin: '*' } })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -93,7 +94,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage('entry_game')
 	async handleEnterGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.logger.debug(`Enter game received: ${JSON.stringify(body)}`);
-		const isPlayer = body.isPlayer;
 		const gameId = body.objectId;
 		client.data.gameId = gameId;
 		const userId = client.data.userId;
@@ -101,6 +101,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		// Add userId to gameIdToUserId map
 		// if gameId not in map, create new entry
 		// if gameId in map, append userId to array
+		const isPlayer = await this.gameService.enterGame(player, body);
 		if (isPlayer) {
 			this.socketService.gameIdToPlayerId.set(gameId, [
 				...(this.socketService.gameIdToPlayerId.get(gameId) || []),
@@ -109,7 +110,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			// Join the room for the game
 			client.join(`game-${gameId}-player`);
 			this.logger.debug(`Client ${client.id} Joining game-${gameId}-player`);
-			this.gameService.enterGame(player, isPlayer, body);
 		}
 		// else, add userId to gameIdToWatcherId map
 		else {
@@ -119,8 +119,18 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			]);
 			this.logger.log(`Added watcher ${userId} to game ${gameId}`);
 			client.join(`game-${gameId}-watcher`);
-			this.gameService.enterGame(player, isPlayer, body.playerInfo);
 		}
+	}
+
+	@SubscribeMessage('match_making_game')
+	async handleMatchMakingGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.logger.debug(`Match Making game received: ${JSON.stringify(body)}`);
+
+		const userId = client.data.userId;
+		const player = this.playerService.getPlayer(userId);
+		
+		const game = await this.gameService.matchMakingGame(player, body);
+		this.server.emit('match_making_game', game);
 	}
 
 	// @SubscribeMessage('new_game')

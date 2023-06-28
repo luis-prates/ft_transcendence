@@ -44,7 +44,6 @@ onMounted(function () {
     avatar: user.image,
     color: user.infoPong.color,
     skin: user.infoPong.skin.default.paddle,
-	  isPlayer: user.isPlayer,
   });
 
   console.log("pros: ", props);

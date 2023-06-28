@@ -2,12 +2,12 @@ import { reactive } from "vue";
 import { defineStore } from "pinia";
 import { env } from "../env";
 import axios from "axios";
-import type { ProductSkin, TypeSkin } from "@/game/ping_pong/Skin";
+import type { TypeSkin } from "@/game/ping_pong/Skin";
 
 export enum GameStatus {
-	NOT_STARTED,
-	IN_PROGESS,
-	FINISHED,
+	NOT_STARTED = "NOT_STARTED",
+	IN_PROGESS = "IN_PROGESS",
+	FINISHED = "FINISHED",
 }
 
 enum UserStatus {
@@ -81,7 +81,6 @@ export interface User {
   money: number;
   friends: any,
   friendsRequests: Friendship[],
-  isPlayer: boolean;
   block: Block[],
 }
 
@@ -95,7 +94,6 @@ export const userStore = defineStore("user", function () {
     return color;
   };
 
-  //! wallet - should it be deleted?
   const user = reactive({
     access_token_server: "",
     accessToken: "",
@@ -109,7 +107,6 @@ export const userStore = defineStore("user", function () {
     image: "",
     avatar: 0,
     money: 10,
-	isPlayer: true,
     infoPong: {
       level: 1,
       xp: 0,
@@ -528,7 +525,7 @@ export const userStore = defineStore("user", function () {
     };
 
     return await axios
-      .get(env.BACKEND_PORT + "/game/" + userId, options)
+      .get(env.BACKEND_PORT + "/game/user/" + userId, options)
 
       // axios.request(options)
       .then(function (response: any) {
@@ -543,14 +540,12 @@ export const userStore = defineStore("user", function () {
   }
 
   
-  async function getGames(status: number) {
-    let body = {} as any;
-    body.status = status;
+  async function getGames(status: GameStatus) {
 
     const options = {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
-      body: new URLSearchParams(body),
+      params: new URLSearchParams([['status', status]]),
     };
 
     return await axios

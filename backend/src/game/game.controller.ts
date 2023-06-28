@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, ParseIntPipe, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseIntPipe, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
 import { GetUser } from '../auth/decorator';
@@ -17,7 +17,14 @@ export class GameController {
 	createGame(@Body() body: GameDto) {
 		return this.gameService.createGame(body);
 	}
-
+	
+	@Get('active')
+	getActiveGames(@Query('status') status: GameStatus) {
+		const gameStatus: GameStatus = GameStatus[status as keyof typeof GameStatus];
+	
+		return this.gameService.getActiveGames(gameStatus);
+	}
+	
 	@HttpCode(200)
 	@Patch('add/:gameId')
 	addGameUser(@Param('gameId', new ParseUUIDPipe()) gameId: string, @Body() body: playerInfo) {
@@ -36,13 +43,8 @@ export class GameController {
 		return this.gameService.endGame(gameId, body);
 	}
 
-	@Get(':userId')
+	@Get('/user/:userId')
 	getUserGames(@Param('userId', new ParseIntPipe()) userId: number) {
 		return this.gameService.getUserGames(userId);
-	}
-
-	@Get('active')
-	getActiveGames(status: GameStatus) {
-		return this.gameService.getActiveGames(status);
 	}
 }

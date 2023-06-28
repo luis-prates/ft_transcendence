@@ -3,7 +3,7 @@ import { GameStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameDto } from './dto';
 import { EventEmitter } from 'events';
-import { GameClass, infoBot } from './ping_pong/GamePong';
+import { GameClass, Status, infoBot } from './ping_pong/GamePong';
 import { playerInfo } from '../socket/SocketInterface';
 import { PlayerService } from '../player/player.service';
 import { Server } from 'socket.io';
@@ -81,13 +81,33 @@ export class GameService {
 		return game;
 	}
 
-	async enterGame(player: Player, isPlayer: boolean, info: playerInfo) {
+	async matchMakingGame(player: Player, info: playerInfo) {
+		let game = this.games.find(g => g.status == Status.Waiting);
+		if (!game) {
+			const gameCreated = await this.createGame({
+				"gameType": "PUBLIC",
+				"players": [],
+				"gameRequest": {"objectId": `gametest_${info}`,
+				"maxScore": 3,
+				"table": "#1e8c2f",
+				"tableSkin": "",
+				"bot": false}
+			} as GameDto) as any;
+			return gameCreated.id;
+		}
+		return game.data.objectId;
+	}
+
+	async enterGame(player: Player, info: playerInfo) : Promise<boolean> {
 		const game = this.games.find(g => g.data.objectId === info.objectId);
 		if (!game) {
 			throw new ForbiddenException('Game does not exist');
 		}
-		this.addGameUser(info.objectId, info);
+		const isPlayer = !game.player1 || !game.player2;
+		if (isPlayer)
+			this.addGameUser(info.objectId, info);
 		game.entry_game(player, isPlayer, info);
+		return isPlayer;
 	}
 
 	async updateGame(gameId: string, body?: any) {
