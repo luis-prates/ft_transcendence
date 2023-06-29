@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthDto } from './dto/auth.dto';
 import * as argon from 'argon2';
@@ -8,6 +8,8 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
+	private readonly logger = new Logger(AuthService.name);
+
 	constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService) {}
 
 	async signin(dto: AuthDto) {
@@ -21,6 +23,7 @@ export class AuthService {
 				},
 			});
 			if (userExists) {
+				this.logger.warn(`User ${userExists.id} already exists.`);
 				delete userExists.hash;
 				return this.signToken(userExists);
 			}
@@ -35,6 +38,7 @@ export class AuthService {
 					hash,
 				},
 			});
+			this.logger.log(`User ${user.id} created.`);
 
 			// Get the global channel ID
 			const globalChannel = await this.prisma.channel.findUnique({

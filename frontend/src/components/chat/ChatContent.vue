@@ -89,17 +89,15 @@ import { nextTick, defineProps, getCurrentInstance, watch } from "vue";
 import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
 import { storeToRefs } from "pinia";
 import { userStore } from "@/stores/userStore";
-import socket from "@/socket/Socket";
+import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
 // import chatSocket from "@/socket/SocketChat";
 import { onMounted, onUnmounted, ref } from "vue";
-import { Socket } from "socket.io-client";
 
 const store = chatStore();
 const user = userStore();
 const { selected } = storeToRefs(store);
 
-socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
 console.log("Socket criado na instancia do componente: ", chatSocket);
 

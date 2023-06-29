@@ -49,3 +49,9 @@ coverage
 /cypress/screenshots/
 
 .env
+
+# Prisma migrations
+backend/prisma/migrations/
+
+# Frontend env.ts
+frontend/src/env.ts

@@ -102,3 +102,13 @@ export class UserProfileDto {
 	@IsNumber()
 	id: number;
 }
+
+export class UserUpdateStatsDto {
+	@Transform(({ value }) => parseInt(value))
+	@IsNumber()
+	xp?: number;
+
+	@Transform(({ value }) => parseInt(value))
+	@IsNumber()
+	money?: number;
+}

@@ -1,7 +1,12 @@
-import { Player } from '../lobby';
+import { Logger } from '@nestjs/common';
 import { Ball } from './Ball';
 import { Player_Pong } from './PlayerPong';
-import { type gameRequest, type playerInfo } from './SocketInterface';
+import { type gameRequest, type playerInfo } from '../../socket/SocketInterface';
+import { GameService } from '../game.service';
+import { UserService } from '../../user/user.service';
+import { Server } from 'socket.io';
+import { GameStatus } from '@prisma/client';
+import { Player } from '../../player/Player';
 
 export enum Status {
 	Waiting,
@@ -10,16 +15,16 @@ export enum Status {
 	Finish,
 }
 
-const infoBot: playerInfo = {
+export const infoBot: playerInfo = {
 	objectId: '',
+	userId: 6969,
 	nickname: 'Marvin',
 	avatar: 'marvin',
 	color: '#12bab9',
 	skin: '42Lisboa',
 };
 
-export class Game {
-	games: Game[];
+export class GameClass {
 	width = 1000;
 	height = 522;
 	status: number = Status.Waiting;
@@ -32,17 +37,26 @@ export class Game {
 	bot = false;
 	onRemove: Function = () => {};
 
-	//Loop
 	private readonly FRAME_RATE: number = 60; // desired frame rate, e.g., 60 FPS
 	private readonly FRAME_DURATION: number = 1000 / this.FRAME_RATE; // duration of a frame in ms
 	private lastFrameTime: [number, number] = process.hrtime();
 
-	constructor(gameResquest: gameRequest, onRemove: Function) {
+	private readonly logger = new Logger(GameClass.name);
+	private gameServer: Server;
+	private gameService: GameService;
+	private userService: UserService;
+
+	constructor(gameResquest: gameRequest, gameService: GameService, userService: UserService, onRemove: Function) {
 		this.data = gameResquest;
 		this.maxPoint = gameResquest.maxScore;
 		this.ball = new Ball(this);
 		this.bot = gameResquest.bot ? gameResquest.bot : this.bot;
 		this.onRemove = onRemove;
+
+		this.gameServer = gameService.getServer();
+		this.gameService = gameService;
+
+		this.userService = userService;
 	}
 
 	//Game Loop 1000 milesecond (1second) for 60 fps
@@ -77,7 +91,10 @@ export class Game {
 	}
 
 	emitStartGame() {
-		this.player1.socket.emit('start_game', {
+		this.gameService.updateGame(this.data.objectId, {
+			status: GameStatus.IN_PROGESS,
+		});
+		this.player1.socket.emitToGame('start_game', {
 			player: 1,
 			status: Status.Starting,
 			data: this.data,
@@ -91,7 +108,7 @@ export class Game {
 			skin2: this.player2.skin,
 		});
 		if (this.bot == false) {
-			this.player2.socket.emit('start_game', {
+			this.player2.socket.emitToGame('start_game', {
 				player: 2,
 				status: Status.Starting,
 				data: this.data,
@@ -111,23 +128,23 @@ export class Game {
 	}
 
 	//Create Players and Watchers
-	addUsers(user: Player, playerInfo?: playerInfo) {
+	addUsers(user: Player, isPlayer: boolean, playerInfo?: playerInfo) {
 		// DATA BASE VERIFICATION
 
-		if (this.player1 == null) {
+		if (isPlayer && this.player1 == null) {
 			this.player1 = new Player_Pong(this, 1, user, playerInfo);
 			//console.log('player1 connect', playerInfo);
 			if (this.bot == true) {
 				this.player2 = new Player_Pong(this, 3, user, infoBot);
 				this.emitStartGame();
 			}
-		} else if (this.player2 == null) {
+		} else if (isPlayer && this.player2 == null) {
 			this.player2 = new Player_Pong(this, 2, user, playerInfo);
 			//console.log('player2 connect', playerInfo);
 			this.emitStartGame();
 		} else if (!this.watchers.includes(user)) {
 			this.watchers.push(user);
-			user.emit('start_game', {
+			user.emitToGame('start_game', {
 				//Game
 				status: this.status,
 				data: this.data,
@@ -169,97 +186,107 @@ export class Game {
 		//console.log('1: ', this.player1.score, ' 2:', this.player2.score);
 	}
 	//End Game
-	endGame(player_n: number) {
-		if ((player_n == 1 || player_n == 2) && this.status != Status.Finish) {
+	//! Send game stats to the client
+	endGame(playerNumber: number) {
+		if ((playerNumber == 1 || playerNumber == 2) && this.status != Status.Finish) {
 			this.updateStatus(Status.Finish);
-			if (player_n === 1) {
-				this.player1.socket.emit('end_game', {
-					objectId: this.data.objectId,
-					result: 'You Win!',
-					exp: 0,
-					max_exp: this.maxPoint * (this.bot ? 50 : this.player2.score == 0 ? 150 : 100),
-					money: 0,
-					max_money: this.maxPoint * (this.bot ? 2 : this.player2.score == 0 ? 5 : 3),
-					watchers: 0,
-					max_watchers: this.watchers.length,
-				});
-				if (this.player2 && this.bot == false) {
-					this.player2.socket.emit('end_game', {
-						objectId: this.data.objectId,
-						result: 'You Lose!',
-						exp: 0,
-						max_exp: this.player2.score == 0 ? 10 : this.player2.score * (this.bot ? 10 : 20),
-						money: 0,
-						max_money: this.player2.score == 0 ? 1 : this.player2.score * (this.bot ? 1 : 2),
-						watchers: 0,
-						max_watchers: this.watchers.length,
-					});
-				}
-				this.emitWatchers('end_game', {
-					objectId: this.data.objectId,
-					result: this.player1.nickname + ' Win!',
-					exp: 0,
-					max_exp: 0,
-					money: 0,
-					max_money: 0,
-					watchers: 0,
-					max_watchers: 0,
-				});
-			} else if (player_n === 2) {
-				this.player1.socket.emit('end_game', {
-					objectId: this.data.objectId,
-					result: 'You Lose!',
-					exp: 0,
-					max_exp: this.player1.score == 0 ? 10 : this.player1.score * (this.bot ? 10 : 20),
-					money: 0,
-					max_money: this.player1.score == 0 ? 1 : this.player1.score * (this.bot ? 1 : 2),
-					watchers: 0,
-					max_watchers: this.watchers.length,
-				});
-				if (this.player2 && this.bot == false) {
-					this.player2.socket.emit('end_game', {
-						objectId: this.data.objectId,
-						result: 'You Win!',
-						exp: 0,
-						max_exp: this.maxPoint * (this.bot ? 50 : this.player1.score == 0 ? 150 : 100),
-						money: 0,
-						max_money: this.maxPoint * (this.bot ? 2 : this.player1.score == 0 ? 5 : 3),
-						watchers: 0,
-						max_watchers: this.watchers.length,
-					});
-				}
-				this.emitWatchers('end_game', {
-					objectId: this.data.objectId,
-					result: this.player2.nickname + ' Win!',
-					exp: 0,
-					max_exp: 0,
-					money: 0,
-					max_money: 0,
-					watchers: 0,
-					max_watchers: 0,
-				});
-			}
 			//INSERT IN DATABASE
-			this.player1?.socket.off('game_move');
-			if (this.player2 != null && this.bot == false) {
-				this.player2?.socket.off('game_move');
+			this.logger.debug('Game End');
+
+			if (playerNumber === 1) {
+				this.updateGameStatsForWinner(this.player1, this.player2);
+			} else if (playerNumber === 2) {
+				this.updateGameStatsForWinner(this.player2, this.player1);
 			}
-			this.watchers.forEach(watcher => watcher.off('game_move'));
+
+			this.player1?.socket.offGame('game_move');
+			if (this.player2 != null && this.bot == false) {
+				this.player2?.socket.offGame('game_move');
+			}
+			this.watchers.forEach(watcher => watcher.offGame('game_move'));
 			this.onRemove();
 		}
 	}
+
+	private updateGameStatsForWinner(winner: Player_Pong, loser: Player_Pong) {
+		if (winner.player_n !== 3) {
+			winner.socket.emitToGame('end_game', {
+				objectId: this.data.objectId,
+				result: 'You Win!',
+				exp: 0,
+				max_exp: this.maxPoint * (this.bot ? 50 : winner.score == 0 ? 150 : 100),
+				money: 0,
+				max_money: this.maxPoint * (this.bot ? 2 : winner.score == 0 ? 5 : 3),
+				watchers: 0,
+				max_watchers: this.watchers.length,
+			});
+			this.updatePlayerStats(winner.userId, {
+				xp: this.maxPoint * (this.bot ? 50 : winner.score == 0 ? 150 : 100),
+				money: this.maxPoint * (this.bot ? 2 : winner.score == 0 ? 5 : 3),
+			});
+		}
+		if (loser.player_n !== 3) {
+			loser.socket.emitToGame('end_game', {
+				objectId: this.data.objectId,
+				result: 'You Lose!',
+				exp: 0,
+				max_exp: loser.score == 0 ? 10 : loser.score * (this.bot ? 10 : 20),
+				money: 0,
+				max_money: loser.score == 0 ? 1 : loser.score * (this.bot ? 1 : 2),
+				watchers: 0,
+				max_watchers: this.watchers.length,
+			});
+			this.updatePlayerStats(loser.userId, {
+				xp: this.maxPoint * (this.bot ? 50 : loser.score == 0 ? 150 : 100),
+				money: this.maxPoint * (this.bot ? 2 : loser.score == 0 ? 5 : 3),
+			});
+		}
+		this.emitWatchers('end_game', {
+			objectId: this.data.objectId,
+			result: winner.nickname + ' Win!',
+			exp: 0,
+			max_exp: 0,
+			money: 0,
+			max_money: 0,
+			watchers: 0,
+			max_watchers: 0,
+		});
+
+		this.logger.debug(`Game End. Winner player ${winner.nickname}`);
+
+		this.updateGameStats({
+			status: GameStatus.FINISHED,
+			gameStats: {
+				winnerId: winner.userId,
+				winnerName: winner.nickname,
+				winnerScore: winner.score,
+				loserId: loser.userId,
+				loserName: loser.nickname,
+				loserScore: loser.score,
+			},
+		});
+	}
+
+	async updateGameStats(body: any) {
+		this.logger.debug(`Updating gameStats with ${body}`);
+		await this.gameService.updateGame(this.data.objectId, body);
+	}
+
+	async updatePlayerStats(player_id: number, body: any) {
+		this.logger.debug(`Updating ${player_id} Status with ${JSON.stringify(body)}`);
+
+		await this.userService.updateStats(player_id, body);
+	}
+
 	//Update Status and Emit for ALL
 	updateStatus(status: number) {
 		if (this.status != status) {
 			this.status = status;
 			this.emitAll('game_update_status', status);
-			console.log('Status: ', this.status);
 		}
 	}
 	//Make the Countdown and Emit for ALL
 	countdown(seconds: number) {
-		console.log(seconds);
-
 		if (seconds > 0) {
 			this.emitAll('game_counting', seconds);
 
@@ -281,23 +308,11 @@ export class Game {
 
 	//Emit for Players
 	emitPlayers(event: string, data: any): void {
-		if (this.player1) {
-			this.player1.socket.emit(event, data);
-		}
-		if (this.player2 && !this.bot) {
-			this.player2.socket.emit(event, data);
-		}
+		this.gameServer.to(`game-${this.data.objectId}-player`).emit(event, data);
 	}
 	//Emit for Watchers
 	emitWatchers(event: string, data: any): void {
-		if (this.watchers.length <= 0) {
-			return;
-		}
-		this.watchers.forEach(clientSocket => {
-			if (clientSocket.id !== this.player1.socket.id || clientSocket.id !== this.player2.socket.id) {
-				clientSocket.emit(event, data);
-			}
-		});
+		this.gameServer.to(`game-${this.data.objectId}-watcher`).emit(event, data);
 	}
 	//Emit for Players and Watchers
 	emitAll(event: string, data: any): void {
@@ -305,12 +320,12 @@ export class Game {
 		this.emitWatchers(event, data);
 	}
 
-	entry_game(player: Player, info: playerInfo) {
-		if (this.player1 == null || (this.player2 == null && this.bot == false)) {
-			player.on('game_move', (e: any) => this.game_move(e));
+	entry_game(player: Player, isPlayer: boolean, info: playerInfo) {
+		// || (this.player2 == null && this.bot == false))
+		if (isPlayer) {
+			player.onGame('game_move', (e: any) => this.game_move(e));
 		}
-		this.addUsers(player, info);
-		console.log(this.games);
+		this.addUsers(player, isPlayer, info);
 	}
 
 	private game_move(e: any) {

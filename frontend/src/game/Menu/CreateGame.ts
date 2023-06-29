@@ -1,12 +1,15 @@
 import { Menu, type ElementUI, type Rectangle, Game } from "@/game";
 import Router from "@/router";
-import socket from "@/socket/Socket";
+import { socketClass } from "@/socket/SocketClass";
 
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";
 import { skin, TypeSkin } from "../ping_pong/Skin";
 import { userStore } from "@/stores/userStore";
 import { PaginationMenu } from "./PaginationMenu";
+import axios from "axios";
+import { env } from "../../env";
+import { io, type Socket } from "socket.io-client";
 
 export class CreateGame {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -18,6 +21,8 @@ export class CreateGame {
   private user = userStore().user;
   private updateTableSkin = userStore().updateTableDefault;
 
+ public gameSocket: Socket;
+ public lobbySocket: Socket = socketClass.getLobbySocket();
   //  private player: Player;
 
   private data: {
@@ -104,6 +109,13 @@ export class CreateGame {
     this.menu.add(this.customMenu, this.createButton("default", 59.5, 83, "Save Default Table", 10));
 
     this.menu.add(this.customMenu, this.createButtonExit(31, 12, "custom"));
+	console.log(`userId: ${this.user.id}`);
+	socketClass.setGameSocket({
+		query: {
+			userId: this.user.id,
+		},
+	})
+	this.gameSocket = socketClass.getGameSocket();
   }
 
   private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
@@ -311,7 +323,7 @@ export class CreateGame {
         if (index > 0 && !(this.table_pagination.isIndexInCurrentPage(index))) return;
 
         this.tableSkin = skin;
-        
+
         this.skinImage = skinImage;
       },
     };
@@ -337,11 +349,30 @@ export class CreateGame {
         this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.9, undefined, "30px 'Press Start 2P', cursive");     
 
       },
-      onClick: () => {
+      onClick: async () => {
         this.menu.close();
         console.log({ objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
-        socket.emit("new_game", { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
-        socket.emit("new_gameobject", this.data);
+        const gameCreate = await axios.post(
+          env.BACKEND_PORT + "/game/create",
+          {
+            gameType: "PUBLIC",
+            players: [ this.user.id ],
+            gameRequest: { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" },
+        }		//,
+        //   {
+        //     headers: {
+        //       Authorization: `Bearer ${this.user.access_token_server}`,
+        //     },
+        //   }
+        );
+		console.log(`Axios Response: ${JSON.stringify(gameCreate.data)}`);
+		console.log('Axios Post Request completed. Emitting new_game event.');
+		this.data.objectId = gameCreate.data.id;
+        //! this should be unnecessary now. Post request above does the same
+		// this.gameSocket.emit("new_game", { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
+        console.log('Emitting new_gameobject event.');
+		this.lobbySocket.emit("new_gameobject", this.data);
+		console.log('Emitting new_gameobject event completed.');
         Router.push(`/game?objectId=${this.data.objectId}`);
       },
     };
@@ -458,12 +489,3 @@ export class CreateGame {
     return this._menu;
   }
 }
-  //Regua
-/* 
-  ctx.strokeRect( pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3, 1);
-
-  ctx.strokeRect(pos.x, pos.y + pos.h / 2, pos.w, 1);
-  ctx.strokeRect(pos.x + pos.w / 2, pos.y, 1, pos.h);
-  ctx.strokeRect(pos.x + pos.w * 0.33, pos.y, 1, pos.h);
-  ctx.strokeRect(pos.x + pos.w * 0.66, pos.y, 1, pos.h);
-*/

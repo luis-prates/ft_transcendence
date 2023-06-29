@@ -1,11 +1,13 @@
-import { Game } from './GamePong';
+import { GameClass } from './GamePong';
+import { Player_Pong } from './PlayerPong';
+import { type gamePoint } from '../../socket/SocketInterface';
 
 export class Ball {
 	//Macros
 	speedIncrement = 1;
 	speedStart = 5;
 
-	game: Game;
+	game: GameClass;
 	width = 25;
 	height = 25;
 	x = 0;
@@ -14,7 +16,7 @@ export class Ball {
 	speed: number;
 	angle = 0;
 
-	constructor(game: Game) {
+	constructor(game: GameClass) {
 		this.game = game;
 		this.x = game.width / 2 - this.width / 2;
 		this.y = this.game.height / 2 - this.height / 2;
@@ -31,16 +33,16 @@ export class Ball {
 
 	ballColide() {
 		const random = this.generateRandomAngle(-1, 1);
-
 		// Verifica se a bola colidiu com a raquete do jogador 1
 		if (this.dir == 1) {
-			if (
-				this.x >= this.game.player1.x &&
-				this.x <= this.game.player1.x + this.game.player1.width &&
-				((this.y >= this.game.player1.y && this.y <= this.game.player1.y + this.game.player1.height) ||
-					(this.y + this.height >= this.game.player1.y &&
-						this.y + this.height <= this.game.player1.y + this.game.player1.height))
-			) {
+			const isBallHorizontallyWithinPlayer1 =
+				this.x >= this.game.player1.x && this.x <= this.game.player1.x + this.game.player1.width;
+			const isBallVerticallyWithinPlayer1 =
+				this.y >= this.game.player1.y && this.y <= this.game.player1.y + this.game.player1.height;
+			const isBallBottomWithinPlayer1 =
+				this.y + this.height >= this.game.player1.y &&
+				this.y + this.height <= this.game.player1.y + this.game.player1.height;
+			if (isBallHorizontallyWithinPlayer1 && (isBallVerticallyWithinPlayer1 || isBallBottomWithinPlayer1)) {
 				// Inverte a direção da bola
 				this.angle = Math.PI - this.angle;
 
@@ -60,13 +62,16 @@ export class Ball {
 		}
 		// Verifica se a bola colidiu com a raquete do jogador 2
 		else if (this.dir === 2) {
-			if (
+			const isBallHorizontallyWithinPlayer2 =
 				this.x + this.width >= this.game.player2.x &&
-				this.x + this.width <= this.game.player2.x + this.game.player2.width &&
-				((this.y >= this.game.player2.y && this.y <= this.game.player2.y + this.game.player2.height) ||
-					(this.y + this.height >= this.game.player2.y &&
-						this.y + this.height <= this.game.player2.y + this.game.player2.height))
-			) {
+				this.x + this.width <= this.game.player2.x + this.game.player2.width;
+			const isBallVerticallyWithinPlayer2 =
+				this.y >= this.game.player2.y && this.y <= this.game.player2.y + this.game.player2.height;
+			const isBallBottomWithinPlayer2 =
+				this.y + this.height >= this.game.player2.y &&
+				this.y + this.height <= this.game.player2.y + this.game.player2.height;
+
+			if (isBallHorizontallyWithinPlayer2 && (isBallVerticallyWithinPlayer2 || isBallBottomWithinPlayer2)) {
 				// Inverte a direção da bola
 				this.angle = Math.PI - this.angle;
 

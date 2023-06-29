@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
-import socket from "@/socket/Socket";
+import { socketClass } from "@/socket/SocketClass";
 import { userStore } from "@/stores/userStore";
 import ChatComponent from "@/components/chat/ChatComponent.vue";
 
@@ -30,10 +30,11 @@ const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 let lobby: Lobby | null = null;
 const isLoad = ref(false);
+const socket = socketClass.getLobbySocket();
 
 onMounted(() => {
   isLoad.value = false;
-  socket.emit("join_map", { objectId: store.user.id, map: { name: "lobby" } });
+  socket.emit("join_map", { userId: store.user.id, objectId: store.user.id, map: { name: "lobby" } });
   socket.on("load_map", (data: any) => {
     console.log("load_map", data.data);
     setTimeout(() => {

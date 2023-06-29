@@ -5,9 +5,13 @@ import { userStore, type Historic } from "@/stores/userStore";
 import sound_close_tab from "@/assets/audio/close.mp3";
 import { skin, TypeSkin } from "../ping_pong/Skin";
 
-import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import { AnimationMenu } from "./AnimationMenu";
 import { PaginationMenu } from "./PaginationMenu";
+
+import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
+import friendImage from "@/assets/images/lobby/menu/friend.png";
+import yourFriendImage from "@/assets/images/lobby/menu/your_friend.png";
+import messageImage from "@/assets/images/lobby/menu/message.png";
 
 export class Profile {
 	private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -23,6 +27,11 @@ export class Profile {
 	private avatarImage = new Image();
 	private skinPaddle: any;
 
+	private isYourFriend: boolean = false;
+	private heSendARequestFriend: boolean = false;
+
+	private isBlocked : boolean = false;
+
 	//private matche_pagination: PaginationMenu;
 
 	constructor(player_id: number) {
@@ -34,6 +43,9 @@ export class Profile {
 	async fetchUser(player_id: number) {
 		try {
 			this.user = await userStore().getUserProfile(player_id);
+			
+			await userStore().getFriends();
+			await userStore().getFriendRequests();
 
 			this.avatarImage.src = this.user.image ? this.user.image : avatarDefault;
 
@@ -42,26 +54,26 @@ export class Profile {
 			this.menu.add(this.background);
 			this.menu.add(this.background, this.createButtonExit(33.5, 6));
 
-			let friend = "";
-			let index = this.your_user.friendsRequests.findIndex((friendship) => friendship.requesteeId === this.user.id);
-			if (index == -1)
-				friend = "+";
-			else
-				friend = "-";
 
-			//TODO verificar se é amigo para ter o botao de remover
-			/*index = this.your_user.friends.findIndex((friendship) => friendship.requesteeId === this.user.id);
-			if (index == -1)
-				friend = "+";
-			else
-				friend = "-";*/
-				
-			//if is friend the label is "-" if is not friend "+"
+
+			let index = this.your_user.friends.findIndex((friendship) => friendship.id === this.user.id);
+			this.isYourFriend = index == -1 ? false : true;
 			
-			this.menu.add(this.background, this.createButtonAddFriend("add_friend", 10.5, 23, friend));
+			index = this.your_user.friendsRequests.findIndex((friendship) => friendship.requestorId === this.user.id);
+			this.heSendARequestFriend = index == -1 ? false : true;
+
+			index = this.your_user.friendsRequests.findIndex((friendship) => friendship.requesteeId === this.user.id);
+			let friend = this.isYourFriend ? "-" : (this.heSendARequestFriend ? "0" : (index == -1 ? "+" : "-"));
+			
+			this.menu.add(this.background, this.createButtonAddFriend("add_friend", 10.5, 22.5, friend));
 			
 			this.menu.add(this.background, this.createButton("challenge", 3.25, 26, "Challenge", 9));
 			this.menu.add(this.background, this.createButton("send_message", 13.25, 26, "Send Message", 9));
+
+			index = this.your_user.block.findIndex((block) => block.blockedId == this.user.id);
+			this.isBlocked = index == -1 ? false : true;
+			console.log("is Block: ", this.isBlocked)
+
 			this.menu.add(this.background, this.createButton("block", 23.25, 26, "Block", 9));
 		
 			//TODO Match
@@ -211,6 +223,9 @@ export class Profile {
 		rectangle: { x: x + "%", y: y + "%", w: width + "%", h: "4.5%" },
 		draw: (ctx: CanvasRenderingContext2D) => {
 		
+			if (type == "block")
+				label = this.isBlocked ? "Unblock" : "Block";
+
 			ctx.fillStyle = "white";
 			ctx.strokeStyle = color;
 			ctx.lineWidth = 2;
@@ -256,10 +271,17 @@ export class Profile {
 			  	//TODO send priv message
 			}
 			else if (type == "block") {
-			  	//TODO block or unblock
-				//TODO DATABASE 
-				//Post_User_Mute(user, true)
-				//Post_User_Mute(user, false)
+
+				if (this.isBlocked)
+				{
+					userStore().unblockUser(this.user.id);
+					this.isBlocked = false;
+				}
+				else
+				{
+					userStore().blockUser(this.user.id);
+					this.isBlocked = true;
+				}
 			}
 		},
 	  };
@@ -267,37 +289,71 @@ export class Profile {
 	}
 
 	private createButtonAddFriend(type: string, x: number, y: number, label: string): ElementUI {
-	  const button: ElementUI = {
-		type: type,
-		rectangle: { x: x + "%", y: y + "%", w: "1.5%", h: "2%" },
-		draw: (ctx: CanvasRenderingContext2D) => {
-				ctx.fillStyle = label == "+" ? "green" : "red";
+
+		const friendImg = new Image();
+		friendImg.src = friendImage;
+		const yourFriendImg = new Image();
+		yourFriendImg.src = yourFriendImage;
+		const msgImg = new Image();
+		msgImg.src = messageImage;
+		const button: ElementUI = {
+			type: type,
+			rectangle: { x: x + "%", y: y + "%", w: "4%", h: "2.5%" },
+			draw: (ctx: CanvasRenderingContext2D) => {
+				ctx.fillStyle = this.isYourFriend ? "orange" : (this.heSendARequestFriend ? "grey" : (label == "+" ? "green" : "red"));
 				ctx.strokeStyle = "black";
 				ctx.lineWidth = 2;
+				const labelFriend = this.isYourFriend ? "Remove Friend" : (this.heSendARequestFriend ? "You have a Request" : (label == "+" ? "Add Friend" : "Cancel Request"));
 
+				
 				this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
-
 				ctx.fill();
 				ctx.stroke();
-
+				
+				if (this.isYourFriend)
+				{
+					if (yourFriendImg.complete)
+						ctx.drawImage(yourFriendImg, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.1, button.rectangle.y + button.rectangle.h * 0.05, button.rectangle.w * 0.525, button.rectangle.h * 0.925);
+				}
+				else
+				{
+					if (friendImg.complete)
+						ctx.drawImage(friendImg, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.1, button.rectangle.y, button.rectangle.w * 0.5, button.rectangle.h);
+				}
+		
 				ctx.fillStyle = "black";
 				ctx.font = "10px 'Press Start 2P', cursive";
 
-				const labelWidth = ctx.measureText(label).width;
-
-				ctx.fillText(label, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w / 2 - labelWidth/2, button.rectangle.y + button.rectangle.h / 2 + 6);
+				if (this.heSendARequestFriend)
+				{
+					if (msgImg.complete)
+						ctx.drawImage(msgImg, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.5, button.rectangle.y + button.rectangle.h * 0.05, button.rectangle.w * 0.4, button.rectangle.h * 0.925);
+				}
+				else
+					ctx.fillText(label, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.7, button.rectangle.y + button.rectangle.h / 2 + 6);
+			
+				ctx.fillText(labelFriend, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 1.1, button.rectangle.y + button.rectangle.h / 2 + 6, button.rectangle.w * 1.25);
 			},
 			onClick: () => {
 
-				if (label == "+")
+				if (!this.isYourFriend) //Not Friend
 				{
-					userStore().sendFriendRequest(this.user.id);
-					label = "-";
+					if (label == "+") {
+						userStore().sendFriendRequest(this.user.id);
+						label = "-";
+					}
+					else if (label == "-") {
+						userStore().cancelFriendRequest(this.user.id);
+						label = "+";
+					}
 				}
-				else if (label == "-")
+				else //Friend
 				{
-					userStore().cancelFriendRequest(this.user.id);
-					label = "+";
+					if (label == "-") {
+						userStore().deleteFriend(this.user.id);
+						label = "+";
+						this.isYourFriend = false;
+					}
 				}
 			},
 	  };
@@ -336,6 +392,8 @@ export class Profile {
 	const loses = this.user.infoPong.historic.filter((history: any) => history.loser == this.user.nickname).length
 	ctx.fillText("Loses: " + loses, pos.x + pos.w * 0.30, pos.y + pos.h * 0.22, pos.w - (pos.x + pos.w * 0.5));
 */
+	ctx.fillText("Wins:  ", pos.x + pos.w * 0.30, pos.y + pos.h * 0.19, pos.w - (pos.x + pos.w * 0.5));
+	ctx.fillText("Loses: ", pos.x + pos.w * 0.30, pos.y + pos.h * 0.22, pos.w - (pos.x + pos.w * 0.5));
     //Avatar
 
 	ctx.strokeStyle = "black";

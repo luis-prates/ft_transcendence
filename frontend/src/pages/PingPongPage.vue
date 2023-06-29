@@ -8,10 +8,10 @@
 
 <script setup lang="ts">
 import { GamePong, TablePong, Status } from "@/game/ping_pong";
-import { onMounted, onUnmounted, ref, defineProps } from "vue";
-import socket from "@/socket/Socket";
+import { onMounted, onUnmounted, ref } from "vue";
 import { type gameRequest, type updatePlayer, type updateBall, type gamePoint, type gameEnd } from "@/game/ping_pong/SocketInterface";
 import { userStore, type Historic } from "@/stores/userStore";
+import { socketClass } from "@/socket/SocketClass";
 
 import avatar_marvin from "@/assets/images/pingpong/marvin.jpg";
 
@@ -21,6 +21,8 @@ const props = defineProps({
 
 const status = ref(Status.Waiting);
 
+let socket = socketClass.getGameSocket();
+
 onMounted(function () {
   const canvas = document.getElementById("canvas1") as HTMLCanvasElement;
   const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -28,12 +30,21 @@ onMounted(function () {
   canvas.height = 750;
 
   const user = userStore().user;
+  if (!socket)
+	socketClass.setGameSocket({
+		query: {
+			userId: user.id,
+		}
+	});
+	socket = socketClass.getGameSocket();
   socket.emit("entry_game", { 
-    objectId: props.objectId, 
+    objectId: props.objectId,
+	userId: user.id, 
     nickname: user.nickname,
     avatar: user.image,
     color: user.infoPong.color,
     skin: user.infoPong.skin.default.paddle,
+	isPlayer: user.isPlayer,
   });
 
   console.log("pros: ", props);

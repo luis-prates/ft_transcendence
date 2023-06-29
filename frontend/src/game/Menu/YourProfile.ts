@@ -2,6 +2,7 @@ import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
 import { userStore, type Historic } from "@/stores/userStore";
 import { skin, TypeSkin } from "../ping_pong/Skin";
 import { AnimationMenu } from "./AnimationMenu";
+import { PaginationMenu } from "./PaginationMenu";
 
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";
@@ -10,7 +11,7 @@ import sound_close_tab from "@/assets/audio/close.mp3";
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import avatares from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
 import pencil from "@/assets/images/lobby/pencil.png";
-import { PaginationMenu } from "./PaginationMenu";
+import green_sign from "@/assets/images/lobby/menu/green_sign.png";
 
 export class YourProfile {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -693,19 +694,21 @@ export class YourProfile {
       draw: (ctx: CanvasRenderingContext2D) => {
 
         const pos_x: number = button.parent?.rectangle.x + button.parent?.rectangle.w * 0.3;
-        const pos_y: number = button.parent?.rectangle.y + button.parent?.rectangle.h * 0.055;
+        const pos_y: number = button.parent?.rectangle.y + button.parent?.rectangle.h * 0.035;
         const width: number = button.parent?.rectangle.w * 0.45;
         
         inputName.style.width = width + "px";
         inputName.style.position = "absolute";
         inputName.style.top = pos_y + "px";
         inputName.style.left = pos_x + "px";
+        inputName.style.color = "black";
+        inputName.style.backgroundColor = "transparent";
+        
+
 
 
         if (edit == false)
         {
-          //TODO DATABASE 
-          //POST_User_update_nickname(user: User, nickname: string) //if exist return false or 201
 
           //NickName
           ctx.fillStyle = "black";
@@ -725,13 +728,23 @@ export class YourProfile {
       onClick: () => {
         if (edit)
         {
+          //TODO DATABASE 
+          //POST_User_update_nickname(user: User, nickname: string) //if exist return false or 201
+          /*se ja existir:
+            inputName.style.borderColor = "red";
+          */
+
+
+          pencilImage.src = pencil;
           edit = false;
           inputName.disabled = true;
           inputName.style.display = "none";
           this.new_nickname = inputName.value;
+          inputName.style.borderColor = "black";
         }
         else
         {
+          pencilImage.src = green_sign;
           edit = true;
           inputName.disabled = false;
           inputName.style.display = "block";

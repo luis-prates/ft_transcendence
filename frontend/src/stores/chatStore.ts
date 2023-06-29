@@ -70,6 +70,7 @@ export const chatStore = defineStore("chat", () => {
         const messages = response.data;
         // Process the messages as needed
         selected.value.messages = messages;
+        selected.value.messages = messages;
         console.log("RESPOSTA DO SERVER: ", messages);
       } catch (error) {
         console.error(error);

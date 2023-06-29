@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserBuySkinDto, UserDto, UserUpdateSkinTableDto } from './dto';
+import { UserBuySkinDto, UserDto, UserUpdateSkinTableDto, UserUpdateStatsDto } from './dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -145,7 +145,7 @@ export class UserService {
 			});
 
 			if (user) {
-				if (!user.tableSkinsOwned.includes(dto.skin)) {
+				if (!user.tableSkinsOwned.includes(dto.skin) && dto.skin != '') {
 					//ERRO
 					return;
 				}
@@ -200,6 +200,52 @@ export class UserService {
 
 			if (user) {
 				return user;
+			}
+		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2002') {
+					throw new ForbiddenException(
+						`The User don't Exist. Error: ${error.message.substring(
+							error.message.indexOf('Unique constraint'),
+						)}`,
+					);
+				}
+			}
+			throw error;
+		}
+	}
+
+	async updateStats(userId: number, dto: UserUpdateStatsDto) {
+		try {
+			const user = await this.prisma.user.findUnique({
+				where: {
+					id: userId,
+				},
+			});
+			if (user) {
+				const userMoney = user.money + dto.money;
+				let user_xp = user.xp + dto.xp;
+				let user_level = user.level;
+
+				while (user_xp >= user_level * 200) {
+					user_xp -= user_level * 100;
+					user_level += 1;
+				}
+
+				const updatedUser = await this.prisma.user.update({
+					where: {
+						id: userId,
+					},
+					data: {
+						money: userMoney,
+						xp: user_xp,
+						level: user_level,
+					},
+				});
+
+				delete updatedUser.hash;
+
+				return updatedUser;
 			}
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {

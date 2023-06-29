@@ -5,10 +5,12 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
-import { FriendshipService } from './friendship/friendship.service';
-import { FriendshipController } from './friendship/friendship.controller';
 import { FriendshipModule } from './friendship/friendship.module';
+import { GameModule } from './game/game.module';
 import { ChatModule } from './chat/chat.module';
+import { LobbyModule } from './lobby/lobby.module';
+import { PlayerModule } from './player/player.module';
+import { SocketModule } from './socket/socket.module';
 import { BlocklistModule } from './blocklist/blocklist.module';
 
 @Module({
@@ -20,10 +22,14 @@ import { BlocklistModule } from './blocklist/blocklist.module';
 			isGlobal: true,
 		}),
 		FriendshipModule,
+		GameModule,
 		ChatModule,
+		LobbyModule,
+		PlayerModule,
+		SocketModule,
 		BlocklistModule,
 	],
-	controllers: [AppController, FriendshipController],
-	providers: [AppService, FriendshipService],
+	controllers: [AppController],
+	providers: [AppService],
 })
 export class AppModule {}
