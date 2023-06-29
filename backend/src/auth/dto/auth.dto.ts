@@ -77,7 +77,6 @@ export class AuthDto {
 
 export class TwoFADto {
 	@IsString()
-	// length of 6 because 2FA codes are 6 digits long
 	@Length(6, 6, {
 		message: '2FA code must be 6 digits long',
 	})
