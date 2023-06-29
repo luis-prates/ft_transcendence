@@ -1,6 +1,6 @@
 import { UserStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsNumber, IsNotEmpty, IsString, IsEmail, IsOptional, IsArray, IsEnum } from 'class-validator';
+import { IsNumber, IsNotEmpty, IsString, IsEmail, IsOptional, IsArray, IsEnum, Length } from 'class-validator';
 
 export class AuthDto {
 	@Transform(({ value }) => parseInt(value))
@@ -73,4 +73,14 @@ export class AuthDto {
 	@IsEnum(UserStatus)
 	@IsOptional()
 	status?: UserStatus;
+}
+
+export class TwoFADto {
+	@IsString()
+	// length of 6 because 2FA codes are 6 digits long
+	@Length(6, 6, {
+		message: '2FA code must be 6 digits long',
+	})
+	@IsNotEmpty()
+	twoFACode: string;
 }
