@@ -106,6 +106,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				...(this.socketService.gameIdToPlayerId.get(gameId) || []),
 				userId,
 			]);
+			this.logger.log(`Added player ${userId} to game ${gameId}`);
+			this.logger.log(`Current players in game ${gameId}: ${this.socketService.gameIdToPlayerId.get(gameId)}`);
 			// Join the room for the game
 			client.join(`game-${gameId}-player`);
 			this.logger.debug(`Client ${client.id} Joining game-${gameId}-player`);

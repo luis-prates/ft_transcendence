@@ -1,21 +1,20 @@
-import { Body, Controller, HttpCode, Logger, Post, Response, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto, TwoFADto } from './dto/auth.dto';
 import { JwtGuard } from './guard';
 import { User } from '@prisma/client';
 import { GetUser } from './decorator';
 
+
 @Controller('auth')
 export class AuthController {
-	private readonly logger = new Logger('AuthController');
-
 	constructor(private authService: AuthService) {}
 
 	@Post('signin')
 	signin(@Body() dto: AuthDto) {
 		return this.authService.signin(dto);
 	}
-
+  
 	@Post('2fa/turn-on')
 	@UseGuards(JwtGuard)
 	async turnOn2FA(@GetUser() user: User, @Body() body: TwoFADto) {
