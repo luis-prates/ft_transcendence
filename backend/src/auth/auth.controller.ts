@@ -23,6 +23,9 @@ export class AuthController {
 		if (!isCodeValid) {
 			throw new UnauthorizedException('Invalid 2FA code');
 		}
+		if (user.twoFASecret) {
+			throw new UnauthorizedException('2FA is already turned on');
+		}
 		this.logger.debug(`User ${user.id} turned on 2FA`);
 		await this.authService.turnOnTwoFactor(user.id);
 

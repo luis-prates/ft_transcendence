@@ -129,6 +129,9 @@ export class AuthService {
 	}
 
 	isTwoFactorValid(twoFACode: string, user: User) {
+		if (!user.twoFASecret) {
+			throw new ForbiddenException('Two factor authentication is not set up. Please turn it on first');
+		}
 		return authenticator.verify({ token: twoFACode, secret: user.twoFASecret });
 	}
 
