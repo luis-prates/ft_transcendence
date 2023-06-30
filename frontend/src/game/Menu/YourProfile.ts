@@ -12,6 +12,7 @@ import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import avatares from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
 import pencil from "@/assets/images/lobby/pencil.png";
 import green_sign from "@/assets/images/lobby/menu/green_sign.png";
+import { Profile } from "./Profile";
 
 export class YourProfile {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -174,7 +175,7 @@ export class YourProfile {
 			ctx.stroke();
 
 			ctx.fillStyle = "#000";
-			ctx.font = "20px 'Press Start 2P', cursive";
+			ctx.font = product.rectangle.h * 0.175 + "px 'Press Start 2P', cursive";
 
 			ctx.fillText(matche.gameStats.winnerScore + "-" + matche.gameStats.loserScore, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
 
@@ -207,8 +208,21 @@ export class YourProfile {
 			  );
 		},
 		  onClick: () => {
-			//if (!(this.matche_pagination.isIndexInCurrentPage(index))) return ;
-			//DO SOMETHING
+			if (!(this.matche_pagination.isIndexInCurrentPage(index))) return ;
+
+			const player_match_id = matche.players[0].id == this.user.id ? matche.players[1].id : matche.players[0].id;
+			if (player_match_id != this.user.id)
+      {
+        const confirmButton = new Profile(player_match_id);
+        this._menu.visible = false;
+        this._menu.enable = false;
+        confirmButton.show((value) => {
+          if (value == "EXIT") {
+            this._menu.close();
+            this.onResult("EXIT");
+          }
+        });
+      }
 		  },
 		};
 		return product;
@@ -269,26 +283,13 @@ export class YourProfile {
         }
         this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
         
-        
         ctx.fill();
         ctx.stroke();
         
         ctx.fillStyle = "black";
-        ctx.font = "10px 'Press Start 2P', cursive";
-
-        const begin = button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.1;
-        const max_with = button.rectangle.w - button.rectangle.w * 0.2;
-
-        let offset = 0;
-        let offsetmax = 0;
-        const labelWidth = ctx.measureText(label).width;
-        while (begin + offset + labelWidth < begin + max_with - offset) {
-          offsetmax += button.rectangle.w * 0.05;
-          if (begin + offsetmax + labelWidth > begin + max_with - offset) break;
-          offset = offsetmax;
-        }
-
-        ctx.fillText(label, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.1 + offset, button.rectangle.y + button.rectangle.h / 2 + 6, button.rectangle.w - button.rectangle.w * 0.2 - offset);
+        this.fillTextCenter(ctx, label, button.parent?.rectangle.x + button.rectangle.x, 
+        button.rectangle.y + button.rectangle.h / 2 + 6,
+        button.rectangle.w, button.rectangle.h * 0.4, undefined, "'Press Start 2P', cursive", false);
       },
       onClick: () => {
         if (type == "save") {
@@ -356,22 +357,22 @@ export class YourProfile {
     ctx.stroke();
 
     //Level
-    ctx.font = "12px 'Press Start 2P', cursive";
+    ctx.font = pos.h * 0.025 + "px 'Press Start 2P', cursive";
     ctx.fillStyle = "black";
-    ctx.fillText("Level: " + this.user.infoPong.level, pos.x + pos.w * 0.3, pos.y + pos.h * 0.13, pos.w - (pos.x + pos.w * 0.5));
+    ctx.fillText("Level: " + this.user.infoPong.level, pos.x + pos.w * 0.3, pos.y + pos.h * 0.13, pos.w * 0.25);
 
     //Money
-    ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.3, pos.y + pos.h * 0.16, pos.w - (pos.x + pos.w * 0.5));
+    ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.3, pos.y + pos.h * 0.16, pos.w * 0.25);
 
-    //Level
+    //Win
     const wins = this.user.infoPong.historic.filter((history: Historic) => history.gameStats.winnerId == this.user.id).length;
-    ctx.fillText("Wins:  " + wins, pos.x + pos.w * 0.3, pos.y + pos.h * 0.19, pos.w - (pos.x + pos.w * 0.5));
+    ctx.fillText("Wins:  " + wins, pos.x + pos.w * 0.3, pos.y + pos.h * 0.19, pos.w * 0.25);
 
+    //Losts
     const loses = this.user.infoPong.historic.filter((history: Historic) => history.gameStats.loserId == this.user.id).length;
-    ctx.fillText("Loses: " + loses, pos.x + pos.w * 0.3, pos.y + pos.h * 0.22, pos.w - (pos.x + pos.w * 0.5));
+    ctx.fillText("Losts: " + loses, pos.x + pos.w * 0.3, pos.y + pos.h * 0.22, pos.w * 0.25);
 
     //Avatar
-
     ctx.strokeStyle = "black";
     ctx.lineWidth = 5;
     ctx.strokeRect(pos.x + pos.w * 0.05, pos.y + pos.h * 0.05, pos.w * 0.2, pos.h * 0.2);
@@ -401,8 +402,9 @@ export class YourProfile {
     ctx.lineWidth = 3;
     ctx.strokeRect(pos.x + pointx, pos.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
 
+
     //Matches
-    ctx.font = "22px 'Press Start 2P', cursive";
+    ctx.font =  pos.h * 0.045 + "px 'Press Start 2P', cursive";
     ctx.lineWidth = 4;
     ctx.strokeStyle = "black";
     ctx.strokeText("Matches", pos.x + pos.w * 0.35, pos.y + pos.h * 0.425, pos.w * 0.275);
@@ -411,15 +413,6 @@ export class YourProfile {
 
     ctx.fillStyle = "white";
     ctx.fillText("Matches", pos.x + pos.w * 0.35, pos.y + pos.h * 0.425, pos.w * 0.275);
-
-    /*if (this.avataresImage.complete) ctx.drawImage(this.avataresImage, 
-      ((this.chooseAvatar - 4 >= 0 ? this.chooseAvatar - 4 : this.chooseAvatar) * 144) + 48, //+3
-      (this.chooseAvatar - 4 >= 0 ? 1 : 0) * 320, //+4
-      48, 80,
-      pos.x + pos.w * 0.05, 
-      pos.y + pos.h * 0.04,
-      pos.w * 0.4,
-      pos.h * 0.80);*/
   }
 
   //✖
@@ -429,8 +422,6 @@ export class YourProfile {
       type: type,
       rectangle: { x: x + "%", y: y + "%", w: "1%", h: "2%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        
-        ctx.font = "8px 'Press Start 2P', cursive";
         ctx.fillStyle = "red";
         ctx.strokeStyle = "black";
         ctx.fillRect(button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
@@ -560,19 +551,18 @@ export class YourProfile {
 			
         //Tittle
         context.fillStyle = "#ffffff";
-        context.font = "25px 'Press Start 2P', cursive";
+        context.font = custom.rectangle.h * 0.1 + "px 'Press Start 2P', cursive";
         context.lineWidth = 4;
-        context.strokeText("Custom", custom.rectangle.x + custom.rectangle.w * 0.275, custom.rectangle.y + custom.rectangle.h * 0.125, custom.rectangle.w * 0.45);
-        context.fillText("Custom", custom.rectangle.x + custom.rectangle.w * 0.275, custom.rectangle.y + custom.rectangle.h * 0.125, custom.rectangle.w * 0.45);
+        context.strokeText("Custom", custom.rectangle.x + custom.rectangle.w * 0.275, custom.rectangle.y + custom.rectangle.h * 0.125, custom.rectangle.w * 0.4);
+        context.fillText("Custom", custom.rectangle.x + custom.rectangle.w * 0.275, custom.rectangle.y + custom.rectangle.h * 0.125, custom.rectangle.w * 0.4);
 
-        context.textAlign = "start";
         //Type
         context.fillStyle = "black";
-        context.font = "18px 'Press Start 2P', cursive";
-        context.fillText("Color:", custom.rectangle.x + custom.rectangle.w * 0.35, custom.rectangle.y + custom.rectangle.h * 0.285, custom.rectangle.w * 0.3);
+        context.font = custom.rectangle.h * 0.07 + "px 'Press Start 2P', cursive";
+        context.fillText("Color:", custom.rectangle.x + custom.rectangle.w * 0.35, custom.rectangle.y + custom.rectangle.h * 0.285, custom.rectangle.w * 0.275);
 
         //Skin
-        context.fillText("Skin:", custom.rectangle.x + custom.rectangle.w * 0.37, custom.rectangle.y + custom.rectangle.h * 0.625, custom.rectangle.w * 0.25);
+        context.fillText("Skin:", custom.rectangle.x + custom.rectangle.w * 0.37, custom.rectangle.y + custom.rectangle.h * 0.625, custom.rectangle.w * 0.225);
       },
     };
     return custom;
@@ -694,7 +684,7 @@ export class YourProfile {
 
           //NickName
           ctx.fillStyle = "black";
-          ctx.font = "22px 'Press Start 2P', cursive";
+          ctx.font = button.rectangle.h + "px 'Press Start 2P', cursive";
           ctx.fillText(this.new_nickname, 
             button.parent?.rectangle.x + button.parent?.rectangle.w * 0.3, 
             button.parent?.rectangle.y + button.parent?.rectangle.h * 0.1, 
@@ -735,6 +725,27 @@ export class YourProfile {
       },
     };
     return button;
+  }
+  
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
+    ctx.font = font ? h + "px " + font : h + "px Arial";
+    ctx.textAlign = "start";
+    
+    const begin = x + w * 0.1;
+    const max = max_with ? max_with : w - w * 0.2;
+
+    let offset = 0;
+    let offsetmax = 0;
+    const labelWidth = ctx.measureText(label).width;
+    while (begin + offset + labelWidth < begin + max - offset) {
+      offsetmax += w * 0.05;
+      if (begin + offsetmax + labelWidth > begin + max - offset) break;
+      offset = offsetmax;
+    }
+
+    if (stroke)
+      ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
   }
 
   get menu(): Menu {

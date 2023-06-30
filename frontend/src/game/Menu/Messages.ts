@@ -66,7 +66,7 @@ export class Messages {
         ctx.fillStyle = "grey";
         ctx.strokeStyle = "black";
         ctx.lineWidth = 3;
-        this.fillTextCenter(ctx, "Messages", pos, pos.y + pos.h * 0.125, undefined, "bold 22px Arial", true)
+        this.fillTextCenter(ctx, "Messages", pos.x + pos.w * 0.25, pos.y + pos.h * 0.175, pos.w * 0.5, pos.h * 0.125, undefined, "'Press Start 2P', cursive", true);
       },
     };
     return background;
@@ -125,11 +125,7 @@ export class Messages {
 		    ctx.strokeStyle = "black";
         
         ctx.lineWidth = 5;
-		    //tittle
-
-        this.fillTextCenter(ctx, tittle, button.rectangle, button.rectangle.y + button.rectangle.h * 0.625, undefined, "bold 18px Arial", true);
-
-        ctx.lineWidth = 2;
+        this.fillTextCenter(ctx, tittle, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.625, button.rectangle.w, button.rectangle.h * 0.35, undefined, "'Press Start 2P', cursive", true);
       },
       onClick: () => {
         const confirmButton = new MessageList(type);
@@ -162,25 +158,25 @@ export class Messages {
     ctx.closePath();
   }
 
-  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, rectangle: Rectangle, y: number, max_with?: number, font?: string, stroke?: boolean) {
-    ctx.font = font ? font : "12px Arial";
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
+    ctx.font = font ? h + "px " + font : h + "px Arial";
     ctx.textAlign = "start";
     
-    const begin = rectangle.x + rectangle.w * 0.1;
-    const max = max_with ? max_with : rectangle.w - rectangle.w * 0.2;
+    const begin = x + w * 0.1;
+    const max = max_with ? max_with : w - w * 0.2;
 
     let offset = 0;
     let offsetmax = 0;
     const labelWidth = ctx.measureText(label).width;
     while (begin + offset + labelWidth < begin + max - offset) {
-      offsetmax += rectangle.w * 0.05;
+      offsetmax += w * 0.05;
       if (begin + offsetmax + labelWidth > begin + max - offset) break;
       offset = offsetmax;
     }
 
     if (stroke)
-      ctx.strokeText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
-    ctx.fillText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
+      ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
   }
 
   get menu(): Menu {

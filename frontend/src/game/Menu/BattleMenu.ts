@@ -10,7 +10,6 @@ import Router from "@/router";
 //image
 import battleImage from "@/assets/images/lobby/menu/battle.png";
 
-
 export class BattleMenu {
   private _menu = new Menu({ layer: "Global", isFocus: false });
   private radius: number = 10;
@@ -167,6 +166,7 @@ export class BattleMenu {
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
   }
+  
   private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
     ctx.font = font ? h + "px " + font : h + "px Arial";
     ctx.textAlign = "start";
@@ -187,7 +187,6 @@ export class BattleMenu {
       ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
     ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
   }
-
 
   get menu(): Menu {
     return this._menu;

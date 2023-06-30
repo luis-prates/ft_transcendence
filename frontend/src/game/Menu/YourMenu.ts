@@ -93,46 +93,32 @@ export class YourMenu {
 			ctx.stroke();
 
 			ctx.fillStyle = "black";
-			ctx.font = "10px 'Press Start 2P', cursive";
 
-			const begin = button.rectangle.x + button.rectangle.w * 0.1;
-			const max_with = button.rectangle.w - (button.rectangle.w * 0.2);
-
-			let offset = 0;
-			let offsetmax = 0;
-			const labelWidth = ctx.measureText(label).width;
-			while (begin + offset + labelWidth < begin + max_with - offset)
-			{
-				offsetmax += button.rectangle.w * 0.05;
-				if (begin + offsetmax + labelWidth > begin + max_with - offset)
-					break ;
-				offset = offsetmax;
-			}
-
-      
 			if (img.complete)
-        ctx.drawImage(img, 
-          button.rectangle.x + button.rectangle.w * 0.25, 
-          button.rectangle.y + button.rectangle.h * 0.05, 
-          button.rectangle.w * 0.5, 
-          button.rectangle.h * 0.60);
-
+      ctx.drawImage(img, 
+        button.rectangle.x + button.rectangle.w * 0.25, 
+        button.rectangle.y + button.rectangle.h * 0.05, 
+        button.rectangle.w * 0.5, 
+        button.rectangle.h * 0.60);
+        
         
         if (type == "message")
         {
           ctx.fillStyle = "red";
-  			  ctx.fillText(notification, 
-            button.rectangle.x + button.rectangle.w * 0.60, 
-            button.rectangle.y + button.rectangle.h * 0.6, 
-            button.rectangle.w * 0.16);
+          this.fillTextCenter(ctx, notification, 
+          button.rectangle.x + button.rectangle.w * 0.6, 
+          button.rectangle.y + button.rectangle.h * 0.65, 
+          button.rectangle.w * 0.16,
+          button.rectangle.h * 0.25, undefined, "'Press Start 2P', cursive", false);
         }
-      
+          
         ctx.fillStyle = "black";
-
-			  ctx.fillText(label, 
-			  button.rectangle.x + button.rectangle.w * 0.1 + offset,
-			  button.rectangle.y + button.rectangle.h * 0.9, 
-			  button.rectangle.w - (button.rectangle.w * 0.2) - offset);
+        ctx.lineWidth = 1;
+        this.fillTextCenter(ctx, label, 
+        button.rectangle.x, 
+        button.rectangle.y + button.rectangle.h * 0.95,
+        button.rectangle.w,
+        button.rectangle.h * 0.25, undefined, "'Press Start 2P', cursive", false);
 			},
 			onClick: () => {
         if (type == "message")
@@ -179,7 +165,6 @@ export class YourMenu {
 	  return button;
 	}
 
-
   roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
     const r = x + width;
     const b = y + height;
@@ -195,6 +180,31 @@ export class YourMenu {
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
   }
+
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
+    ctx.font = font ? h + "px " + font : h + "px Arial";
+    ctx.textAlign = "start";
+    
+
+
+    const begin = x + w * 0.1;
+    const max = max_with ? max_with : w - w * 0.2;
+
+    let offset = 0;
+    let offsetmax = 0;
+    const labelWidth = ctx.measureText(label).width;
+    while (begin + offset + labelWidth < begin + max - offset) {
+      offsetmax += w * 0.05;
+      if (begin + offsetmax + labelWidth > begin + max - offset) break;
+      offset = offsetmax;
+    }
+
+  
+    if (stroke)
+      ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+  }
+
 
   get menu(): Menu {
     return this._menu;

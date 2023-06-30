@@ -227,7 +227,7 @@ export class BattleList {
     ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
   }
 
-   private drawImageCircle(ctx: CanvasRenderingContext2D, image: HTMLImageElement, dx: number, dy: number, dw: number, dh: number, stroke?: boolean)
+  private drawImageCircle(ctx: CanvasRenderingContext2D, image: HTMLImageElement, dx: number, dy: number, dw: number, dh: number, stroke?: boolean)
   {
     const centerX = dx + dw / 2;
     const centerY = dy + dh / 2;
@@ -274,3 +274,21 @@ export class BattleList {
   ctx.strokeRect(x + w / 2, y, 1, h);
   ctx.strokeRect(x + w * 0.33, y, 1, h);
   ctx.strokeRect(x + w * 0.66, y, 1, h);*/
+
+  /*
+      //Regua
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 1;
+    ctx.strokeRect( x + w * 0.1, y - h, 1, h );
+    ctx.strokeRect( x + w * 0.1 + w - w * 0.2, y - h, 1, h );
+    
+    
+    ctx.strokeRect( x + w * 0.1, y, w - w * 0.2 - offset, 1);
+    ctx.strokeRect( x + w * 0.1, y - h, w - w * 0.2 - offset, 1);
+    ctx.strokeStyle = "black";
+    
+    /*ctx.strokeRect(x, y + h / 2, w, 1);
+    ctx.strokeRect(x + w / 2, y, 1, h);
+    ctx.strokeRect(x + w * 0.33, y, 1, h);
+    ctx.strokeRect(x + w * 0.66, y, 1, h);*/
