@@ -213,6 +213,9 @@ export class ChatService {
 					},
 				});
 			}
+            // emit event to everyone that a new channel was just created
+            this.events.emit('channel-created', newChannel);
+
 			// emit event to creator for new channel
 			this.events.emit('user-added-to-channel', {
 				channelId: newChannel.id,
@@ -564,7 +567,7 @@ export class ChatService {
 
 	// Owner can delete a channel
 	async deleteChannel(channelId: number, user: any) {
-		const channel = await this.prisma.channel.findUnique({
+		const toBeDeletedChannel = await this.prisma.channel.findUnique({
 			where: {
 				id: channelId,
 			},
@@ -577,11 +580,11 @@ export class ChatService {
 			},
 		});
 
-		if (!channel) {
+		if (!toBeDeletedChannel) {
 			throw new NotFoundException('Channel not found');
 		}
 
-		if (channel.ownerId !== user.id) {
+		if (toBeDeletedChannel.ownerId !== user.id) {
 			throw new ForbiddenException('Only the channel owner can delete the channel');
 		}
 
@@ -598,9 +601,12 @@ export class ChatService {
 			},
 		});
 
-		const users = channel.users.map(cu => cu.user);
+		const users = toBeDeletedChannel.users.map(cu => cu.user);
 
-		// Emit events to all users when a channel is deleted
+        // Emit events to all users when a channel is deleted
+        this.events.emit('channel-deleted', toBeDeletedChannel);
+
+		// Emit events to all channel users when a channel is deleted
 		for (const user of users) {
 			this.events.emit('user-removed-from-channel', {
 				channelId,

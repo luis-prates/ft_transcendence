@@ -21,6 +21,27 @@ export class ChatGateway implements OnGatewayConnection {
 
 	afterInit() {
 		// Setup all listeners for events coming from the chat service
+        // event for a new channel being created
+        this.chatService.events.on('channel-created', async (newChannel) => {
+            let channelId = newChannel.id;
+            // Send a message to all users in the channel that a new channel has been added and give the whole newChannelobject
+            this.server.emit('channel-created', {
+                newChannel,
+                message: `Channel ${channelId} has been created`,
+            });
+        });
+
+        // event for a channel being deleted
+        this.chatService.events.on('channel-deleted', async (deletedChannel) => {
+            // Send a message to all users in the channel that a new channel has been added
+            let channelId = deletedChannel.id;
+            this.server.emit('channel-deleted', {
+                deletedChannel,
+                message: `Channel ${channelId} has been deleted`,
+            });
+        });
+
+        // event for a user being added to a channel
 		this.chatService.events.on('user-added-to-channel', async ({ channelId, userId }) => {
 			const client: Socket = this.userIdToSocketMap.get(userId);
 			if (!client) {
@@ -295,7 +316,7 @@ export class ChatGateway implements OnGatewayConnection {
 						const socket = this.userIdToSocketMap.get(userId);
 						socket.emit('message', {
 							channelId: channelId,
-							senderId: senderId,
+                            senderId: senderId,
 							message: message,
 						});
 					} else {

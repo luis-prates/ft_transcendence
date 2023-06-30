@@ -50,7 +50,7 @@ model User {
 
 	// Blocked Users
 	blockedUsers			Blocklist[] @relation("BlockingUsers")
-	blockingUsers			Blocklist[] @relation("BlockedUsers")	
+	blockingUsers			Blocklist[] @relation("BlockedUsers")
 
 	// Chat
 	messages				Message[]
@@ -121,7 +121,7 @@ model ChannelUser {
 	channelId				Int
 	channel					Channel @relation(fields: [channelId], references: [id])
 	isMuted					Boolean @default(false)
-	isAdmin					Boolean @default(false)	
+	isAdmin					Boolean @default(false)
 	@@id([userId, channelId])
 	@@map("channel_users")
 }
@@ -147,7 +147,7 @@ model Game {
 
 	status					GameStatus @default(NOT_STARTED) // 0: not started, 1: started, 2: ended
 	players					User[] //@relation("WonGames", fields: [winnerId], references: [id])
-	
+
 
 	gameStats				Json? // winnerId, loserId, winnerScore, loserScore, gameTime, gameDate, gameType
 	gameType				GameType // Public, Private, Protected
