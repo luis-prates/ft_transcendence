@@ -22,9 +22,6 @@ const user = userStore();
 
 const showTesss = ref(false);
 const showbuttom = ref(false);
-const socket = socketClass.getLobbySocket();
-
-let socket: Socket = socketClass.getChatSocket();
 
 let socket: Socket = socketClass.getChatSocket();
 
