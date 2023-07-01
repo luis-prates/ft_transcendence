@@ -13,7 +13,7 @@ export class CreateChannelDto {
 	channelType: ChannelType;
 
 	@IsString()
-	@IsBase64()
+	//@IsBase64()
 	@IsOptional()
 	avatar?: string;
 

@@ -80,14 +80,24 @@ function formatTimestamp(timestamp: string): string {
   if (seconds < 60) {
     return `now`;
   } else if (minutes < 60) {
+    if (minutes == 1)
+      return `${minutes} minute ago`;
     return `${minutes} minutes ago`;
   } else if (hours < 24) {
+    if (hours == 1)
+      return `${hours} hour ago`;
     return `${hours} hours ago`;
   } else if (days < 30) {
+    if (days == 1)
+      return `${days} day ago`;
     return `${days} days ago`;
   } else if (months < 12) {
+    if (months == 1)
+      return `${months} month ago`;
     return `${months} months ago`;
   } else {
+    if (years == 1)
+      return `${years} year ago`;
     return `${years} years ago`;
   }
 }

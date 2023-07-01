@@ -2,7 +2,7 @@
   <div class="parent-container">
     <div class="d-flex item-box">
       <div class="img_cont">
-        <img :src="props.channel.avatar !== '' ? props.channel.avatar : 'https://therichpost.com/wp-content/uploads/2020/06/avatar2.png'" class="user_img" />
+        <img :src="props.channel.avatar !== '' ? props.channel.avatar : defaultAvatar" class="user_img" />
       </div>
       <div class="user_info">
         <span>{{ props.channel.name }}</span>
@@ -17,6 +17,8 @@ import { type channel } from "@/stores/chatStore";
 import { defineProps } from "vue";
 
 const props = defineProps<{ channel: channel }>();
+const defaultAvatar = "src/assets/chat/chat_avatar.png";
+
 </script>
 
 <style scoped>

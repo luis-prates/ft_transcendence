@@ -124,7 +124,6 @@ export const chatStore = defineStore("chat", () => {
       // Update the channels array with the transformed data
       channels.splice(0, channels.length, ...transformedChannels);
       console.log("RESULTADO DO GETCHANNELS: ", channels);
-      console.log("RESULTADO DOS USERS: ", channels[1].users[0]);
     } catch (error) {
       console.error(error);
     }

@@ -120,6 +120,7 @@ export class ChatService {
 								})),
 							],
 						},
+						...(createChannelDto.avatar && { avatar: createChannelDto.avatar })
 					},
 					include: {
 						users: true,

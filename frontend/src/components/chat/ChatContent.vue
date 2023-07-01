@@ -47,7 +47,7 @@
     <div class="card-header msg_head">
       <div class="d-flex bd-highlight">
         <div class="img_cont">
-          <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="user_img" />
+          <img :src=getChatAvatar() class="user_img" />
         </div>
         <div class="user_info">
           <span>{{ getChannelName() }}</span>
@@ -101,12 +101,19 @@ socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
 console.log("Socket criado na instancia do componente: ", chatSocket);
 
+const defaultAvatar = "src/assets/chat/chat_avatar.png";
 
 // Get channel name from chatStore
 const getChannelName = () => {
   // console.log("Channel name: " + store.selected?.name);
   return store.selected?.name;
 };
+
+function getChatAvatar() {
+  if (selected.value?.avatar)
+    return selected.value.avatar;
+  return defaultAvatar;
+}
 
 // Props declaration
 const props = defineProps({
@@ -243,7 +250,7 @@ const createNewChannel = async () => {
     const name = channelName.value;
     const password = channelType.value == "PUBLIC" ? channelPassword.value : undefined;
     const type = password ? "PROTECTED" : channelType.value;
-    const avatar = avatarBase64.value ? btoa(avatarBase64.value) : ""; // This is the File object
+    const avatar = avatarBase64.value ? avatarBase64.value : ""; // This is the File object
     console.log("Avatar base64 string:", avatar);
 
     // Perform your logic here, e.g., make an API call to create the channel
