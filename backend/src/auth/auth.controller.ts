@@ -23,7 +23,7 @@ export class AuthController {
 		if (!isCodeValid) {
 			throw new UnauthorizedException('Invalid 2FA code');
 		}
-		if (user.twoFASecret) {
+		if (user.isTwoFAEnabled) {
 			throw new UnauthorizedException('2FA is already turned on');
 		}
 		this.logger.debug(`User ${user.id} turned on 2FA`);
@@ -47,10 +47,13 @@ export class AuthController {
 
 	@Post('2fa/generate')
 	@UseGuards(JwtGuard)
-	async generate2FAQRCode(@GetUser() user: User, @Response() response: any) {
-		const { otpauthUrl } = await this.authService.generateTwoFactorSecret(user);
+	async generate2FAQRCode(@GetUser() user: User) {
+		const { secret, otpauthUrl } = await this.authService.generateTwoFactorSecret(user);
 
-		return response.json(await this.authService.generateQrCodeDataURL(otpauthUrl));
+		const responseObj = await this.authService.generateQrCodeDataURL(otpauthUrl);
+		//! secret needs to be removed in production
+		//! secret is needed for testing
+		return { secret, responseObj };
 	}
 
 	//! not used currently, but left in case it's needed in the future
