@@ -22,7 +22,7 @@ export class GameStatsDto {
 	@IsOptional()
 	@IsNotEmpty()
 	@IsString()
-	winnerName: string;
+	winnerNickname: string;
 
 	@IsOptional()
 	@IsNotEmpty()
@@ -32,7 +32,7 @@ export class GameStatsDto {
 	@IsOptional()
 	@IsNotEmpty()
 	@IsString()
-	loserName: string;
+	loserNickname: string;
 
 	@IsOptional()
 	@IsNotEmpty()
@@ -84,7 +84,7 @@ export class GameDto {
 	@IsNotEmpty()
 	@ValidateNested()
 	@Type(() => GameStatsDto)
-	gameStats?: string;
+	gameStats?: GameStatsDto;
 
 	@IsOptional()
 	@IsEnum(GameType)

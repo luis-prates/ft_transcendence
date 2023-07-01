@@ -37,7 +37,6 @@ export class GameService {
 		const game = await this.prisma.game.create({
 			data: {
 				gameType: body.gameType,
-				gameStats: Prisma.JsonNull,
 				//! used if players are added when game is created
 				// players: {
 				// 	connect: body.players.map(player => ({ id: player })),
@@ -98,7 +97,6 @@ export class GameService {
 					id: gameId,
 				},
 				data: {
-					gameStats: body?.gameStats,
 					status: body?.status,
 				},
 				include: {
@@ -160,7 +158,7 @@ export class GameService {
 					id: gameId,
 				},
 				data: {
-					gameStats: body.gameStats,
+					status: body.status,
 				},
 				include: {
 					players: true,
@@ -187,7 +185,19 @@ export class GameService {
 					id: gameId,
 				},
 				data: {
-					gameStats: body.gameStats,
+					status: body?.status,
+					winnerScore: body.gameStats.winnerScore,
+					loserScore: body.gameStats.loserScore,
+					winner: {
+						connect: {
+							id: body.gameStats.winnerId,
+						},
+					},
+					loser: {
+						connect: {
+							id: body.gameStats.loserId,
+						},
+					},
 				},
 				include: {
 					players: true,
