@@ -1,5 +1,6 @@
 import type { Rectangle } from "@/game";
 
+//TODO TEXT REDIMENSION HEIGTH
 export class SpeechBubble {
 
 	static radius: number = 10;

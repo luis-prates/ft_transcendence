@@ -1,18 +1,16 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
 import { LeaderBoard } from "./LeaderBoard";
+import { userStore } from "@/stores/userStore";
+import { Messages } from "./Messages";
+import { BattleMenu } from "./BattleMenu";
 
 //Sound
 import sound_close_tab from "@/assets/audio/close.mp3";
-import { userStore } from "@/stores/userStore";
-import { PaginationMenu } from "./PaginationMenu";
 
 //Images
 import battleImage from "@/assets/images/lobby/menu/battle_.png";
-// import leaderBoardImage from "@/assets/images/lobby/menu/leaderboard.png";
 import leaderBoardImage from "@/assets/images/lobby/menu/trofeo.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
-import { Messages } from "./Messages";
-import { BattleMenu } from "./BattleMenu";
 
 export class YourMenu {
   private _menu = new Menu({ layer: "Global", isFocus: false });
@@ -185,8 +183,6 @@ export class YourMenu {
     ctx.font = font ? h + "px " + font : h + "px Arial";
     ctx.textAlign = "start";
     
-
-
     const begin = x + w * 0.1;
     const max = max_with ? max_with : w - w * 0.2;
 

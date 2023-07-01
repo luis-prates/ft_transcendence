@@ -11,6 +11,7 @@ import battleImage from "@/assets/images/lobby/menu/battle.png";
 
 import { PaginationMenu } from "./PaginationMenu";
 import Router from "@/router";
+import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 
 
 export class BattleList {
@@ -60,9 +61,13 @@ export class BattleList {
     }
     catch (error) 
     {
-      console.error('Erro ao buscar os usuários:', error);
-      this.menu.close();
-      this.onResult("EXIT");
+      const confirmButton = new ConfirmButton(error, STATUS_CONFIRM.ERROR);
+			confirmButton.show((value) => {
+				if (value == "OK") {
+					this.menu.close();
+					this.onResult("EXIT");
+				}
+			});
     }
   }
 

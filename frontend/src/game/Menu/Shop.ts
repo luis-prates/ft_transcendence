@@ -1,5 +1,5 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
-import { ConfirmButton } from "./ConfirmButton";
+import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 import { skin, TypeSkin, type ProductSkin } from "../ping_pong/Skin";
 
 //Sound
@@ -144,7 +144,7 @@ export class Shop {
         else if (skin.type == TypeSkin.Table && !this.user.infoPong.skin.tables.includes(skin.name as never)) canBuy = true;
 
         if (this.yourMoney >= skin.price && canBuy) {
-          const confirmButton = new ConfirmButton(skin.tittle, skin.price);
+          const confirmButton = new ConfirmButton(skin, STATUS_CONFIRM.PRODUCT);
           confirmButton.show((value) => {
             if (value == "CONFIRM") {
               if (skin.type == TypeSkin.Paddle) this.user.infoPong.skin.paddles.push(skin.name as never);

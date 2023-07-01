@@ -68,7 +68,7 @@ export class MessageList {
         
         if (this.title == "Request")
         {
-          this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, request.requestorName, request.requestorId));
+          this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, 16, request.requestorName, request.requestorId));
           this.menu.add(this.background, this.createButtonRequest(index, 55, 16 + (i + 1) * 6, "Accept", request.requestorId));
           this.menu.add(this.background, this.createButtonRequest(index, 58.5, 16 + (i + 1) * 6, "Reject", request.requestorId));
         }
@@ -78,8 +78,8 @@ export class MessageList {
           const user = this.users.find((user: { id: number; }) => user.id === id);
           if (user) {
             console.log(user); // O objeto com o ID correspondente foi encontrado
-            this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, user.nickname, id));
-            this.menu.add(this.background, this.createButtonBlock(index, 55, 16 + (i + 1) * 6, "Unblock", id));
+            this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, 19.5, user.nickname, id));
+            this.menu.add(this.background, this.createButtonBlock(index, 58.5, 16 + (i + 1) * 6, "Unblock", id));
           }
         }
         else if (this.title = "Blocked")
@@ -87,7 +87,7 @@ export class MessageList {
           const id = request.blockerId;
           const user = this.users.find((user: { id: number; }) => user.id === id);
           if (user)
-            this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, user.nickname, id));
+            this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, 23, user.nickname, id));
         }
           
       });
@@ -106,8 +106,23 @@ export class MessageList {
     const background: ElementUI = {
       type: "image",
       rectangle: { x: "37.5%", y: "15%", w: "25%", h: "60%" },
-      draw: (context: any) => {
-        this.draw(context, background.rectangle);        
+      draw: (ctx: any) => {
+        const pos = background.rectangle;
+        const backgroundColor = 'rgba(192, 192, 192, 0.6)';
+        const borderColor = "#8B4513";
+
+        ctx.fillStyle = backgroundColor;
+        this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
+        ctx.fill();
+
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+	      ctx.fillStyle = "grey";
+	      ctx.strokeStyle = "black";
+        ctx.lineWidth = 3;
+        this.fillTextCenter(ctx, this.title, pos.x + pos.w * 0.25, pos.y + pos.h * 0.075, pos.w * 0.5, pos.h * 0.05, undefined, "'Press Start 2P', cursive", true)
       },
     };
     return background;
@@ -143,30 +158,10 @@ export class MessageList {
     return button;
   }
 
-  public draw(ctx: CanvasRenderingContext2D, pos: Rectangle) {
-    const backgroundColor = 'rgba(192, 192, 192, 0.6)'; // Cor de fundo castanho
-    const borderColor = "#8B4513"; // Cor de contorno mais escuro
-	
-    // Desenha o corpo do balão com cor de fundo castanho
-    ctx.fillStyle = backgroundColor;
-    this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
-    ctx.fill();
-
-    // Desenha o contorno do balão com cor mais escura
-    ctx.strokeStyle = borderColor;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-	  ctx.fillStyle = "grey";
-	  ctx.strokeStyle = "black";
-    ctx.lineWidth = 3;
-    this.fillTextCenter(ctx, this.title, pos, pos.y + pos.h * 0.055, undefined, "bold 22px Arial", true)
-  }
-
-  private createInvite(index: number, x: number, y: number, nickname: string, id: number): ElementUI {
+  private createInvite(index: number, x: number, y: number, w: number, nickname: string, id: number): ElementUI {
 	const invite: ElementUI = {
       type: "ranking",
-      rectangle: { x: x + "%", y: y + "%", w: "16%", h: "5%" },
+      rectangle: { x: x + "%", y: y + "%", w: w + "%", h: "5%" },
       draw: (ctx: CanvasRenderingContext2D) => {
         if (!(this.pagination_list.isIndexInCurrentPage(index))) {
           if (invite.enable)
@@ -186,12 +181,10 @@ export class MessageList {
         ctx.stroke();
 
 		    ctx.fillStyle = "white";
-        
         ctx.lineWidth = 5;
+
 		    //Nickname
-		    ctx.strokeText(nickname, invite.rectangle.x + invite.rectangle.x * 0.025, invite.rectangle.y + invite.parent?.rectangle.y * 0.225, invite.rectangle.w * 0.375);
-        ctx.fillText(nickname, invite.rectangle.x + invite.rectangle.x * 0.025, invite.rectangle.y + invite.parent?.rectangle.y * 0.225, invite.rectangle.w * 0.375);
-        ctx.lineWidth = 2;
+        this.fillTextCenter(ctx, nickname, invite.rectangle.x, invite.rectangle.y + invite.rectangle.h * 0.75, invite.rectangle.w, invite.rectangle.h * 0.5, undefined, "'Press Start 2P', cursive", true);
       },
       onClick: () => {
         if (!(this.pagination_list.isIndexInCurrentPage(index))) return ;
@@ -229,7 +222,7 @@ export class MessageList {
         ctx.stroke();
         ctx.fillStyle = "#000";
 
-        this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.625);
+        this.fillTextCenter(ctx, label, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.625, button.rectangle.w, button.rectangle.h * 0.2, undefined, "'Press Start 2P', cursive", false);
 
       },
       onClick: () => {
@@ -276,7 +269,7 @@ export class MessageList {
         ctx.stroke();
         ctx.fillStyle = "#000";
 
-        this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.625);
+        this.fillTextCenter(ctx, label, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.625, button.rectangle.w, button.rectangle.h * 0.2, undefined, "'Press Start 2P', cursive", false);
 
       },
       onClick: () => {
@@ -309,25 +302,25 @@ export class MessageList {
     ctx.closePath();
   }
 
-  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, rectangle: Rectangle, y: number, max_with?: number, font?: string, stroke?: boolean) {
-    ctx.font = font ? font : "12px Arial";
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
+    ctx.font = font ? h + "px " + font : h + "px Arial";
     ctx.textAlign = "start";
     
-    const begin = rectangle.x + rectangle.w * 0.1;
-    const max = max_with ? max_with : rectangle.w - rectangle.w * 0.2;
+    const begin = x + w * 0.1;
+    const max = max_with ? max_with : w - w * 0.2;
 
     let offset = 0;
     let offsetmax = 0;
     const labelWidth = ctx.measureText(label).width;
     while (begin + offset + labelWidth < begin + max - offset) {
-      offsetmax += rectangle.w * 0.05;
+      offsetmax += w * 0.05;
       if (begin + offsetmax + labelWidth > begin + max - offset) break;
       offset = offsetmax;
     }
-
+    
     if (stroke)
-      ctx.strokeText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
-    ctx.fillText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
+      ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
   }
 
   get menu(): Menu {
@@ -339,11 +332,3 @@ export class MessageList {
     Game.addMenu(this.menu);
   }
 }
-  //Regua
-  /*
-  context.strokeRect( pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3, 1);
-
-  context.strokeRect(pos.x, pos.y + pos.h / 2, pos.w, 1);
-  context.strokeRect(pos.x + pos.w / 2, pos.y, 1, pos.h);
-  context.strokeRect(pos.x + pos.w * 0.33, pos.y, 1, pos.h);
-  context.strokeRect(pos.x + pos.w * 0.66, pos.y, 1, pos.h);*/

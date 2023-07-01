@@ -1,40 +1,64 @@
 import { Menu, type ElementUI, type Rectangle, Game } from "@/game";
+import { TypeSkin } from "../ping_pong/Skin";
+
+export enum STATUS_CONFIRM {
+  PRODUCT,
+  CHALLENGE,
+  FRIEND,
+  FRIEND_REQUEST,
+  BLOCK,
+  ERROR,
+}
 
 export class ConfirmButton {
   private menu = new Menu({ layer: "Global", isFocus: true });
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
-  private productName: string;
-  private productPrice: number;
+  private type: STATUS_CONFIRM;
+  private something: any;
+
   private onResult: (result: any) => void = () => {};
 
-  constructor(productName: string, productPrice: number) {
-    this.productName = productName;
-    this.productPrice = productPrice;
+  constructor(something: any, type: STATUS_CONFIRM) {
+    this.type = type;
+    this.something = something;
     this.menu.add(this.background);
-    this.menu.add(this.createButton(40 + 10 / 4, 57, "CONFIRM"));
-    this.menu.add(this.createButton(55 - 10 / 4, 57, "CANCEL"));
+    if (type != STATUS_CONFIRM.ERROR)
+    {
+      this.menu.add(this.createButton(40 + 10 / 4, 57, "CONFIRM"));
+      this.menu.add(this.createButton(55 - 10 / 4, 57, "CANCEL"));
+    }
+    else
+    {
+      this.menu.add(this.createButton(47.5, 57, "OK"));
+    }
 
   }
 
-  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, rectangle: Rectangle, y: number, stroke?: boolean, max_with?: number)
-  {
-    const begin = rectangle.x + rectangle.w * 0.1;
-    const max = max_with ? max_with : rectangle.w - rectangle.w * 0.2;
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
+    ctx.font = font ? h + "px " + font : h + "px Arial";
+    ctx.textAlign = "start";
+    
+    const begin = x + w * 0.1;
+    const max = max_with ? max_with : w - w * 0.2;
 
     let offset = 0;
     let offsetmax = 0;
     const labelWidth = ctx.measureText(label).width;
     while (begin + offset + labelWidth < begin + max - offset) {
-      offsetmax += rectangle.w * 0.05;
+      offsetmax += w * 0.05;
       if (begin + offsetmax + labelWidth > begin + max - offset) break;
       offset = offsetmax;
     }
-
+    
+    
     if (stroke)
-      ctx.strokeText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
-    ctx.fillText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
+    ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+
+    //this.ReguaTeste(ctx, x + w * 0.1, y, w - w * 0.2, h, 5);
   }
+
 
   private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
     const r = x + width;
@@ -81,7 +105,7 @@ export class ConfirmButton {
       	  ctx.font = "12px Arial";
       	  ctx.textAlign = "start";
       	
-          this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.6);
+          this.fillTextCenter(ctx, label, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.6, button.rectangle.w, button.rectangle.h * 0.2, undefined, "'Press Start 2P', cursive", false);
         },
       	onClick: () => {
       	  this.menu.close();
@@ -100,18 +124,59 @@ export class ConfirmButton {
     ctx.fill();
 
     ctx.strokeStyle = borderColor;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.stroke();
 
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 18px Arial";
-    ctx.textAlign = "start";
-    ctx.lineWidth = 3;
+    if (this.type == STATUS_CONFIRM.PRODUCT)
+      this.drawMessage(ctx, pos, "Do you want to buy,", (this.something.type == TypeSkin.Paddle ? "Paddle " : "Table ") + this.something.tittle, "for " + this.something.price + "₳?")
+    else if (this.type == STATUS_CONFIRM.CHALLENGE)
+      this.drawMessage(ctx, pos, "Do you want to", "Challenge", this.something + "?");
+    else if (this.type == STATUS_CONFIRM.FRIEND)
+      this.drawMessage(ctx, pos, "Are you sure you", "want to unfriend", this.something + "?");
+    else if (this.type == STATUS_CONFIRM.FRIEND_REQUEST)
+      this.drawMessage(ctx, pos, "Are you sure you", "want to cancel the", "the friend request?");
+    else if (this.type == STATUS_CONFIRM.BLOCK)
+      this.drawMessage(ctx, pos, "Are you sure you", "want to block the", this.something + "?");
+    else if (this.type == STATUS_CONFIRM.ERROR)
+      this.drawMessage(ctx, pos, "Error", this.something, "");
+  }
 
-    this.fillTextCenter(ctx, "Do you want to buy,", pos, pos.y + pos.h * 0.15, true);
-    this.fillTextCenter(ctx, "for " + this.productPrice + "₳?", pos, pos.y + pos.h * 0.48, true);
+  drawMessage(ctx: CanvasRenderingContext2D, pos: Rectangle, par1: string, par2: string, par3: string)
+  {
+    ctx.fillStyle = "#ffffff";
+    ctx.lineWidth = 4;
+
+    let x = pos.x;
+    let y = pos.y + pos.h * 0.15;
+    let w = pos.w;
+    let h = pos.h * 0.10;
+
+    this.fillTextCenter(ctx, par1, x, y, w, h, undefined, "'Press Start 2P', cursive", true);
+    
+    y = pos.y + pos.h * 0.5;
+    this.fillTextCenter(ctx, par3, x, y, w, h, undefined, "'Press Start 2P', cursive", true);
     ctx.fillStyle = "gold";
-    this.fillTextCenter(ctx, this.productName, pos, pos.y + pos.h * 0.32, true);
+    
+    y = pos.y + pos.h * 0.325;
+    this.fillTextCenter(ctx, par2, x, y, w, h, undefined, "'Press Start 2P', cursive", true);
+  }
+
+  //Test
+  ReguaTeste(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, lineWidth: number)
+  {
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, w, 1);
+    ctx.strokeRect(x, (y) - h, w, 1);
+    ctx.strokeRect(x + w, (y) - h, 1, h);
+    ctx.strokeRect(x, (y) - h, 1, h);
+    ctx.lineWidth = lineWidth;
+    
+    //Medidas
+    /*context.strokeRect( pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3, 1);
+    context.strokeRect(pos.x, pos.y + pos.h / 2, pos.w, 1);
+    context.strokeRect(pos.x + pos.w / 2, pos.y, 1, pos.h);
+    context.strokeRect(pos.x + pos.w * 0.33, pos.y, 1, pos.h);
+    context.strokeRect(pos.x + pos.w * 0.66, pos.y, 1, pos.h);*/
   }
 
   public show(onResult: (result: any) => void) {

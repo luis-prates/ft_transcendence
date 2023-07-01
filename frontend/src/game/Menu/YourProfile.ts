@@ -13,6 +13,7 @@ import avatares from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae
 import pencil from "@/assets/images/lobby/pencil.png";
 import green_sign from "@/assets/images/lobby/menu/green_sign.png";
 import { Profile } from "./Profile";
+import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 
 export class YourProfile {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -335,7 +336,13 @@ export class YourProfile {
               throw new Error("Erro na requisição");
             }
           } catch (error) {
-            console.error(error);
+            const confirmButton = new ConfirmButton(error, STATUS_CONFIRM.ERROR);
+            confirmButton.show((value) => {
+              if (value == "OK") {
+                this.menu.close();
+                this.onResult("EXIT");
+              }
+            });          
           }
         }
       });

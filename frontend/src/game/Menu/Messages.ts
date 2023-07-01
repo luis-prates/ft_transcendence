@@ -4,6 +4,7 @@ import { userStore, type Friendship } from "@/stores/userStore";
 
 //Sound
 import sound_close_tab from "@/assets/audio/close.mp3";
+import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 
 export class Messages {
   private _menu = new Menu({ layer: "Global", isFocus: false });
@@ -39,8 +40,13 @@ export class Messages {
       this.menu.add(this.background, this.createMessageButton(38.5, 16 + 3 * 6, "Blocked", "Who Blocked You!"));
 
     } catch (error) {
-      console.error('Erro ao buscar os usuários:', error);
-      this.menu.close();
+      const confirmButton = new ConfirmButton(error, STATUS_CONFIRM.ERROR);
+			confirmButton.show((value) => {
+				if (value == "OK") {
+					this.menu.close();
+					this.onResult("EXIT");
+				}
+			});
     }
   }
 
@@ -53,12 +59,10 @@ export class Messages {
         const backgroundColor = 'rgba(192, 192, 192, 0.6)'; // Cor de fundo castanho
         const borderColor = "#8B4513"; // Cor de contorno mais escuro
       
-        // Desenha o corpo do balão com cor de fundo castanho
         ctx.fillStyle = backgroundColor;
         this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
         ctx.fill();
     
-        // Desenha o contorno do balão com cor mais escura
         ctx.strokeStyle = borderColor;
         ctx.lineWidth = 1;
         ctx.stroke();

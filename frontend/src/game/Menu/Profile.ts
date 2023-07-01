@@ -13,6 +13,7 @@ import friendImage from "@/assets/images/lobby/menu/friend.png";
 import yourFriendImage from "@/assets/images/lobby/menu/your_friend.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
 import { YourProfile } from "./YourProfile";
+import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 
 export class Profile {
 	private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -103,9 +104,13 @@ export class Profile {
 
 	
 		} catch (error) {
-			console.error('Erro ao buscar os usuários:', error);
-			this.menu.close();
-			this.onResult("EXIT");
+			const confirmButton = new ConfirmButton(error, STATUS_CONFIRM.ERROR);
+			confirmButton.show((value) => {
+				if (value == "OK") {
+					this.menu.close();
+					this.onResult("EXIT");
+				}
+			});
 		}
 	  }
 
@@ -255,11 +260,15 @@ export class Profile {
 			},
 			onClick: () => {
 			if (type == "challenge") {
-				//TODO Created table and send challenge
-				/*const confirmButton = new CreateGame(this.player);
-				confirmButton.show((value) => {
-				if (value == "CONFIRM") buy_sound.play();
-					}); */
+				const confirmButton = new ConfirmButton(this.user.nickname, STATUS_CONFIRM.CHALLENGE);
+        		confirmButton.show((value) => {
+        		  if (value == "CONFIRM") {
+					this._menu.close();
+					this.onResult("EXIT");
+					//TODO
+					//CREATE GAME WITH THIS PERSON
+        		  }
+        		});
 			}
 			else if (type == "send_message") {
 				//TODO DATABASE 
@@ -275,8 +284,13 @@ export class Profile {
 				}
 				else
 				{
-					userStore().blockUser(this.user.id);
-					this.isBlocked = true;
+					const confirmButton = new ConfirmButton(this.user.nickname, STATUS_CONFIRM.BLOCK);
+        			confirmButton.show((value) => {
+						if (value == "CONFIRM") {
+							userStore().blockUser(this.user.id);
+							this.isBlocked = true;
+        				}
+        			});
 				}
 			}
 		},
@@ -318,7 +332,7 @@ export class Profile {
 				}
 		
 				ctx.fillStyle = "black";
-				ctx.font = "10px 'Press Start 2P', cursive";
+				ctx.font = button.rectangle.h * 0.45 + "px 'Press Start 2P', cursive";
 
 				if (this.heSendARequestFriend)
 				{
@@ -339,16 +353,27 @@ export class Profile {
 						label = "-";
 					}
 					else if (label == "-") {
-						userStore().cancelFriendRequest(this.user.id);
-						label = "+";
+						const confirmButton = new ConfirmButton(this.user.nickname, STATUS_CONFIRM.FRIEND_REQUEST);
+        				confirmButton.show((value) => {
+							if (value == "CONFIRM") {
+								userStore().cancelFriendRequest(this.user.id);
+								label = "+";
+								this.isYourFriend = false;
+        					}
+        				});
 					}
 				}
 				else //Friend
 				{
 					if (label == "-") {
-						userStore().deleteFriend(this.user.id);
-						label = "+";
-						this.isYourFriend = false;
+						const confirmButton = new ConfirmButton(this.user.nickname, STATUS_CONFIRM.FRIEND);
+        				confirmButton.show((value) => {
+							if (value == "CONFIRM") {
+								userStore().deleteFriend(this.user.id);
+								label = "+";
+								this.isYourFriend = false;
+        					}
+        				});
 					}
 				}
 			},
@@ -357,98 +382,91 @@ export class Profile {
 	}
 
 	private drawBackground(ctx: CanvasRenderingContext2D, pos: Rectangle) {
-	  const backgroundColor = "rgba(210, 180, 140, 0.6)";
-	  const borderColor = "black";
+		const backgroundColor = "rgba(210, 180, 140, 0.6)";
+		const borderColor = "black";
 
-	  ctx.fillStyle = backgroundColor;
-	  this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
-	  ctx.fill();
+		ctx.fillStyle = backgroundColor;
+		this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
+		ctx.fill();
 
-	  ctx.strokeStyle = borderColor;
-	  ctx.lineWidth = 2;
-	  ctx.stroke();
-
-	//REGUA LETRA
-	/*ctx.strokeRect(pos.x + pos.w * 0.30, pos.y + pos.h * 0.10, pos.w * 0.25, 1);
-    const h =  pos.h * 0.035;
-    ctx.strokeRect(pos.x + pos.w * 0.30, (pos.y + pos.h * 0.10) - h,
-      1, h);*/
+		ctx.strokeStyle = borderColor;
+		ctx.lineWidth = 2;
+		ctx.stroke();
 	  
-    //NickName
-    ctx.fillStyle = 'black';
-    ctx.font = pos.h * 0.035 + "px 'Press Start 2P', cursive";
-	ctx.fillText(this.user.nickname, pos.x + pos.w * 0.30, pos.y + pos.h * 0.10, pos.w * 0.25);
+    	//NickName
+    	ctx.fillStyle = 'black';
+    	ctx.font = pos.h * 0.035 + "px 'Press Start 2P', cursive";
+		ctx.fillText(this.user.nickname, pos.x + pos.w * 0.30, pos.y + pos.h * 0.10, pos.w * 0.25);
 
-    //Level
-    ctx.font = pos.h * 0.025 + "px 'Press Start 2P', cursive";
-	ctx.fillText("Level: " + this.user.level, pos.x + pos.w * 0.30, pos.y + pos.h * 0.13, pos.w * 0.25);
+    	//Level
+    	ctx.font = pos.h * 0.025 + "px 'Press Start 2P', cursive";
+		ctx.fillText("Level: " + this.user.level, pos.x + pos.w * 0.30, pos.y + pos.h * 0.13, pos.w * 0.25);
 
-	//Money
-	ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.30, pos.y + pos.h * 0.16, pos.w * 0.25);
-    
-	//Level
-    const wins = this.historic.filter((history: Historic) => history.gameStats.winnerId == this.user.id).length;
-	ctx.fillText("Wins:  " + wins, pos.x + pos.w * 0.30, pos.y + pos.h * 0.19, pos.w * 0.25);
+		//Money
+		ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.30, pos.y + pos.h * 0.16, pos.w * 0.25);
+		
+		//Level
+    	const wins = this.historic.filter((history: Historic) => history.gameStats.winnerId == this.user.id).length;
+		ctx.fillText("Wins:  " + wins, pos.x + pos.w * 0.30, pos.y + pos.h * 0.19, pos.w * 0.25);
 
-    const loses = this.historic.filter((history: Historic) => history.gameStats.loserId == this.user.id).length;
-	ctx.fillText("Losts: " + loses, pos.x + pos.w * 0.30, pos.y + pos.h * 0.22, pos.w * 0.25);
+    	const loses = this.historic.filter((history: Historic) => history.gameStats.loserId == this.user.id).length;
+		ctx.fillText("Losts: " + loses, pos.x + pos.w * 0.30, pos.y + pos.h * 0.22, pos.w * 0.25);
 
-    //Avatar
+    	//Avatar
 
-	ctx.strokeStyle = "black";
-	ctx.lineWidth = 5;
-	ctx.strokeRect(
-      pos.x + pos.w * 0.05, 
-      pos.y + pos.h * 0.05,
-      pos.w * 0.2,
-      pos.h * 0.2,
-      );
+		ctx.strokeStyle = "black";
+		ctx.lineWidth = 5;
+		ctx.strokeRect(
+    	  pos.x + pos.w * 0.05, 
+    	  pos.y + pos.h * 0.05,
+    	  pos.w * 0.2,
+    	  pos.h * 0.2,
+    	  );
 
-	  try {
-		ctx.drawImage(this.avatarImage, pos.x + pos.w * 0.05, 
-			pos.y + pos.h * 0.05,
-			pos.w * 0.2,
-			pos.h * 0.2,);
-	  }
-	  catch {
-		this.avatarImage.src = avatarDefault;
-		ctx.drawImage(this.avatarImage, pos.x + pos.w * 0.05, 
-			pos.y + pos.h * 0.05,
-			pos.w * 0.2,
-			pos.h * 0.2,);
-	  }
+		try {
+			ctx.drawImage(this.avatarImage, pos.x + pos.w * 0.05, 
+				pos.y + pos.h * 0.05,
+				pos.w * 0.2,
+				pos.h * 0.2,);
+		}
+		catch {
+			this.avatarImage.src = avatarDefault;
+			ctx.drawImage(this.avatarImage, pos.x + pos.w * 0.05, 
+				pos.y + pos.h * 0.05,
+				pos.w * 0.2,
+				pos.h * 0.2,);
+		}
 
-		//Paddle
-		const scale = 100 / 30;
-        const scaledWidth = pos.w * 0.035 * scale;
-        const scaledHeight = pos.h * 0.055 * scale;
-        const pointx = (pos.w - pos.w * 0.15);
-        const pointy = (pos.h* 0.07);
-        
-        ctx.fillStyle = this.user.color;
-        ctx.fillRect(pos.x + pointx, pos.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
-      
+			//Paddle
+			const scale = 100 / 30;
+    		const scaledWidth = pos.w * 0.035 * scale;
+    		const scaledHeight = pos.h * 0.055 * scale;
+    		const pointx = (pos.w - pos.w * 0.15);
+    		const pointy = (pos.h* 0.07);
+    		
+    		ctx.fillStyle = this.user.color;
+    		ctx.fillRect(pos.x + pointx, pos.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
+		
 
-        if (this.skinPaddle.complete) {
-          ctx.drawImage(this.skinPaddle, pos.x + pointx, pos.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
-        }
-          
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 3;
-        ctx.strokeRect(pos.x + pointx, pos.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
+    		if (this.skinPaddle.complete) {
+    		  ctx.drawImage(this.skinPaddle, pos.x + pointx, pos.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
+    		}
+    		  
+    		ctx.strokeStyle = "black";
+    		ctx.lineWidth = 3;
+    		ctx.strokeRect(pos.x + pointx, pos.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
  
 
-	  //Matches
-	  ctx.font =  pos.h * 0.045 + "px 'Press Start 2P', cursive";
-	  ctx.lineWidth = 4;
-      ctx.strokeStyle = "black";
-	  ctx.strokeText("Matches", pos.x + pos.w * 0.35, pos.y + pos.h * 0.425, pos.w * 0.275);
+		//Matches
+		ctx.font =  pos.h * 0.045 + "px 'Press Start 2P', cursive";
+		ctx.lineWidth = 4;
+    	ctx.strokeStyle = "black";
+		ctx.strokeText("Matches", pos.x + pos.w * 0.35, pos.y + pos.h * 0.425, pos.w * 0.275);
 
-	  ctx.lineWidth = 3;
+		ctx.lineWidth = 3;
 
-      ctx.fillStyle = "white";
-	  ctx.fillText("Matches", pos.x + pos.w * 0.35, pos.y + pos.h * 0.425, pos.w * 0.275);
-
+    	ctx.fillStyle = "white";
+		ctx.fillText("Matches", pos.x + pos.w * 0.35, pos.y + pos.h * 0.425, pos.w * 0.275);
 	}
 
 	private createButtonExit(x: number, y: number): ElementUI {
