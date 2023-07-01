@@ -76,7 +76,7 @@ export class AuthService {
 		}
 	}
 
-	async signToken(user: User): Promise<{ user: User; access_token: string }> {
+	async signToken(user: User): Promise<{ dto: User; access_token: string }> {
 		const payload = {
 			sub: user.id,
 			nickname: user.nickname,
@@ -86,7 +86,7 @@ export class AuthService {
 			expiresIn: '1w',
 			secret: secret,
 		});
-		return { user: user, access_token };
+		return { dto: user, access_token };
 	}
 
 	async generateTwoFactorSecret(user: User) {
