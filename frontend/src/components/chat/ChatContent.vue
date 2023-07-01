@@ -3,8 +3,11 @@
     <div class="card-header msg_head">
       <div class="d-flex bd-highlight">
         <!-- cabeca do formulario -->
+        <div class="img_cont">
+          <img :src=defaultAvatar class="user_img" />
+        </div>
         <div class="user_info">
-          <span>New Channel</span>
+          <span>{{ channelName }}</span>
         </div>
         <div class="video_cam">
           <!-- <button class="config_chat">⚙</button> -->
@@ -54,7 +57,7 @@
           <p>{{selected?.messages?.length + " Messages"}}</p>
         </div>
         <div class="video_cam">
-          <button class="config_chat">⚙</button>
+          <button @click="editChannel" class="config_chat">⚙</button>
           <button @click="toggleStatus" class="close_chat">✖</button>
         </div>
       </div>
@@ -101,7 +104,7 @@ socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
 console.log("Socket criado na instancia do componente: ", chatSocket);
 
-const defaultAvatar = "src/assets/chat/chat_avatar.png";
+let defaultAvatar = "src/assets/chat/chat_avatar.png";
 
 // Get channel name from chatStore
 const getChannelName = () => {
@@ -112,25 +115,48 @@ const getChannelName = () => {
 function getChatAvatar() {
   if (selected.value?.avatar)
     return selected.value.avatar;
-  return defaultAvatar;
+    return defaultAvatar;
+  }
+  
+  // Props declaration
+  const props = defineProps({
+    createChannel: Boolean,
+    channelStatus: Boolean,
+  });
+  
+  // Define reactive variables
+  const errorMessage = ref('');
+  
+  // Get the current component instance
+  const instance = getCurrentInstance();
+  
+  //form testing
+  // Define reactive variables for form inputs
+  const channelName = ref('');
+  const channelPassword = ref('');
+  const channelType = ref('PUBLIC');
+  const channelAvatar = ref(null);
+
+function editChannel() {
+  instance?.emit("update-channel-status", false);
+  instance?.emit("update-create-channel", true);
+  channelName.value = selected.value?.name as any;
+  channelPassword.value = selected.value?.password as any;
+  channelType.value = selected.value?.type as any;
+  if (selected.value?.avatar)
+    defaultAvatar = selected.value?.avatar as any;
+  else
+    defaultAvatar = "src/assets/chat/chat_avatar.png";
 }
-
-// Props declaration
-const props = defineProps({
-  createChannel: Boolean,
-  channelStatus: Boolean,
-});
-
-// Define reactive variables
-const errorMessage = ref('');
-
-// Get the current component instance
-const instance = getCurrentInstance();
 
 // Emit event from the child component
 const toggleStatus = () => {
   instance?.emit("update-channel-status", false);
   instance?.emit("update-create-channel", false);
+  channelName.value = '';
+  channelPassword.value = '';
+  channelType.value = 'PUBLIC';
+  defaultAvatar = "src/assets/chat/chat_avatar.png";
 };
 
 const text = ref();
@@ -195,12 +221,6 @@ function scrollToBottom() {
   }
 }
 
-//form testing
-// Define reactive variables for form inputs
-const channelName = ref('');
-const channelPassword = ref('');
-const channelType = ref('PUBLIC');
-const channelAvatar = ref(null);
 
 // Define reactive variable for the base64 string
 const avatarBase64 = ref('');
@@ -214,6 +234,7 @@ const handleAvatarChange = (event: Event) => {
     convertFileToBase64(file)
       .then((base64String) => {
         avatarBase64.value = base64String;
+        defaultAvatar = URL.createObjectURL(file);
         console.log("Base64 string:", base64String);
       })
       .catch((error) => {

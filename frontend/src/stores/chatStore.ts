@@ -28,6 +28,7 @@ export interface channel {
   messages: ChatMessage[];
   users: ChatUser[];
   type: string;
+  ownerId?: number,
 }
 
 
@@ -111,13 +112,14 @@ export const chatStore = defineStore("chat", () => {
             status: user.user.status ?? "",
           })) ?? [];
           return {
-          objectId: channelData.id ?? "",
-          name: channelData.name ?? "",
-          avatar: channelData.avatar ?? "",
-          password: channelData.password ?? "",
-          users: transformedUsers,
-          type: channelData.type ?? "",
-          messages: [], // Add an empty messages array
+            objectId: channelData.id ?? "",
+            name: channelData.name ?? "",
+            avatar: channelData.avatar ?? "",
+            password: channelData.password ?? "",
+            users: transformedUsers,
+            type: channelData.type ?? "",
+            messages: [], // Add an empty messages array
+            ownerId: channelData.ownerId ?? "",
         };
       });
 
