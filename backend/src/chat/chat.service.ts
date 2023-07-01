@@ -49,8 +49,11 @@ export class ChatService {
 			where: {
 				channelId: channelId,
 			},
+			include: {
+				user: true,	
+			},
 			orderBy: {
-				createdAt: 'desc',
+				createdAt: 'asc',
 			},
 		});
 	}

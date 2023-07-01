@@ -1,31 +1,35 @@
 import { reactive, ref } from "vue";
 import { defineStore } from "pinia";
-import { userStore } from "./userStore";
+import { userStore, type User } from "./userStore";
 import { env } from "@/env";
 import axios from "axios";
 
 export interface ChatMessage {
   id: string;
-  objectId: number;
-  message: string;
-  nickname: string;
+  content: string;
+  channelId: number;
+  userId: number;
+  createdAt?: string;
+  user: any;
 }
 
 export interface ChatUser {
   id: any;
-  avatar: string;
+  image: string;
   nickname: string;
+  status: any;
 }
 
 export interface channel {
   objectId: any;
   name: string;
-  avatar: string;
+  avatar: any;
   password?: string;
   messages: ChatMessage[];
   users: ChatUser[];
   type: string;
 }
+
 
 export const chatStore = defineStore("chat", () => {
   const channels = reactive<channel[]>([]);
@@ -34,8 +38,8 @@ export const chatStore = defineStore("chat", () => {
 
   function addChannel(channel: channel) {
     const channelSelected = channels.find((c) => {
-      console.log("Comparing objectId: ", c.objectId, " with ", objectId);
-      return c.objectId === objectId;
+      console.log("Comparing objectId: ", c.objectId, " with ", channel.objectId);
+      return c.objectId === channel.objectId;
     });
     if (channelSelected) {
       channelSelected.messages = channel.messages;
@@ -43,11 +47,19 @@ export const chatStore = defineStore("chat", () => {
     } else channels.push(channel);
   }
 
-  function addMessage(objectId: number, message: ChatMessage) {
-    const channelSelected = channels.find((c) => c.objectId === objectId);
+  function addMessage(message: ChatMessage) {
+    const channelSelected = channels.find((c) => c.objectId === message.channelId);
     console.log("channelSelected: ", channelSelected);
-    console.log("ObjectId: ", objectId);
+    console.log("ObjectId: ", message.channelId);
     if (channelSelected && message) {
+      message.createdAt = new Date().toString();
+
+    // Search for the user in channel.users
+    const userChat = channelSelected.users.find((user) => user.id === message.userId);
+    if (userChat) {
+      message.user = userChat;
+    }
+
       channelSelected.messages.push(message);
       console.log("Vai adicionar a messagem ao chat");
     }
@@ -70,7 +82,6 @@ export const chatStore = defineStore("chat", () => {
         const messages = response.data;
         // Process the messages as needed
         selected.value.messages = messages;
-        selected.value.messages = messages;
         console.log("RESPOSTA DO SERVER: ", messages);
       } catch (error) {
         console.error(error);
@@ -91,14 +102,15 @@ export const chatStore = defineStore("chat", () => {
       console.log("response: ", responseData);
 
       // Transform the response data into an array of channels
-      const transformedChannels = responseData.map((channelData) => {
+      const transformedChannels = responseData.map((channelData: any) => {
         const transformedUsers =
-          channelData.users?.map((user) => ({
+          channelData.users?.map((user: any) => ({
             id: user.user.id ?? "",
-            avatar: user.user.avatar ?? "",
+            image: user.user.image ?? "",
             nickname: user.user.nickname ?? "",
+            status: user.user.status ?? "",
           })) ?? [];
-        return {
+          return {
           objectId: channelData.id ?? "",
           name: channelData.name ?? "",
           avatar: channelData.avatar ?? "",
@@ -124,6 +136,7 @@ export const chatStore = defineStore("chat", () => {
       usersToAdd: channel.users,
       channelType: channel.type,
       password: channel.password ? channel.password : undefined,
+      avatar: channel.avatar,
     };
     console.log("createChannelDto:", createChannelDto);
 
@@ -156,5 +169,5 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  return { channels, selected, addChannel, showChannel, addMessage, getChannels, createChannel };
+  return { channels, selected, addChannel, showChannel, addMessage, getChannels, createChannel, activateMessage };
 });

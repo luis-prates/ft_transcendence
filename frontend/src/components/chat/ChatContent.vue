@@ -63,7 +63,7 @@
     <div class="card-body msg_card_body" ref="scrollContainer">
       <div v-for="(message, index) in selected?.messages" :key="index">
         <div>
-          <ChatContentMessages :message="message" :displayUser="index == 0 || message.nickname !=  selected?.messages[index - 1].nickname"/>
+          <ChatContentMessages :message="message" :displayUser="index == 0 || message.user.nickname !=  selected?.messages[index - 1].user.nickname"/>
         </div>
       </div>
     </div>
@@ -91,13 +91,13 @@ import { storeToRefs } from "pinia";
 import { userStore } from "@/stores/userStore";
 import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
-// import chatSocket from "@/socket/SocketChat";
 import { onMounted, onUnmounted, ref } from "vue";
 
 const store = chatStore();
 const user = userStore();
 const { selected } = storeToRefs(store);
 
+socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
 console.log("Socket criado na instancia do componente: ", chatSocket);
 
@@ -130,8 +130,8 @@ const text = ref();
 
 function send() {
   console.log("Chat Emit event: ", text.value);
-  if (text.value) {
-    const message = text.value.trim();
+  const message = text.value.trim();
+  if (message) {
     //store.addMessage(selected.value?.objectId, menreceived message fromsagem);
     const channelId = selected.value?.objectId;
     chatSocket.emit("message", { message: message, channelId: channelId });
@@ -195,11 +195,45 @@ const channelPassword = ref('');
 const channelType = ref('PUBLIC');
 const channelAvatar = ref(null);
 
+// Define reactive variable for the base64 string
+const avatarBase64 = ref('');
+
 // Handle avatar file change
-const handleAvatarChange = (event:any) => {
-  const file = event.target.files[0];
-  // You can handle the file as needed, e.g., upload it to a server or display a preview
-  channelAvatar.value = file;
+const handleAvatarChange = (event: Event) => {
+  const fileInput = event.target as HTMLInputElement;
+  const file = fileInput.files?.[0];
+
+  if (file) {
+    convertFileToBase64(file)
+      .then((base64String) => {
+        avatarBase64.value = base64String;
+        console.log("Base64 string:", base64String);
+      })
+      .catch((error) => {
+        console.error("Error converting file to base64:", error);
+      });
+  }
+};
+
+// Convert file to base64 string
+const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("Invalid file type"));
+      }
+    };
+
+    reader.onerror = (error) => {
+      reject(error);
+    };
+
+    reader.readAsDataURL(file);
+  });
 };
 
 // Create new channel function
@@ -209,14 +243,15 @@ const createNewChannel = async () => {
     const name = channelName.value;
     const password = channelType.value == "PUBLIC" ? channelPassword.value : undefined;
     const type = password ? "PROTECTED" : channelType.value;
-    const avatar = channelAvatar.value; // This is the File object
+    const avatar = avatarBase64.value ? btoa(avatarBase64.value) : ""; // This is the File object
+    console.log("Avatar base64 string:", avatar);
 
     // Perform your logic here, e.g., make an API call to create the channel
     // You can use the values (name, password, type, avatar) as needed
     const newChannel = {
       objectId: 1,
       name: name,
-      avatar: avatar ? avatar : "",
+      avatar: avatar,
       password: password,
       messages: [], // initialize with an empty array of messages
       users: [], // initialize with an empty array of users

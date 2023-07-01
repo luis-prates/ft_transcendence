@@ -45,8 +45,9 @@ onMounted(() => {
   socket.on('message', (data: { channelId: number, senderId: number, message: string }) => {
     const { channelId, senderId, message } = data;
     
+    console.log("Received message", data);
     console.log(`Received message from ${senderId} in channel ${channelId}: ${message}`);
-    store.addMessage(channelId, {id: "1", objectId: 1, message: message, nickname: "user_" + senderId.toString()})
+    store.addMessage({channelId: channelId, content: message, id: "1", user: "user_" + senderId.toString(), userId: senderId})
     console.log("Channels: do socket ", store.channels);
     //store.addMessage(channelId, message);
   });

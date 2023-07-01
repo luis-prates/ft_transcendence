@@ -1,26 +1,26 @@
 <template>
-  <div v-if="props.message.nickname !== getMyNickname()" class="d-flex justify-content-start mb-4">
+  <div v-if="props.message.userId  !== getMyUserId()" class="d-flex justify-content-start mb-4">
     <div v-if="props.displayUser" class="img_cont_msg">
-      <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img_msg" />
+      <img :src="getImage()" class="rounded-circle user_img_msg" />
     </div>
     <div v-else class="img_cont_msg"></div>
     <div style="position: relative;">
       <div v-if="props.displayUser">
-        <span style="color: white; margin-left: 10px;">{{props.message.nickname}}</span>
+        <span style="color: white; margin-left: 10px;">{{props.message.user.nickname }}</span>
       </div>
       <div class="msg_cotainer">
-        {{ props.message.message }}
-        <span class="msg_time">{{"8:40PM"}}</span>
+        {{ props.message.content }}
+        <span class="msg_time">{{ formattedTimestamp }}</span>
       </div>
     </div>
   </div>
   <div  v-else class="d-flex justify-content-end mb-4">
     <div class="msg_cotainer_send">
-      {{ props.message.message }}
-      <span class="msg_time_send">{{"8:40PM"}}</span>
+      {{ props.message.content }}
+      <span class="msg_time_send">{{ formattedTimestamp }}</span>
     </div>
     <div v-if="props.displayUser"  class="img_cont_msg">
-      <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="rounded-circle user_img_msg" />
+      <img :src="getImage()" class="rounded-circle user_img_msg" />
     </div>
     <div v-else class="img_cont_msg"></div>
   </div>
@@ -31,8 +31,14 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
-import { defineProps } from "vue";
+import { defineProps, ref } from "vue";
 import { userStore } from "@/stores/userStore";
+
+const defaultAvatar = "src/assets/chat/avatar.png";
+
+function getImage() {
+  return props.message.user.image ? props.message.user.image : defaultAvatar;
+}
 
 const user = userStore();
 
@@ -47,13 +53,50 @@ const props = defineProps({
   },
 });
 
-const mensagem = props.message.message;
-const time = props.message.time;
-const nickname = props.message.nickname;
+const time = props.message.createdAt;
 
 // Get your own nickname from the player data
-const getMyNickname = () => {
+const getMyUserId = () => {
   console.log(user.user.id);
-  return user.user.nickname;
+  return user.user.id;
 };
+
+//Function that will calculate the time lapsed until the last message
+function formatTimestamp(timestamp: string): string {
+  const createdAt = new Date(timestamp);
+  const currentTime = new Date();
+  
+  // Calculate the time difference in milliseconds
+  const timeDifference = currentTime.getTime() - createdAt.getTime();
+  
+  // Convert the time difference to seconds, minutes, hours, days, months, or years
+  const seconds = Math.floor(timeDifference / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const months = Math.floor(days / 30);
+  const years = Math.floor(months / 12);
+
+  if (seconds < 60) {
+    return `now`;
+  } else if (minutes < 60) {
+    return `${minutes} minutes ago`;
+  } else if (hours < 24) {
+    return `${hours} hours ago`;
+  } else if (days < 30) {
+    return `${days} days ago`;
+  } else if (months < 12) {
+    return `${months} months ago`;
+  } else {
+    return `${years} years ago`;
+  }
+}
+// Create a reactive variable to store the formatted timestamp
+const formattedTimestamp = ref(formatTimestamp(time));
+
+// Update every minute
+setInterval(() => {
+  formattedTimestamp.value = formatTimestamp(time);
+}, 60000);
+
 </script>
