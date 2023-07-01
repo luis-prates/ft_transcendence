@@ -1,6 +1,16 @@
 import { UserStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsNumber, IsNotEmpty, IsString, IsEmail, IsOptional, IsArray, IsEnum, Length, IsBase64 } from 'class-validator';
+import {
+	IsNumber,
+	IsNotEmpty,
+	IsString,
+	IsEmail,
+	IsOptional,
+	IsArray,
+	IsEnum,
+	Length,
+	IsBase64,
+} from 'class-validator';
 
 export class AuthDto {
 	@Transform(({ value }) => parseInt(value))

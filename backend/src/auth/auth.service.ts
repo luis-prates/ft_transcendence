@@ -38,7 +38,7 @@ export class AuthService {
 					nickname: dto.nickname,
 					email: dto.email,
 					image: dto.image,
-                    color: dto.color,
+					color: dto.color,
 					hash,
 				},
 			});

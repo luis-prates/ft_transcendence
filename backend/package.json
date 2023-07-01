@@ -35,7 +35,8 @@
 		"test:cov": "jest --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
 		"pretest:e2e": "npm run db:test:restart",
-		"test:e2e": "dotenv -e .env.test -- jest --verbose --watch --runInBand --no-cache --config ./test/jest-e2e.json"
+		"test:e2e": "dotenv -e .env.test -- jest --verbose --watch --runInBand --no-cache --config ./test/jest-e2e.json",
+		"test:prisma:studio": "dotenv -e .env.test -- npx prisma studio"
 	},
 	"dependencies": {
 		"@nestjs/common": "^9.4.2",

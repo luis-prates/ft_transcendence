@@ -213,8 +213,8 @@ export class ChatService {
 					},
 				});
 			}
-            // emit event to everyone that a new channel was just created
-            this.events.emit('channel-created', newChannel);
+			// emit event to everyone that a new channel was just created
+			this.events.emit('channel-created', newChannel);
 
 			// emit event to creator for new channel
 			this.events.emit('user-added-to-channel', {
@@ -603,8 +603,8 @@ export class ChatService {
 
 		const users = toBeDeletedChannel.users.map(cu => cu.user);
 
-        // Emit events to all users when a channel is deleted
-        this.events.emit('channel-deleted', toBeDeletedChannel);
+		// Emit events to all users when a channel is deleted
+		this.events.emit('channel-deleted', toBeDeletedChannel);
 
 		// Emit events to all channel users when a channel is deleted
 		for (const user of users) {
