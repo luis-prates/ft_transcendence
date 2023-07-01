@@ -14,6 +14,8 @@ import { ref } from "vue";
 import { socketClass } from "@/socket/SocketClass";
 import { env } from "@/env";
 import type { Socket } from "socket.io-client";
+import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
+import { Game } from "@/game/base/Game";
 
 const props = defineProps({
   code: String,
@@ -69,6 +71,25 @@ onMounted(() => {
       .catch((err) => {
         console.log(err);
       });
+    socket.on("invite_request_game", (e: any) => {
+      console.log("CHMADO");
+
+      const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
+      Game.instance.addMenu(confirmButton.menu);
+			confirmButton.show((value) => {
+          if (value == "CONFIRM") {
+            socket.emit("challenge_game", {
+              challenged: store.user.id, 
+              challenger: e.playerId,
+            });
+          }
+		  });
+    });
+    socket.on("challenge_game", (gameId: string) => {
+			// socket.off("challenge_game");
+			// socket.off("invite_confirm_game");
+			Router.push(`/game?objectId=${gameId}`);
+		});
   }
 });
 </script>

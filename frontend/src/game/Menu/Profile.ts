@@ -14,6 +14,8 @@ import yourFriendImage from "@/assets/images/lobby/menu/your_friend.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
 import { YourProfile } from "./YourProfile";
 import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
+import Router from "@/router";
+import { socketClass } from "@/socket/SocketClass";
 
 export class Profile {
 	private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -101,8 +103,6 @@ export class Profile {
     		  const squareY = 30 + paddingY + Math.floor(i / this.matche_pagination.max_for_line) * (squareH + paddingY);
     		  this.menu.add(this.background, this.createMatches(index, matche, squareX, squareY));
     		});
-
-	
 		} catch (error) {
 			const confirmButton = new ConfirmButton(error, STATUS_CONFIRM.ERROR);
 			confirmButton.show((value) => {
@@ -265,8 +265,37 @@ export class Profile {
         		  if (value == "CONFIRM") {
 					this._menu.close();
 					this.onResult("EXIT");
-					//TODO
-					//CREATE GAME WITH THIS PERSON
+
+					const lobbySocket = socketClass.getLobbySocket();
+					lobbySocket.emit("invite_game", { 
+						//Desafiador
+						challengerId: this.your_user.id,
+						challengerNickname: this.your_user.nickname,
+						//Desafiado
+						challengedId: this.user.id,
+						challengedNickname: this.user.nickname,
+					});
+
+					lobbySocket.on("invite_request_game", (e: any) => {
+						console.log("CHAMOUUUUUUUU");
+				  
+						const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
+						Game.instance.addMenu(confirmButton.menu);
+							  confirmButton.show((value) => {
+							if (value == "CONFIRM") {
+								lobbySocket.emit("challenge_game", {
+								challenged: this.your_user.id, 
+								challenger: e.playerId,
+							  });
+							}
+							});
+					  });
+			
+					lobbySocket.on("invite_confirm_game", (e: any) => {
+	
+						lobbySocket.off("invite_confirm_game");
+					});
+						//setTimeout(); 
         		  }
         		});
 			}

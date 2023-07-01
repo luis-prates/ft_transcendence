@@ -97,6 +97,23 @@ export class GameService {
 		}
 		return game.data.objectId;
 	}
+	
+	async challengeGame(player1: Player, player2: Player) {
+
+		//TODO
+		//verificar se ambos estao em jogo ou nao pelo Status
+
+		const gameCreated = await this.createGame({
+			"gameType": "PUBLIC",
+			"players": [],
+			"gameRequest": {"objectId": `gametest_${player1.id}_${player2.id}`,
+			"maxScore": 3,
+			"table": "#1e8c2f",
+			"tableSkin": "",
+			"bot": false}
+		} as GameDto) as any;
+		return gameCreated.id;
+	}
 
 	async enterGame(player: Player, info: playerInfo) : Promise<boolean> {
 		const game = this.games.find(g => g.data.objectId === info.objectId);

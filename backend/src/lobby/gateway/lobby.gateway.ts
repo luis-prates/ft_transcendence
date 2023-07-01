@@ -11,6 +11,8 @@ import {
 import { Server, Socket } from 'socket.io';
 import { LobbyService } from '../lobby.service';
 import { Logger, UnauthorizedException } from '@nestjs/common';
+import { PlayerService } from 'src/player/player.service';
+import { GameService } from 'src/game/game.service';
 
 @WebSocketGateway({ namespace: 'lobby', cors: { origin: '*' } })
 export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -19,7 +21,7 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 	@WebSocketServer()
 	server: Server;
 
-	constructor(private lobbyService: LobbyService) {}
+	constructor(private lobbyService: LobbyService, private playerService: PlayerService, private gameService: GameService) {}
 
 	afterInit(server: Server) {
 		this.logger.log('LobbyGateway initialized');
@@ -59,4 +61,56 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 	handleDisconnect(client: Socket) {
 		this.logger.debug(`Client disconnected: ${client.id} from lobby namespace`);
 	}
+
+	
+	@SubscribeMessage('invite_game')
+	async handleInviteGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.logger.debug(`Invite game received: ${JSON.stringify(body)}`);
+
+		//Desafiador
+		const challengerId = body.challengerId;
+		const challengerNickname = body.challengerNickname;
+		//Desafiado
+		const challengedId = body.challengedId;
+		const challengedNickname = body.challengedNickname;
+
+		console.log("id:" , challengedId, " id:", challengerId);
+		//Verificar
+		const player1 = this.playerService.getPlayer(challengerId);
+		const player2 = this.playerService.getPlayer(challengedId);
+
+		if (!player1 || !player2)
+			return ;
+		console.log("EMITIR PARA TODOS");
+		this.server.to(player2.getSocket().id).emit('invite_request_game', {
+			playerId: challengerId,
+			playerName: challengerNickname
+		 });
+
+		this.server.to(player1.getSocket().id).emit('invite_confirm_game', {
+			playerId: challengedId,
+			playerName: challengedNickname,
+		});
+	}
+	
+	@SubscribeMessage('challenge_game')
+	async handleChallengeGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.logger.debug(`challenge game received: ${JSON.stringify(body)}`);
+
+		const challenged = client.data.challenged;
+		const challenger = client.data.challenger;
+		const player1 = this.playerService.getPlayer(challenged);
+		const player2 = this.playerService.getPlayer(challenger);
+
+		if (!player1 || !player2)
+			return ;
+	
+		const userId = client.data.userId;
+		const player = this.playerService.getPlayer(userId);	
+		const game = await this.gameService.challengeGame(player1, player2);
+
+		this.server.to(player1.getSocket().id).emit('challenge_game', game);
+		this.server.to(player2.getSocket().id).emit('challenge_game', game);
+	}
+
 }

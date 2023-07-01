@@ -4,6 +4,7 @@ import { TypeSkin } from "../ping_pong/Skin";
 export enum STATUS_CONFIRM {
   PRODUCT,
   CHALLENGE,
+  CHALLENGE_YOU,
   FRIEND,
   FRIEND_REQUEST,
   BLOCK,
@@ -11,7 +12,7 @@ export enum STATUS_CONFIRM {
 }
 
 export class ConfirmButton {
-  private menu = new Menu({ layer: "Global", isFocus: true });
+  private _menu = new Menu({ layer: "Global", isFocus: true });
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
   private type: STATUS_CONFIRM;
@@ -131,6 +132,8 @@ export class ConfirmButton {
       this.drawMessage(ctx, pos, "Do you want to buy,", (this.something.type == TypeSkin.Paddle ? "Paddle " : "Table ") + this.something.tittle, "for " + this.something.price + "₳?")
     else if (this.type == STATUS_CONFIRM.CHALLENGE)
       this.drawMessage(ctx, pos, "Do you want to", "Challenge", this.something + "?");
+    else if (this.type == STATUS_CONFIRM.CHALLENGE_YOU)
+      this.drawMessage(ctx, pos, this.something, "Challenge You!", "You Accept?");
     else if (this.type == STATUS_CONFIRM.FRIEND)
       this.drawMessage(ctx, pos, "Are you sure you", "want to unfriend", this.something + "?");
     else if (this.type == STATUS_CONFIRM.FRIEND_REQUEST)
@@ -179,8 +182,13 @@ export class ConfirmButton {
     context.strokeRect(pos.x + pos.w * 0.66, pos.y, 1, pos.h);*/
   }
 
+  get menu(): Menu {
+    return this._menu;
+  }
+
   public show(onResult: (result: any) => void) {
     this.onResult = onResult;
     Game.addMenu(this.menu);
   }
+  
 }
