@@ -30,7 +30,7 @@ export class GameController {
 	}
 
 	@Get('active')
-	getActiveGames(status: GameStatus) {
+	getActiveGames(@Body('status') status: GameStatus[]) {
 		return this.gameService.getActiveGames(status);
 	}
 

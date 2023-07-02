@@ -245,13 +245,18 @@ export class GameService {
 		});
 	}
 
-	async getActiveGames(status: GameStatus) {
-		if (status === GameStatus.FINISHED) {
+	async getActiveGames(status: GameStatus[]) {
+		if (!status) {
+			throw new ForbiddenException('Cannot get games without status.');
+		}
+		if (status.includes(GameStatus.FINISHED)) {
 			throw new ForbiddenException('Cannot get finished games.');
 		}
 		return this.prisma.game.findMany({
 			where: {
-				status,
+				status: {
+					in: status,
+				},
 			},
 			include: {
 				players: {
