@@ -19,7 +19,7 @@ export class AuthDto {
 	@IsNotEmpty()
 	nickname: string;
 
-    @IsString()
+	@IsString()
 	@IsBase64()
 	image: string;
 

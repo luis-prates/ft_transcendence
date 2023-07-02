@@ -63,7 +63,7 @@ describe('User', () => {
 			};
 			return pactum
 				.spec()
-				.patch('/users')
+				.patch('/users/update_profile')
 				.withHeaders({
 					Authorization: 'Bearer $S{userAt1}',
 				})

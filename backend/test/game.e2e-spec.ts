@@ -56,7 +56,13 @@ describe('Game', () => {
 			.expectStatus(201)
 			.stores('userAt1', 'access_token')
 			.stores('user1Id', 'dto.id');
-		await pactum.spec().post('/auth/signin').withBody(dto2).expectStatus(201).stores('userAt2', 'access_token');
+		await pactum
+			.spec()
+			.post('/auth/signin')
+			.withBody(dto2)
+			.expectStatus(201)
+			.stores('userAt2', 'access_token')
+			.stores('user2Id', 'dto.id');
 		await pactum.spec().post('/auth/signin').withBody(dtoBot).expectStatus(201).stores('userBot', 'access_token');
 	});
 
@@ -139,10 +145,30 @@ describe('Game', () => {
 						maxScore: 10,
 						table: 'TABLE',
 						tableSkin: 'TABLE_SKIN',
-						bot: true,
+						bot: false,
 					},
 				})
-				.expectStatus(201);
+				.expectStatus(201)
+				.stores('gameId', 'id');
+		});
+
+		it('should end game', () => {
+			return pactum
+				.spec()
+				.patch('/game/end/$S{gameId}')
+				.withHeaders({
+					Authorization: 'Bearer $S{userAt1}',
+				})
+				.withBody({
+					status: GameStatus.FINISHED,
+					gameStats: {
+						winnerScore: 3,
+						loserScore: 0,
+						winnerId: 1,
+						loserId: 2,
+					},
+				})
+				.expectStatus(200);
 		});
 	});
 
@@ -197,7 +223,7 @@ describe('Game', () => {
 					status: [GameStatus.NOT_STARTED],
 				})
 				.expectStatus(200)
-				.expectJsonLength(3);
+				.expectJsonLength(2);
 		});
 
 		it('should get active games - not started and in progress', () => {
@@ -211,7 +237,7 @@ describe('Game', () => {
 					status: [GameStatus.NOT_STARTED, GameStatus.IN_PROGESS],
 				})
 				.expectStatus(200)
-				.expectJsonLength(3);
+				.expectJsonLength(2);
 		});
 
 		it('should get user games', () => {
@@ -222,7 +248,7 @@ describe('Game', () => {
 					Authorization: 'Bearer $S{userAt1}',
 				})
 				.expectStatus(200)
-				.expectJsonLength(3);
+				.expectJsonLength(1);
 		});
 	});
 

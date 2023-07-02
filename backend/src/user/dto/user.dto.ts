@@ -77,21 +77,21 @@ export class UserDto {
 }
 
 export class EditUserDto {
-    @IsString()
-    @IsOptional()
-    name?: string;
+	@IsString()
+	@IsOptional()
+	name?: string;
 
-    @IsEmail()
-    @IsOptional()
-    email?: string;
+	@IsEmail()
+	@IsOptional()
+	email?: string;
 
-    @IsString()
-    @IsOptional()
-    image?: string;
+	@IsString()
+	@IsOptional()
+	image?: string;
 
-    @IsString()
-    @IsOptional()
-    color?: string;
+	@IsString()
+	@IsOptional()
+	color?: string;
 }
 
 export class UserBuySkinDto {

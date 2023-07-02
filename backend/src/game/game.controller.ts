@@ -13,7 +13,7 @@ import {
 import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
 import { GetUser } from '../auth/decorator';
-import { GameDto } from './dto';
+import { GameDto, GameEndDto } from './dto';
 import { playerInfo } from '../socket/SocketInterface';
 import { GameStatus } from '@prisma/client';
 
@@ -52,8 +52,8 @@ export class GameController {
 	}
 
 	//! as Patch request for testing purposes
-	@Patch('update/:gameId')
-	endGame(@Param('gameId', new ParseUUIDPipe()) gameId: string, @Body() body: GameDto) {
+	@Patch('end/:gameId')
+	endGame(@Param('gameId', new ParseUUIDPipe()) gameId: string, @Body() body: GameEndDto) {
 		return this.gameService.endGame(gameId, body);
 	}
 

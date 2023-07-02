@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { GameStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { GameDto } from './dto';
+import { GameDto, GameEndDto } from './dto';
 import { EventEmitter } from 'events';
 import { GameClass, infoBot } from './ping_pong/GamePong';
 import { playerInfo } from '../socket/SocketInterface';
@@ -45,9 +45,9 @@ export class GameService {
 			data: {
 				gameType: body.gameType,
 				//! used if players are added when game is created
-				// players: {
-				// 	connect: body.players.map(player => ({ id: player })),
-				// },
+				players: {
+					connect: body.players.map(player => ({ id: player })),
+				},
 			},
 			include: {
 				players: true,
@@ -289,7 +289,7 @@ export class GameService {
 	}
 
 	// handles what to do when the game ends
-	async endGame(gameId: string, body: GameDto) {
+	async endGame(gameId: string, body: GameEndDto) {
 		try {
 			const game = await this.prisma.game.update({
 				where: {
@@ -328,7 +328,7 @@ export class GameService {
 	}
 
 	async getUserGames(userId: number) {
-		this.prisma.game.findMany({
+		return this.prisma.game.findMany({
 			where: {
 				players: {
 					some: {

@@ -95,3 +95,13 @@ export class GameDto {
 	@ValidateNested()
 	gameRequest: GameRequestDto;
 }
+
+export class GameEndDto {
+	@IsEnum(GameStatus)
+	status: GameStatus;
+
+	@IsNotEmpty()
+	@ValidateNested()
+	@Type(() => GameStatsDto)
+	gameStats: GameStatsDto;
+}
