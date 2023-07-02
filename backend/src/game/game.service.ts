@@ -87,6 +87,110 @@ export class GameService {
 		return game;
 	}
 
+	async getActiveGames(status: GameStatus[]) {
+		if (!status) {
+			throw new ForbiddenException('Cannot get games without status.');
+		}
+		if (status.includes(GameStatus.FINISHED)) {
+			throw new ForbiddenException('Cannot get finished games.');
+		}
+		return this.prisma.game.findMany({
+			where: {
+				status: {
+					in: status,
+				},
+			},
+			include: {
+				players: {
+					select: {
+						id: true,
+						nickname: true,
+						image: true,
+					},
+				},
+			},
+		});
+	}
+
+	// leaderboard ranks users first by their won games, then by their lost games
+	// if two users have the same number of won games, the user with the least
+	// number of lost games will be ranked higher
+	// if two users have the same number of won and lost games, their rank will be the same
+	async getLeaderboard() {
+		const leaderboard = await this.prisma.user.findMany({
+			where: {
+				id: {
+					not: 6969,
+				},
+			},
+			select: {
+				id: true,
+				nickname: true,
+				image: true,
+				wonGames: {
+					select: {
+						winnerId: true,
+						loserId: true,
+					},
+					where: {
+						AND: [{ status: GameStatus.FINISHED }, { players: { none: { id: 6969 } } }],
+					},
+				},
+				lostGames: {
+					select: {
+						winnerId: true,
+						loserId: true,
+					},
+					where: {
+						AND: [{ status: GameStatus.FINISHED }, { players: { none: { id: 6969 } } }],
+					},
+				},
+			},
+			orderBy: [
+				{
+					wonGames: {
+						_count: 'desc',
+					},
+				},
+				{
+					lostGames: {
+						_count: 'asc',
+					},
+				},
+			],
+		});
+
+		const leaderboardReturn: Array<LeaderBoard> = [];
+		let rank = 1;
+		let prevGamesWon: number = null;
+		let prevGamesLost: number = null;
+		(await leaderboard).forEach(game => {
+			const gamesWon = game.wonGames.length;
+			const gamesLost = game.lostGames.length;
+			let currentRank = rank;
+
+			if (prevGamesWon !== null && prevGamesLost !== null) {
+				if (gamesWon === prevGamesWon && gamesLost === prevGamesLost) {
+					currentRank = leaderboardReturn[leaderboardReturn.length - 1].rank;
+				} else {
+					currentRank = rank;
+				}
+			}
+
+			leaderboardReturn.push({
+				rank: currentRank,
+				userId: game.id,
+				gamesWon,
+				gamesLost,
+			});
+
+			prevGamesWon = gamesWon;
+			prevGamesLost = gamesLost;
+			rank++;
+		});
+		return leaderboardReturn;
+	}
+
 	async enterGame(player: Player, isPlayer: boolean, info: playerInfo) {
 		const game = this.games.find(g => g.data.objectId === info.objectId);
 		if (!game) {
@@ -243,109 +347,5 @@ export class GameService {
 				},
 			},
 		});
-	}
-
-	async getActiveGames(status: GameStatus[]) {
-		if (!status) {
-			throw new ForbiddenException('Cannot get games without status.');
-		}
-		if (status.includes(GameStatus.FINISHED)) {
-			throw new ForbiddenException('Cannot get finished games.');
-		}
-		return this.prisma.game.findMany({
-			where: {
-				status: {
-					in: status,
-				},
-			},
-			include: {
-				players: {
-					select: {
-						id: true,
-						nickname: true,
-						image: true,
-					},
-				},
-			},
-		});
-	}
-
-	// leaderboard ranks users first by their won games, then by their lost games
-	// if two users have the same number of won games, the user with the least
-	// number of lost games will be ranked higher
-	// if two users have the same number of won and lost games, their rank will be the same
-	async getLeaderboard() {
-		const leaderboard = await this.prisma.user.findMany({
-			where: {
-				id: {
-					not: 6969,
-				},
-			},
-			select: {
-				id: true,
-				nickname: true,
-				image: true,
-				wonGames: {
-					select: {
-						winnerId: true,
-						loserId: true,
-					},
-					where: {
-						AND: [{ status: GameStatus.FINISHED }, { players: { none: { id: 6969 } } }],
-					},
-				},
-				lostGames: {
-					select: {
-						winnerId: true,
-						loserId: true,
-					},
-					where: {
-						AND: [{ status: GameStatus.FINISHED }, { players: { none: { id: 6969 } } }],
-					},
-				},
-			},
-			orderBy: [
-				{
-					wonGames: {
-						_count: 'desc',
-					},
-				},
-				{
-					lostGames: {
-						_count: 'asc',
-					},
-				},
-			],
-		});
-
-		const leaderboardReturn: Array<LeaderBoard> = [];
-		let rank = 1;
-		let prevGamesWon: number = null;
-		let prevGamesLost: number = null;
-		(await leaderboard).forEach(game => {
-			const gamesWon = game.wonGames.length;
-			const gamesLost = game.lostGames.length;
-			let currentRank = rank;
-
-			if (prevGamesWon !== null && prevGamesLost !== null) {
-				if (gamesWon === prevGamesWon && gamesLost === prevGamesLost) {
-					currentRank = leaderboardReturn[leaderboardReturn.length - 1].rank;
-				} else {
-					currentRank = rank;
-				}
-			}
-
-			leaderboardReturn.push({
-				rank: currentRank,
-				userId: game.id,
-				gamesWon,
-				gamesLost,
-			});
-
-			prevGamesWon = gamesWon;
-			prevGamesLost = gamesLost;
-			rank++;
-		});
-		return leaderboardReturn;
 	}
 }
