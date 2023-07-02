@@ -60,10 +60,6 @@ export class GameMap {
 			'update_gameobject',
 			function (data: any) {
 				player.data = data;
-				const updatedPlayer = this.players.find((e: { objectId: number }) => e.objectId == player.objectId);
-				if (updatedPlayer) {
-					updatedPlayer.data = data;
-				}
 				this.logger.debug('update_gameobject: ' + JSON.stringify(data));
 				this.emitAll('update_gameobject', data, player, false);
 			}.bind(this),
