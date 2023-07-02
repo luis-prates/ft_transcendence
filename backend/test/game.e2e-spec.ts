@@ -85,7 +85,28 @@ describe('Game', () => {
 				.expectStatus(400);
 		});
 
-		it('should create game with no players', () => {
+		it('should give error with no players field', () => {
+			return pactum
+				.spec()
+				.post('/game/create')
+				.withHeaders({
+					Authorization: 'Bearer $S{userAt1}',
+				})
+				.withBody({
+					status: GameStatus.NOT_STARTED,
+					gameType: GameType.PRIVATE,
+					gameRequest: {
+						objectId: '1',
+						maxScore: 10,
+						table: 'TABLE',
+						tableSkin: 'TABLE_SKIN',
+						bot: true,
+					},
+				})
+				.expectStatus(400);
+		});
+
+		it('should create game with empty players array', () => {
 			return pactum
 				.spec()
 				.post('/game/create')
