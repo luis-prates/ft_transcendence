@@ -37,7 +37,7 @@
             <option value="PRIVATE">Private</option>
           </select>
         </div>
-        <button type="submit" class="btn btn-primary">Create Channel</button>
+        <button type="submit" class="btn btn-primary">{{ getButtomOp() }}</button>
         <!-- Display error message if channel creation failed -->
       <p v-if="errorMessage" class="text-danger">{{ errorMessage }}</p>
       </form>
@@ -57,7 +57,7 @@
           <p>{{selected?.messages?.length + " Messages"}}</p>
         </div>
         <div class="video_cam">
-          <button @click="editChannel" class="config_chat">⚙</button>
+          <button v-if=imOwner() @click="editChannel" class="config_chat">⚙</button>
           <button @click="toggleStatus" class="close_chat">✖</button>
         </div>
       </div>
@@ -104,7 +104,14 @@ socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
 console.log("Socket criado na instancia do componente: ", chatSocket);
 
-let defaultAvatar = "src/assets/chat/chat_avatar.png";
+let defaultAvatar = ref("src/assets/chat/chat_avatar.png");
+
+//Check if the user is the owner of channel
+const imOwner = () => {
+  if (selected.value?.ownerId == user.user.id)
+    return true;
+  return false;
+}
 
 // Get channel name from chatStore
 const getChannelName = () => {
@@ -112,10 +119,18 @@ const getChannelName = () => {
   return store.selected?.name;
 };
 
+// Vai retornar a operacao createChannel ou Save channel consoante a operacao
+const getButtomOp = () => {
+  if (props.channelStatus && props.createChannel)
+    return "Update Channel";
+  return "Create Channel";
+}
+
 function getChatAvatar() {
-  if (selected.value?.avatar)
-    return selected.value.avatar;
-    return defaultAvatar;
+  if (selected.value?.avatar == "" || !selected.value?.avatar){
+    return defaultAvatar.value;
+  }
+  return selected.value?.avatar;
   }
   
   // Props declaration
@@ -138,15 +153,15 @@ function getChatAvatar() {
   const channelAvatar = ref(null);
 
 function editChannel() {
-  instance?.emit("update-channel-status", false);
+  instance?.emit("update-channel-status", true);
   instance?.emit("update-create-channel", true);
   channelName.value = selected.value?.name as any;
   channelPassword.value = selected.value?.password as any;
   channelType.value = selected.value?.type as any;
-  if (selected.value?.avatar)
-    defaultAvatar = selected.value?.avatar as any;
+  if (selected.value?.avatar != "")
+    defaultAvatar.value = selected.value?.avatar as any;
   else
-    defaultAvatar = "src/assets/chat/chat_avatar.png";
+    defaultAvatar.value = "src/assets/chat/chat_avatar.png";
 }
 
 // Emit event from the child component
@@ -156,7 +171,7 @@ const toggleStatus = () => {
   channelName.value = '';
   channelPassword.value = '';
   channelType.value = 'PUBLIC';
-  defaultAvatar = "src/assets/chat/chat_avatar.png";
+  defaultAvatar.value = "src/assets/chat/chat_avatar.png";
 };
 
 const text = ref();
@@ -234,7 +249,7 @@ const handleAvatarChange = (event: Event) => {
     convertFileToBase64(file)
       .then((base64String) => {
         avatarBase64.value = base64String;
-        defaultAvatar = URL.createObjectURL(file);
+        defaultAvatar.value = URL.createObjectURL(file);
         console.log("Base64 string:", base64String);
       })
       .catch((error) => {
