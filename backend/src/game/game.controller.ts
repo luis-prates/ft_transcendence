@@ -1,4 +1,15 @@
-import { Body, Controller, Get, HttpCode, Param, ParseIntPipe, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	HttpCode,
+	Param,
+	ParseIntPipe,
+	ParseUUIDPipe,
+	Patch,
+	Post,
+	UseGuards,
+} from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
 import { GetUser } from '../auth/decorator';
@@ -7,7 +18,7 @@ import { playerInfo } from '../socket/SocketInterface';
 import { GameStatus } from '@prisma/client';
 
 //! deactivated for testing purposes
-//@UseGuards(JwtGuard)
+@UseGuards(JwtGuard)
 @Controller('game')
 export class GameController {
 	constructor(private gameService: GameService) {}
@@ -16,6 +27,16 @@ export class GameController {
 	@Post('create')
 	createGame(@Body() body: GameDto) {
 		return this.gameService.createGame(body);
+	}
+
+	@Get('active')
+	getActiveGames(status: GameStatus) {
+		return this.gameService.getActiveGames(status);
+	}
+
+	@Get('leaderboard')
+	getLeaderboard() {
+		return this.gameService.getLeaderboard();
 	}
 
 	@HttpCode(200)
@@ -39,10 +60,5 @@ export class GameController {
 	@Get(':userId')
 	getUserGames(@Param('userId', new ParseIntPipe()) userId: number) {
 		return this.gameService.getUserGames(userId);
-	}
-
-	@Get('active')
-	getActiveGames(status: GameStatus) {
-		return this.gameService.getActiveGames(status);
 	}
 }
