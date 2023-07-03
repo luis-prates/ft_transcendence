@@ -36,22 +36,22 @@ export class ChannelUserDto {
 }
 
 export class EditChannelDto {
-    @IsEnum(ChannelType)
-    @IsOptional()
-    channelType?: ChannelType;
+	@IsEnum(ChannelType)
+	@IsOptional()
+	channelType?: ChannelType;
 
-    @IsString()
-    @IsOptional()
-    name?: string;
+	@IsString()
+	@IsOptional()
+	name?: string;
 
-    @IsString()
-    @IsOptional()
-    avatar?: string;
+	@IsString()
+	@IsOptional()
+	avatar?: string;
 
-    @IsString()
-    @IsOptional()
+	@IsString()
+	@IsOptional()
 	@MinLength(3, {
 		message: 'Password is too short. Minimum length is $constraint1 characters, but actual is $value',
 	})
-    password?: string;
+	password?: string;
 }

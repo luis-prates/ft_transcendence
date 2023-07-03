@@ -43,13 +43,13 @@ export class ChatController {
 		return this.chatService.createChannel(createChannelDto, req.user);
 	}
 
-    // Edit a channel
-    @Patch(':channelId')
-    @UseGuards(RolesGuard)
-    @Roles('owner')
-    async editChannel(@Param('channelId') channelId: string, @Body() editChannelDto: EditChannelDto) {
-        return this.chatService.editChannel(+channelId, editChannelDto);
-    }
+	// Edit a channel
+	@Patch('edit/:channelId')
+	@UseGuards(RolesGuard)
+	@Roles('owner')
+	async editChannel(@Param('channelId') channelId: string, @Body() editChannelDto: EditChannelDto) {
+		return this.chatService.editChannel(+channelId, editChannelDto);
+	}
 
 	// Delete a channel
 	@HttpCode(204)

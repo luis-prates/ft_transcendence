@@ -214,8 +214,8 @@ export class ChatService {
 					},
 				});
 			}
-            // emit event to everyone that a new channel was just created
-            this.events.emit('channel-created', newChannel);
+			// emit event to everyone that a new channel was just created
+			this.events.emit('channel-created', newChannel);
 
 			// emit event to creator for new channel
 			this.events.emit('user-added-to-channel', {
@@ -566,70 +566,79 @@ export class ChatService {
 		});
 	}
 
-    // Owner can edit a channel
-    async editChannel(channelId: number, editChannelDto: EditChannelDto): Promise<Channel> {
-        let { channelType, name, avatar, password } = editChannelDto;
+	// Owner can edit a channel
+	async editChannel(channelId: number, editChannelDto: EditChannelDto): Promise<Channel> {
+		let channelType = editChannelDto.channelType;
+		const name = editChannelDto.name;
+		const avatar = editChannelDto.avatar;
+		const password = editChannelDto.password;
 
-        // Get the channel from prisma through the id
-        const channel = await this.prisma.channel.findUnique({
-            where: {
-                id: channelId,
-            },
-        });
+		// Get the channel from prisma through the id
+		const channel = await this.prisma.channel.findUnique({
+			where: {
+				id: channelId,
+			},
+		});
 
-        // Use current channelType if not provided in request
-        if (!channelType) {
-            channelType = channel.type;
-        }
+		// Use current channelType if not provided in request
+		if (!channelType) {
+			channelType = channel.type;
+		}
 
-        // Check if channel exists or if its name exists
-        if (!channel) {
-            throw new NotFoundException(`Channel with id ${channelId} does not exist.`);
-        }
+		// Check if channel exists or if its name exists
+		if (!channel) {
+			throw new NotFoundException(`Channel with id ${channelId} does not exist.`);
+		}
 
-        if (name && name == channel.name) {
-            throw new BadRequestException('This channel name is already in use.');
-        }
+		if (name && name == channel.name) {
+			throw new BadRequestException('This channel name is already in use.');
+		}
 
-        // Check if DM type is not allowed
-        if (channelType == ChannelType.DM) {
-            throw new BadRequestException('Invalid Channel Type');
-        }
+		// Check if DM type is not allowed
+		if (channelType == ChannelType.DM) {
+			throw new BadRequestException('Invalid Channel Type');
+		}
 
-        // Check if user wants to remove password, then type should be Public and password should be empty
-        if (channelType !== ChannelType.PUBLIC && channelType !== ChannelType.PRIVATE && !password) {
-            throw new BadRequestException('If you want to remove a password, the channel type must be Public and password must be empty.');
-        }
+		// Check if user wants to remove password, then type should be Public and password should be empty
+		if (channelType !== ChannelType.PUBLIC && channelType !== ChannelType.PRIVATE && !password) {
+			throw new BadRequestException(
+				'If you want to remove a password, the channel type must be Public and password must be empty.',
+			);
+		}
 
-        // Check if user wants to change a password, then type should be Protected and password should not be empty
-        if (password && channelType !== ChannelType.PROTECTED) {
-            throw new BadRequestException('If you want to change a password, the channel type must be Protected and a password must be entered.');
-        }
+		// Check if user wants to change a password, then type should be Protected and password should not be empty
+		if (password && channelType !== ChannelType.PROTECTED) {
+			throw new BadRequestException(
+				'If you want to change a password, the channel type must be Protected and a password must be entered.',
+			);
+		}
 
-        // Check if user wants to add a password to a public channel, password should be provided and type should be protected
-        if (channelType === ChannelType.PUBLIC && password) {
-            throw new BadRequestException('If you want to add a password to a public channel, the password must be provided and type must be Protected.');
-        }
+		// Check if user wants to add a password to a public channel, password should be provided and type should be protected
+		if (channelType === ChannelType.PUBLIC && password) {
+			throw new BadRequestException(
+				'If you want to add a password to a public channel, the password must be provided and type must be Protected.',
+			);
+		}
 
-        // If password is provided, hash it
-        let hashedPassword = null;
-        if (password) {
-            const saltRounds = 10;
-            hashedPassword = await bcrypt.hash(password, saltRounds);
-        }
+		// If password is provided, hash it
+		let hashedPassword = null;
+		if (password) {
+			const saltRounds = 10;
+			hashedPassword = await bcrypt.hash(password, saltRounds);
+		}
 
-        return await this.prisma.channel.update({
-            where: {
-                id: channelId,
-            },
-            data: {
-                ...(name ? { name } : {}),
-                ...(avatar ? { avatar } : {}),
-                ...(hashedPassword ? { hash: hashedPassword } : {}),
-                ...(channelType ? { type: channelType } : {}),
-            },
-        });
-    }
+		return await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				...(name ? { name } : {}),
+				...(avatar ? { avatar } : {}),
+				...(hashedPassword ? { hash: hashedPassword } : {}),
+				...(channelType ? { type: channelType } : {}),
+			},
+		});
+	}
 
 	// Owner can delete a channel
 	async deleteChannel(channelId: number, user: any) {
@@ -669,8 +678,8 @@ export class ChatService {
 
 		const users = toBeDeletedChannel.users.map(cu => cu.user);
 
-        // Emit events to all users when a channel is deleted
-        this.events.emit('channel-deleted', toBeDeletedChannel);
+		// Emit events to all users when a channel is deleted
+		this.events.emit('channel-deleted', toBeDeletedChannel);
 
 		// Emit events to all channel users when a channel is deleted
 		for (const user of users) {
