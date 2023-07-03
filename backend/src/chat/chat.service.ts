@@ -1,8 +1,9 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateChannelDto, JoinChannelDto } from './dto';
+import { CreateChannelDto, EditChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
 import { Channel } from '@prisma/client';
+import { ChannelType } from '../types';
 import { EventEmitter } from 'events';
 import * as bcrypt from 'bcrypt';
 
@@ -564,6 +565,74 @@ export class ChatService {
 			userId: targetUserId,
 		});
 	}
+
+    // Owner can edit a channel
+    async editChannel(channelId: number, editChannelDto: EditChannelDto): Promise<Channel> {
+        const { channelType, name, avatar, password } = editChannelDto;
+
+        // Check if DM type is not allowed
+        if (channelType == ChannelType.DM) {
+            throw new BadRequestException('Invalid Channel Type');
+        }
+
+        // Check if user wants to remove password, then type should be Public and password should be empty
+        if (!password && channelType !== ChannelType.PUBLIC) {
+            throw new BadRequestException('If you want to remove a password, the channel type must be Public and password must be empty.');
+        }
+
+        // Check if user wants to change a password, then type should be Protected and password should not be empty
+        if (password && channelType !== ChannelType.PROTECTED) {
+            throw new BadRequestException('If you want to change a password, the channel type must be Protected and a password must be entered.');
+        }
+
+        // Check if user wants to add a password to a public channel, password should be provided and type should be protected
+        if (channelType === ChannelType.PUBLIC && password) {
+            throw new BadRequestException('If you want to add a password to a public channel, the password must be provided and type must be Protected.');
+        }
+
+        // Get the channel from prisma through the id
+        const channel = await this.prisma.channel.findUnique({
+            where: {
+                id: channelId,
+            },
+        });
+
+        // Check if channel exists
+        if (!channel) {
+            throw new NotFoundException(`Channel with id ${channelId} does not exist.`);
+        }
+
+        // Check if channel name is already in use
+        const existingChannel = await this.prisma.channel.findUnique({
+            where: {
+                id: channelId,
+                name,
+            },
+        });
+
+        if (existingChannel && existingChannel.id !== channelId) {
+            throw new BadRequestException('This channel name is already in use.');
+        }
+
+        // If password is provided, hash it
+        let hashedPassword = null;
+        if (password) {
+            const saltRounds = 10;
+            hashedPassword = await bcrypt.hash(password, saltRounds);
+        }
+
+        return await this.prisma.channel.update({
+            where: {
+                id: channelId,
+            },
+            data: {
+                name,
+                avatar,
+                hash: hashedPassword,
+                type: channelType,
+            },
+        });
+    }
 
 	// Owner can delete a channel
 	async deleteChannel(channelId: number, user: any) {
