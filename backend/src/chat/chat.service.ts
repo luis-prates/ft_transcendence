@@ -1,8 +1,9 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateChannelDto, JoinChannelDto } from './dto';
+import { CreateChannelDto, EditChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
 import { Channel } from '@prisma/client';
+import { ChannelType } from '@prisma/client';
 import { EventEmitter } from 'events';
 import * as bcrypt from 'bcrypt';
 
@@ -562,6 +563,80 @@ export class ChatService {
 		this.events.emit('user-demoted-in-channel', {
 			channelId,
 			userId: targetUserId,
+		});
+	}
+
+	// Owner can edit a channel
+	async editChannel(channelId: number, editChannelDto: EditChannelDto): Promise<Channel> {
+		let channelType = editChannelDto.channelType;
+		const name = editChannelDto.name;
+		const avatar = editChannelDto.avatar;
+		const password = editChannelDto.password;
+
+		// Get the channel from prisma through the id
+		const channel = await this.prisma.channel.findUnique({
+			where: {
+				id: channelId,
+			},
+		});
+
+		// Use current channelType if not provided in request
+		if (!channelType) {
+			channelType = channel.type;
+		}
+
+		// Check if channel exists or if its name exists
+		if (!channel) {
+			throw new NotFoundException(`Channel with id ${channelId} does not exist.`);
+		}
+
+		if (name && name == channel.name) {
+			throw new BadRequestException('This channel name is already in use.');
+		}
+
+		// Check if DM type is not allowed
+		if (channelType == ChannelType.DM) {
+			throw new BadRequestException('Invalid Channel Type');
+		}
+
+		// Check if user wants to remove password, then type should be Public and password should be empty
+		if (channelType !== ChannelType.PUBLIC && channelType !== ChannelType.PRIVATE && !password) {
+			throw new BadRequestException(
+				'If you want to remove a password, the channel type must be Public and password must be empty.',
+			);
+		}
+
+		// Check if user wants to change a password, then type should be Protected and password should not be empty
+		if (password && channelType !== ChannelType.PROTECTED) {
+			throw new BadRequestException(
+				'If you want to change a password, the channel type must be Protected and a password must be entered.',
+			);
+		}
+
+		// Check if user wants to add a password to a public channel, password should be provided and type should be protected
+		if (channelType === ChannelType.PUBLIC && password) {
+			throw new BadRequestException(
+				'If you want to add a password to a public channel, the password must be provided and type must be Protected.',
+			);
+		}
+
+		// If password is provided, hash it
+		let hashedPassword = null;
+		if (password) {
+			const saltRounds = 10;
+			hashedPassword = await bcrypt.hash(password, saltRounds);
+		}
+
+		return await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				...(name ? { name } : {}),
+				...(avatar ? { avatar } : {}),
+				...(hashedPassword ? { hash: hashedPassword } : {}),
+				...(channelType ? { type: channelType } : {}),
+			},
 		});
 	}
 
