@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateChannelDto, EditChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
 import { Channel } from '@prisma/client';
-import { ChannelType } from '../types';
+import { ChannelType } from '@prisma/client';
 import { EventEmitter } from 'events';
 import * as bcrypt from 'bcrypt';
 
@@ -568,7 +568,28 @@ export class ChatService {
 
     // Owner can edit a channel
     async editChannel(channelId: number, editChannelDto: EditChannelDto): Promise<Channel> {
-        const { channelType, name, avatar, password } = editChannelDto;
+        let { channelType, name, avatar, password } = editChannelDto;
+
+        // Get the channel from prisma through the id
+        const channel = await this.prisma.channel.findUnique({
+            where: {
+                id: channelId,
+            },
+        });
+
+        // Use current channelType if not provided in request
+        if (!channelType) {
+            channelType = channel.type;
+        }
+
+        // Check if channel exists or if its name exists
+        if (!channel) {
+            throw new NotFoundException(`Channel with id ${channelId} does not exist.`);
+        }
+
+        if (name && name == channel.name) {
+            throw new BadRequestException('This channel name is already in use.');
+        }
 
         // Check if DM type is not allowed
         if (channelType == ChannelType.DM) {
@@ -576,7 +597,7 @@ export class ChatService {
         }
 
         // Check if user wants to remove password, then type should be Public and password should be empty
-        if (!password && channelType !== ChannelType.PUBLIC) {
+        if (channelType !== ChannelType.PUBLIC && channelType !== ChannelType.PRIVATE && !password) {
             throw new BadRequestException('If you want to remove a password, the channel type must be Public and password must be empty.');
         }
 
@@ -588,30 +609,6 @@ export class ChatService {
         // Check if user wants to add a password to a public channel, password should be provided and type should be protected
         if (channelType === ChannelType.PUBLIC && password) {
             throw new BadRequestException('If you want to add a password to a public channel, the password must be provided and type must be Protected.');
-        }
-
-        // Get the channel from prisma through the id
-        const channel = await this.prisma.channel.findUnique({
-            where: {
-                id: channelId,
-            },
-        });
-
-        // Check if channel exists
-        if (!channel) {
-            throw new NotFoundException(`Channel with id ${channelId} does not exist.`);
-        }
-
-        // Check if channel name is already in use
-        const existingChannel = await this.prisma.channel.findUnique({
-            where: {
-                id: channelId,
-                name,
-            },
-        });
-
-        if (existingChannel && existingChannel.id !== channelId) {
-            throw new BadRequestException('This channel name is already in use.');
         }
 
         // If password is provided, hash it
@@ -626,10 +623,10 @@ export class ChatService {
                 id: channelId,
             },
             data: {
-                name,
-                avatar,
-                hash: hashedPassword,
-                type: channelType,
+                ...(name ? { name } : {}),
+                ...(avatar ? { avatar } : {}),
+                ...(hashedPassword ? { hash: hashedPassword } : {}),
+                ...(channelType ? { type: channelType } : {}),
             },
         });
     }
