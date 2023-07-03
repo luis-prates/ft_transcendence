@@ -76,24 +76,6 @@ export class UserDto {
 	status?: UserStatus;
 }
 
-export class EditUserDto {
-    @IsString()
-    @IsOptional()
-    name?: string;
-
-    @IsEmail()
-    @IsOptional()
-    email?: string;
-
-    @IsString()
-    @IsOptional()
-    image?: string;
-
-    @IsString()
-    @IsOptional()
-    color?: string;
-}
-
 export class UserBuySkinDto {
 	@IsString()
 	skin: string;
