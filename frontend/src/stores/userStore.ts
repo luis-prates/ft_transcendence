@@ -568,8 +568,6 @@ export const userStore = defineStore("user", function () {
 
     return await axios
       .get(env.BACKEND_PORT + "/game/leaderboard", options)
-
-      // axios.request(options)
       .then(function (response: any) {
         console.log("LeaderBoard: ", response.data);
         return response.data;

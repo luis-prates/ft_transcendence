@@ -30,8 +30,6 @@ export class LeaderBoard {
   async fetchUsers() {
     try {
       this.users = await userStore().getLeaderboard();
-      
-      console.log("LeaderBoard: ", this.users); // Faça o que desejar com o array de usuários
 
       this.pagination_leaderBoard = new PaginationMenu(this.users, 10, 1);
       

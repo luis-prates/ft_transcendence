@@ -186,7 +186,7 @@ export class Profile {
 			const player_match_id = matche.players[0].id == this.user.id ? matche.players[1].id : matche.players[0].id;
 			
 			let confirmButton;
-			if (player_match_id != this.user.id)
+			if (player_match_id != this.your_user.id)
         	  confirmButton = new Profile(player_match_id);
         	else
         	  confirmButton = new YourProfile(Lobby.getPlayer());

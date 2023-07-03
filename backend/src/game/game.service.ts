@@ -206,13 +206,9 @@ export class GameService {
 		});
 
 		const leaderboardReturn: Array<LeaderBoard> = [];
-		let rank = 1;
-		let prevGamesWon: number = null;
-		let prevGamesLost: number = null;
 		(await leaderboard).forEach(user => {
 			const gamesWon = user.wonGames.length;
 			const gamesLost = user.lostGames.length;
-			let currentRank = rank;
 
 			let points = 0;
 
@@ -224,16 +220,8 @@ export class GameService {
 				points = points < 0 ? 0 : points;
 			});
 
-			if (points !== null && prevGamesLost !== null) {
-				if (gamesWon === prevGamesWon && gamesLost === prevGamesLost) {
-					currentRank = leaderboardReturn[leaderboardReturn.length - 1].rank;
-				} else {
-					currentRank = rank;
-				}
-			}
-
 			leaderboardReturn.push({
-				rank: currentRank,
+				rank: 0,
 				userId: user.id,
 				nickname: user.nickname,
 				image: user.image,
@@ -241,10 +229,12 @@ export class GameService {
 				gamesWon,
 				gamesLost,
 			});
+		});
+		
+		leaderboardReturn.sort((a, b) => b.points - a.points);
 
-			prevGamesWon = gamesWon;
-			prevGamesLost = gamesLost;
-			rank++;
+		leaderboardReturn.forEach((user, index) => {
+		  user.rank = index + 1;
 		});
 		return leaderboardReturn;
 	}
