@@ -23,7 +23,7 @@ export class UserController {
 	@Patch('update_profile')
 	updateProfile(@GetUser('id') userId: number, @Body() dto: UserDto) {
 		console.log('update_profile:', dto);
-		return this.userService.updateProfile(userId, dto);
+		return this.userService.editUser(userId, dto);
 	}
 
 	@Patch('buy_skin')

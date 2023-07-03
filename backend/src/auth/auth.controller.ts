@@ -1,6 +1,6 @@
-import { Body, Controller, HttpCode, Logger, Post, Response, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Logger, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthDto } from './dto/auth.dto';
+import { AuthDto, TwoFADto } from './dto/auth.dto';
 import { JwtGuard } from './guard';
 import { User } from '@prisma/client';
 import { GetUser } from './decorator';
@@ -18,10 +18,13 @@ export class AuthController {
 
 	@Post('2fa/turn-on')
 	@UseGuards(JwtGuard)
-	async turnOn2FA(@GetUser() user: User, @Body() body: any) {
+	async turnOn2FA(@GetUser() user: User, @Body() body: TwoFADto) {
 		const isCodeValid = this.authService.isTwoFactorValid(body.twoFACode, user);
 		if (!isCodeValid) {
 			throw new UnauthorizedException('Invalid 2FA code');
+		}
+		if (user.isTwoFAEnabled) {
+			throw new UnauthorizedException('2FA is already turned on');
 		}
 		this.logger.debug(`User ${user.id} turned on 2FA`);
 		await this.authService.turnOnTwoFactor(user.id);
@@ -31,7 +34,7 @@ export class AuthController {
 
 	@Post('2fa/turn-off')
 	@UseGuards(JwtGuard)
-	async turnOff2FA(@GetUser() user: User, @Body() body: any) {
+	async turnOff2FA(@GetUser() user: User, @Body() body: TwoFADto) {
 		const isCodeValid = this.authService.isTwoFactorValid(body.twoFACode, user);
 		if (!isCodeValid) {
 			throw new UnauthorizedException('Invalid 2FA code');
@@ -44,15 +47,19 @@ export class AuthController {
 
 	@Post('2fa/generate')
 	@UseGuards(JwtGuard)
-	async generate2FAQRCode(@GetUser() user: User, @Response() response: any) {
-		const { otpauthUrl } = await this.authService.generateTwoFactorSecret(user);
+	async generate2FAQRCode(@GetUser() user: User) {
+		const { secret, otpauthUrl } = await this.authService.generateTwoFactorSecret(user);
 
-		return response.json(await this.authService.generateQrCodeDataURL(otpauthUrl));
+		const responseObj = await this.authService.generateQrCodeDataURL(otpauthUrl);
+		//! secret needs to be removed in production
+		//! secret is needed for testing
+		return { secret, responseObj };
 	}
 
+	//! not used currently, but left in case it's needed in the future
 	@Post('2fa/validate')
 	@UseGuards(JwtGuard)
-	async validate2FACode(@GetUser() user: User, @Body() body: any) {
+	async validate2FACode(@GetUser() user: User, @Body() body: TwoFADto) {
 		const isCodeValid = this.authService.isTwoFactorValid(body.twoFACode, user);
 		if (!isCodeValid) {
 			throw new UnauthorizedException('Invalid 2FA code');

@@ -38,6 +38,7 @@ export class AuthService {
 					nickname: dto.nickname,
 					email: dto.email,
 					image: dto.image,
+					color: dto.color,
 					hash,
 				},
 			});
@@ -75,7 +76,7 @@ export class AuthService {
 		}
 	}
 
-	async signToken(user: User): Promise<{ user: User; access_token: string }> {
+	async signToken(user: User): Promise<{ dto: User; access_token: string }> {
 		const payload = {
 			sub: user.id,
 			nickname: user.nickname,
@@ -85,7 +86,7 @@ export class AuthService {
 			expiresIn: '1w',
 			secret: secret,
 		});
-		return { user: user, access_token };
+		return { dto: user, access_token };
 	}
 
 	async generateTwoFactorSecret(user: User) {
@@ -129,6 +130,9 @@ export class AuthService {
 	}
 
 	isTwoFactorValid(twoFACode: string, user: User) {
+		if (!user.twoFASecret) {
+			throw new ForbiddenException('Two factor authentication is not set up. Please turn it on first');
+		}
 		return authenticator.verify({ token: twoFACode, secret: user.twoFASecret });
 	}
 
