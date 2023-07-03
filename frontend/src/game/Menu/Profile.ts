@@ -115,7 +115,7 @@ export class Profile {
 	  }
 
 	private createMatches(index: number, matche: Historic, x: number, y: number): ElementUI {
-		const player1 = matche.players[0].id == matche.gameStats.winnerId ? matche.players[0] : matche.players[1];
+		const player1 = matche.players[0].id == matche.winnerId ? matche.players[0] : matche.players[1];
 		const player2 = matche.players[0] == player1 ? matche.players[1] : matche.players[0];
 	
 		const player1Image = player1.id == this.user.id ? this.avatarImage : new Image();
@@ -133,13 +133,13 @@ export class Profile {
 				if (product.enable)
 				  product.enable = false;
 				return;
-			  }
+			}
 			if (!product.enable)
 				product.enable = true;
 
 			const offSetTittle = this.background.rectangle.y * 1.75;
 	
-			ctx.fillStyle = matche.gameStats.winnerId == this.user.id ? "gold" : "silver";
+			ctx.fillStyle = matche.winnerId == this.user.id ? "gold" : "silver";
 			ctx.strokeStyle = "#000";
 			ctx.lineWidth = 2;
 	
@@ -151,11 +151,11 @@ export class Profile {
 			ctx.fillStyle = "#000";
 			ctx.font = product.rectangle.h * 0.175 + "px 'Press Start 2P', cursive";
 
-			ctx.fillText(matche.gameStats.winnerScore + "-" + matche.gameStats.loserScore, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
+			ctx.fillText(matche.winnerScore + "-" + matche.loserScore, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
 
-			ctx.fillText(matche.gameStats.winnerName, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
+			ctx.fillText(matche.winnerNickname, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
 	
-			ctx.fillText(matche.gameStats.loserName, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
+			ctx.fillText(matche.loserNickname, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
 
 			ctx.strokeRect(product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
 			ctx.strokeRect(product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - (product.rectangle.w * 0.295), product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
@@ -167,14 +167,14 @@ export class Profile {
 
 			ctx.lineWidth = 4;
 			ctx.strokeText(
-				matche.gameStats.winnerId == this.user.id ? "WIN!" : "LOST.",
+				matche.winnerId == this.user.id ? "WIN!" : "LOST.",
 				product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
 				product.rectangle.y + product.rectangle.h * 0.12,
 				product.rectangle.w * 0.3
 			  );
-			ctx.fillStyle = matche.gameStats.winnerId == this.user.id ? "gold" : "grey";
+			ctx.fillStyle = matche.winnerId == this.user.id ? "gold" : "grey";
 			ctx.fillText(
-				matche.gameStats.winnerId == this.user.id ? "WIN!" : "LOST.",
+				matche.winnerId == this.user.id ? "WIN!" : "LOST.",
 				product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
 				product.rectangle.y + product.rectangle.h * 0.12,
 				product.rectangle.w * 0.3
@@ -435,10 +435,10 @@ export class Profile {
 		ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.30, pos.y + pos.h * 0.16, pos.w * 0.25);
 		
 		//Level
-    	const wins = this.historic.filter((history: Historic) => history.gameStats.winnerId == this.user.id).length;
+    	const wins = this.historic.filter((history: Historic) => history.winnerId == this.user.id).length;
 		ctx.fillText("Wins:  " + wins, pos.x + pos.w * 0.30, pos.y + pos.h * 0.19, pos.w * 0.25);
 
-    	const loses = this.historic.filter((history: Historic) => history.gameStats.loserId == this.user.id).length;
+    	const loses = this.historic.filter((history: Historic) => history.loserId == this.user.id).length;
 		ctx.fillText("Losts: " + loses, pos.x + pos.w * 0.30, pos.y + pos.h * 0.22, pos.w * 0.25);
 
     	//Avatar

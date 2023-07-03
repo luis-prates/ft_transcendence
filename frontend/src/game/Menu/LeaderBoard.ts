@@ -29,28 +29,28 @@ export class LeaderBoard {
 
   async fetchUsers() {
     try {
-      this.users = await userStore().getUsers();
+      this.users = await userStore().getLeaderboard();
       
-      console.log("users: ", this.users); // Faça o que desejar com o array de usuários
+      console.log("LeaderBoard: ", this.users); // Faça o que desejar com o array de usuários
 
       this.pagination_leaderBoard = new PaginationMenu(this.users, 10, 1);
       
       this.menu.add(this.background);
       this.menu.add(this.createButtonExit(35.5, 11));
 
-      let your_position = 0;
+      let your_player: any;
       let page = 0;
 
       this.users.forEach((user: any, index: number) => {
         if ((index == 0 ? index + 1 : index) % this.pagination_leaderBoard.max_for_page == 0) page++;
         const i = index - page * this.pagination_leaderBoard.max_for_page;
 
-        this.menu.add(this.background, this.createRanking(index, 37.5, 11 + (i + 1) * 6, (index + 1), user.nickname, user.image ? user.image : avatarDefault, user.id, false));
+        this.menu.add(this.background, this.createRanking(index, 37.5, 11 + (i + 1) * 6, user, false));
         if (user.nickname == this.user.nickname)
-          your_position = index + 1;
+          your_player = user;
       });
       //Your Position
-      this.menu.add(this.background, this.createRanking(your_position - 1, 37.5, 11 + 11 * 6, your_position, this.user.nickname, this.user.image, this.user.id, true));
+      this.menu.add(this.background, this.createRanking(your_player.rank - 1, 37.5, 11 + 11 * 6, your_player, true));
   
       //Arrow Buttons
       this.menu.add(this.pagination_leaderBoard.createArrowButton("left", 46.5, 11 + 12 * 6, 2));
@@ -129,9 +129,9 @@ export class LeaderBoard {
     return button;
   }
 
-  private createRanking(index: number, x: number, y: number, position: number, nickname: string, pic: string, id: number, all_visible: boolean): ElementUI {
+  private createRanking(index: number, x: number, y: number, player: any, all_visible: boolean): ElementUI {
     const avatar = new Image();
-	avatar.src = pic;
+	avatar.src = player.image ? player.image : avatarDefault;
 	const raking: ElementUI = {
       type: "ranking",
       rectangle: { x: x + "%", y: y + "%", w: "25%", h: "5%" },
@@ -143,10 +143,8 @@ export class LeaderBoard {
       if (!raking.enable)
         raking.enable = true;
 
-
-
-        ctx.fillStyle = position == 1 ? "gold" : (position == 2 ? "silver" : (position == 3 ? "#CD7F32" : "grey"));
-        ctx.strokeStyle = nickname == this.user.nickname ? "red" : "black";
+        ctx.fillStyle = player.rank == 1 ? "gold" : (player.rank == 2 ? "silver" : (player.rank == 3 ? "#CD7F32" : "grey"));
+        ctx.strokeStyle = player.nickname == this.user.nickname ? "red" : "black";
         ctx.lineWidth = 2;
 
         this.roundRect(ctx, raking.rectangle.x, raking.rectangle.y, raking.rectangle.w, raking.rectangle.h, this.radius);
@@ -166,7 +164,7 @@ export class LeaderBoard {
 		    ctx.drawImage(avatar, raking.rectangle.x + raking.rectangle.x * 0.075, raking.rectangle.y + raking.parent?.rectangle.y * 0.035, raking.rectangle.w * 0.1, raking.rectangle.h * 0.8);
       
 		    ctx.fillStyle = "white";
-        ctx.strokeStyle = nickname == this.user.nickname ? "red" : "black";        
+        ctx.strokeStyle = player.nickname == this.user.nickname ? "red" : "black";        
         
         ctx.lineWidth = 5;
 		    //Posicao
@@ -175,8 +173,8 @@ export class LeaderBoard {
         let w = raking.rectangle.w * 0.05;
         let h = raking.rectangle.h * 0.5;
 
-		    ctx.strokeText(position.toString(), x, y, w);
-        ctx.fillText(position.toString(), x, y, w);
+		    ctx.strokeText(player.rank.toString(), x, y, w);
+        ctx.fillText(player.rank.toString(), x, y, w);
 
         //Test
         this.ReguaTeste(ctx, x, y, w, h, 5);
@@ -185,8 +183,8 @@ export class LeaderBoard {
         x = raking.rectangle.x + raking.rectangle.w * 0.25;
         w = raking.rectangle.w * 0.525;
 		    
-        ctx.strokeText(nickname,  x, y, w);
-		    ctx.fillText(nickname, x, y, w);
+        ctx.strokeText(player.nickname,  x, y, w);
+		    ctx.fillText(player.nickname, x, y, w);
 
         //Test
         this.ReguaTeste(ctx, x, y, w, h, 5);
@@ -195,16 +193,16 @@ export class LeaderBoard {
         x = raking.rectangle.x + raking.rectangle.w * 0.825;
         w = raking.rectangle.w * 0.125;
       
-		    ctx.strokeText("1235",  x, y, w);
-		    ctx.fillText("1235", x, y, w);
+		    ctx.strokeText(player.points,  x, y, w);
+		    ctx.fillText(player.points, x, y, w);
 
         //Test
         this.ReguaTeste(ctx, x, y, w, h, 5);
       },
       onClick: () => {
         let confirmButton;
-        if (id != this.user.id)
-          confirmButton = new Profile(id);
+        if (player.userId != this.user.id)
+          confirmButton = new Profile(player.userId);
         else
           confirmButton = new YourProfile(Lobby.getPlayer());
         this._menu.visible = false;

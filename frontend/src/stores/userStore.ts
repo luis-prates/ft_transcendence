@@ -33,14 +33,12 @@ export interface Friendship {
 }
 
 export interface Historic {
-  gameStats: {
-    loserId: number, 
-    loserName: string,
-    loserScore: number,
-    winnerId: number,
-    winnerName: string,
-    winnerScore: number,
-  };
+  loserId: number, 
+  loserNickname: string,
+  loserScore: number,
+  winnerId: number,
+  winnerNickname: string,
+  winnerScore: number,
   gameType: string;
   id: string;
   players: {
@@ -189,22 +187,22 @@ export const userStore = defineStore("user", function () {
         console.log("response: ", response.data);
         
         user.access_token_server = response.data.access_token;
-        user.id = response.data.user.id;
-        user.status = response.data.user.status;
-        user.name = response.data.user.name;
-        user.email = response.data.user.email;
-        user.nickname = response.data.user.nickname;
-        user.image = response.data.user.image;
-        user.money = response.data.user.money;
-        user.avatar = response.data.user.avatar;
-        user.infoPong.level = response.data.user.level;
-        user.infoPong.xp = response.data.user.xp;
-        user.infoPong.color = response.data.user.color;
-        user.infoPong.skin.default.tableColor = response.data.user.tableColorEquipped;
-        user.infoPong.skin.default.tableSkin = response.data.user.tableSkinEquipped;
-        user.infoPong.skin.default.paddle = response.data.user.paddleSkinEquipped;
-        user.infoPong.skin.tables = response.data.user.tableSkinsOwned;
-        user.infoPong.skin.paddles = response.data.user.paddleSkinsOwned;
+        user.id = response.data.dto.id;
+        user.status = response.data.dto.status;
+        user.name = response.data.dto.name;
+        user.email = response.data.dto.email;
+        user.nickname = response.data.dto.nickname;
+        user.image = response.data.dto.image;
+        user.money = response.data.dto.money;
+        user.avatar = response.data.dto.avatar;
+        user.infoPong.level = response.data.dto.level;
+        user.infoPong.xp = response.data.dto.xp;
+        user.infoPong.color = response.data.dto.color;
+        user.infoPong.skin.default.tableColor = response.data.dto.tableColorEquipped;
+        user.infoPong.skin.default.tableSkin = response.data.dto.tableSkinEquipped;
+        user.infoPong.skin.default.paddle = response.data.dto.paddleSkinEquipped;
+        user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
+        user.infoPong.skin.paddles = response.data.dto.paddleSkinsOwned;
         getFriends();
         getFriendRequests();
         getBlockedUsers();
@@ -538,8 +536,8 @@ export const userStore = defineStore("user", function () {
         console.error(error);
       });
   }
-
   
+
   async function getGames(status: GameStatus) {
 
     const options = {
@@ -561,7 +559,49 @@ export const userStore = defineStore("user", function () {
       });
   }
 
-    /* async function createChannel() {
+  async function getLeaderboard() {
+
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .get(env.BACKEND_PORT + "/game/leaderboard", options)
+
+      // axios.request(options)
+      .then(function (response: any) {
+        console.log("LeaderBoard: ", response.data);
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  
+  async function createGame(userId: number, gameRequest: any) {
+    let body = {} as any;
+    body.gameType ="PUBLIC";
+    body.players = [ userId ];
+    body.gameRequest = gameRequest;
+
+      const options = {
+        headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .post(env.BACKEND_PORT + "/game/create", body, options)
+      .then(function (response: any) {
+        console.log(`GAME: ${response.data}`);
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+/*
+     async function createChannel() {
       const createChannelDto = {
         name: "asdasdasdas",
         usersToAdd: [69], //diferente do gajo que criou
@@ -604,6 +644,6 @@ export const userStore = defineStore("user", function () {
     getBlockedUsers, blockUser, unblockUser, getBlockedBy,
 
     //Game
-    getUserGames, getGames,
+    getUserGames, getGames, getLeaderboard, createGame
   };
 });

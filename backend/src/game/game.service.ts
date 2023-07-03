@@ -13,6 +13,9 @@ import { UserService } from '../user/user.service';
 type LeaderBoard = {
 	rank: number;
 	userId: number;
+	nickname: string;
+	image: string;
+	points: number;
 	gamesWon: number;
 	gamesLost: number;
 };
@@ -164,7 +167,11 @@ export class GameService {
 				wonGames: {
 					select: {
 						winnerId: true,
+						winnerNickname: true,
+						winnerScore: true,
 						loserId: true,
+						loserNickname: true,
+						loserScore: true,
 					},
 					where: {
 						AND: [{ status: GameStatus.FINISHED }, { players: { none: { id: 6969 } } }],
@@ -173,7 +180,11 @@ export class GameService {
 				lostGames: {
 					select: {
 						winnerId: true,
+						winnerNickname: true,
+						winnerScore: true,
 						loserId: true,
+						loserNickname: true,
+						loserScore: true,
 					},
 					where: {
 						AND: [{ status: GameStatus.FINISHED }, { players: { none: { id: 6969 } } }],
@@ -198,12 +209,22 @@ export class GameService {
 		let rank = 1;
 		let prevGamesWon: number = null;
 		let prevGamesLost: number = null;
-		(await leaderboard).forEach(game => {
-			const gamesWon = game.wonGames.length;
-			const gamesLost = game.lostGames.length;
+		(await leaderboard).forEach(user => {
+			const gamesWon = user.wonGames.length;
+			const gamesLost = user.lostGames.length;
 			let currentRank = rank;
 
-			if (prevGamesWon !== null && prevGamesLost !== null) {
+			let points = 0;
+
+			user.wonGames.forEach(wongame => {
+				points += wongame.loserScore == 0 ? 3 : 2;
+			});
+			user.lostGames.forEach(lostgame => {
+				points += lostgame.loserScore == 0 ? -1 : 0;
+				points = points < 0 ? 0 : points;
+			});
+
+			if (points !== null && prevGamesLost !== null) {
 				if (gamesWon === prevGamesWon && gamesLost === prevGamesLost) {
 					currentRank = leaderboardReturn[leaderboardReturn.length - 1].rank;
 				} else {
@@ -213,7 +234,10 @@ export class GameService {
 
 			leaderboardReturn.push({
 				rank: currentRank,
-				userId: game.id,
+				userId: user.id,
+				nickname: user.nickname,
+				image: user.image,
+				points: points,
 				gamesWon,
 				gamesLost,
 			});

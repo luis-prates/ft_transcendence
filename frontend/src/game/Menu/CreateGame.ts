@@ -10,6 +10,7 @@ import { PaginationMenu } from "./PaginationMenu";
 import axios from "axios";
 import { env } from "../../env";
 import { io, type Socket } from "socket.io-client";
+import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 
 export class CreateGame {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -348,24 +349,25 @@ export class CreateGame {
       },
       onClick: async () => {
         this.menu.close();
+        
         console.log({ objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
-        const gameCreate = await axios.post(
-          env.BACKEND_PORT + "/game/create",
-          {
-            gameType: "PUBLIC",
-            players: [ this.user.id ],
-            gameRequest: { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" },
+
+        const gameCreate = await userStore().createGame(this.user.id, { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
+        if (gameCreate?.id) {
+          this.data.objectId = gameCreate.id;
+          this.data.objectId = gameCreate.id;
+          this.lobbySocket.emit("new_gameobject", this.data);
+          Router.push(`/game?objectId=${this.data.objectId}`);
         }
-        );
-		    console.log(`Axios Response: ${JSON.stringify(gameCreate.data)}`);
-		    console.log('Axios Post Request completed. Emitting new_game event.');
-		    this.data.objectId = gameCreate.data.id;
-        //! this should be unnecessary now. Post request above does the same
-		// this.gameSocket.emit("new_game", { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
-        console.log('Emitting new_gameobject event.');
-		    this.lobbySocket.emit("new_gameobject", this.data);
-		    console.log('Emitting new_gameobject event completed.');
-        Router.push(`/game?objectId=${this.data.objectId}`);
+        else
+        {
+          const confirmButton = new ConfirmButton("Erro try to Create a new Game!", STATUS_CONFIRM.ERROR);
+            confirmButton.show((value) => {
+              if (value == "OK") {
+                this.menu.close();
+              }
+          });          
+        }
       },
     };
     return button;

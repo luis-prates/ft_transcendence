@@ -11,8 +11,8 @@ import {
 import { Server, Socket } from 'socket.io';
 import { LobbyService } from '../lobby.service';
 import { Logger, UnauthorizedException } from '@nestjs/common';
-import { PlayerService } from 'src/player/player.service';
-import { GameService } from 'src/game/game.service';
+import { PlayerService } from '../../player/player.service';
+import { GameService } from '../../game/game.service';
 
 @WebSocketGateway({ namespace: 'lobby', cors: { origin: '*' } })
 export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {

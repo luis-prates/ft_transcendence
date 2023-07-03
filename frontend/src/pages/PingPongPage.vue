@@ -149,8 +149,14 @@ onMounted(function () {
       const player_1 = game.playerNumber == 1 ? game.player1 : game.player2;
       const player_2 = game.playerNumber == 2 ? game.player2 : game.player1;
 
-      const history_game: Historic = {
-        gameStats: e.gameResults,
+      console.log("RESULTADO", e);
+      /*const history_game: Historic = {
+        winnerId; ,
+        winnerNickname; ,
+        winnerScore; ,
+        loserId; ,
+        loserNickname; ,
+        loserScore; ,
         gameType: "PUBLIC",
         id: "0",
         players: [],
@@ -178,7 +184,7 @@ onMounted(function () {
       history_game.players.push(player1_historic);
       history_game.players.push(player2_historic);
 
-      user.infoPong.historic.push(history_game as never);
+      user.infoPong.historic.push(history_game as never);*/
 
       game.animation_points();
     }

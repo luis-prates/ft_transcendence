@@ -240,14 +240,14 @@ export class GameClass {
 			winner.socket.emitToGame('end_game', {
 				objectId: this.data.objectId,
 				result: 'You Win!',
-				exp: this.maxPoint * (this.bot ? 50 : winner.score == 0 ? 150 : 100),
-				money: this.maxPoint * (this.bot ? 2 : winner.score == 0 ? 5 : 3),
+				exp: this.maxPoint * (this.bot ? 50 : loser.score == 0 ? 150 : 100),
+				money: this.maxPoint * (this.bot ? 2 : loser.score == 0 ? 5 : 3),
 				watchers: this.watchers.length,
 				gameResults,
 			});
 			this.updatePlayerStats(winner.userId, {
-				xp: this.maxPoint * (this.bot ? 50 : winner.score == 0 ? 150 : 100),
-				money: this.maxPoint * (this.bot ? 2 : winner.score == 0 ? 5 : 3),
+				xp: this.maxPoint * (this.bot ? 50 : loser.score == 0 ? 150 : 100),
+				money: this.maxPoint * (this.bot ? 2 : loser.score == 0 ? 5 : 3),
 			});
 		}
 		if (loser.player_n !== 3) {
