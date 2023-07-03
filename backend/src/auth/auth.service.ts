@@ -64,7 +64,7 @@ export class AuthService {
 			});
 
 			delete user.hash;
-			delete userExists.twoFASecret;
+			delete user.twoFASecret;
 
 			return this.signToken(user);
 		} catch (error) {
