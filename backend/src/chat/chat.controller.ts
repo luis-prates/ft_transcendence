@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Param, Post, UseGuards, Request, Delete, HttpCode } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards, Request, Delete, HttpCode, Patch } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtGuard } from '../auth/guard';
 import { RolesGuard } from './roleguard';
 import { Roles } from './decorator';
-import { CreateChannelDto, JoinChannelDto } from './dto';
+import { CreateChannelDto, JoinChannelDto, EditChannelDto } from './dto';
 
 @UseGuards(JwtGuard)
 @Controller('chat/channels')
@@ -41,6 +41,14 @@ export class ChatController {
 	@Post()
 	async createChannel(@Body() createChannelDto: CreateChannelDto, @Request() req: any) {
 		return this.chatService.createChannel(createChannelDto, req.user);
+	}
+
+	// Edit a channel
+	@Patch('edit/:channelId')
+	@UseGuards(RolesGuard)
+	@Roles('owner')
+	async editChannel(@Param('channelId') channelId: string, @Body() editChannelDto: EditChannelDto) {
+		return this.chatService.editChannel(+channelId, editChannelDto);
 	}
 
 	// Delete a channel

@@ -108,6 +108,7 @@ model Message {
 model Channel {
 	id						Int @id @default(autoincrement())
 	name					String? @unique
+    avatar                  String?
 	hash					String?
 	messages				Message[]
 	users					ChannelUser[]

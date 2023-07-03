@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -29,7 +29,7 @@ export class RolesGuard implements CanActivate {
 		}
 
 		// if endpoint requires an admin role
-		if (!roles.includes('admin') && channelUser.isAdmin) {
+		if (roles.includes('admin') && channelUser && channelUser.isAdmin) {
 			return true;
 		}
 
@@ -40,6 +40,11 @@ export class RolesGuard implements CanActivate {
 					id: channelId,
 				},
 			});
+
+			if (!channel) {
+				throw new NotFoundException('Channel not found!');
+			}
+
 			if (channel.ownerId === Number(userId)) {
 				return true;
 			}

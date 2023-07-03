@@ -256,6 +256,94 @@ describe('Chat', () => {
 		});
 	});
 
+	// Edit a channel
+	describe('Edit a channel', () => {
+		it('should change a channel name', () => {
+			return pactum
+				.spec()
+				.patch('/chat/channels/$S{publicChannelId}')
+				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+				.withBody({
+					name: 'aBetterNameForAPublicChannel',
+				})
+				.expectStatus(200);
+		});
+		it('should change a channel from PUBLIC to PRIVATE type', () => {
+			return pactum
+				.spec()
+				.patch('/chat/channels/$S{publicChannelId}')
+				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+				.withBody({
+					channelType: 'PRIVATE',
+				})
+				.expectStatus(200);
+		});
+		it('should change a channel from PRIVATE to PROTECTED type', () => {
+			return pactum
+				.spec()
+				.patch('/chat/channels/$S{publicChannelId}')
+				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+				.withBody({
+					channelType: 'PROTECTED',
+					password: '12345',
+				})
+				.expectStatus(200);
+		});
+		it('should change a channel from PROTECTED to PUBLIC type', () => {
+			return pactum
+				.spec()
+				.patch('/chat/channels/$S{publicChannelId}')
+				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+				.withBody({
+					channelType: 'PUBLIC',
+				})
+				.expectStatus(200);
+		});
+		it('should not allow to set a password to a public channel', () => {
+			return pactum
+				.spec()
+				.patch('/chat/channels/$S{publicChannelId}')
+				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+				.withBody({
+					channelType: 'PUBLIC',
+					password: '123',
+				})
+				.expectStatus(400);
+		});
+		it('should allow us to change the name back to the original', () => {
+			return pactum
+				.spec()
+				.patch('/chat/channels/$S{publicChannelId}')
+				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+				.withBody({
+					name: 'myPublicChannel',
+				})
+				.expectStatus(200);
+		});
+		it('should not allow to edit a DM channel', () => {
+			return pactum
+				.spec()
+				.patch('/chat/channels/$S{DMChannelId}')
+				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+				.withBody({
+					name: 'aBetterNameForADMChannel',
+					channelType: 'DM',
+				})
+				.expectStatus(401);
+		});
+		it('should not allow to remove password from a PROTECTED channel', () => {
+			return pactum
+				.spec()
+				.patch('/chat/channels/$S{protectedChannelId}')
+				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+				.withBody({
+					channelType: 'PROTECTED',
+					password: '',
+				})
+				.expectStatus(400);
+		});
+	});
+
 	// Send some messages in each channel!
 	describe('Send messages', () => {
 		it('should connect all the users', async () => {
@@ -723,14 +811,7 @@ describe('Chat', () => {
 				}),
 			);
 
-			try {
-				// await Promise.all([userErrorPromise]);
-				await Promise.all([userErrorPromise, ...messagePromises]);
-				// If we get here without rejecting, that means no client received a message from user4, so the test passes
-			} catch (error) {
-				// If a client received a message from user4, we'll end up here, so the test fails
-				throw error;
-			}
+			await Promise.all([userErrorPromise, ...messagePromises]);
 		});
 		it('should unmute a user and let others receive a unmuted-user event', async () => {
 			const dataStore: IDataStore = pactum.stash.getDataStore();
