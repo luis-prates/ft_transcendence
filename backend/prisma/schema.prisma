@@ -57,6 +57,9 @@ model User {
 	channels				ChannelUser[]
 	ownedChannels			Channel[] @relation("ChannelOwner")
 
+	twoFASecret				String?
+	isTwoFAEnabled			Boolean @default(false)
+
 	@@unique([id, nickname])
 	@@map("users")
 }
@@ -105,6 +108,7 @@ model Message {
 model Channel {
 	id						Int @id @default(autoincrement())
 	name					String? @unique
+    avatar                  String?
 	hash					String?
 	messages				Message[]
 	users					ChannelUser[]
