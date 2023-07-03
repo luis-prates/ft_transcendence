@@ -1,4 +1,15 @@
-import { Body, Controller, Get, HttpCode, Param, ParseIntPipe, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	HttpCode,
+	Param,
+	ParseIntPipe,
+	ParseUUIDPipe,
+	Patch,
+	Post,
+	UseGuards,
+} from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
 import { GetUser } from '../auth/decorator';
@@ -51,7 +62,3 @@ export class GameController {
 		return this.gameService.getUserGames(userId);
 	}
 }
-function UseGuards(JwtGuard: typeof JwtGuard): (target: typeof GameController) => void | typeof GameController {
-	throw new Error('Function not implemented.');
-}
-

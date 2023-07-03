@@ -224,7 +224,7 @@ export class GameService {
 		});
 		return leaderboardReturn;
 	}
-	
+
 	async enterGame(player: Player, info: playerInfo) : Promise<boolean> {
 		const game = this.games.find(g => g.data.objectId === info.objectId);
 		if (!game) {
