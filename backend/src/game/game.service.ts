@@ -13,6 +13,8 @@ import { UserService } from '../user/user.service';
 type LeaderBoard = {
 	rank: number;
 	userId: number;
+	nickname: string;
+	image: string;
 	gamesWon: number;
 	gamesLost: number;
 };
@@ -130,7 +132,11 @@ export class GameService {
 				wonGames: {
 					select: {
 						winnerId: true,
+						winnerNickname: true,
+						winnerScore: true,
 						loserId: true,
+						loserNickname: true,
+						loserScore: true,
 					},
 					where: {
 						AND: [{ status: GameStatus.FINISHED }, { players: { none: { id: 6969 } } }],
@@ -139,7 +145,11 @@ export class GameService {
 				lostGames: {
 					select: {
 						winnerId: true,
+						winnerNickname: true,
+						winnerScore: true,
 						loserId: true,
+						loserNickname: true,
+						loserScore: true,
 					},
 					where: {
 						AND: [{ status: GameStatus.FINISHED }, { players: { none: { id: 6969 } } }],
@@ -180,6 +190,8 @@ export class GameService {
 			leaderboardReturn.push({
 				rank: currentRank,
 				userId: game.id,
+				nickname: game.nickname,
+				image: game.image,
 				gamesWon,
 				gamesLost,
 			});
