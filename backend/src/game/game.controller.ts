@@ -2,12 +2,12 @@ import { Body, Controller, Get, HttpCode, Param, ParseIntPipe, ParseUUIDPipe, Pa
 import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
 import { GetUser } from '../auth/decorator';
-import { GameDto } from './dto';
+import { GameDto, GameEndDto } from './dto';
 import { playerInfo } from '../socket/SocketInterface';
 import { GameStatus } from '@prisma/client';
 
 //! deactivated for testing purposes
-//@UseGuards(JwtGuard)
+@UseGuards(JwtGuard)
 @Controller('game')
 export class GameController {
 	constructor(private gameService: GameService) {}
@@ -17,14 +17,17 @@ export class GameController {
 	createGame(@Body() body: GameDto) {
 		return this.gameService.createGame(body);
 	}
-	
+
 	@Get('active')
-	getActiveGames(@Query('status') status: GameStatus) {
-		const gameStatus: GameStatus = GameStatus[status as keyof typeof GameStatus];
-	
-		return this.gameService.getActiveGames(gameStatus);
+	getActiveGames(@Body('status') status: GameStatus[]) {
+		return this.gameService.getActiveGames(status);
 	}
-	
+
+	@Get('leaderboard')
+	getLeaderboard() {
+		return this.gameService.getLeaderboard();
+	}
+
 	@HttpCode(200)
 	@Patch('add/:gameId')
 	addGameUser(@Param('gameId', new ParseUUIDPipe()) gameId: string, @Body() body: playerInfo) {
@@ -38,8 +41,8 @@ export class GameController {
 	}
 
 	//! as Patch request for testing purposes
-	@Patch('update/:gameId')
-	endGame(@Param('gameId', new ParseUUIDPipe()) gameId: string, @Body() body: GameDto) {
+	@Patch('end/:gameId')
+	endGame(@Param('gameId', new ParseUUIDPipe()) gameId: string, @Body() body: GameEndDto) {
 		return this.gameService.endGame(gameId, body);
 	}
 
@@ -48,3 +51,7 @@ export class GameController {
 		return this.gameService.getUserGames(userId);
 	}
 }
+function UseGuards(JwtGuard: typeof JwtGuard): (target: typeof GameController) => void | typeof GameController {
+	throw new Error('Function not implemented.');
+}
+
