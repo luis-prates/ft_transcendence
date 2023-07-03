@@ -2,9 +2,11 @@ import { ForbiddenException, Injectable, NotFoundException, Logger } from '@nest
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthDto } from './dto/auth.dto';
 import * as argon from 'argon2';
-import { Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { authenticator } from 'otplib';
+import { toDataURL } from 'qrcode';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +27,7 @@ export class AuthService {
 			if (userExists) {
 				this.logger.warn(`User ${userExists.id} already exists.`);
 				delete userExists.hash;
+				delete userExists.twoFASecret;
 				return this.signToken(userExists);
 			}
 
@@ -61,6 +64,7 @@ export class AuthService {
 			});
 
 			delete user.hash;
+			delete userExists.twoFASecret;
 
 			return this.signToken(user);
 		} catch (error) {
@@ -73,7 +77,7 @@ export class AuthService {
 		}
 	}
 
-	async signToken(user: AuthDto): Promise<{ dto: AuthDto; access_token: string }> {
+	async signToken(user: User): Promise<{ dto: User; access_token: string }> {
 		const payload = {
 			sub: user.id,
 			nickname: user.nickname,
@@ -84,5 +88,56 @@ export class AuthService {
 			secret: secret,
 		});
 		return { dto: user, access_token };
+	}
+
+	async generateTwoFactorSecret(user: User) {
+		const secret = authenticator.generateSecret();
+
+		const otpauthUrl = authenticator.keyuri(user.email, 'transcendence-app', secret);
+
+		await this.prisma.user.update({
+			where: {
+				id: user.id,
+			},
+			data: {
+				twoFASecret: secret,
+			},
+		});
+
+		return { secret, otpauthUrl };
+	}
+
+	async turnOnTwoFactor(userId: number) {
+		await this.prisma.user.update({
+			where: {
+				id: userId,
+			},
+			data: {
+				isTwoFAEnabled: true,
+			},
+		});
+	}
+
+	async turnOffTwoFactor(userId: number) {
+		await this.prisma.user.update({
+			where: {
+				id: userId,
+			},
+			data: {
+				isTwoFAEnabled: false,
+				twoFASecret: null,
+			},
+		});
+	}
+
+	isTwoFactorValid(twoFACode: string, user: User) {
+		if (!user.twoFASecret) {
+			throw new ForbiddenException('Two factor authentication is not set up. Please turn it on first');
+		}
+		return authenticator.verify({ token: twoFACode, secret: user.twoFASecret });
+	}
+
+	async generateQrCodeDataURL(otpAuthUrl: string) {
+		return toDataURL(otpAuthUrl);
 	}
 }

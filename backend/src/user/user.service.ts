@@ -9,7 +9,34 @@ export class UserService {
 
 	async editUser(userId: number, dto: UserDto) {
 		try {
-			const user = await this.prisma.user.update({
+			let user = await this.prisma.user.findUnique({
+				where: {
+					id: userId,
+				},
+			});
+			if (dto.paddleSkinEquipped && user.paddleSkinEquipped !== dto.paddleSkinEquipped) {
+				const paddleSkinExists = user.paddleSkinsOwned.findIndex(skin => skin === dto.paddleSkinEquipped);
+				if (paddleSkinExists === -1) {
+					throw new ForbiddenException('Paddle skin not owned');
+				}
+			}
+			if (dto.tableSkinEquipped && user.tableSkinEquipped !== dto.tableSkinEquipped) {
+				const tableSkinExists = user.tableSkinsOwned.findIndex(skin => skin === dto.tableSkinEquipped);
+				if (tableSkinExists === -1) {
+					throw new ForbiddenException('Table skin not owned');
+				}
+			}
+			if (dto.nickname && user.nickname !== dto.nickname) {
+				user = await this.prisma.user.findUnique({
+					where: {
+						nickname: dto.nickname,
+					},
+				});
+				if (user) {
+					throw new ForbiddenException('Nickname already taken');
+				}
+			}
+			user = await this.prisma.user.update({
 				where: {
 					id: userId,
 				},

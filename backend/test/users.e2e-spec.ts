@@ -4,7 +4,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { Test } from '@nestjs/testing';
 import * as pactum from 'pactum';
-import { EditUserDto } from 'src/user/dto';
+import { UserDto } from 'src/user/dto';
 
 describe('User', () => {
 	let app: INestApplication;
@@ -56,8 +56,8 @@ describe('User', () => {
 
 	describe('Edit user', () => {
 		it('should edit user', () => {
-			const dto: EditUserDto = {
-				name: 'New Tester1',
+			const dto: UserDto = {
+				nickname: 'New Tester1',
 				email: 'new_user1@gmail.com',
 				// TODO: add a test for change of image, change of nickname (if possible)
 			};
@@ -69,7 +69,7 @@ describe('User', () => {
 				})
 				.withBody(dto)
 				.expectStatus(200)
-				.expectBodyContains(dto.name)
+				.expectBodyContains(dto.nickname)
 				.expectBodyContains(dto.email);
 		});
 	});
