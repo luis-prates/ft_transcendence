@@ -2,8 +2,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" />
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
   <div class="box" href>
-    <canvas id="canvas1"></canvas>
+    <div class="container">
+      <canvas id="canvas1"></canvas>
+      <button id="buttonLeave" class="button">Leave</button>
   </div>
+</div>
+
 </template>
 
 <script setup lang="ts">
@@ -28,6 +32,37 @@ onMounted(function () {
   const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
   canvas.width = 1000;
   canvas.height = 750;
+
+  const button = document.getElementById("buttonLeave") as HTMLButtonElement;;
+
+  function updateButtonSizeAndPosition() {
+    const bodyWidth = document.body.clientWidth;
+    const bodyHeight = document.body.clientHeight;
+
+    const canvasWidth = Math.min(bodyWidth, 1000);
+    const canvasHeight = Math.min(bodyHeight, 750);
+
+    const percentageWidth = canvasWidth / 1000 ;
+    const percentageHeight = canvasHeight / 750;
+    const percentage = percentageWidth <= percentageHeight ? percentageWidth : percentageHeight;
+
+    const buttonHeight = 30 * percentage;
+    const buttonWidth = 120 * percentage;
+    const buttonRight = 5 * percentage;
+    const buttonTop = 10.5 * percentage;
+    
+    const buttonFontSize = 1 * percentage;
+
+    button.style.width = `${buttonWidth}px`;
+    button.style.height = `${buttonHeight}px`;
+    button.style.right = `${buttonRight}px`;
+    button.style.top = `${buttonTop}px`;
+
+    button.style.fontSize = `${buttonFontSize}rem`;
+  }
+
+  updateButtonSizeAndPosition();
+  window.addEventListener('resize', updateButtonSizeAndPosition);
 
   const user = userStore().user;
   if (!socket)
@@ -145,7 +180,6 @@ onMounted(function () {
 		    user.infoPong.level += 1;
       }
     
-      //TODO ATUALIZAR O Historico
       const player_1 = game.playerNumber == 1 ? game.player1 : game.player2;
       const player_2 = player_1 == game.player1  ? game.player2 : game.player1;
 
@@ -201,6 +235,7 @@ onMounted(function () {
     socket.off("game_sound");
     socket.off("game_view");
     socket.off("end_game");
+    window.removeEventListener('resize', updateButtonSizeAndPosition);
   });
 
   function animate() {
@@ -223,6 +258,12 @@ onMounted(function () {
   box-sizing: 0;
 }
 
+.container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
 #canvas1 {
   border: 5px solid black;
   position: absolute;
@@ -231,6 +272,18 @@ onMounted(function () {
   transform: translate(-50%, 5%);
   max-width: 100%;
   max-height: 100%;
+}
+
+#buttonLeave {
+  border: 5px solid black;
+  position: absolute;
+  top: 75.7%;
+  left: 50%;
+  transform: translate(-50%, 5%);
+  background-color: red;
+  color: white;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 100%;
 }
 </style>
 
