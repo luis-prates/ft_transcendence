@@ -32,13 +32,13 @@ export interface Friendship {
   updatedAt: string;
 }
 
-export interface Historic {
-  loserId: number, 
-  loserNickname: string,
-  loserScore: number,
+export interface GAME {
   winnerId: number,
   winnerNickname: string,
   winnerScore: number,
+  loserId: number, 
+  loserNickname: string,
+  loserScore: number,
   gameType: string;
   id: string;
   players: {
@@ -61,7 +61,7 @@ export interface InfoPong {
     tables: string[];
     paddles: string[];
   };
-  historic: Historic[];
+  historic: GAME[];
 }
 
 export interface User {
@@ -598,33 +598,6 @@ export const userStore = defineStore("user", function () {
         console.error(error);
       });
   }
-/*
-     async function createChannel() {
-      const createChannelDto = {
-        name: "asdasdasdas",
-        usersToAdd: [69], //diferente do gajo que criou
-        channelType: "PUBLIC",
-        password: "senha"
-      };
-
-      const options = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.access_token_server}`
-        },
-        body: JSON.stringify(createChannelDto)
-      };
-      try {
-        const response = await fetch(`${env.BACKEND_PORT}/chat/channels`, options);
-        const data = await response.json();
-        console.log("CREATE CHANNEL:", data);
-      } catch (error) {
-        console.error(error);
-      }
-    }*/
-
-
 
   return {
     user, login, loginTest,

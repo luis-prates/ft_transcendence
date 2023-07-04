@@ -4,7 +4,7 @@ import { Map } from "./Map";
 import { Game } from "@/game/base/Game";
 import type { GameObject } from "@/game/base/GameObject";
 import { type Ref } from "vue";
-import { userStore, type Historic } from "@/stores/userStore";
+import { userStore, type GAME } from "@/stores/userStore";
 import { LeaderBoard } from "@/game/Menu/LeaderBoard";
 import { Profile } from "@/game/Menu/Profile";
 import { YourProfile } from "@/game/Menu/YourProfile";
@@ -64,14 +64,14 @@ export class Player extends Character {
       if (this.select == this) {
         
         const user = userStore().user;
-        const history_game_1: Historic = {
+        const history_game_1: GAME = {
           winner: user.nickname,
           loser: "Marvin",
           player1: user.nickname,
           player2: "Marvin",
           result: 3 + "-" + 0,
         };
-        const history_game_2: Historic = {
+        const history_game_2: GAME = {
           winner: "Marvin2",
           loser: user.nickname,
           player1: user.nickname,

@@ -1,5 +1,5 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player, Lobby } from "@/game";
-import { userStore, type Historic } from "@/stores/userStore";
+import { userStore, type GAME } from "@/stores/userStore";
 
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";
@@ -36,7 +36,7 @@ export class Profile {
 
 	private matche_pagination: PaginationMenu = new PaginationMenu([], 4, 2, this.background, this.menu);;
 
-	private historic: Historic[] = [];
+	private historic: GAME[] = [];
 
 	private onResult: (result: any) => void = () => {};
 
@@ -114,7 +114,7 @@ export class Profile {
 		}
 	  }
 
-	private createMatches(index: number, matche: Historic, x: number, y: number): ElementUI {
+	private createMatches(index: number, matche: GAME, x: number, y: number): ElementUI {
 		const player1 = matche.players[0].id == matche.winnerId ? matche.players[0] : matche.players[1];
 		const player2 = matche.players[0] == player1 ? matche.players[1] : matche.players[0];
 	
@@ -435,10 +435,10 @@ export class Profile {
 		ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.30, pos.y + pos.h * 0.16, pos.w * 0.25);
 		
 		//Level
-    	const wins = this.historic.filter((history: Historic) => history.winnerId == this.user.id).length;
+    	const wins = this.historic.filter((history: GAME) => history.winnerId == this.user.id).length;
 		ctx.fillText("Wins:  " + wins, pos.x + pos.w * 0.30, pos.y + pos.h * 0.19, pos.w * 0.25);
 
-    	const loses = this.historic.filter((history: Historic) => history.loserId == this.user.id).length;
+    	const loses = this.historic.filter((history: GAME) => history.loserId == this.user.id).length;
 		ctx.fillText("Losts: " + loses, pos.x + pos.w * 0.30, pos.y + pos.h * 0.22, pos.w * 0.25);
 
     	//Avatar

@@ -10,7 +10,7 @@
 import { GamePong, TablePong, Status } from "@/game/ping_pong";
 import { onMounted, onUnmounted, ref } from "vue";
 import { type gameRequest, type updatePlayer, type updateBall, type gamePoint, type gameEnd, type GameStart } from "@/game/ping_pong/SocketInterface";
-import { userStore, type Historic } from "@/stores/userStore";
+import { userStore, type GAME } from "@/stores/userStore";
 import { socketClass } from "@/socket/SocketClass";
 
 import avatar_marvin from "@/assets/images/pingpong/marvin.jpg";
@@ -147,16 +147,15 @@ onMounted(function () {
     
       //TODO ATUALIZAR O Historico
       const player_1 = game.playerNumber == 1 ? game.player1 : game.player2;
-      const player_2 = game.playerNumber == 2 ? game.player2 : game.player1;
+      const player_2 = player_1 == game.player1  ? game.player2 : game.player1;
 
-      console.log("RESULTADO", e);
-      /*const history_game: Historic = {
-        winnerId; ,
-        winnerNickname; ,
-        winnerScore; ,
-        loserId; ,
-        loserNickname; ,
-        loserScore; ,
+      const history_game: GAME = {
+        winnerId: e.gameResults.winnerId,
+        winnerNickname: e.gameResults.winnerName,
+        winnerScore: e.gameResults.winnerScore,
+        loserId: e.gameResults.loserId,
+        loserNickname: e.gameResults.loserName,
+        loserScore: e.gameResults.loserScore,
         gameType: "PUBLIC",
         id: "0",
         players: [],
@@ -184,7 +183,7 @@ onMounted(function () {
       history_game.players.push(player1_historic);
       history_game.players.push(player2_historic);
 
-      user.infoPong.historic.push(history_game as never);*/
+      user.infoPong.historic.unshift(history_game as never);
 
       game.animation_points();
     }

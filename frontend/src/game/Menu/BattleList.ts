@@ -2,7 +2,7 @@ import { Menu, type ElementUI, type Rectangle, Game, Lobby } from "@/game";
 
 //Sound
 import sound_close_tab from "@/assets/audio/close.mp3";
-import { userStore, type Historic, GameStatus } from "@/stores/userStore";
+import { userStore, type GAME, GameStatus } from "@/stores/userStore";
 
 //image
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
@@ -37,7 +37,7 @@ export class BattleList {
 
   async fetchUsers(status: GameStatus) {
     try {
-          const games : Historic[] = await userStore().getGames(status);
+          const games : GAME[] = await userStore().getGames(status);
 
           this.pagination_battles = new PaginationMenu(games, 7, 1);
 
@@ -48,7 +48,7 @@ export class BattleList {
 
           let page = 0;
 
-          games.forEach((game: Historic, index: number) => {
+          games.forEach((game: GAME, index: number) => {
             if ((index == 0 ? index + 1 : index) % this.pagination_battles.max_for_page == 0) page++;
             const i = index - page * this.pagination_battles.max_for_page;
 
@@ -134,7 +134,7 @@ export class BattleList {
     return button;
   }
 
-  private createBattle(index: number, x: number, y: number, game: Historic): ElementUI {
+  private createBattle(index: number, x: number, y: number, game: GAME): ElementUI {
     const image_vs = new Image();
     image_vs.src = vsImage;
     const image_player1 = new Image();

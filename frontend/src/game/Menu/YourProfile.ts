@@ -1,5 +1,5 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
-import { userStore, type Historic } from "@/stores/userStore";
+import { userStore, type GAME } from "@/stores/userStore";
 import { skin, TypeSkin } from "../ping_pong/Skin";
 import { AnimationMenu } from "./AnimationMenu";
 import { PaginationMenu } from "./PaginationMenu";
@@ -141,7 +141,7 @@ export class YourProfile {
 	  this.menu.add(this.background, this.createPencilButton(26.5, 9, 2, 3));
   }
 
-	private createMatches(index: number, matche: Historic, x: number, y: number): ElementUI {
+	private createMatches(index: number, matche: GAME, x: number, y: number): ElementUI {
 		const player1 = matche.players[0].id == matche.winnerId ? matche.players[0] : matche.players[1];
 		const player2 = matche.players[0] == player1 ? matche.players[1] : matche.players[0];
 	
@@ -372,11 +372,11 @@ export class YourProfile {
     ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.3, pos.y + pos.h * 0.16, pos.w * 0.25);
 
     //Win
-    const wins = this.user.infoPong.historic.filter((history: Historic) => history.winnerId == this.user.id).length;
+    const wins = this.user.infoPong.historic.filter((history: GAME) => history.winnerId == this.user.id).length;
     ctx.fillText("Wins:  " + wins, pos.x + pos.w * 0.3, pos.y + pos.h * 0.19, pos.w * 0.25);
 
     //Losts
-    const loses = this.user.infoPong.historic.filter((history: Historic) => history.loserId == this.user.id).length;
+    const loses = this.user.infoPong.historic.filter((history: GAME) => history.loserId == this.user.id).length;
     ctx.fillText("Losts: " + loses, pos.x + pos.w * 0.3, pos.y + pos.h * 0.22, pos.w * 0.25);
 
     //Avatar
