@@ -21,8 +21,8 @@ export class CreateGame {
   private user = userStore().user;
   private updateTableSkin = userStore().updateTableDefault;
 
- public gameSocket: Socket;
- public lobbySocket: Socket = socketClass.getLobbySocket();
+  public gameSocket: Socket;
+  public lobbySocket: Socket = socketClass.getLobbySocket();
   //  private player: Player;
 
   private data: {
@@ -51,7 +51,7 @@ export class CreateGame {
     this.skinImage = this.products.get_skin(TypeSkin.Table + "_" + this.tableSkin);
 
     this.menu.add(this.background);
-    
+
     this.menu.add(this.background, this.createButtonExit(31, 7, "newGame"));
     //Type
     this.menu.add(this.background, this.createButton("type", 40 + 1 * (10 / 4), 20, "Solo", 8));
@@ -66,14 +66,14 @@ export class CreateGame {
     this.menu.add(this.background, this.createButton("view", 40 + 5.5 * (10 / 4), 40, "Private", 8));
     //Table
     this.menu.add(this.background, this.createButton("table", 40 + 3.25 * (10 / 4), 75, "Custom", 8));
-    
+
     //Start Game
     this.menu.add(this.background, this.createButtonStartGame(32.5 + 10 / 2, 85, "Start Game"));
-    
+
     //Custom Menu
     this.menu.add(this.customMenu);
     this.customMenu.visible = false;
-    
+
     //Colors
     this.menu.add(this.customMenu, this.createColorButton(37 + 1 * (10 / 3), 28, "red"));
     this.menu.add(this.customMenu, this.createColorButton(37 + 2 * (10 / 3), 28, "#1e8c2f"));
@@ -81,27 +81,25 @@ export class CreateGame {
     this.menu.add(this.customMenu, this.createColorButton(37 + 4 * (10 / 3), 28, "#de1bda"));
     this.menu.add(this.customMenu, this.createColorButton(37 + 5 * (10 / 3), 28, "blue"));
     this.menu.add(this.customMenu, this.createColorButton(37 + 6 * (10 / 3), 28, "black"));
-    
 
     this.table_pagination = new PaginationMenu(this.user.infoPong.skin.tables, 4, 4, this.customMenu);
-    
+
     //Arrow Buttons
     this.menu.add(this.customMenu, this.table_pagination.createArrowButton("left", 31, 49, 2));
     this.menu.add(this.customMenu, this.table_pagination.createArrowButton("right", 67, 49, 2));
 
     let page = 0;
-    
+
     this.menu.add(this.customMenu, this.createSkinButton(-1, "", 27.5 + 1 * (10 / 1.5), 46));
     this.user.infoPong.skin.tables.forEach((skin: string, index: number) => {
       if ((index == 0 ? index + 1 : index) % this.table_pagination.max_for_page == 0) page++;
 
       const i = index - page * this.table_pagination.max_for_page;
 
-      const squareX = 27.5 + (i + 2 % this.table_pagination.max_for_line) * (10 / 1.5);
+      const squareX = 27.5 + (i + (2 % this.table_pagination.max_for_line)) * (10 / 1.5);
       const squareY = 46;
 
-      if (this.tableSkin == skin)
-        this.table_pagination.page = page;
+      if (this.tableSkin == skin) this.table_pagination.page = page;
 
       this.menu.add(this.customMenu, this.createSkinButton(index, skin, squareX, squareY));
     });
@@ -109,13 +107,13 @@ export class CreateGame {
     this.menu.add(this.customMenu, this.createButton("default", 59.5, 83, "Save Default Table", 10));
 
     this.menu.add(this.customMenu, this.createButtonExit(31, 12, "custom"));
-	console.log(`userId: ${this.user.id}`);
-	socketClass.setGameSocket({
-		query: {
-			userId: this.user.id,
-		},
-	})
-	this.gameSocket = socketClass.getGameSocket();
+    console.log(`userId: ${this.user.id}`);
+    socketClass.setGameSocket({
+      query: {
+        userId: this.user.id,
+      },
+    });
+    this.gameSocket = socketClass.getGameSocket();
   }
 
   private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
@@ -191,16 +189,11 @@ export class CreateGame {
         else if (button.type == "view" && this.view == label.toLowerCase()) color = "red";
         else color = "black";
 
-        
-        if (button.type == "default")
-        {
-            if (this.user.infoPong.skin.default.tableColor == this.tableColor && 
-              this.user.infoPong.skin.default.tableSkin == this.tableSkin)
-            {
-              button.enable = false;
-              return ;
-            }
-            else if (button.enable == false) button.enable = true;
+        if (button.type == "default") {
+          if (this.user.infoPong.skin.default.tableColor == this.tableColor && this.user.infoPong.skin.default.tableSkin == this.tableSkin) {
+            button.enable = false;
+            return;
+          } else if (button.enable == false) button.enable = true;
         }
 
         ctx.fillStyle = "white";
@@ -212,8 +205,7 @@ export class CreateGame {
         ctx.fill();
         ctx.stroke();
 
-        this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.65, undefined, "12px 'Press Start 2P', cursive");     
-
+        this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.65, undefined, "12px 'Press Start 2P', cursive");
       },
       onClick: () => {
         console.log(button.type, label);
@@ -223,12 +215,11 @@ export class CreateGame {
         else if (button.type == "table") {
           this.customMenu.visible = true;
           this.background.visible = false;
-        }
-        else if (button.type == "default") {
+        } else if (button.type == "default") {
           this.user.infoPong.skin.default.tableColor = this.tableColor;
           this.user.infoPong.skin.default.tableSkin = this.tableSkin;
           //DATABASE
-          this.updateTableSkin(this.tableColor, this.tableSkin)
+          this.updateTableSkin(this.tableColor, this.tableSkin);
         }
         close_tab.play();
       },
@@ -274,14 +265,11 @@ export class CreateGame {
       type: "skin",
       rectangle: { x: x + "%", y: y + "%", w: "5%", h: "10%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-
-        if (index >= 0 && !(this.table_pagination.isIndexInCurrentPage(index))) {
-          if (button.enable)
-            button.enable = false;
+        if (index >= 0 && !this.table_pagination.isIndexInCurrentPage(index)) {
+          if (button.enable) button.enable = false;
           return;
         }
-        if (!button.enable)
-          button.enable = true;
+        if (!button.enable) button.enable = true;
 
         ctx.strokeStyle = skin == this.tableSkin ? "red" : "black";
         ctx.lineWidth = 2;
@@ -319,8 +307,7 @@ export class CreateGame {
         ctx.stroke();
       },
       onClick: () => {
-
-        if (index > 0 && !(this.table_pagination.isIndexInCurrentPage(index))) return;
+        if (index > 0 && !this.table_pagination.isIndexInCurrentPage(index)) return;
 
         this.tableSkin = skin;
 
@@ -344,35 +331,29 @@ export class CreateGame {
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = "black"
+        ctx.fillStyle = "black";
 
-        this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.9, undefined, "30px 'Press Start 2P', cursive");     
-
+        this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.9, undefined, "30px 'Press Start 2P', cursive");
       },
       onClick: async () => {
         this.menu.close();
         console.log({ objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
-        const gameCreate = await axios.post(
-          env.BACKEND_PORT + "/game/create",
-          {
-            gameType: "PUBLIC",
-            players: [ this.user.id ],
-            gameRequest: { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" },
-        }		//,
-        //   {
-        //     headers: {
-        //       Authorization: `Bearer ${this.user.access_token_server}`,
-        //     },
-        //   }
-        );
-		console.log(`Axios Response: ${JSON.stringify(gameCreate.data)}`);
-		console.log('Axios Post Request completed. Emitting new_game event.');
-		this.data.objectId = gameCreate.data.id;
+        const token = this.user.access_token_server;
+        const headers = { headers: { Authorization: `Bearer ${token}` } };
+        const body = {
+          gameType: "PUBLIC",
+          players: [this.user.id],
+          gameRequest: { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" },
+        };
+        const gameCreate = await axios.post(env.BACKEND_PORT + "/game/create", body, headers);
+        console.log(`Axios Response: ${JSON.stringify(gameCreate.data)}`);
+        console.log("Axios Post Request completed. Emitting new_game event.");
+        this.data.objectId = gameCreate.data.id;
         //! this should be unnecessary now. Post request above does the same
-		// this.gameSocket.emit("new_game", { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
-        console.log('Emitting new_gameobject event.');
-		this.lobbySocket.emit("new_gameobject", this.data);
-		console.log('Emitting new_gameobject event completed.');
+        // this.gameSocket.emit("new_game", { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
+        console.log("Emitting new_gameobject event.");
+        this.lobbySocket.emit("new_gameobject", this.data);
+        console.log("Emitting new_gameobject event completed.");
         Router.push(`/game?objectId=${this.data.objectId}`);
       },
     };
