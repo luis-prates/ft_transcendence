@@ -43,7 +43,7 @@ function tes() {
 			}
 		});
 		socket = socketClass.getLobbySocket();
-  		socket.emit("connection_lobby", { userId: objecId.value, objectId: objecId.value.toString() });
+      socket.emit("connection_lobby", { userId: objecId.value, objectId: objecId.value.toString(), nickname: store.user.nickname, avatar: store.user.avatar });
   		setTimeout(() => {
     		Router.setRoute(Router.ROUTE_ALL);
     		Router.push("/");
@@ -71,25 +71,6 @@ onMounted(() => {
       .catch((err) => {
         console.log(err);
       });
-    socket.on("invite_request_game", (e: any) => {
-      console.log("CHMADO");
-
-      const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
-      Game.instance.addMenu(confirmButton.menu);
-			confirmButton.show((value) => {
-          if (value == "CONFIRM") {
-            socket.emit("challenge_game", {
-              challenged: store.user.id, 
-              challenger: e.playerId,
-            });
-          }
-		  });
-    });
-    socket.on("challenge_game", (gameId: string) => {
-			// socket.off("challenge_game");
-			// socket.off("invite_confirm_game");
-			Router.push(`/game?objectId=${gameId}`);
-		});
   }
 });
 </script>

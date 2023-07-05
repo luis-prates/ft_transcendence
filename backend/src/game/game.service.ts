@@ -107,7 +107,7 @@ export class GameService {
 		return game.data.objectId;
 	}
 	
-	async challengeGame(player1: Player, player2: Player) {
+	async challengeGame(player1: number, player2: number) {
 
 		//TODO
 		//verificar se ambos estao em jogo ou nao pelo Status
@@ -115,12 +115,13 @@ export class GameService {
 		const gameCreated = await this.createGame({
 			"gameType": "PUBLIC",
 			"players": [],
-			"gameRequest": {"objectId": `gametest_${player1.id}_${player2.id}`,
+			"gameRequest": {"objectId": `gametest_${player1}_${player2}`,
 			"maxScore": 3,
 			"table": "#1e8c2f",
 			"tableSkin": "",
 			"bot": false}
 		} as GameDto) as any;
+		console.log(gameCreated);
 		return gameCreated.id;
 	}
 

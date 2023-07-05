@@ -81,7 +81,7 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		if (!player1 || !player2)
 			return ;
-		console.log("EMITIR PARA TODOS");
+
 		this.server.to(player2.getSocket().id).emit('invite_request_game', {
 			playerId: challengerId,
 			playerName: challengerNickname
@@ -97,18 +97,18 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 	async handleChallengeGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.logger.debug(`challenge game received: ${JSON.stringify(body)}`);
 
-		const challenged = client.data.challenged;
-		const challenger = client.data.challenger;
+		const challenged = body.challenged;
+		const challenger = body.challenger;
 		const player1 = this.playerService.getPlayer(challenged);
 		const player2 = this.playerService.getPlayer(challenger);
 
 		if (!player1 || !player2)
 			return ;
 	
-		const userId = client.data.userId;
-		const player = this.playerService.getPlayer(userId);	
-		const game = await this.gameService.challengeGame(player1, player2);
+		const game = await this.gameService.challengeGame(challenged, challenger);
 
+		console.log(game);
+		
 		this.server.to(player1.getSocket().id).emit('challenge_game', game);
 		this.server.to(player2.getSocket().id).emit('challenge_game', game);
 	}

@@ -14,6 +14,8 @@ export type PlayerData = {
 	objectId: number;
 	x: number;
 	y: number;
+	avatar: number;
+	nickname: string;
 	animation: { name: string; isStop: boolean };
 };
 
@@ -30,15 +32,19 @@ export class Player {
 		objectId: 0,
 		x: 64,
 		y: 64,
+		avatar: 0,
+		nickname: "",
 		animation: { name: 'walk_bottom', isStop: true },
 	};
 	time = 0;
 	private readonly logger = new Logger(Player.name);
 
-	constructor(socket: Socket, objectId: number, private playerService?: PlayerService) {
-		this.logger.debug(`new player with objectId: ${objectId}`);
+	constructor(socket: Socket, payload: any, private playerService?: PlayerService) {
+		console.log("new player with data:", payload);
 		this.setSocket(socket);
-		this.data.objectId = objectId;
+		this.data.objectId = payload.objectId;
+		this.data.avatar = payload.avatar;
+		this.data.nickname = payload.nickname;
 		this.time = Date.now();
 	}
 

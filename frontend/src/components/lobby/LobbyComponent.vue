@@ -24,6 +24,8 @@ import { Player, Map, Lobby, Game } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
 import { userStore } from "@/stores/userStore";
 import ChatComponent from "@/components/chat/ChatComponent.vue";
+import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
+import Router from "@/router";
 
 const store = userStore();
 const game = ref<HTMLDivElement>();
@@ -54,6 +56,23 @@ onMounted(() => {
       });
     }, 1000);
   });
+  socket.on("invite_request_game", (e: any) => {
+      const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
+      Game.instance.addMenu(confirmButton.menu);
+			confirmButton.show((value) => {
+          if (value == "CONFIRM") {
+            socket.emit("challenge_game", {
+              challenged: store.user.id, 
+              challenger: e.playerId,
+            });
+          }
+		  });
+    });
+    socket.on("challenge_game", (gameId: string) => {
+      console.log("Challange begin!")
+			socket.off("invite_confirm_game");
+			Router.push(`/game?objectId=${gameId}`);
+		});
 });
 
 onUnmounted(() => {

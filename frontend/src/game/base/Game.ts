@@ -1,5 +1,4 @@
 import { Camera, Player, Menu, type GameObject, Map, listClass } from "@/game";
-import socket from "@/socket/Socket";
 import { userStore } from "@/stores/userStore";
 import { CreateGame } from "../Menu/CreateGame";
 import { YourMenu } from "../Menu/YourMenu";
@@ -133,7 +132,8 @@ export class Game {
 
   addGameObject(gameObject: GameObject): GameObject {
     this.gameObjets.push(gameObject);
-    console.log("Add: ", gameObject.objectId);
+    if (gameObject.type == "character" || gameObject.type == "player")
+      console.log("Add: ", gameObject);
     if (gameObject.mouseClick) this.mouseEvents.push(gameObject.mouseClick.bind(gameObject));
     if (gameObject.update) this.gameObjetsUpdate.push(gameObject);
     return gameObject;

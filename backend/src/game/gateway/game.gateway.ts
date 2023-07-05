@@ -104,7 +104,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			console.log(`The Client is connected AGAIN!: ${client.id}`);
 			return;	
 		}
-		console.log("aqui", isInTheGamePlayer || isInTheGameWatcher, userId, client.data)
 		const player = this.playerService.getPlayer(userId);
 		// Add userId to gameIdToUserId map
 		// if gameId not in map, create new entry

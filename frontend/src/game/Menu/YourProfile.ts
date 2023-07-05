@@ -3,6 +3,7 @@ import { userStore, type GAME } from "@/stores/userStore";
 import { skin, TypeSkin } from "../ping_pong/Skin";
 import { AnimationMenu } from "./AnimationMenu";
 import { PaginationMenu } from "./PaginationMenu";
+import { socketClass } from "@/socket/SocketClass";
 
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";
@@ -14,9 +15,11 @@ import pencil from "@/assets/images/lobby/pencil.png";
 import green_sign from "@/assets/images/lobby/menu/green_sign.png";
 import { Profile } from "./Profile";
 import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
+import type { Socket } from "socket.io-client";
 
 export class YourProfile {
   private _menu = new Menu({ layer: "Global", isFocus: true });
+  public socket: Socket = socketClass.getLobbySocket();
 
   private background: ElementUI = this.createBackground();
   private customAvatar: ElementUI = this.createAvatar();
@@ -305,6 +308,16 @@ export class YourProfile {
 
             //DataBase
             this.updateProfile()
+            this.socket.emit("update_gameobject", {
+              className: "Character",
+              objectId: this.player.objectId,
+              name: this.player.name,
+              x: this.player.x,
+              y: this.player.y,
+              avatar: this.user.avatar,
+              nickname: this.user.nickname,
+              animation: { name: this.player.animation.name, isStop: false },
+            });
         }
         else if (type == "photo") {
           fileInput.click();

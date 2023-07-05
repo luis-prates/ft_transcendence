@@ -276,9 +276,7 @@ export class Profile {
 						challengedNickname: this.user.nickname,
 					});
 
-					lobbySocket.on("invite_request_game", (e: any) => {
-						console.log("CHAMOUUUUUUUU");
-				  
+					lobbySocket.on("invite_request_game", (e: any) => {				  
 						const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
 						Game.instance.addMenu(confirmButton.menu);
 							  confirmButton.show((value) => {
@@ -288,11 +286,11 @@ export class Profile {
 								challenger: e.playerId,
 							  });
 							}
-							});
-					  });
+						});
+					});
 			
 					lobbySocket.on("invite_confirm_game", (e: any) => {
-	
+						//TODO setTimeout();
 						lobbySocket.off("invite_confirm_game");
 					});
 						//setTimeout(); 
