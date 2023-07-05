@@ -63,7 +63,7 @@ describe('Auth', () => {
 		});
 
 		it('should throw if image is not base64 encoding', async () => {
-			const response = await pactum
+			return pactum
 				.spec()
 				.post('/auth/signin')
 				.withBody({
