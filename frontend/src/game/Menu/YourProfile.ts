@@ -32,6 +32,7 @@ export class YourProfile {
   private paddle_pagination: PaginationMenu;
 
   private new_nickname = "";
+  private twoFactor: boolean = false;
 
   //MiniPerfil
   private avataresImage = new Image();
@@ -67,8 +68,8 @@ export class YourProfile {
 
     //Custom and Save Buttons
     this.menu.add(this.background, this.createButton("photo", 1, 26, "Update Photo", 9));
+    this.menu.add(this.background, this.createQRCodeButton("qrcode", 12.5, 26, "QRCODE", 9));
     this.menu.add(this.background, this.createButton("save", 28, 26, "Save", 5));
-
 
     //Arrow Buttons
     this.menu.add(this.background, this.matche_pagination.createArrowButton("left", 2.5, 33.5, 2));
@@ -305,8 +306,11 @@ export class YourProfile {
             //DataBase
             this.updateProfile()
         }
-        if (type == "photo") {
+        else if (type == "photo") {
           fileInput.click();
+        }
+        else if (type == "qrcode") {
+          
         }
       },
     };
@@ -348,6 +352,54 @@ export class YourProfile {
       });
     }
     
+    return button;
+  }
+
+  private createQRCodeButton(type: string, x: number, y: number, label: string, width: number): ElementUI {
+
+    const button: ElementUI = {
+      type: type,
+      rectangle: { x: x + "%", y: y + "%", w: width + "%", h: "4.5%" },
+      draw: (ctx: CanvasRenderingContext2D) => {
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+
+        this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
+        
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.fillStyle = "black";
+        this.fillTextCenter(ctx, label, button.parent?.rectangle.x + button.rectangle.x, 
+        button.rectangle.y + button.rectangle.h / 2 + 6,
+        button.rectangle.w * 0.6, button.rectangle.h * 0.4, undefined, "'Press Start 2P', cursive", false);
+
+        
+        ctx.fillStyle = this.twoFactor ? "green" : "red";
+        this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.6, button.rectangle.y + button.rectangle.h * 0.15, button.rectangle.w * 0.35, button.rectangle.h * 0.7, 10);
+
+        ctx.fill();
+        ctx.stroke();
+
+          
+        const centerX = this.twoFactor ? button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.87 : button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.68;
+        const centerY = button.rectangle.y + button.rectangle.h * 0.5;
+        const radius = button.rectangle.w * 0.075;
+        const color = 'black';
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.closePath();
+
+      },
+      onClick: () => {
+        this.twoFactor = !this.twoFactor;
+        //TODO DATABASE
+      },
+    };
     return button;
   }
 
@@ -682,9 +734,6 @@ export class YourProfile {
         inputName.style.left = pos_x + "px";
         inputName.style.color = "black";
         inputName.style.backgroundColor = "transparent";
-        
-
-
 
         if (edit == false)
         {
