@@ -2,10 +2,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" />
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
   <div class="box" href>
-    <div class="container">
-      <canvas id="canvas1"></canvas>
-      <button id="buttonLeave" class="button">Leave</button>
-  </div>
+    <canvas id="canvas1"></canvas>
+    <button id="buttonLeave" class="button">Leave</button>
 </div>
 
 </template>
@@ -18,6 +16,7 @@ import { userStore, type GAME } from "@/stores/userStore";
 import { socketClass } from "@/socket/SocketClass";
 
 import avatar_marvin from "@/assets/images/pingpong/marvin.jpg";
+import Router from "@/router";
 
 const props = defineProps({
   objectId: String,
@@ -29,40 +28,10 @@ let socket = socketClass.getGameSocket();
 
 onMounted(function () {
   const canvas = document.getElementById("canvas1") as HTMLCanvasElement;
+  const button = document.getElementById("buttonLeave") as HTMLButtonElement;;
   const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
   canvas.width = 1000;
   canvas.height = 750;
-
-  const button = document.getElementById("buttonLeave") as HTMLButtonElement;;
-
-  function updateButtonSizeAndPosition() {
-    const bodyWidth = document.body.clientWidth;
-    const bodyHeight = document.body.clientHeight;
-
-    const canvasWidth = Math.min(bodyWidth, 1000);
-    const canvasHeight = Math.min(bodyHeight, 750);
-
-    const percentageWidth = canvasWidth / 1000 ;
-    const percentageHeight = canvasHeight / 750;
-    const percentage = percentageWidth <= percentageHeight ? percentageWidth : percentageHeight;
-
-    const buttonHeight = 30 * percentage;
-    const buttonWidth = 120 * percentage;
-    const buttonRight = 5 * percentage;
-    const buttonTop = 10.5 * percentage;
-    
-    const buttonFontSize = 1 * percentage;
-
-    button.style.width = `${buttonWidth}px`;
-    button.style.height = `${buttonHeight}px`;
-    button.style.right = `${buttonRight}px`;
-    button.style.top = `${buttonTop}px`;
-
-    button.style.fontSize = `${buttonFontSize}rem`;
-  }
-
-  updateButtonSizeAndPosition();
-  window.addEventListener('resize', updateButtonSizeAndPosition);
 
   const user = userStore().user;
   if (!socket)
@@ -86,6 +55,58 @@ onMounted(function () {
   const tableBoard = new TablePong(canvas.width, canvas.height, "DarkSlateBlue", "#1e8c2f");
   const game = new GamePong(canvas, canvas.width, canvas.height - 228, 164, ctx, props as gameRequest, tableBoard);
   console.log(props);
+
+  
+  //Resize Button
+  function updateButtonSizeAndPosition() {
+    const bodyWidth = document.body.clientWidth;
+    const bodyHeight = document.body.clientHeight;
+
+    const canvasWidth = Math.min(bodyWidth, 1000);
+    const canvasHeight = Math.min(bodyHeight, 750);
+
+    const percentageWidth = canvasWidth / 1000 ;
+    const percentageHeight = canvasHeight / 750;
+    const percentage = percentageWidth <= percentageHeight ? percentageWidth : percentageHeight;
+
+    if (game.status == Status.Finish)
+    {
+      button.style.width = `${290 * percentage}px`;
+      button.style.height = `${60 * percentage}px`;
+      button.style.top = `${610.5 * percentage}px`;
+    }
+    else
+    {
+      button.style.width = `${120 * percentage}px`;
+      button.style.height = `${30 * percentage}px`;
+      button.style.top = `${10.5 * percentage}px`;
+    }
+    
+    button.style.right = `${5 * percentage}px`;
+    button.style.border = `${5 * percentage}px solid black`;
+    button.style.fontSize = `${1 * percentage}rem`;
+    //Canva Border
+    canvas.style.border =  `${5 * percentage}px solid black`;
+  }
+
+  function leaveTheGame() {
+    const isgetall = (game.cur.exp == game.endGame.exp && game.cur.money == game.endGame.money && game.cur.watchers == game.endGame.watchers);
+
+    if (game.status == Status.Finish && !isgetall)
+    {
+      game.cur.exp = game.endGame.exp;
+      game.cur.money = game.endGame.money;
+      game.cur.watchers = game.endGame.watchers;
+    }
+    else
+    {
+      Router.push(`/`);
+    }
+  }
+
+  updateButtonSizeAndPosition();
+  window.addEventListener('resize', updateButtonSizeAndPosition);
+  button.addEventListener("click", leaveTheGame);
 
   socket.on("start_game", (e: GameStart) => {
     console.log("Start:", e);
@@ -167,6 +188,15 @@ onMounted(function () {
     console.log(e);
     game.endGame = e;
 
+    //Buton Leave
+    button.style.backgroundColor = 'yellow';
+    button.style.color = 'black';
+    button.textContent = "Go Back";
+    updateButtonSizeAndPosition();
+
+    //Animation
+    canvas.addEventListener("click", (event) => game.handleClick(event, game));
+
     //Add info in storage
     if (game.playerNumber == 1 || game.playerNumber == 2) {
 
@@ -236,6 +266,7 @@ onMounted(function () {
     socket.off("game_view");
     socket.off("end_game");
     window.removeEventListener('resize', updateButtonSizeAndPosition);
+    button.removeEventListener('click', leaveTheGame);
   });
 
   function animate() {
@@ -256,12 +287,6 @@ onMounted(function () {
   height: 100%;
   width: 100%;
   box-sizing: 0;
-}
-
-.container {
-  position: absolute;
-  width: 100%;
-  height: 100%;
 }
 
 #canvas1 {
@@ -285,5 +310,11 @@ onMounted(function () {
   font-family: 'Press Start 2P', cursive;
   font-size: 100%;
 }
+
+#buttonLeave:hover {
+  color: rgb(91, 91, 91);
+}
+
+
 </style>
 

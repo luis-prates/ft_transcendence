@@ -5,28 +5,21 @@ import PingPongPage from "@/pages/PingPongPage.vue";
 
 const routes_login = [
   {
-  //   path: "/:catchAll(.*)",
-  //   name: "login",
-  //   component: LoginPage,
-  //   props: (route: any) => ({ code: route.query.code }),
-  
-  path: "/",
-  name: "Ping Pong Game",
-  component: PingPongPage,
-  props: (route: any) => ({
-    objectId: route.query.objectId,
-  }),
+     path: "/:catchAll(.*)",
+     name: "login",
+     component: LoginPage,
+     props: (route: any) => ({ code: route.query.code }),
   },
 ];
 
 const routes = [
-/*  {
+  {
     path: "/",
     name: "home",
     component: HomePage,
-  },*/
+  },
   {
-    path: "/",
+    path: "/game",
     name: "Ping Pong Game",
     component: PingPongPage,
     props: (route: any) => ({

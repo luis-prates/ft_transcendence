@@ -52,10 +52,10 @@ export class PlayerService {
 
 	removePlayer(player: Player): void {
 		//! is it needed?
+		//verificar se existe no gateaway do game
+		if (!player)
+			return ;
 		const playerFromMap = this.getPlayer(player.objectId);
-		if (!player) {
-			return;
-		}
 
 		playerFromMap.destroy();
 		this.players.delete(Number(player.objectId));

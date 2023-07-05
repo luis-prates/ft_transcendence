@@ -72,8 +72,6 @@ export class GamePong {
     this.player2 = new PlayerPong(this, 2, "Player 2", avatarDefault);
     this.ball = new Ball(this);
     this.data = data;
-
-    this.canvas.addEventListener("click", (event) => this.handleClick(event, this));
   }
   //Update Input Keys
   update() {
@@ -146,6 +144,7 @@ export class GamePong {
     this.context.fillText(this.watchersNumber.toString(), 120, this.height + this.offSet + 45, 50);
     this.context.strokeText(this.watchersNumber.toString(), 120, this.height + this.offSet + 45, 50);
   }
+
   //Draw Waiting Game
   waitingGame() {
     this.context.font = "100px 'Press Start 2P', cursive";
@@ -154,11 +153,11 @@ export class GamePong {
     this.context.strokeStyle = "black";
     this.context.lineWidth = 10;
     this.context.strokeText("WAITING!", 95, 380, this.width - 180);
-    this.context.strokeText("_".repeat("WAITING!".length), 95, 380, this.width - 180);
+    this.context.strokeText("_".repeat("WAITING!".length), 95, 390, this.width - 180);
 
     this.context.fillStyle = "yellow";
     this.context.fillText("WAITING!", 95, 380, this.width - 180);
-    this.context.fillText("_".repeat("WAITING!".length), 95, 380, this.width - 180);
+    this.context.fillText("_".repeat("WAITING!".length), 95, 390, this.width - 180);
   }
 
   //Animation Loop 1000 milesecond (1second) for 10 fps
@@ -229,20 +228,6 @@ export class GamePong {
   }
   
   drawButtonFinalScore(context: CanvasRenderingContext2D) {
-
-    this.context.font = "30px 'Press Start 2P', cursive";
-
-    //Button "Go Back!"
-    if ((this.playerNumber != 1 && this.playerNumber != 2) || this.cur.exp == this.endGame.exp && this.cur.money == this.endGame.money && this.cur.watchers == this.endGame.watchers)
-    { 
-      this.context.fillStyle = "yellow";
-      this.context.strokeRect(this.width / 2 - 140, 575, 280, 50);
-      this.context.fillRect(this.width / 2 - 140, 575, 280, 50);
-      this.context.fillStyle = "white";
-      this.context.strokeText("Go Back!", this.width / 2 - 110, 617.5)
-      this.context.fillText("Go Back!", this.width / 2 - 110, 617.5);   
-    }
-  
     context.strokeRect(210, 250, 100, 100);
     context.strokeRect(this.width - 210 - 100, 250, 100, 100);
 
@@ -282,7 +267,6 @@ export class GamePong {
     }
   }
 
-  //TODO
   handleClick(event: MouseEvent, game: GamePong) {
 
     if (game.status != Status.Finish)
@@ -292,65 +276,15 @@ export class GamePong {
 
     if (!isgetall)
     {
-      game.cur.exp = game.endGame.exp;
-      game.cur.money = game.endGame.money;
-      game.cur.watchers = game.endGame.watchers;
+      if (game.cur.exp != game.endGame.exp)
+        game.cur.exp = game.endGame.exp;
+      else if (game.cur.money != game.endGame.money)
+        game.cur.money = game.endGame.money;
+      else if (game.cur.watchers != game.endGame.watchers)
+        game.cur.watchers = game.endGame.watchers;
     }
     else
-    {
       game.canvas.removeEventListener("click", (event) => this.handleClick(event, game));
-      Router.push(`/`);
-    }
-
     return ;
-
-    //TODO
-
-    console.log("click 1!! game:", game.endGame)
-
-    const rect = game.canvas.getBoundingClientRect();
-
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
-
-    const buttonX1 = game.width / 2 - 140;
-    const buttonX2 = game.width / 2 + 140;
-    const buttonY1 = 525;
-    const buttonY2 = 575;
-
-    const totalWidth = window.innerWidth;
-    const totalHeight = window.innerHeight;
-    
-    // Calcular a nova posição do botão
-    const newButtonX1 = (buttonX1 / totalWidth) * game.canvas.width;
-    const newButtonX2 = (buttonX2 / totalWidth) * game.canvas.width;
-    const newButtonY1 = (buttonY1 / totalHeight) * game.canvas.height;
-    const newButtonY2 = (buttonY2 / totalHeight) * game.canvas.height;
-    
-    console.log("rect:", rect);
-    console.log("event:", event)
-
-
-    console.log("click on x: ", mouseX, "y: ", mouseY)
-    console.log("click on x1: ", newButtonX1, "x2: ", newButtonX2)
-    console.log("click on y1: ", newButtonY1, "y2: ", newButtonY2)
-
-    // Verificar se o clique ocorreu dentro da nova posição do botão
-    if (isgetall && (mouseX >= newButtonX1 && mouseX <= newButtonX2 && mouseY >= newButtonY1 && mouseY <= newButtonY2)) {
-      // Botão clicado!
-      game.canvas.removeEventListener("click", (event) => this.handleClick(event, game));
-      Router.push(`/`);
-    }
-
-    if (mouseX >= 0 && mouseX <= game.canvas.width && mouseY >= 0 && mouseY <= game.canvas.height) {
-      game.endGame.exp = game.endGame.exp;
-      game.endGame.money = game.endGame.money;
-      game.endGame.watchers = game.endGame.watchers; 
-    }
-
-    // if ( isgetall && (mouseX >= game.width / 2 - 140 && mouseX <= game.width / 2 + 140  && mouseY >= 575 && mouseY <= 625)) {
-    //     console.log("click push!!")
-    //     
-    // }
   }
 }
