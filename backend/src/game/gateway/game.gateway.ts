@@ -95,13 +95,23 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	async handleEnterGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.logger.debug(`Enter game received: ${JSON.stringify(body)}`);
 		const gameId = body.objectId;
-		client.data.gameId = gameId;
 		const userId = client.data.userId;
+		client.data.gameId = gameId;
+		const isInTheGamePlayer = this.socketService.gameIdToPlayerId.get(gameId) ? this.socketService.gameIdToPlayerId.get(gameId).includes(Number(userId)) : false;
+		const isInTheGameWatcher = this.socketService.gameIdToWatcherId.get(gameId) ? this.socketService.gameIdToWatcherId.get(gameId).includes(Number(userId)) : false;
+		if (isInTheGamePlayer || isInTheGameWatcher)
+		{
+			console.log(`The Client is connected AGAIN!: ${client.id}`);
+			return;	
+		}
+		console.log("aqui", isInTheGamePlayer || isInTheGameWatcher, userId, client.data)
 		const player = this.playerService.getPlayer(userId);
 		// Add userId to gameIdToUserId map
 		// if gameId not in map, create new entry
 		// if gameId in map, append userId to array
 		const isPlayer = await this.gameService.enterGame(player, body);
+		//TODO Associar o player a um jogo
+		//this.socketService.playerIdToSocketId.set(userId, gameId);
 		if (isPlayer) {
 			this.socketService.gameIdToPlayerId.set(gameId, [
 				...(this.socketService.gameIdToPlayerId.get(gameId) || []),
