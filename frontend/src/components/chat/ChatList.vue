@@ -19,6 +19,9 @@
         <ul class="contacts" @click="toggleStatus">
           <u v-for="channel in store.channels">
             <ChatListChannels :channel="channel" @click="selectChannel(channel)" />
+            <div class="menu-container" v-if="isMenuOpen">
+              <Menus v-show="selected?.objectId == channel.objectId" />
+            </div>
           </u>
         </ul>
       </div>
@@ -47,13 +50,21 @@ import "./App.css";
 import { defineProps, ref, getCurrentInstance, type WebViewHTMLAttributes } from "vue";
 import { onMounted } from 'vue';
 import { storeToRefs } from "pinia";
+import Menus from './Menu.vue';
 
 const store = chatStore();
 const { selected } = storeToRefs(store);
+const isMenuOpen = ref(false);
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value;
+};
+
 
 function selectChannel(channel: channel) {
-  instance?.emit("update-create-channel", false);
+  //instance?.emit("update-create-channel", false);
   store.showChannel(channel);
+  toggleMenu();
 }
 
 //Creating a new channel:
@@ -96,8 +107,8 @@ const instance = getCurrentInstance();
 
 // Emit event from the child component
 const toggleStatus = () => {
-  const newStatus = !props.channelStatus;
-  instance?.emit("update-channel-status", newStatus);
+  //const newStatus = !props.channelStatus;
+  //instance?.emit("update-channel-status", newStatus);
 };
 
 // Variável para controlar o estado do chat
@@ -144,5 +155,10 @@ const toggleChat = () => {
   flex: 1;
   max-height: 100%; /* Set the desired maximum height for the contacts card */
   overflow-y: auto;
+}
+
+.menu-container {
+  position: relative;
+  z-index: 10; /* Adjust the z-index value as needed */
 }
 </style>

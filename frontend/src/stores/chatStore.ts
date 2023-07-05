@@ -76,17 +76,18 @@ export const chatStore = defineStore("chat", () => {
   async function showChannel(channel: channel | undefined) {
     if (channel) {
       selected.value = channel;
-      try {
-        const response = await axios.get(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/messages`, {
-          headers: { Authorization: `Bearer ${user.access_token_server}` },
-        });
-        const messages = response.data;
-        // Process the messages as needed
-        selected.value.messages = messages;
-        console.log("RESPOSTA DO SERVER: ", messages);
-      } catch (error) {
-        console.error(error);
-      }
+    //TODO criar funçao de open channel
+    //   try {
+    //     const response = await axios.get(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/messages`, {
+    //       headers: { Authorization: `Bearer ${user.access_token_server}` },
+    //     });
+    //     const messages = response.data;
+    //     // Process the messages as needed
+    //     selected.value.messages = messages;
+    //     console.log("RESPOSTA DO SERVER: ", messages);
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
     } else {
       selected.value = undefined;
     }
