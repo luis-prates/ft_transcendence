@@ -56,6 +56,12 @@ export class Player extends Character {
       contex.fillStyle = "red";
       contex.fill();
     }
+    contex.fillStyle = 'rgba(128, 128, 128, 0.65)';//"yellow";
+    contex.strokeStyle = 'rgba(0, 0, 0, 0.65)';//"black";
+    contex.lineWidth = 5;
+    contex.font = "10px 'Press Start 2P', cursive";
+    contex.strokeText(this.nickname, this.x - this.w / 2, this.y - this.h * 0.3, this.w * 2);
+    contex.fillText(this.nickname, this.x - this.w / 2, this.y - this.h * 0.3, this.w * 2);
     super.draw(contex);
   }
 

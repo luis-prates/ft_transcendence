@@ -59,7 +59,6 @@ export class GameMap {
 			'update_gameobject',
 			function (data: any) {
 				player.data = data;
-				console.log(data == player.data);
 				this.logger.debug('update_gameobject: ' + JSON.stringify(data));
 				this.emitAll('update_gameobject', data, player, false);
 			}.bind(this),

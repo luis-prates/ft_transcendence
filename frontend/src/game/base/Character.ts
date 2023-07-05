@@ -2,6 +2,8 @@ import imgUrl from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28
 import type { GameObject, GameObjectType } from "./GameObject";
 import { AnimationController } from "../animation/AnimationController";
 import { PathFinding, type PathNode } from "../path_finding/PathFinding";
+import { Game } from "./Game";
+import { Profile } from "../Menu/Profile";
 
 export interface CharacterOnline {
   className: string;
@@ -110,6 +112,12 @@ export class Character implements GameObject {
       context.closePath();
     }
     this.animation?.draw(context, this.x, this.y - this.h / 2, this.w, this.h);
+    context.fillStyle = 'rgba(255, 255, 255, 0.65)';//"white";
+    context.strokeStyle = 'rgba(0, 0, 0, 0.65)';//"black";
+    context.lineWidth = 5;
+    context.font = "10px 'Press Start 2P', cursive";
+    context.strokeText(this.nickname, this.x - this.w / 2, this.y - this.h * 0.3, this.w * 2);
+    context.fillText(this.nickname, this.x - this.w / 2, this.y - this.h * 0.3, this.w * 2);
   }
 
   public move(x: number, y: number, animation: string) {
@@ -128,6 +136,11 @@ export class Character implements GameObject {
 
   onDeselected(): void {
     this.isSelect = false;
+  }
+
+  interaction?(gameObject: GameObject): void {
+    if (this.isSelect)
+      Game.instance.addMenu(new Profile(this.objectId).menu);
   }
 
   public setLookAt(gameObject: GameObject) {
