@@ -95,8 +95,8 @@ export class Character implements GameObject {
       this.nickname = data.nickname;
       this.animation.sx = (this.avatar - 4 >= 0 ? this.avatar - 4 : this.avatar) * 144;
       this.animation.sy = (this.avatar - 4 >= 0 ? 1 : 0) * 320;
-      console.log("animation\n", data.animation);
-     /* this.animation.sx = data.animation.sx ? data.animation.sx : this.animation.sx;
+      /*console.log("animation\n", data.animation);
+      this.animation.sx = data.animation.sx ? data.animation.sx : this.animation.sx;
       this.animation.sy = data.animation.sy ? data.animation.sy : this.animation.sy;*/
       this.animation?.setAnimation(data.animation.name);
       this.animation?.setStop(data.animation.isStop);
