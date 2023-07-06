@@ -69,7 +69,7 @@ onMounted(() => {
 		  });
     });
     socket.on("challenge_game", (gameId: string) => {
-      console.log("Challange begin!")
+      console.log("Challenge begin!")
 			socket.off("invite_confirm_game");
 			Router.push(`/game?objectId=${gameId}`);
 		});

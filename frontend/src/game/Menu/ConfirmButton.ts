@@ -12,7 +12,7 @@ export enum STATUS_CONFIRM {
 }
 
 export class ConfirmButton {
-  private _menu = new Menu({ layer: "Global", isFocus: true });
+  private _menu = new Menu({ layer: "Global", isFocus: true});
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
   private type: STATUS_CONFIRM;
@@ -20,7 +20,9 @@ export class ConfirmButton {
 
   private onResult: (result: any) => void = () => {};
 
-  constructor(something: any, type: STATUS_CONFIRM) {
+  constructor(something: any, type: STATUS_CONFIRM, timeOut?: number) {
+    if (timeOut)
+      this._menu.setTimeOut(timeOut);
     this.type = type;
     this.something = something;
     this.menu.add(this.background);

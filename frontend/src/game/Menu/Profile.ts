@@ -289,11 +289,11 @@ export class Profile {
 						});
 					});
 			
-					lobbySocket.on("invite_confirm_game", (e: any) => {
-						//TODO setTimeout();
+					lobbySocket.on("invite_confirm_game", (message: string) => {
+						const confirmButton = new ConfirmButton(message, STATUS_CONFIRM.ERROR, 5000);
+						Game.instance.addMenu(confirmButton.menu);
 						lobbySocket.off("invite_confirm_game");
 					});
-						//setTimeout(); 
         		  }
         		});
 			}

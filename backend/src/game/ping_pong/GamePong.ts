@@ -7,6 +7,7 @@ import { UserService } from '../../user/user.service';
 import { Server } from 'socket.io';
 import { GameStatus } from '@prisma/client';
 import { Player } from '../../player/Player';
+import { stat } from 'fs';
 
 export enum Status {
 	Waiting,
@@ -207,7 +208,7 @@ export class GameClass {
 	endGame(playerNumber: number) {
 		if ((playerNumber == 1 || playerNumber == 2) && this.status != Status.Finish) {
 			this.updateStatus(Status.Finish);
-			//INSERT IN DATABASE
+
 			this.logger.debug('Game End');
 
 			if (playerNumber === 1) {
@@ -223,6 +224,34 @@ export class GameClass {
 			this.watchers.forEach(watcher => watcher.offGame('game_move'));
 			this.onRemove();
 		}
+	}
+
+	disconnect(disconnectPlayerNumber: number) {
+
+		if ((disconnectPlayerNumber == 1 || disconnectPlayerNumber == 2) && this.status != Status.Finish) {
+			if (!this.player1 || !this.player2)
+			{
+				this.deleteGame();
+			}
+			else
+			{
+				this.emitAll('game_update_point', {
+					objectId: this.data.objectId,
+					disconnectPlayerNumber: disconnectPlayerNumber == 1 ? 2 : 1,
+					score: this.maxPoint,
+				});
+				if (disconnectPlayerNumber == 1)
+					this.player2.score = this.maxPoint;
+				else if (disconnectPlayerNumber == 2)
+					this.player1.score = this.maxPoint;
+				this.endGame(disconnectPlayerNumber == 1 ? 2 : 1)
+			}
+		}
+	}
+
+	async deleteGame() {
+		this.logger.debug(`Delete game ${this.data.objectId}`);
+		await this.gameService.deleteGame(this.data.objectId);
 	}
 
 	private updateGameStatsForWinner(winner: Player_Pong, loser: Player_Pong) {
@@ -293,7 +322,7 @@ export class GameClass {
 
 	//Update Status and Emit for ALL
 	updateStatus(status: number) {
-		if (this.status != status) {
+		if (this.status != status && this.status != Status.Finish) {
 			this.status = status;
 			this.emitAll('game_update_status', status);
 		}

@@ -70,14 +70,17 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		//Desafiador
 		const challengerId = body.challengerId;
 		const challengerNickname = body.challengerNickname;
+
 		//Desafiado
 		const challengedId = body.challengedId;
-		const challengedNickname = body.challengedNickname;
 
-		console.log("id:" , challengedId, " id:", challengerId);
 		//Verificar
 		const player1 = this.playerService.getPlayer(challengerId);
 		const player2 = this.playerService.getPlayer(challengedId);
+		
+		console.log("player1:" , player1, " player2:", player2);
+		if (!player2)
+			this.server.to(player1.getSocket().id).emit('invite_confirm_game', "Is not Connect!");
 
 		if (!player1 || !player2)
 			return ;
@@ -86,11 +89,8 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 			playerId: challengerId,
 			playerName: challengerNickname
 		 });
-
-		this.server.to(player1.getSocket().id).emit('invite_confirm_game', {
-			playerId: challengedId,
-			playerName: challengedNickname,
-		});
+		
+		this.server.to(player1.getSocket().id).emit('invite_confirm_game', "Recive your Invite!");
 	}
 	
 	@SubscribeMessage('challenge_game')

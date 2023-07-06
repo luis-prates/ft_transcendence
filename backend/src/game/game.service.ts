@@ -23,7 +23,7 @@ type LeaderBoard = {
 @Injectable()
 export class GameService {
 	public events: EventEmitter;
-	private games: GameClass[] = [];
+	public games: GameClass[] = [];
 	private readonly logger = new Logger(GameService.name);
 	private server: Server;
 
@@ -401,6 +401,19 @@ export class GameService {
 			orderBy: {
 				createdAt: 'desc',
 			}
+		});
+	}
+
+	async deleteGame(gameId: string) {
+		const index = this.games.findIndex(g => g.data.objectId === gameId);
+		if (index !== -1) {
+		  this.games.splice(index, 1);
+		}
+		this.logger.log(`Delete Game ${gameId}`);
+		return this.prisma.game.delete({
+		  where: {
+			id: gameId,
+		  },
 		});
 	}
 }
