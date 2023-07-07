@@ -53,6 +53,7 @@ export class PlayerService {
 	removePlayer(player: Player): void {
 		//! is it needed?
 		//verificar se existe no gateaway do game
+		this.logger.log(`Remove Player: ${player}`);
 		if (!player)
 			return ;
 		const playerFromMap = this.getPlayer(player.objectId);
@@ -60,6 +61,7 @@ export class PlayerService {
 		playerFromMap.destroy();
 		this.players.delete(Number(player.objectId));
 		this.sockets.delete(Number(player.objectId));
+		this.logger.log(`Removed`);
 	}
 
 	getPlayer(userId: number): Player {
@@ -120,6 +122,16 @@ export class PlayerService {
 		return null;
 	}
 
+	//TODO
+	getPlayerBySocket(socket: Socket): number | undefined {
+		for (const [number, value] of this.sockets.entries()) {
+		  if (value === socket) {
+			return number;
+		  }
+		}
+		return undefined;
+	  }
+
 	updatePlayerSocket(socket: Socket): void {
 		this.logger.debug('updatePlayerSocket');
 		const playerSocket = this.sockets.get(Number(socket.id));
@@ -130,13 +142,37 @@ export class PlayerService {
 
 	onSocketConnected(socket: Socket, payload: any): Player {
 		// If this socket was already associated with a player, remove the old player data
-		if (this.players.has(Number(payload.userId))) {
-			this.players.delete(Number(payload.userId));
+		if (this.players.has(payload.userId)) {
+			console.log("PLAYERR REPLACED REMOVED!")
+			this.players.delete(payload.userId);
 		}
 
 		// If this socket was already in the map, remove the old socket data
-		if (this.sockets.has(Number(payload.userId))) {
-			this.sockets.delete(Number(payload.userId));
+		if (this.sockets.has(payload.userId)) {
+			console.log("SOCKETTT REPLACED REMOVED!")
+			this.sockets.delete(payload.userId);
+		}
+
+		console.log("count", this.getPlayerCount())
+		// Then you can add the new player data associated with the new socket
+		const player = this.createPlayer(socket, payload);
+		// this.logger.debug('onSocketConnected');
+		// this.logger.debug('player: ' + JSON.stringify(player));
+		// this.logger.debug('socket: ' + JSON.stringify(socket));
+		console.log("count", this.getPlayerCount())
+		return player;
+	}
+	
+	onSocketDisconnect(socket: Socket, payload: any): Player {
+		// If this socket was already associated with a player, remove the old player data
+		if (this.players.has(payload.userId)) {
+			this.players.delete(payload.userId);
+		}
+
+		// If this socket was already in the map, remove the old socket data
+		if (this.sockets.has(payload.userId)) {
+			console.log("SOCKETTT REMOVED!")
+			this.sockets.delete(payload.userId);
 		}
 
 		// Then you can add the new player data associated with the new socket

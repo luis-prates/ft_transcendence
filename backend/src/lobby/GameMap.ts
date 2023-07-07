@@ -31,7 +31,6 @@ export class GameMap {
 		player.data.x = position?.x || this.map.start_position.x;
 		player.data.y = position?.y || this.map.start_position.y;
 		this.logger.debug('Emitting load_map event');
-		console.log(data)
 		player.emitToLobby('load_map', {
 			map: this.map,
 			player: clientSocket ? clientSocket.data : player.data,

@@ -96,6 +96,13 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				game.emitAll('game_view', game.watchers.length);
 			}
 		}
+		/*
+		const userId = client.data.userId;
+		const player = this.playerService.getPlayer(userId);
+		this.logger.debug(`Removing Player ${userId} from playerService`);
+		this.playerService.removePlayer(player);
+		*/
+		//console.log("PLAYERS:", this.playerService.getPlayers());
 	}
 
 	@SubscribeMessage('entry_game')

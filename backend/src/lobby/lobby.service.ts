@@ -23,6 +23,7 @@ export class LobbyService {
 	}
 
 	public connection(socket: Socket, payload: any): void {
+		console.log("LOGGG", payload)
 		const player: Player = this.playerService.onSocketConnected(socket, payload);
 		//! done in game.service.ts
 		// this.game.connection(player);
