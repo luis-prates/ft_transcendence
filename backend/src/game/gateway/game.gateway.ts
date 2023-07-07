@@ -57,7 +57,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		client.data.userId = userId;
 	}
 
-	async disconnectGameSocket(client: Socket) {
+	async handleDisconnect(@ConnectedSocket() client: Socket) {
 		console.log(client.data);
 		//const userId = this.playerService.getUserIdFromGameSocket(client);
 		const userId = client.data.userId;
@@ -96,21 +96,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				game.emitAll('game_view', game.watchers.length);
 			}
 		}
-	}
-
-	async handleDisconnect(@ConnectedSocket() client: Socket) {
-		await this.disconnectGameSocket(client);
-		const userId = client.data.userId;
-		const player = this.playerService.getPlayer(userId);
-		this.logger.debug(`Removing Player ${userId} from playerService`);
-		this.playerService.removePlayer(player);
-	}
-
-
-	//When Leave the game, but still online
-	@SubscribeMessage('disconnect_game')
-	async handleDisconnectGame(@ConnectedSocket() client: Socket) {
-		this.disconnectGameSocket(client);
 	}
 
 	@SubscribeMessage('entry_game')

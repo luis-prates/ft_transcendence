@@ -101,7 +101,7 @@ onMounted(function () {
     else
     {
       Router.push(`/`);
-      socket.emit('disconnect_game');
+      socket.disconnect();
     }
   }
 
