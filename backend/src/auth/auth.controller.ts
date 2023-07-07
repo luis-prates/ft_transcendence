@@ -23,6 +23,7 @@ export class AuthController {
 	authenticate42() {
 		passport.authenticate('42', { failureRedirect: '/login' }),
 			function (req: any, res: any) {
+				this.logger.debug(`User ${req} logged in`);
 				res.redirect('/');
 			};
 	}
@@ -31,6 +32,7 @@ export class AuthController {
 	@UseGuards(FortyTwoGuard)
 	@Redirect(process.env.FRONTEND_REDIRECT_URL)
 	callback42() {
+		this.logger.debug(`User logged in. Inside callback`);
 		return;
 	}
 

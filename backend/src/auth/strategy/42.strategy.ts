@@ -35,7 +35,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
 		profile: any,
 		cb: any,
 	) {
-		console.log(profile);
 		const { id, emails, username, displayName, image } = profile;
 		const dto: AuthDto = {
 			id: id,
