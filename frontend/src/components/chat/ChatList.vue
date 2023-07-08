@@ -20,7 +20,7 @@
           <u v-for="channel in store.channels">
             <ChatListChannels :channel="channel" @click="selectChannel(channel)" />
             <div class="menu-container" v-if="isMenuOpen">
-              <Menus v-show="selected?.objectId == channel.objectId" />
+              <Menus @toggleMenu="toggleMenu" @update-channel-status="updateChannelStatus" @update-create-channel="updateCreateChannel" v-show="selected?.objectId == channel.objectId" />
             </div>
           </u>
         </ul>
@@ -47,7 +47,7 @@ import ChatListChannels from "./ChatListChannels.vue";
 import ChatListUsers from "./ChatListUsers.vue";
 import { chatStore, type channel } from "@/stores/chatStore";
 import "./App.css";
-import { defineProps, ref, getCurrentInstance, type WebViewHTMLAttributes } from "vue";
+import { ref, getCurrentInstance, type WebViewHTMLAttributes } from "vue";
 import { onMounted } from 'vue';
 import { storeToRefs } from "pinia";
 import Menus from './Menu.vue';
@@ -63,6 +63,9 @@ const toggleMenu = () => {
 
 function selectChannel(channel: channel) {
   //instance?.emit("update-create-channel", false);
+  if (selected.value != channel && isMenuOpen.value) {
+    toggleMenu();
+  }
   store.showChannel(channel);
   toggleMenu();
 }
@@ -77,6 +80,16 @@ const createChannel = () => {
     console.log("Vai adicionar um novo user ao channel");
   }
   //instance?.emit("update-channel-status", newStatus);
+};
+
+// Method to update channelStatus when emitted from child component
+const updateChannelStatus = (newStatus: boolean) => {
+  instance?.emit('update-channel-status', newStatus);
+};
+
+// Method to update createChannel var when emitted from child component
+const updateCreateChannel = (newStatus: boolean) => {
+  instance?.emit("update-create-channel", newStatus);
 };
 
 //Testing the number of cahnnels created//Remover depois do backend devolver o objectId do channel em questao
@@ -149,6 +162,7 @@ const toggleChat = () => {
   display: flex;
   justify-content: flex-end;
   pointer-events: all;
+  position: relative;
 }
 
 .contacts_card {
@@ -158,7 +172,9 @@ const toggleChat = () => {
 }
 
 .menu-container {
-  position: relative;
+  position: absolute;
   z-index: 10; /* Adjust the z-index value as needed */
+  right: 0;
+  width: 30%;
 }
 </style>

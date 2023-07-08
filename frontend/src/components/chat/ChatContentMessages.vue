@@ -31,7 +31,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
-import { defineProps, ref } from "vue";
+import { ref } from "vue";
 import { userStore } from "@/stores/userStore";
 
 const defaultAvatar = "src/assets/chat/avatar.png";

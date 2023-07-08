@@ -15,7 +15,6 @@
 
 <script setup lang="ts">
 import { type channel } from "@/stores/chatStore";
-import { defineProps } from "vue";
 import { userStore } from "@/stores/userStore";
 
 const user = userStore();

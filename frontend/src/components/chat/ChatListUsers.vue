@@ -16,7 +16,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
-import { defineProps } from "vue";
 import { type ChatUser } from "@/stores/chatStore";
 
 const defaultAvatar = "src/assets/chat/avatar.png";

@@ -1,9 +1,9 @@
 <template>
-    <div @mousemove="updateMousePosition" @mouseleave="hideMenu">
+    <div>
       <!-- <button @click="toggleMenu">Toggle Menu</button> -->
       <div class="menu" :style="menuStyles">
-        <ul>
-          <li @click="handleMenuItemClick(1)">Item 1</li>
+        <ul style="color: aliceblue;">
+          <li @click="handleMenuItemClick(1)">Open</li>
           <li @click="handleMenuItemClick(2)">Item 2</li>
           <li @click="handleMenuItemClick(3)">Item 3</li>
         </ul>
@@ -12,7 +12,10 @@
   </template>
   
   <script setup lang="ts">
-  import { ref, watch } from 'vue';
+  import { ref, watch, getCurrentInstance } from 'vue';
+
+  // Get the current component instance
+  const instance = getCurrentInstance();
   
   const isMenuOpen = ref(false);
   const mouseX = ref(0);
@@ -20,19 +23,17 @@
   
   const toggleMenu = () => {
     isMenuOpen.value = !isMenuOpen.value;
-  };
-  
-  const updateMousePosition = (event: MouseEvent) => {
-    mouseX.value = event.clientX;
-    mouseY.value = event.clientY;
-  };
-  
-  const hideMenu = () => {
-    isMenuOpen.value = false;
+    instance?.emit('toggleMenu');
   };
   
   const handleMenuItemClick = (item: number) => {
     // Handle menu item click logic
+    if (item == 1) {
+      instance?.emit('update-create-channel', false);
+      instance?.emit("update-channel-status", true);
+      console.log("Vai abrir o chat" + instance?.isMounted);
+    }
+    toggleMenu();
   };
   
   const menuStyles = ref({});
@@ -52,7 +53,7 @@
   <style>
   .menu {
     position: absolute;
-    background-color: #f1f1f1;
+    background-color: #161616;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
   }
@@ -69,7 +70,7 @@
   }
   
   .menu ul li:hover {
-    background-color: #ddd;
+    background-color: #424242;
   }
   </style>
 
