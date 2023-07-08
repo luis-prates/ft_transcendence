@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Logger, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Logger,
+	Post,
+	Req,
+	Res,
+	UnauthorizedException,
+	UseFilters,
+	UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import passport from 'passport';
 import { FortyTwoGuard } from './guard/42.guard';
@@ -7,8 +18,10 @@ import { JwtGuard } from './guard';
 import { User } from '@prisma/client';
 import { GetUser } from './decorator';
 import { Response } from 'express';
+import { OAuthExceptionFilter } from './filters/oauth-exception.filter';
 
 @Controller('auth')
+@UseFilters(OAuthExceptionFilter)
 export class AuthController {
 	private readonly logger = new Logger('AuthController');
 
@@ -22,11 +35,7 @@ export class AuthController {
 	@Get('42')
 	@UseGuards(FortyTwoGuard)
 	authenticate42() {
-		passport.authenticate('42', { failureRedirect: '/login' }),
-			function (req: any, res: any) {
-				this.logger.debug(`User ${req} logged in`);
-				res.redirect('/');
-			};
+		passport.authenticate('42', { failureRedirect: '/login' });
 	}
 
 	@Get('42/return')
