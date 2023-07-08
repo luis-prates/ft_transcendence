@@ -1,12 +1,11 @@
-import { Socket } from 'socket.io';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Player } from '../player/Player';
-import { off } from 'process';
 import { Logger } from '@nestjs/common';
 import { PlayerService } from '../player/player.service';
 
 export class GameMap {
+	public players: Player[] = [];
 	public gameObjets: any[] = [];
 	private map: any;
 	private readonly logger = new Logger(GameMap.name);
@@ -22,17 +21,12 @@ export class GameMap {
 		GameMap.offAll(player);
 		this.logger.debug(`player ${player.objectId} joined map: ${this.map.objectId}`);
 		//TODO: player.map.map.objectId needs to be cleaned up
-		if (player.map && player.map.map.objectId !== this.map.objectId) {
+		if (player.map && player.map.map.objectId != this.map.objectId) {
 			player.map.removePlayer(player);
 		}
 		player.map = this;
-		const clientSocket = this.playerService.getPlayer(player.objectId);
-		const data: any[] = [];
-		this.playerService.getPlayers().forEach((value, key) => {
-			if (key !== player.objectId) {
-				data.push(value.data);
-			}
-		});
+		const clientSocket = this.players.find(clientSocket => clientSocket.objectId == player.objectId);
+		const data: any[] = this.players.filter(e => e.objectId != player.objectId).map(e => e.data);
 		data.push(...this.gameObjets);
 		player.data.x = position?.x || this.map.start_position.x;
 		player.data.y = position?.y || this.map.start_position.y;
@@ -43,17 +37,16 @@ export class GameMap {
 			data: data,
 		});
 		//! why? is it needed?
-		// if (clientSocket) {
-		// 	clientSocket.setSocket(player.getSocket());
-		// 	// console.log('re-connected socket: ', player.objectId);
-		// } else {
-		// 	this.playerService.addPlayer(player);
-		// 	this.emitAll('new_gameobject', player.data, player, true);
-		// 	console.log('_new player: ', player.objectId);
-		// }
+		if (clientSocket) {
+			clientSocket.setSocket(player.getSocket());
+			// console.log('re-connected socket: ', player.objectId);
+		} else {
+			this.players.push(player);
+			this.playerService.addPlayer(player);
+			this.emitAll('new_gameobject', player.data, player, true);
+		}
 		//! this emits the new player to existing players
 		//TODO: check alternatives
-		this.emitAll('new_gameobject', player.data, player, true);
 		player.onLobby(
 			'new_gameobject',
 			function (data: any) {
@@ -65,6 +58,7 @@ export class GameMap {
 			'update_gameobject',
 			function (data: any) {
 				player.data = data;
+				this.logger.debug('update_gameobject: ' + JSON.stringify(data));
 				this.emitAll('update_gameobject', data, player, false);
 			}.bind(this),
 		);

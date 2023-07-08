@@ -211,7 +211,7 @@ export class UserService {
 		}
 	}
 
-	async getUsers(userId: number) {
+	async getUsers() {
 		const users = this.prisma.user.findMany();
 
 		return users;
