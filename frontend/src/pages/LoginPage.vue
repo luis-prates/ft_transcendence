@@ -14,9 +14,10 @@ import { ref } from "vue";
 import { socketClass } from "@/socket/SocketClass";
 import { env } from "@/env";
 import type { Socket } from "socket.io-client";
+import axios from "axios";
 
 const props = defineProps({
-  code: String,
+  token: String,
 });
 
 const name = "LoginPage";
@@ -54,11 +55,17 @@ function tes() {
 }
 
 onMounted(() => {
-  if (props.code || store.user.isLogin) {
+	console.log("props.code : ", props.token);
+  if (props.token || store.user.isLogin) {
     store
-      .login(props.code)
+      .login(props.token)
       .then(() => {
-		console.log("objecId.value in nessage box 2: ", objecId.value);
+		socketClass.setLobbySocket({
+			query: {
+				userId: store.user.id,
+			}
+		});
+		socket = socketClass.getLobbySocket();
         socket.emit("connection_lobby", { userId: objecId.value, objectId: store.user.id.toString() });
         setTimeout(() => {
           Router.setRoute(Router.ROUTE_ALL);

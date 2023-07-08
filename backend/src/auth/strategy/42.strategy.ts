@@ -47,6 +47,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
 		if (!user) {
 			throw new UnauthorizedException();
 		}
-		return cb(null, user.dto);
+		return cb(null, user);
 	}
 }
