@@ -28,7 +28,8 @@ export interface channel {
   messages: ChatMessage[];
   users: ChatUser[];
   type: string;
-  ownerId?: number,
+  ownerId?: number;
+  messagesLoaded?: boolean;
 }
 
 
@@ -60,7 +61,9 @@ export const chatStore = defineStore("chat", () => {
     if (userChat) {
       message.user = userChat;
     }
-
+      if (channelSelected.messagesLoaded == false) {
+        getMessages(channelSelected);
+      }
       channelSelected.messages.push(message);
       console.log("Vai adicionar a messagem ao chat");
     }
@@ -73,18 +76,28 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  async function showChannel(channel: channel | undefined) {
+  function selectChannel(channel: channel | undefined) {
     if (channel) {
       selected.value = channel;
-    //TODO criar funçao de open channel
+    } else {
+      selected.value = undefined;
+    }
+  }
+
+  async function getMessages(channel: channel | undefined) {
+    if (channel) {
+      selected.value = channel;
       try {
-        const response = await axios.get(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/messages`, {
-          headers: { Authorization: `Bearer ${user.access_token_server}` },
-        });
-        const messages = response.data;
-        // Process the messages as needed
-        selected.value.messages = messages;
-        console.log("RESPOSTA DO SERVER: ", messages);
+        if (channel.messagesLoaded == false) {
+          channel.messagesLoaded = true;
+          const response = await axios.get(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/messages`, {
+            headers: { Authorization: `Bearer ${user.access_token_server}` },
+          });
+          const messages = response.data;
+          // Process the messages as needed
+          selected.value.messages = messages;
+          console.log("RESPOSTA DO SERVER: ", messages);
+        }
       } catch (error) {
         console.error(error);
       }
@@ -119,7 +132,8 @@ export const chatStore = defineStore("chat", () => {
             password: channelData.password ?? "",
             users: transformedUsers,
             type: channelData.type ?? "",
-            messages: [], // Add an empty messages array
+            messages: channelData.messages ?? [],
+            messagesLoaded: false, // Messages not Initialized
             ownerId: channelData.ownerId ?? "",
         };
       });
@@ -171,5 +185,5 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  return { channels, selected, addChannel, showChannel, addMessage, getChannels, createChannel, activateMessage };
+  return { channels, selected, addChannel, getMessages, addMessage, getChannels, createChannel, activateMessage, selectChannel };
 });

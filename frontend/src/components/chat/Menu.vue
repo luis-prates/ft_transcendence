@@ -13,6 +13,7 @@
   
   <script setup lang="ts">
   import { ref, watch, getCurrentInstance } from 'vue';
+  import { chatStore, type channel } from "@/stores/chatStore";
 
   // Get the current component instance
   const instance = getCurrentInstance();
@@ -21,6 +22,13 @@
   const mouseX = ref(0);
   const mouseY = ref(0);
   
+  const props = defineProps({
+  channel: {
+    type: Object as () => channel, // Specify the type as channel
+    required: true,
+  },
+});
+
   const toggleMenu = () => {
     isMenuOpen.value = !isMenuOpen.value;
     instance?.emit('toggleMenu');
@@ -29,6 +37,7 @@
   const handleMenuItemClick = (item: number) => {
     // Handle menu item click logic
     if (item == 1) {
+      instance?.emit('openChannel', props.channel);
       instance?.emit('update-create-channel', false);
       instance?.emit("update-channel-status", true);
       console.log("Vai abrir o chat" + instance?.isMounted);

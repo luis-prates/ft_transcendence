@@ -20,7 +20,7 @@
           <u v-for="channel in store.channels">
             <ChatListChannels :channel="channel" @click="selectChannel(channel)" />
             <div class="menu-container" v-if="isMenuOpen">
-              <Menus @toggleMenu="toggleMenu" @update-channel-status="updateChannelStatus" @update-create-channel="updateCreateChannel" v-show="selected?.objectId == channel.objectId" />
+              <Menus @toggleMenu="toggleMenu" @openChannel="openChannel" :channel="channel" @update-channel-status="updateChannelStatus" @update-create-channel="updateCreateChannel" v-show="selected?.objectId == channel.objectId" />
             </div>
           </u>
         </ul>
@@ -61,13 +61,17 @@ const toggleMenu = () => {
 };
 
 
-function selectChannel(channel: channel) {
+const selectChannel = (channel: channel) => {
   //instance?.emit("update-create-channel", false);
   if (selected.value != channel && isMenuOpen.value) {
     toggleMenu();
   }
-  store.showChannel(channel);
+  store.selectChannel(channel);
   toggleMenu();
+}
+
+const openChannel = (channel: channel) => {
+  store.getMessages(channel);
 }
 
 //Creating a new channel:
