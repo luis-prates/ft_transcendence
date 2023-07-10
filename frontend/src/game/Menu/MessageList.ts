@@ -7,6 +7,8 @@ import { userStore, type Friendship } from "@/stores/userStore";
 //image
 import { Profile } from "./Profile";
 import { PaginationMenu } from "./PaginationMenu";
+import type { Socket } from "socket.io-client";
+import { socketClass } from "@/socket/SocketClass";
 
 
 export class MessageList {
@@ -21,6 +23,7 @@ export class MessageList {
   private functions = userStore();
   private usersList : any | void [] = [];
   private response: any | void [] = [];
+  public lobbySocket: Socket = socketClass.getLobbySocket();
   private onResult: (result: any) => void = () => {};
   
   constructor(tittle: string) {
@@ -43,14 +46,23 @@ export class MessageList {
   async fetchUsers() {
     try {
       if (this.title == "Request")
-        this.usersList = await userStore().getFriendRequests();
+      {
+        this.usersList = this.user.friendsRequests;
+        this.usersList = this.usersList.filter((request: { requestorId: number; }) => request.requestorId !== this.user.id);
+      }
       else if (this.title == "Block")
-        this.usersList = await userStore().getBlockedUsers();
+      {
+        this.usersList = this.user.block;
+        this.usersList = this.usersList.filter((block: any) => block.blockedId !== this.user.id);
+      }
       else
-        this.usersList = await userStore().getBlockedBy();
-
-      this.usersList = this.usersList.filter((request: { requestorId: number; }) => request.requestorId !== this.user.id);
+      { 
+        this.usersList = this.user.block;
+        this.usersList = this.usersList.filter((block: any) => block.blockerId !== this.user.id);
+      }
       
+      console.log("Message List", this.title, ":", this.usersList)
+
       this.pagination_list = new PaginationMenu(this.usersList, 8, 1);
 
 
@@ -66,6 +78,7 @@ export class MessageList {
         this.response[index] = -1;
         const i = index - page * this.pagination_list.max_for_page;
         
+        console.log(request)
         if (this.title == "Request")
         {
           this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, 16, request.requestorName, request.requestorId));
@@ -75,19 +88,21 @@ export class MessageList {
         else if (this.title == "Block")
         {
           const id = request.blockedId;
-          const user = this.users.find((user: { id: number; }) => user.id === id);
-          if (user) {
-            console.log(user); // O objeto com o ID correspondente foi encontrado
-            this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, 19.5, user.nickname, id));
+          if (request.blocked)
+          {
+            const nickname = request.blocked.nickname;
+            this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, 19.5, nickname, id));
             this.menu.add(this.background, this.createButtonBlock(index, 58.5, 16 + (i + 1) * 6, "Unblock", id));
           }
         }
         else if (this.title = "Blocked")
         {
           const id = request.blockerId;
-          const user = this.users.find((user: { id: number; }) => user.id === id);
-          if (user)
-            this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, 23, user.nickname, id));
+          if (request.blocker)
+          {
+            const nickname = request.blocker.nickname;
+            this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, 23, nickname, id));
+          }
         }
           
       });
@@ -279,6 +294,11 @@ export class MessageList {
         if (button.type == "Unblock")
         {
           this.functions.unblockUser(id);
+          this.lobbySocket.emit("unblock_user", { 
+						blockerId: this.user.id,
+						blockerNickname: this.user.nickname,
+						blockId: id,
+					});
           this.response[index] = 1;
         }
       },

@@ -16,6 +16,7 @@ import { YourProfile } from "./YourProfile";
 import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 import Router from "@/router";
 import { socketClass } from "@/socket/SocketClass";
+import type { Socket } from "socket.io-client";
 
 export class Profile {
 	private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -37,6 +38,8 @@ export class Profile {
 	private matche_pagination: PaginationMenu = new PaginationMenu([], 4, 2, this.background, this.menu);;
 
 	private historic: GAME[] = [];
+
+	public lobbySocket: Socket = socketClass.getLobbySocket();
 
 	private onResult: (result: any) => void = () => {};
 
@@ -266,8 +269,7 @@ export class Profile {
 					this._menu.close();
 					this.onResult("EXIT");
 
-					const lobbySocket = socketClass.getLobbySocket();
-					lobbySocket.emit("invite_game", { 
+					this.lobbySocket.emit("invite_game", { 
 						//Desafiador
 						challengerId: this.your_user.id,
 						challengerNickname: this.your_user.nickname,
@@ -276,12 +278,12 @@ export class Profile {
 						challengedNickname: this.user.nickname,
 					});
 
-					lobbySocket.on("invite_request_game", (e: any) => {				  
+					this.lobbySocket.on("invite_request_game", (e: any) => {				  
 						const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
 						Game.instance.addMenu(confirmButton.menu);
 							  confirmButton.show((value) => {
 							if (value == "CONFIRM") {
-								lobbySocket.emit("challenge_game", {
+								this.lobbySocket.emit("challenge_game", {
 								challenged: this.your_user.id, 
 								challenger: e.playerId,
 							  });
@@ -289,10 +291,10 @@ export class Profile {
 						});
 					});
 			
-					lobbySocket.on("invite_confirm_game", (message: string) => {
+					this.lobbySocket.on("invite_confirm_game", (message: string) => {
 						const confirmButton = new ConfirmButton(message, STATUS_CONFIRM.ERROR, 5000);
 						Game.instance.addMenu(confirmButton.menu);
-						lobbySocket.off("invite_confirm_game");
+						this.lobbySocket.off("invite_confirm_game");
 					});
         		  }
         		});
@@ -304,8 +306,14 @@ export class Profile {
 			}
 			else if (type == "block") {
 
+				const lobbySocket = socketClass.getLobbySocket();
 				if (this.isBlocked)
 				{
+					lobbySocket.emit("unblock_user", { 
+						blockerId: this.your_user.id,
+						blockerNickname: this.your_user.nickname,
+						blockId: this.user.id,
+					});
 					userStore().unblockUser(this.user.id);
 					this.isBlocked = false;
 				}
@@ -314,7 +322,12 @@ export class Profile {
 					const confirmButton = new ConfirmButton(this.user.nickname, STATUS_CONFIRM.BLOCK);
         			confirmButton.show((value) => {
 						if (value == "CONFIRM") {
-							userStore().blockUser(this.user.id);
+							lobbySocket.emit("block_user", { 
+								blockerId: this.your_user.id,
+								blockerNickname: this.your_user.nickname,
+								blockId: this.user.id,
+							});
+							userStore().blockUser(this.user.id, this.user.nickname, this.user.image);
 							this.isBlocked = true;
         				}
         			});
@@ -376,13 +389,24 @@ export class Profile {
 				if (!this.isYourFriend) //Not Friend
 				{
 					if (label == "+") {
+						
 						userStore().sendFriendRequest(this.user.id);
+						this.lobbySocket.emit("sendFriendRequest", { 
+							requesteeId: this.your_user.id,
+							requesteeName: this.your_user.nickname,
+							requestorId: this.user.id,
+						});
 						label = "-";
 					}
 					else if (label == "-") {
 						const confirmButton = new ConfirmButton(this.user.nickname, STATUS_CONFIRM.FRIEND_REQUEST);
         				confirmButton.show((value) => {
 							if (value == "CONFIRM") {
+								this.lobbySocket.emit("cancelFriendRequest", { 
+									requesteeId: this.your_user.id,
+									requesteeName: this.your_user.nickname,
+									requestorId: this.user.id,
+								});
 								userStore().cancelFriendRequest(this.user.id);
 								label = "+";
 								this.isYourFriend = false;

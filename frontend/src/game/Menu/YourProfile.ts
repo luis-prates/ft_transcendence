@@ -114,8 +114,6 @@ export class YourProfile {
     this.user.infoPong.skin.paddles.forEach((skinLabel: any, index: number) => {
       if ((index == 0 ? index + 1 : index) % this.paddle_pagination.max_for_page == 0) page++;
 
-      console.log("padle:'", skinLabel, "'");
-
       const i = index - page * this.paddle_pagination.max_for_page;
 
       const squareX = 35.5 + (i + 2 % this.paddle_pagination.max_for_line) * (10 / 3);

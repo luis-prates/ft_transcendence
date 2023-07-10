@@ -6,6 +6,7 @@ import { Shop } from "../../Menu/Shop";
 export class Npc extends Character {
   constructor() {
     super();
+    this.nickname = "Shop Amelia";
     this.type = "npc";
     this.animation.sx = 144;
     this.x = 1850;

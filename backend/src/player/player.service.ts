@@ -73,7 +73,6 @@ export class PlayerService {
 			if (key == userId) {
 				return value;
 			}
-			this.logger.debug(`key: ${key} value: ${value.name}`);
 		}
 		this.logger.debug(`userId: ${userId}`);
 		const player: Player = this.players.get(userId);
@@ -143,13 +142,11 @@ export class PlayerService {
 	onSocketConnected(socket: Socket, payload: any): Player {
 		// If this socket was already associated with a player, remove the old player data
 		if (this.players.has(payload.userId)) {
-			console.log("PLAYERR REPLACED REMOVED!")
 			this.players.delete(payload.userId);
 		}
 
 		// If this socket was already in the map, remove the old socket data
 		if (this.sockets.has(payload.userId)) {
-			console.log("SOCKETTT REPLACED REMOVED!")
 			this.sockets.delete(payload.userId);
 		}
 

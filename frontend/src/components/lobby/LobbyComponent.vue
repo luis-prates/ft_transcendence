@@ -22,12 +22,13 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
-import { userStore } from "@/stores/userStore";
+import { userStore, type Block, type Friendship } from "@/stores/userStore";
 import ChatComponent from "@/components/chat/ChatComponent.vue";
 import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import Router from "@/router";
 
 const store = userStore();
+const user = userStore().user;
 const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 let lobby: Lobby | null = null;
@@ -72,6 +73,41 @@ onMounted(() => {
       console.log("Challenge begin!")
 			socket.off("invite_confirm_game");
 			Router.push(`/game?objectId=${gameId}`);
+		});
+
+    //Block
+    socket.on("block_user",  (event: Block) => {
+      const existingEvent = user.block.find((block: any) => block.blockerId === event.blockerId);
+      
+      if (!existingEvent) user.block.push(event);
+
+      console.log("Block!", event, "Block List:", user.block);
+		});
+
+    //Unblock
+    socket.on("unblock_user", (event: Block) => {
+      user.block = user.block.filter((block: Block) => block.blockerId !== event.blockerId);
+
+      console.log("Unblock!", event, "Block List:", user.block);
+		});
+
+    socket.on("sendFriendRequest",  (event: Friendship) => {
+      console.log("Send Friend!", event);
+		});
+
+
+    socket.on("cancelFriendRequest",  (event: Friendship) => {
+      console.log("Cancel Friend!", event);
+		});
+
+    
+    socket.on("acceptFriendRequest",  (event: Friendship) => {
+      console.log("Accept Friend!", event);
+		});
+
+
+    socket.on("deleteFriend",  (event: Friendship) => {
+      console.log("Delete Friend!", event);
 		});
 });
 

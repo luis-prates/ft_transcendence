@@ -21,7 +21,7 @@ import MapEditComponent from "@/components/lobby/MapEditComponent.vue";
 import { onBeforeRouteLeave } from "vue-router";
 
 const store = userStore();
-onBeforeRouteLeave((to, from, next) => {
+/*onBeforeRouteLeave((to, from, next) => {
   console.log("to", to);
   // Aqui você pode executar a lógica desejada quando o usuário tenta sair da página
 
@@ -34,7 +34,7 @@ onBeforeRouteLeave((to, from, next) => {
     // Caso contrário, cancele a navegação
     next(false);
   }
-});
+});*/
 
 console.log(store.user);
 

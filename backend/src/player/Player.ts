@@ -66,6 +66,7 @@ export class Player {
 				if (this.time && this.map) {
 					//! this is the first call to remove player
 					//! need to fix infinite loop that starts here
+					console.log("TIME DISCONNECT CRL");
 					this.map.removePlayer(this);
 					//! useless since I'm removing it on the line above
 					// Lobby.players = Lobby.players.splice(
@@ -125,6 +126,7 @@ export class Player {
 		// this.playerService.players = Lobby.players.splice(Lobby.players.indexOf(this), 1);
 		// this.playerService?.removePlayer(this);
 		//! need to check this
+		console.log("destroy caralho")
 		this.map?.removePlayer(this);
 	}
 }

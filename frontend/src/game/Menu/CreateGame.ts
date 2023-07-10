@@ -9,7 +9,7 @@ import { userStore } from "@/stores/userStore";
 import { PaginationMenu } from "./PaginationMenu";
 import axios from "axios";
 import { env } from "../../env";
-import { io, type Socket } from "socket.io-client";
+import { type Socket } from "socket.io-client";
 import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 
 export class CreateGame {

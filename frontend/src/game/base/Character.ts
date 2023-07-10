@@ -4,6 +4,7 @@ import { AnimationController } from "../animation/AnimationController";
 import { PathFinding, type PathNode } from "../path_finding/PathFinding";
 import { Game } from "./Game";
 import { Profile } from "../Menu/Profile";
+import { userStore } from "@/stores/userStore";
 
 export interface CharacterOnline {
   className: string;
@@ -139,7 +140,7 @@ export class Character implements GameObject {
   }
 
   interaction?(gameObject: GameObject): void {
-    if (this.isSelect)
+    if (this.isSelect && this.objectId != userStore().user.id)
       Game.instance.addMenu(new Profile(this.objectId).menu);
   }
 

@@ -34,14 +34,13 @@ onMounted(function () {
   canvas.height = 750;
 
   const user = userStore().user;
-  if (!socket)
 	socketClass.setGameSocket({
 		query: {
 			userId: user.id,
 		}
 	});
 	socket = socketClass.getGameSocket();
-  socket.emit("entry_game", { 
+  socket.emit("entry_game", {
     objectId: props.objectId,
 	  userId: user.id, 
     nickname: user.nickname,

@@ -13,6 +13,7 @@ import { LobbyService } from '../lobby.service';
 import { Logger, UnauthorizedException } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
 import { GameService } from '../../game/game.service';
+import { sleep } from 'pactum';
 
 @WebSocketGateway({ namespace: 'lobby', cors: { origin: '*' } })
 export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -64,7 +65,6 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		this.playerService.removePlayer(this.playerService.getPlayer(this.playerService.getUserIdBySocket(client)));
 		this.logger.log(`Clients After: ${this.playerService.getPlayerCount()}`);
 	}
-
 	
 	@SubscribeMessage('invite_game')
 	async handleInviteGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
@@ -80,8 +80,7 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		//Verificar
 		const player1 = this.playerService.getPlayer(challengerId);
 		const player2 = this.playerService.getPlayer(challengedId);
-		
-		console.log("player1:" , player1, " player2:", player2);
+
 		if (!player2)
 			this.server.to(player1.getSocket().id).emit('invite_confirm_game', "Is not Connect!");
 
@@ -91,8 +90,8 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		this.server.to(player2.getSocket().id).emit('invite_request_game', {
 			playerId: challengerId,
 			playerName: challengerNickname
-		 });
-		
+		});
+
 		this.server.to(player1.getSocket().id).emit('invite_confirm_game', "Recive your Invite!");
 	}
 	
@@ -110,9 +109,172 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 	
 		const game = await this.gameService.challengeGame(challenged, challenger);
 
-		console.log(game);
-		
+//		console.log(game);
 		this.server.to(player1.getSocket().id).emit('challenge_game', game);
 		this.server.to(player2.getSocket().id).emit('challenge_game', game);
+	}
+
+	//Block User
+	@SubscribeMessage('block_user')
+	async handleBlockUser(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.logger.debug(`Block User received: ${JSON.stringify(body)}`);
+
+		//Quem Bloqueou
+		const blockerId = body.blockerId;
+		const blockerNickname = body.blockerNickname;
+
+		//Foi Bloqueado
+		const blockedId = body.blockId;
+
+		//Verificar
+		//const player1 = this.playerService.getPlayer(blockerId);
+		const player2 = this.playerService.getPlayer(blockedId);
+		
+		//console.log("Unblocke: player1:" , player1, " block player2:", player2);
+		if (!player2)
+			return ;
+
+		this.server.to(player2.getSocket().id).emit('block_user', {
+			blocker: {
+				id: blockerId,
+				nickname: blockerNickname,
+			},
+			blockerId: blockerId,
+			blockedId: blockedId,
+		});
+	}
+
+	//Unblock User
+	@SubscribeMessage('unblock_user')
+	async handleUnblockUser(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.logger.debug(`Unblock User received: ${JSON.stringify(body)}`);
+
+		//Quem Bloqueou
+		const blockerId = body.blockerId;
+		const blockerNickname = body.blockerNickname;
+
+		//Foi Bloqueado
+		const blockedId = body.blockId;
+
+		//Verificar
+		//const player1 = this.playerService.getPlayer(blockerId);
+		const player2 = this.playerService.getPlayer(blockedId);
+		
+		//console.log("Unblocke: player1:" , player1, " unblock player2:", player2);
+		if (!player2)
+			return ;
+
+		this.server.to(player2.getSocket().id).emit('unblock_user', {
+			blocker: {
+				id: blockerId,
+				nickname: blockerNickname,
+			},
+			blockerId: blockerId,
+			blockedId: blockedId,
+		});
+	}
+	
+	//Send Friend Request
+	@SubscribeMessage('sendFriendRequest')
+	async handleSendFriendRequest(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.logger.debug(`Send Friend Request received: ${JSON.stringify(body)}`);
+
+		//Quem Mandou
+		const requesteeId = body.requesteeId;
+		const requesteeName = body.requesteeName;
+
+		//Quem foi Pedido
+		const requestorId = body.requestorId;
+
+		//Verificar
+		const player1 = this.playerService.getPlayer(requesteeId);
+		const player2 = this.playerService.getPlayer(requestorId);
+		
+		//console.log("Unblocke: player1:" , player1, " send a Friend Request from player2:", player2);
+		if (!player2)
+			return ;
+
+		this.server.to(player2.getSocket().id).emit('sendFriendRequest', {
+			requesteeId: requesteeId,
+			requesteeName: requesteeName,
+		});
+	}
+	
+	//Cancel Friend Request
+	@SubscribeMessage('cancelFriendRequest')
+	async handleCancelFriendRequest(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.logger.debug(`Cancel Friend Request received: ${JSON.stringify(body)}`);
+
+		//Quem Mandou
+		const requesteeId = body.requesteeId;
+		const requesteeName = body.requesteeName;
+
+		//Quem foi Pedido
+		const requestorId = body.requestorId;
+
+		//Verificar
+		const player1 = this.playerService.getPlayer(requesteeId);
+		const player2 = this.playerService.getPlayer(requestorId);
+		
+		//console.log("Unblocke: player1:" , player1, " cancel a Friend Request from player2:", player2);
+		if (!player2)
+			return ;
+
+		this.server.to(player2.getSocket().id).emit('cancelFriendRequest', {
+			requesteeId: requesteeId,
+			requesteeName: requesteeName,
+		});
+	}
+	
+	//Accept Friend Request
+	@SubscribeMessage('acceptFriendRequest')
+	async handleAcceptFriendRequest(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.logger.debug(`Accept Friend Request received: ${JSON.stringify(body)}`);
+
+		//Quem Mandou
+		const requesteeId = body.requesteeId;
+		const requesteeName = body.requesteeName;
+
+		//Quem foi Pedido
+		const requestorId = body.requestorId;
+
+		//Verificar
+		const player1 = this.playerService.getPlayer(requesteeId);
+		const player2 = this.playerService.getPlayer(requestorId);
+		
+		//console.log("Unblocke: player1:" , player1, " accept a Friend Request from player2:", player2);
+		if (!player2)
+			return ;
+
+		this.server.to(player2.getSocket().id).emit('acceptFriendRequest', {
+			requesteeId: requesteeId,
+			requesteeName: requesteeName,
+		});
+	}
+
+	//Delete Friend
+	@SubscribeMessage('deleteFriend')
+	async handleDeleteFriend(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.logger.debug(`Delete Friend received: ${JSON.stringify(body)}`);
+
+		//Quem Mandou
+		const requesteeId = body.requesteeId;
+		const requesteeName = body.requesteeName;
+
+		//Quem foi Pedido
+		const requestorId = body.requestorId;
+
+		//Verificar
+		const player1 = this.playerService.getPlayer(requesteeId);
+		const player2 = this.playerService.getPlayer(requestorId);
+		
+		//console.log("Unblocke: player1:" , player1, " delete a Friend Request from player2:", player2);
+		if (!player2)
+			return ;
+
+		this.server.to(player2.getSocket().id).emit('deleteFriend', {
+			requesteeId: requesteeId,
+			requesteeName: requesteeName,
+		});
 	}
 }

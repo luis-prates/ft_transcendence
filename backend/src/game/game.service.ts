@@ -107,15 +107,15 @@ export class GameService {
 		return game.data.objectId;
 	}
 	
-	async challengeGame(player1: number, player2: number) {
+	async challengeGame(player1Id: number, player2Id: number) {
 
 		//TODO
 		//verificar se ambos estao em jogo ou nao pelo Status
 
 		const gameCreated = await this.createGame({
 			"gameType": "PUBLIC",
-			"players": [],
-			"gameRequest": {"objectId": `gametest_${player1}_${player2}`,
+			"players": [ player1Id, player2Id],
+			"gameRequest": {"objectId": `gametest_${player1Id}_${player2Id}`,
 			"maxScore": 3,
 			"table": "#1e8c2f",
 			"tableSkin": "",
@@ -241,6 +241,7 @@ export class GameService {
 	}
 
 	async enterGame(player: Player, info: playerInfo) : Promise<boolean> {
+		console.log("ENTER GAME!")
 		const game = this.games.find(g => g.data.objectId === info.objectId);
 		if (!game) {
 			throw new ForbiddenException('Game does not exist');
