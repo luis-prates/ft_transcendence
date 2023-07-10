@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Player } from './Player';
 import { PrismaService } from '../prisma/prisma.service';
+import { validateHeaderValue } from 'http';
 
 @Injectable()
 export class PlayerService {
@@ -59,8 +60,8 @@ export class PlayerService {
 		const playerFromMap = this.getPlayer(player.objectId);
 
 		playerFromMap.destroy();
-		this.players.delete(Number(player.objectId));
-		this.sockets.delete(Number(player.objectId));
+		this.players.delete(player.objectId);
+		this.sockets.delete(player.objectId);
 		this.logger.log(`Removed`);
 	}
 
@@ -122,8 +123,7 @@ export class PlayerService {
 		return null;
 	}
 
-	//TODO
-	getPlayerBySocket(socket: Socket): number | undefined {
+	getUserIdBySocket(socket: Socket): number | undefined {
 		for (const [number, value] of this.sockets.entries()) {
 		  if (value === socket) {
 			return number;

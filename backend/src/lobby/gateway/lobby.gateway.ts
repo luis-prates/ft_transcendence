@@ -60,11 +60,9 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 	handleDisconnect(client: Socket) {
 		this.logger.debug(`Client disconnected: ${client.id} from lobby namespace`);
-		/*const userId = client.data.userId;
-		const player = this.playerService.getPlayer(userId);
-		this.logger.debug(`Removing Player ${userId} from playerService`);
-		this.playerService.removePlayer(player);*/
-		this.logger.log(`Clients: ${this.playerService.getPlayerCount()}`);
+		this.logger.log(`Clients Before: ${this.playerService.getPlayerCount()}`);
+		this.playerService.removePlayer(this.playerService.getPlayer(this.playerService.getUserIdBySocket(client)));
+		this.logger.log(`Clients After: ${this.playerService.getPlayerCount()}`);
 	}
 
 	
@@ -117,5 +115,4 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		this.server.to(player1.getSocket().id).emit('challenge_game', game);
 		this.server.to(player2.getSocket().id).emit('challenge_game', game);
 	}
-
 }
