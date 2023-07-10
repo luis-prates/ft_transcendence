@@ -91,22 +91,46 @@ onMounted(() => {
       console.log("Unblock!", event, "Block List:", user.block);
 		});
 
+    //Send Friend Request
     socket.on("sendFriendRequest",  (event: Friendship) => {
-      console.log("Send Friend!", event);
+      const existingEvent = user.friendsRequests.find((friend: Friendship) => friend.requestorId === event.requestorId);
+      
+      if (!existingEvent)
+      {
+        user.friendsRequests.push(event);
+        console.log("is pushed!");
+      }  
+      console.log("Send Friend!", event, "Friend Request:", user.friendsRequests);
 		});
 
-
+    //Cancel Friend Request
     socket.on("cancelFriendRequest",  (event: Friendship) => {
-      console.log("Cancel Friend!", event);
+      user.friendsRequests = user.friendsRequests.filter((friend: Friendship) => friend.requestorId != event.requestorId);
+
+      console.log("Cancel Friend!", event, "Friend Request:", user.friendsRequests);
 		});
 
-    
+    //Accept Friend Request
     socket.on("acceptFriendRequest",  (event: Friendship) => {
+      user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.id);
+      const existingEvent = user.friends.find((friend: Friendship) => friend.requesteeId === event.id);
+      
+      if (!existingEvent)
+        user.friends.push(event);
       console.log("Accept Friend!", event);
 		});
+    
+    //Reject Friend Request
+    socket.on("rejectFriendRequest",  (event: Friendship) => {
+      user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.requesteeId);
 
+      console.log("Reject Friend Request!", event);
+		});
 
+    //Delete Friend
     socket.on("deleteFriend",  (event: Friendship) => {
+      user.friends = user.friends.filter((friend: Friendship) => friend.id != event.id);
+      
       console.log("Delete Friend!", event);
 		});
 });

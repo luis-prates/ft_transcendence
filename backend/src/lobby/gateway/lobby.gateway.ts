@@ -127,14 +127,12 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		const blockedId = body.blockId;
 
 		//Verificar
-		//const player1 = this.playerService.getPlayer(blockerId);
-		const player2 = this.playerService.getPlayer(blockedId);
+		const player = this.playerService.getPlayer(blockedId);
 		
-		//console.log("Unblocke: player1:" , player1, " block player2:", player2);
-		if (!player2)
+		if (!player)
 			return ;
 
-		this.server.to(player2.getSocket().id).emit('block_user', {
+		this.server.to(player.getSocket().id).emit('block_user', {
 			blocker: {
 				id: blockerId,
 				nickname: blockerNickname,
@@ -157,14 +155,12 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		const blockedId = body.blockId;
 
 		//Verificar
-		//const player1 = this.playerService.getPlayer(blockerId);
-		const player2 = this.playerService.getPlayer(blockedId);
+		const player = this.playerService.getPlayer(blockedId);
 		
-		//console.log("Unblocke: player1:" , player1, " unblock player2:", player2);
-		if (!player2)
+		if (!player)
 			return ;
 
-		this.server.to(player2.getSocket().id).emit('unblock_user', {
+		this.server.to(player.getSocket().id).emit('unblock_user', {
 			blocker: {
 				id: blockerId,
 				nickname: blockerNickname,
@@ -179,24 +175,25 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 	async handleSendFriendRequest(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.logger.debug(`Send Friend Request received: ${JSON.stringify(body)}`);
 
-		//Quem Mandou
+		//Quem foi Pedido
 		const requesteeId = body.requesteeId;
 		const requesteeName = body.requesteeName;
 
-		//Quem foi Pedido
+		//Quem Mandou
 		const requestorId = body.requestorId;
+		const requestorName =  body.requestorName;
 
 		//Verificar
-		const player1 = this.playerService.getPlayer(requesteeId);
-		const player2 = this.playerService.getPlayer(requestorId);
+		const player = this.playerService.getPlayer(requesteeId);
 		
-		//console.log("Unblocke: player1:" , player1, " send a Friend Request from player2:", player2);
-		if (!player2)
+		if (!player)
 			return ;
 
-		this.server.to(player2.getSocket().id).emit('sendFriendRequest', {
+		this.server.to(player.getSocket().id).emit('sendFriendRequest', {
 			requesteeId: requesteeId,
 			requesteeName: requesteeName,
+			requestorId: requestorId,
+			requestorName: requestorName,
 		});
 	}
 	
@@ -207,22 +204,18 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		//Quem Mandou
 		const requesteeId = body.requesteeId;
-		const requesteeName = body.requesteeName;
 
 		//Quem foi Pedido
 		const requestorId = body.requestorId;
 
 		//Verificar
-		const player1 = this.playerService.getPlayer(requesteeId);
-		const player2 = this.playerService.getPlayer(requestorId);
+		const player = this.playerService.getPlayer(requesteeId);
 		
-		//console.log("Unblocke: player1:" , player1, " cancel a Friend Request from player2:", player2);
-		if (!player2)
+		if (!player)
 			return ;
 
-		this.server.to(player2.getSocket().id).emit('cancelFriendRequest', {
-			requesteeId: requesteeId,
-			requesteeName: requesteeName,
+		this.server.to(player.getSocket().id).emit('cancelFriendRequest', {
+			requestorId: requestorId,
 		});
 	}
 	
@@ -231,24 +224,45 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 	async handleAcceptFriendRequest(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.logger.debug(`Accept Friend Request received: ${JSON.stringify(body)}`);
 
-		//Quem Mandou
+		//Quem Aceitou
 		const requesteeId = body.requesteeId;
 		const requesteeName = body.requesteeName;
 
-		//Quem foi Pedido
+		//Quem Mandou
 		const requestorId = body.requestorId;
 
 		//Verificar
-		const player1 = this.playerService.getPlayer(requesteeId);
-		const player2 = this.playerService.getPlayer(requestorId);
+		const player = this.playerService.getPlayer(requestorId);
 		
-		//console.log("Unblocke: player1:" , player1, " accept a Friend Request from player2:", player2);
-		if (!player2)
+		if (!player)
 			return ;
 
-		this.server.to(player2.getSocket().id).emit('acceptFriendRequest', {
+		this.server.to(player.getSocket().id).emit('acceptFriendRequest', {
+			id: requesteeId,
+			nickname: requesteeName,
+		});
+	}
+
+	
+	//Accept Friend Request
+	@SubscribeMessage('rejectFriendRequest')
+	async handleRejectFriendRequest(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.logger.debug(`Reject Friend Request received: ${JSON.stringify(body)}`);
+
+		//Quem Aceitou
+		const requesteeId = body.requesteeId;
+
+		//Quem Mandou
+		const requestorId = body.requestorId;
+
+		//Verificar
+		const player = this.playerService.getPlayer(requestorId);
+		
+		if (!player)
+			return ;
+
+		this.server.to(player.getSocket().id).emit('rejectFriendRequest', {
 			requesteeId: requesteeId,
-			requesteeName: requesteeName,
 		});
 	}
 
@@ -258,23 +272,17 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		this.logger.debug(`Delete Friend received: ${JSON.stringify(body)}`);
 
 		//Quem Mandou
-		const requesteeId = body.requesteeId;
-		const requesteeName = body.requesteeName;
-
-		//Quem foi Pedido
-		const requestorId = body.requestorId;
+		const unfriend = body.unfriend;
+		const id = body.id;
 
 		//Verificar
-		const player1 = this.playerService.getPlayer(requesteeId);
-		const player2 = this.playerService.getPlayer(requestorId);
+		const player = this.playerService.getPlayer(unfriend);
 		
-		//console.log("Unblocke: player1:" , player1, " delete a Friend Request from player2:", player2);
-		if (!player2)
+		if (!player)
 			return ;
 
-		this.server.to(player2.getSocket().id).emit('deleteFriend', {
-			requesteeId: requesteeId,
-			requesteeName: requesteeName,
+		this.server.to(player.getSocket().id).emit('deleteFriend', {
+			id: id,
 		});
 	}
 }

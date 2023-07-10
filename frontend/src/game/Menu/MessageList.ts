@@ -23,7 +23,6 @@ export class MessageList {
   private functions = userStore();
   private usersList : any | void [] = [];
   private response: any | void [] = [];
-  public lobbySocket: Socket = socketClass.getLobbySocket();
   private onResult: (result: any) => void = () => {};
   
   constructor(tittle: string) {
@@ -246,7 +245,7 @@ export class MessageList {
         close_tab.play();
         if (button.type == "Accept")
         {
-          this.functions.acceptFriendRequest(id);
+          this.functions.acceptFriendRequest(id, label);
           this.response[index] = 1;
         }
         else if (button.type == "Reject")
@@ -294,11 +293,6 @@ export class MessageList {
         if (button.type == "Unblock")
         {
           this.functions.unblockUser(id);
-          this.lobbySocket.emit("unblock_user", { 
-						blockerId: this.user.id,
-						blockerNickname: this.user.nickname,
-						blockId: id,
-					});
           this.response[index] = 1;
         }
       },

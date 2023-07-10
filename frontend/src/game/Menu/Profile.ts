@@ -52,8 +52,8 @@ export class Profile {
 		try {
 			this.user = await userStore().getUserProfile(player_id);
 			
-			await userStore().getFriends();
-			await userStore().getFriendRequests();
+			//await userStore().getFriends();
+			//await userStore().getFriendRequests();
 
 			this.historic = await userStore().getUserGames(this.user.id);
 
@@ -309,11 +309,6 @@ export class Profile {
 				const lobbySocket = socketClass.getLobbySocket();
 				if (this.isBlocked)
 				{
-					lobbySocket.emit("unblock_user", { 
-						blockerId: this.your_user.id,
-						blockerNickname: this.your_user.nickname,
-						blockId: this.user.id,
-					});
 					userStore().unblockUser(this.user.id);
 					this.isBlocked = false;
 				}
@@ -322,11 +317,6 @@ export class Profile {
 					const confirmButton = new ConfirmButton(this.user.nickname, STATUS_CONFIRM.BLOCK);
         			confirmButton.show((value) => {
 						if (value == "CONFIRM") {
-							lobbySocket.emit("block_user", { 
-								blockerId: this.your_user.id,
-								blockerNickname: this.your_user.nickname,
-								blockId: this.user.id,
-							});
 							userStore().blockUser(this.user.id, this.user.nickname, this.user.image);
 							this.isBlocked = true;
         				}
@@ -389,24 +379,13 @@ export class Profile {
 				if (!this.isYourFriend) //Not Friend
 				{
 					if (label == "+") {
-						
-						userStore().sendFriendRequest(this.user.id);
-						this.lobbySocket.emit("sendFriendRequest", { 
-							requesteeId: this.your_user.id,
-							requesteeName: this.your_user.nickname,
-							requestorId: this.user.id,
-						});
+						userStore().sendFriendRequest(this.user.id, this.user.nickname);
 						label = "-";
 					}
 					else if (label == "-") {
 						const confirmButton = new ConfirmButton(this.user.nickname, STATUS_CONFIRM.FRIEND_REQUEST);
         				confirmButton.show((value) => {
 							if (value == "CONFIRM") {
-								this.lobbySocket.emit("cancelFriendRequest", { 
-									requesteeId: this.your_user.id,
-									requesteeName: this.your_user.nickname,
-									requestorId: this.user.id,
-								});
 								userStore().cancelFriendRequest(this.user.id);
 								label = "+";
 								this.isYourFriend = false;

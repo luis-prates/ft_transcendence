@@ -25,9 +25,9 @@ export class Messages {
   async fetchUsers() {
     try {
       // Obtenha os usuários da base de dados
-      this.friendRequests = await userStore().getFriendRequests();
+     // this.friendRequests = await userStore().getFriendRequests();
 
-      this.friendRequests = this.friendRequests.filter((request: { requestorId: number; }) => request.requestorId !== this.user.id);
+     // this.friendRequests = this.friendRequests.filter((request: { requestorId: number; }) => request.requestorId !== this.user.id);
       
 
       console.log("friendRequests: ", this.friendRequests);
