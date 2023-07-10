@@ -51,6 +51,16 @@ onMounted(() => {
     console.log("Channels: do socket ", store.channels);
     //store.addMessage(channelId, message);
   });
+
+  socket.on('channel-created', (eventData: { newChannel: any, message: any }) => {
+    const { newChannel, message } = eventData;
+    store.addChannel(newChannel, message);
+  });
+  
+  socket.onAny((eventName, eventData) => {
+    console.log("Received event: ", eventName);
+    console.log("Event data: ", eventData);
+  });
 });
 
 onUnmounted(() => {

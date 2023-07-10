@@ -38,15 +38,27 @@ export const chatStore = defineStore("chat", () => {
   const selected = ref<channel | undefined>(undefined);
   const user = userStore().user;
 
-  function addChannel(channel: channel) {
+  function addChannel(newChannel: any, message: String) {
+    const channel: channel = {
+      objectId: newChannel.id,
+      name: newChannel.name,
+      avatar: newChannel.avatar ? newChannel : "",
+      password: "",
+      messages: [],
+      users: newChannel.users,
+      type: newChannel.type,
+      ownerId: newChannel.ownerId,
+      messagesLoaded: false,
+    };
     const channelSelected = channels.find((c) => {
-      console.log("Comparing objectId: ", c.objectId, " with ", channel.objectId);
       return c.objectId === channel.objectId;
     });
-    if (channelSelected) {
-      channelSelected.messages = channel.messages;
-      channelSelected.users = channel.users;
-    } else channels.push(channel);
+    if (!channelSelected) {
+      channels.push(channel);
+    }
+    else {
+      console.log("Channel already exists!");
+    }
   }
 
   function addMessage(message: ChatMessage) {
