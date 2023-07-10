@@ -34,7 +34,7 @@ body {
 	width: 380px;
 	height: 420px;
 	background: linear-gradient(0deg, transparent,
-		transparent, #45f3ff, #45f3ff, #45f3ff);
+		transparent, #19d053, #19d053, #19d053);
 	z-index: 1;
 	transform-origin: bottom right;
 	animation: animate 6s linear infinite;
@@ -84,7 +84,7 @@ body {
 	width: 380px;
 	height: 420px;
 	background: linear-gradient(0deg, transparent,
-		transparent, #ff2770, #ff2770, #ff2770);
+		transparent, #7c11d3, #7c11d3, #7c11d3);
 	z-index: 1;
 	transform-origin: bottom right;
 	animation: animate 6s linear infinite;

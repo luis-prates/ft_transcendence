@@ -147,8 +147,8 @@ export const userStore = defineStore("user", function () {
 		});
 	user.isLogin = true;
 	getFriends();
-    getFriendRequests();
-    getBlockedUsers();
+	getFriendRequests();
+	getBlockedUsers();
   // .finally(() => window.location.href = window.location.origin);
   }
 

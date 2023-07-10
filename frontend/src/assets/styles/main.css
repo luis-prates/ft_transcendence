@@ -10,5 +10,6 @@
 	padding: 0;
 	margin: 0;
 	background-color: #42434e;
+	background: url('/src/assets/images/lobby/layer_0.png');
 	overflow: hidden;
 }
