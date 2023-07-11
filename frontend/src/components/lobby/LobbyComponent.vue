@@ -96,10 +96,7 @@ onMounted(() => {
       const existingEvent = user.friendsRequests.find((friend: Friendship) => friend.requestorId === event.requestorId);
       
       if (!existingEvent)
-      {
         user.friendsRequests.push(event);
-        console.log("is pushed!");
-      }  
       //console.log("Send Friend!", event, "Friend Request:", user.friendsRequests);
       Game.updateNotifications();
     });

@@ -64,7 +64,10 @@ export class UserService {
 
 	async status(userId: number, status: UserStatus) {
 
-		const id: string  = userId.toString();
+		if (!userId)
+			return ;
+
+		const id  = userId.toString();
 		userId = parseInt(id);
 		try {
 			let user = await this.prisma.user.findUnique({
