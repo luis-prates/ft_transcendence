@@ -13,7 +13,6 @@ import { LobbyService } from '../lobby.service';
 import { Logger, UnauthorizedException } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
 import { GameService } from '../../game/game.service';
-import { sleep } from 'pactum';
 import { UserService } from 'src/user/user.service';
 import { UserStatus } from '@prisma/client';
 
@@ -24,7 +23,12 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 	@WebSocketServer()
 	server: Server;
 
-	constructor(private lobbyService: LobbyService, private playerService: PlayerService, private gameService: GameService, private userService: UserService) {}
+	constructor(
+		private lobbyService: LobbyService,
+		private playerService: PlayerService,
+		private gameService: GameService,
+		private userService: UserService,
+	) {}
 
 	afterInit(server: Server) {
 		this.logger.log('LobbyGateway initialized');
@@ -64,17 +68,17 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 	handleDisconnect(client: Socket) {
 		this.logger.debug(`Client disconnected: ${client.id} from lobby namespace`);
-		
+
 		this.logger.log(`Clients Before: ${this.playerService.getPlayerCount()}`);
-		
+
 		const userId = this.playerService.getUserIdBySocket(client);
 		this.playerService.removePlayer(this.playerService.getPlayer(userId));
-		
+
 		this.userService.status(userId, UserStatus.OFFLINE);
 
 		this.logger.log(`Clients After: ${this.playerService.getPlayerCount()}`);
 	}
-	
+
 	@SubscribeMessage('invite_game')
 	async handleInviteGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.logger.debug(`Invite game received: ${JSON.stringify(body)}`);
@@ -90,20 +94,22 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		const player1 = this.playerService.getPlayer(challengerId);
 		const player2 = this.playerService.getPlayer(challengedId);
 
-		if (!player2)
-			this.server.to(player1.getSocket().id).emit('invite_confirm_game', "Is not Connect!");
+		if (!player2) {
+			this.server.to(player1.getSocket().id).emit('invite_confirm_game', 'Is not Connect!');
+		}
 
-		if (!player1 || !player2)
-			return ;
+		if (!player1 || !player2) {
+			return;
+		}
 
 		this.server.to(player2.getSocket().id).emit('invite_request_game', {
 			playerId: challengerId,
-			playerName: challengerNickname
+			playerName: challengerNickname,
 		});
 
-		this.server.to(player1.getSocket().id).emit('invite_confirm_game', "Recive your Invite!");
+		this.server.to(player1.getSocket().id).emit('invite_confirm_game', 'Recive your Invite!');
 	}
-	
+
 	@SubscribeMessage('challenge_game')
 	async handleChallengeGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.logger.debug(`challenge game received: ${JSON.stringify(body)}`);
@@ -113,12 +119,13 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		const player1 = this.playerService.getPlayer(challenged);
 		const player2 = this.playerService.getPlayer(challenger);
 
-		if (!player1 || !player2)
-			return ;
-	
+		if (!player1 || !player2) {
+			return;
+		}
+
 		const game = await this.gameService.challengeGame(challenged, challenger);
 
-//		console.log(game);
+		//		console.log(game);
 		this.server.to(player1.getSocket().id).emit('challenge_game', game);
 		this.server.to(player2.getSocket().id).emit('challenge_game', game);
 	}
@@ -137,9 +144,10 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		//Verificar
 		const player = this.playerService.getPlayer(blockedId);
-		
-		if (!player)
-			return ;
+
+		if (!player) {
+			return;
+		}
 
 		this.server.to(player.getSocket().id).emit('block_user', {
 			blocker: {
@@ -165,9 +173,10 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		//Verificar
 		const player = this.playerService.getPlayer(blockedId);
-		
-		if (!player)
-			return ;
+
+		if (!player) {
+			return;
+		}
 
 		this.server.to(player.getSocket().id).emit('unblock_user', {
 			blocker: {
@@ -178,7 +187,7 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 			blockedId: blockedId,
 		});
 	}
-	
+
 	//Send Friend Request
 	@SubscribeMessage('sendFriendRequest')
 	async handleSendFriendRequest(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
@@ -190,13 +199,14 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		//Quem Mandou
 		const requestorId = body.requestorId;
-		const requestorName =  body.requestorName;
+		const requestorName = body.requestorName;
 
 		//Verificar
 		const player = this.playerService.getPlayer(requesteeId);
-		
-		if (!player)
-			return ;
+
+		if (!player) {
+			return;
+		}
 
 		this.server.to(player.getSocket().id).emit('sendFriendRequest', {
 			requesteeId: requesteeId,
@@ -205,7 +215,7 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 			requestorName: requestorName,
 		});
 	}
-	
+
 	//Cancel Friend Request
 	@SubscribeMessage('cancelFriendRequest')
 	async handleCancelFriendRequest(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
@@ -219,15 +229,16 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		//Verificar
 		const player = this.playerService.getPlayer(requesteeId);
-		
-		if (!player)
-			return ;
+
+		if (!player) {
+			return;
+		}
 
 		this.server.to(player.getSocket().id).emit('cancelFriendRequest', {
 			requestorId: requestorId,
 		});
 	}
-	
+
 	//Accept Friend Request
 	@SubscribeMessage('acceptFriendRequest')
 	async handleAcceptFriendRequest(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
@@ -242,9 +253,10 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		//Verificar
 		const player = this.playerService.getPlayer(requestorId);
-		
-		if (!player)
-			return ;
+
+		if (!player) {
+			return;
+		}
 
 		this.server.to(player.getSocket().id).emit('acceptFriendRequest', {
 			id: requesteeId,
@@ -252,7 +264,6 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		});
 	}
 
-	
 	//Accept Friend Request
 	@SubscribeMessage('rejectFriendRequest')
 	async handleRejectFriendRequest(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
@@ -266,9 +277,10 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		//Verificar
 		const player = this.playerService.getPlayer(requestorId);
-		
-		if (!player)
-			return ;
+
+		if (!player) {
+			return;
+		}
 
 		this.server.to(player.getSocket().id).emit('rejectFriendRequest', {
 			requesteeId: requesteeId,
@@ -286,9 +298,10 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		//Verificar
 		const player = this.playerService.getPlayer(unfriend);
-		
-		if (!player)
-			return ;
+
+		if (!player) {
+			return;
+		}
 
 		this.server.to(player.getSocket().id).emit('deleteFriend', {
 			id: id,
@@ -305,9 +318,10 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		//Verificar
 		const player = this.playerService.getPlayer(id);
-		
-		if (!player)
-			return ;
+
+		if (!player) {
+			return;
+		}
 
 		this.server.emit('updateStatus', {
 			id: id,

@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserBuySkinDto, UserDto, UserStatusDto, UserUpdateSkinTableDto, UserUpdateStatsDto } from './dto';
+import { UserBuySkinDto, UserDto, UserUpdateSkinTableDto, UserUpdateStatsDto } from './dto';
 import { Prisma, UserStatus } from '@prisma/client';
 
 @Injectable()
@@ -63,11 +63,12 @@ export class UserService {
 	}
 
 	async status(userId: number, status: UserStatus) {
+		console.log('status: ', userId, status);
+		if (!userId) {
+			return;
+		}
 
-		if (!userId)
-			return ;
-
-		const id  = userId.toString();
+		const id = userId.toString();
 		userId = parseInt(id);
 		try {
 			let user = await this.prisma.user.findUnique({
@@ -76,13 +77,11 @@ export class UserService {
 				},
 			});
 
-			if (user.status == status)
-			{
+			if (user.status == status) {
 				console.log('Status already updated!');
-				return ;
+				return;
 			}
-			
-			
+
 			user = await this.prisma.user.update({
 				where: {
 					id: userId,
@@ -93,7 +92,7 @@ export class UserService {
 			});
 
 			delete user.hash;
-			console.log("user: ", userId, " new status: ", status)
+			console.log('user: ', userId, ' new status: ', status);
 			return user;
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {

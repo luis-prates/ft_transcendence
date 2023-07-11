@@ -91,54 +91,56 @@ export class GameService {
 	}
 
 	async matchMakingGame(player: Player, info: playerInfo) {
-		let game = this.games.find(g => g.status == Status.Waiting);
+		const game = this.games.find(g => g.status == Status.Waiting);
 		if (!game) {
-			const gameCreated = await this.createGame({
-				"gameType": "PUBLIC",
-				"players": [],
-				"gameRequest": {"objectId": `gametest_${info}`,
-				"maxScore": 3,
-				"table": "#1e8c2f",
-				"tableSkin": "",
-				"bot": false}
-			} as GameDto) as any;
+			const gameCreated = (await this.createGame({
+				gameType: 'PUBLIC',
+				players: [],
+				gameRequest: {
+					objectId: `gametest_${info}`,
+					maxScore: 3,
+					table: '#1e8c2f',
+					tableSkin: '',
+					bot: false
+				},
+			} as GameDto)) as any;
 			return gameCreated.id;
 		}
 		return game.data.objectId;
 	}
-	
-	async challengeGame(player1Id: number, player2Id: number) {
 
-		//TODO
-		//verificar se ambos estao em jogo ou nao pelo Status
+	async challengeGame(player1Id: number, player2Id: number) {
+		//TODO TESTAR
 		try {
-			let player1 = await this.prisma.user.findUnique({
+			const player1 = await this.prisma.user.findUnique({
 				where: {
 					id: player1Id,
 				},
 			});
 
-			let player2 = await this.prisma.user.findUnique({
+			const player2 = await this.prisma.user.findUnique({
 				where: {
 					id: player2Id,
 				},
 			});
 
-			if (player1.status == UserStatus.IN_GAME || player2.status == UserStatus.IN_GAME)
+			if (player1.status == UserStatus.IN_GAME || player2.status == UserStatus.IN_GAME) {
 				return undefined;
+			}
 
-			const gameCreated = await this.createGame({
-				"gameType": "PUBLIC",
-				"players": [ player1Id, player2Id],
-				"gameRequest": {"objectId": `gametest_${player1Id}_${player2Id}`,
-				"maxScore": 3,
-				"table": "#1e8c2f",
-				"tableSkin": "",
-				"bot": false}
-			} as GameDto) as any;
+			const gameCreated = (await this.createGame({
+				gameType: 'PUBLIC',
+				players: [player1Id, player2Id],
+				gameRequest: {
+					objectId: `gametest_${player1Id}_${player2Id}`,
+					maxScore: 3,
+					table: '#1e8c2f',
+					tableSkin: '',
+					bot: false,
+				},
+			} as GameDto)) as any;
 			console.log(gameCreated);
 			return gameCreated.id;
-
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				if (error.code === 'P2002') {
@@ -259,24 +261,25 @@ export class GameService {
 				gamesLost,
 			});
 		});
-		
+
 		leaderboardReturn.sort((a, b) => b.points - a.points);
 
 		leaderboardReturn.forEach((user, index) => {
-		  user.rank = index + 1;
+			user.rank = index + 1;
 		});
 		return leaderboardReturn;
 	}
 
-	async enterGame(player: Player, info: playerInfo) : Promise<boolean> {
-		console.log("ENTER GAME!")
+	async enterGame(player: Player, info: playerInfo): Promise<boolean> {
+		console.log('ENTER GAME!');
 		const game = this.games.find(g => g.data.objectId === info.objectId);
 		if (!game) {
 			throw new ForbiddenException('Game does not exist');
 		}
 		const isPlayer = !game.player1 || !game.player2;
-		if (isPlayer)
+		if (isPlayer) {
 			this.addGameUser(info.objectId, info);
+		}
 		game.entry_game(player, isPlayer, info);
 		return isPlayer;
 	}
@@ -429,20 +432,20 @@ export class GameService {
 			},
 			orderBy: {
 				createdAt: 'desc',
-			}
+			},
 		});
 	}
 
 	async deleteGame(gameId: string) {
 		const index = this.games.findIndex(g => g.data.objectId === gameId);
 		if (index !== -1) {
-		  this.games.splice(index, 1);
+			this.games.splice(index, 1);
 		}
 		this.logger.log(`Delete Game ${gameId}`);
 		return this.prisma.game.delete({
-		  where: {
-			id: gameId,
-		  },
+			where: {
+				id: gameId,
+			},
 		});
 	}
 }

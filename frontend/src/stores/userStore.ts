@@ -143,10 +143,11 @@ export const userStore = defineStore("user", function () {
 		},
 	}).then(function (response: any){
 		console.log("This is the response from server: " + JSON.stringify(response));
+      user.id = response.data.id;
 			user.name = response.data.name;
-			user.email = response.data.email;
-			user.id = response.data.id;
 			user.nickname = response.data.nickname;
+			user.email = response.data.email;
+      user.status = response.data.status;
 			user.image = response.data.image;
 			user.money = response.data.money;
 			user.avatar = response.data.avatar;
@@ -163,6 +164,7 @@ export const userStore = defineStore("user", function () {
       getBlockedUsers();
       getBlockedBy();
       getUserGames(user.id);
+      console.log(response);
 		})
 			.catch(function (error) {
 			console.error(error);

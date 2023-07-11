@@ -227,24 +227,21 @@ export class GameClass {
 	}
 
 	disconnect(disconnectPlayerNumber: number) {
-
 		if ((disconnectPlayerNumber == 1 || disconnectPlayerNumber == 2) && this.status != Status.Finish) {
-			if (!this.player1 || !this.player2)
-			{
+			if (!this.player1 || !this.player2) {
 				this.deleteGame();
-			}
-			else
-			{
+			} else {
 				this.emitAll('game_update_point', {
 					objectId: this.data.objectId,
 					disconnectPlayerNumber: disconnectPlayerNumber == 1 ? 2 : 1,
 					score: this.maxPoint,
 				});
-				if (disconnectPlayerNumber == 1)
+				if (disconnectPlayerNumber == 1) {
 					this.player2.score = this.maxPoint;
-				else if (disconnectPlayerNumber == 2)
+				} else if (disconnectPlayerNumber == 2) {
 					this.player1.score = this.maxPoint;
-				this.endGame(disconnectPlayerNumber == 1 ? 2 : 1)
+				}
+				this.endGame(disconnectPlayerNumber == 1 ? 2 : 1);
 			}
 		}
 	}
@@ -255,7 +252,6 @@ export class GameClass {
 	}
 
 	private updateGameStatsForWinner(winner: Player_Pong, loser: Player_Pong) {
-
 		const gameResults = {
 			winnerId: winner.userId,
 			winnerName: winner.nickname,

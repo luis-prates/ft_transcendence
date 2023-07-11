@@ -22,7 +22,7 @@ export class GameMap {
 		this.logger.debug(`player ${player.objectId} joined map: ${this.map.objectId}`);
 		//TODO: player.map.map.objectId needs to be cleaned up
 		if (player.map && player.map.map.objectId != this.map.objectId) {
-			console.log("CHAMOU AQUI CRL,", player.map.map.objectId, this.map.objectId)
+			console.log('CHAMOU AQUI CRL,', player.map.map.objectId, this.map.objectId);
 			player.map.removePlayer(player);
 		}
 		player.map = this;
@@ -86,7 +86,7 @@ export class GameMap {
 		GameMap.offAll(player);
 		// this sets the player.map to undefined
 		player.map = undefined;
-		console.log("FOI REMOVIDO")
+		console.log('FOI REMOVIDO');
 		//this.playerService.removePlayer(player);
 		this.emitAll('remove_gameobject', player.data, player, true);
 	}

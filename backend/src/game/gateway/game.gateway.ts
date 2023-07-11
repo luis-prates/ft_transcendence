@@ -72,16 +72,18 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		if (client.data.gameId) {
 			const gameId = client.data.gameId;
 
-			const isPlayer = this.socketService.gameIdToPlayerId.get(gameId) && this.socketService.gameIdToPlayerId.get(gameId).includes(Number(userId));
-			const isWatcher = this.socketService.gameIdToWatcherId.get(gameId) ? this.socketService.gameIdToWatcherId.get(gameId).includes(Number(userId)) : false;
-			console.log( isPlayer, isWatcher)
+			const isPlayer =
+				this.socketService.gameIdToPlayerId.get(gameId) &&
+				this.socketService.gameIdToPlayerId.get(gameId).includes(Number(userId));
+			const isWatcher = this.socketService.gameIdToWatcherId.get(gameId)
+				? this.socketService.gameIdToWatcherId.get(gameId).includes(Number(userId))
+				: false;
+			console.log(isPlayer, isWatcher);
 			const game = await this.gameService.games.find(g => g.data.objectId == gameId);
 			if (isPlayer) {
-				if (game)
-				{
-					console.log("IS IN OTHER GAME!");
+				if (game) {
+					console.log('IS IN OTHER GAME!');
 					game.disconnect(game.player1.userId == userId ? 1 : 2);
-
 				}
 
 				this.socketService.gameIdToPlayerId.set(
@@ -120,12 +122,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const gameId = body.objectId;
 		const userId = client.data.userId;
 		client.data.gameId = gameId;
-		const isInTheGamePlayer = this.socketService.gameIdToPlayerId.get(gameId) ? this.socketService.gameIdToPlayerId.get(gameId).includes(userId) : false;
-		const isInTheGameWatcher = this.socketService.gameIdToWatcherId.get(gameId) ? this.socketService.gameIdToWatcherId.get(gameId).includes(userId) : false;
-		if (isInTheGamePlayer || isInTheGameWatcher)
-		{
+		const isInTheGamePlayer = this.socketService.gameIdToPlayerId.get(gameId)
+			? this.socketService.gameIdToPlayerId.get(gameId).includes(userId)
+			: false;
+		const isInTheGameWatcher = this.socketService.gameIdToWatcherId.get(gameId)
+			? this.socketService.gameIdToWatcherId.get(gameId).includes(userId)
+			: false;
+		if (isInTheGamePlayer || isInTheGameWatcher) {
 			console.log(`The Client is connected AGAIN!: ${client.id}`);
-			return;	
+			return;
 		}
 		const player = this.playerService.getPlayer(userId);
 		// Add userId to gameIdToUserId map
@@ -134,10 +139,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		// const isInGame = this.socketService.playerIdToGameId.get(userId);
 		// if (isInGame)
 		// {
-			
+
 		// }
 		const isPlayer = await this.gameService.enterGame(player, body);
-		
+
 		//TODO Associar o player a um jogo
 		//this.socketService.playerIdToGameId.set(userId, gameId);
 
@@ -167,10 +172,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 		const userId = client.data.userId;
 		const player = this.playerService.getPlayer(userId);
-		
+
 		const game = await this.gameService.matchMakingGame(player, body);
-		if (game)
+		if (game) {
 			this.server.emit('match_making_game', game);
+		}
 	}
 
 	// @SubscribeMessage('new_game')

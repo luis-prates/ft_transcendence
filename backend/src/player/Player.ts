@@ -33,14 +33,14 @@ export class Player {
 		x: 64,
 		y: 64,
 		avatar: 0,
-		nickname: "",
+		nickname: '',
 		animation: { name: 'walk_bottom', isStop: true },
 	};
 	time = 0;
 	private readonly logger = new Logger(Player.name);
 
 	constructor(socket: Socket, payload: any, private playerService?: PlayerService) {
-		console.log("new player with data:", payload);
+		console.log('new player with data:', payload);
 		this.setSocket(socket);
 		this.data.objectId = payload.objectId;
 		this.data.avatar = payload.avatar;
@@ -66,7 +66,7 @@ export class Player {
 				if (this.time && this.map) {
 					//! this is the first call to remove player
 					//! need to fix infinite loop that starts here
-					console.log("TIME DISCONNECT CRL");
+					console.log('TIME DISCONNECT CRL');
 					this.map.removePlayer(this);
 					//! useless since I'm removing it on the line above
 					// Lobby.players = Lobby.players.splice(
