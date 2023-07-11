@@ -188,7 +188,6 @@ onMounted(function () {
   height: 100%;
   width: 100%;
   box-sizing: 0;
-  background-color: midnightblue;
 }
 
 #canvas1 {
