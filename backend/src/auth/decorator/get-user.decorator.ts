@@ -8,6 +8,5 @@ export const GetUser = createParamDecorator((data: string | undefined, ctx: Exec
 		return request.user[data];
 	}
 	delete request.user.hash;
-	delete request.user.twoFASecret;
 	return request.user;
 });

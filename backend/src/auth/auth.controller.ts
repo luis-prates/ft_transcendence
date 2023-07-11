@@ -21,7 +21,6 @@ import { Response } from 'express';
 import { OAuthExceptionFilter } from './filters/oauth-exception.filter';
 
 @Controller('auth')
-@UseFilters(OAuthExceptionFilter)
 export class AuthController {
 	private readonly logger = new Logger('AuthController');
 
@@ -33,14 +32,15 @@ export class AuthController {
 	}
 
 	@Get('42')
+	@UseFilters(OAuthExceptionFilter)
 	@UseGuards(FortyTwoGuard)
 	authenticate42() {
 		passport.authenticate('42', { failureRedirect: '/login' });
 	}
 
 	@Get('42/return')
+	@UseFilters(OAuthExceptionFilter)
 	@UseGuards(FortyTwoGuard)
-	//@Redirect(process.env.FRONTEND_REDIRECT_URL)
 	callback42(@Req() req: any, @Res() res: Response) {
 		res.redirect(`${process.env.FRONTEND_REDIRECT_URL}/?token=${req.user.access_token}`);
 	}
