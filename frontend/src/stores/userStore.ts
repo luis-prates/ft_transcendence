@@ -115,55 +115,41 @@ export const userStore = defineStore("user", function () {
   });
 
   async function login(authorizationCode: string | undefined) {
-    if (user.isLogin) return;
-    await axios
-      .post("https://api.intra.42.fr/oauth/token", {
-        grant_type: "authorization_code",
-        client_id: env.CLIENT_ID,
-        client_secret: env.CLIENT_SECRET,
-        code: authorizationCode,
-        redirect_uri: env.REDIRECT_URI,
-      })
-      .then(async (response) => {
-        user.accessToken = response.data.access_token;
-        user.refreshToken = response.data.refresh_token;
+	if (user.isLogin || authorizationCode === undefined)
+		return;
+	user.access_token_server = authorizationCode;
 
-        const userInfoResponse = await axios.get("https://api.intra.42.fr/v2/me", {
-          headers: {
-            Authorization: `Bearer ${user.accessToken}`,
-          },
-        });
-        user.image = userInfoResponse.data.image.link;
-        console.log(userInfoResponse.data);
-        user.name = userInfoResponse.data.displayname;
-        user.email = userInfoResponse.data.email;
-        user.id = userInfoResponse.data.id;
-        user.nickname = userInfoResponse.data.login;
-        user.money = userInfoResponse.data.money;
-        console.log("user\n", JSON.stringify(user));
-        await axios
-          .post(env.BACKEND_PORT + "/auth/signin", user)
-
-          // axios.request(options)
-          .then(function (response: any) {
-            user.access_token_server = response.data.access_token;
-            user.name = response.data.dto.name;
-            user.email = response.data.dto.email;
-            user.id = response.data.dto.id;
-            user.nickname = response.data.dto.nickname;
-            user.image = response.data.dto.image;
-            user.money = response.data.dto.money;
-          })
-          .catch(function (error) {
-            console.error(error);
-          });
-        user.isLogin = true;
-      })
-      .catch((error) => {
-        console.error(error);
-        user.isLogin = false;
-      });
-    // .finally(() => window.location.href = window.location.origin);
+	await axios.get(env.BACKEND_PORT + "/users/me", {
+		headers: {
+			Authorization: "Bearer " + authorizationCode,
+		},
+	}).then(function (response: any){
+		console.log("This is the response from server: " + JSON.stringify(response));
+			user.name = response.data.name;
+			user.email = response.data.email;
+			user.id = response.data.id;
+			user.nickname = response.data.nickname;
+			user.image = response.data.image;
+			user.money = response.data.money;
+			user.avatar = response.data.avatar;
+			user.infoPong.level = response.data.level;
+			user.infoPong.xp = response.data.xp;
+			user.infoPong.color = response.data.color;
+			user.infoPong.skin.default.tableColor = response.data.tableColorEquipped;
+			user.infoPong.skin.default.tableSkin = response.data.tableSkinEquipped;
+			user.infoPong.skin.default.paddle = response.data.paddleSkinEquipped;
+			user.infoPong.skin.tables = response.data.tableSkinsOwned;
+			user.infoPong.skin.paddles = response.data.paddleSkinsOwned;
+		})
+			.catch(function (error) {
+			console.error(error);
+			user.isLogin = false;
+		});
+	user.isLogin = true;
+	getFriends();
+	getFriendRequests();
+	getBlockedUsers();
+  // .finally(() => window.location.href = window.location.origin);
   }
 
   async function loginTest() {
