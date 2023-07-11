@@ -1,9 +1,24 @@
-import { Body, Controller, Logger, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Logger,
+	Post,
+	Req,
+	Res,
+	UnauthorizedException,
+	UseFilters,
+	UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
+import passport from 'passport';
+import { FortyTwoGuard } from './guard/42.guard';
 import { AuthDto, TwoFADto } from './dto/auth.dto';
 import { JwtGuard } from './guard';
 import { User } from '@prisma/client';
 import { GetUser } from './decorator';
+import { Response } from 'express';
+import { OAuthExceptionFilter } from './filters/oauth-exception.filter';
 
 @Controller('auth')
 export class AuthController {
@@ -14,6 +29,20 @@ export class AuthController {
 	@Post('signin')
 	signin(@Body() dto: AuthDto) {
 		return this.authService.signin(dto);
+	}
+
+	@Get('42')
+	@UseFilters(OAuthExceptionFilter)
+	@UseGuards(FortyTwoGuard)
+	authenticate42() {
+		passport.authenticate('42', { failureRedirect: '/login' });
+	}
+
+	@Get('42/return')
+	@UseFilters(OAuthExceptionFilter)
+	@UseGuards(FortyTwoGuard)
+	callback42(@Req() req: any, @Res() res: Response) {
+		res.redirect(`${process.env.FRONTEND_REDIRECT_URL}/?token=${req.user.access_token}`);
 	}
 
 	@Post('2fa/turn-on')

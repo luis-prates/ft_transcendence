@@ -1,5 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import passport from 'passport';
+import session from 'express-session';
 
 import { ValidationPipe } from '@nestjs/common';
 
@@ -11,6 +13,15 @@ async function bootstrap() {
 			whitelist: true,
 		}),
 	); // This is a security feature that validates the data sent to the backend.
+	app.use(
+		session({
+			secret: 'secret',
+			resave: false,
+			saveUninitialized: false,
+		}),
+	);
+	app.use(passport.initialize());
+	app.use(passport.session());
 	await app.listen(3000);
 	// const io = new Server(app.getHttpServer(), {
 	// 	cors: {

@@ -1,7 +1,9 @@
 import { Camera, Player, Menu, type GameObject, Map, listClass } from "@/game";
+import { socketClass } from "@/socket/SocketClass";
 import { userStore } from "@/stores/userStore";
 import { CreateGame } from "../Menu/CreateGame";
 import { YourMenu } from "../Menu/YourMenu";
+import type { Socket } from "socket.io-client";
 
 export class Game {
   public static instance: Game;
@@ -22,8 +24,11 @@ export class Game {
   protected player: Player;
   public your_menu;
   public isRunning;
+  public socket: Socket;
 
   constructor(map: Map, player: Player) {
+    //For What?
+	this.socket = socketClass.getGameSocket();
     console.log("Map: ", map.w, " / ", map.h);
     this.camera = new Camera(player, map);
     this.canvas.width = map.w;
