@@ -6,15 +6,15 @@
 		<form>
 			<h2>Sign In</h2>
 			<div class="inputBox">
-				<input type="text" required="true" v-model="objectId" >
+				<input type="number" required="true" v-model="objectId" placeholder=" " >
 				<span>User Id (for testing)</span>
 				<i></i>
 			</div>
-			<!-- <div class="inputBox">
-				<input type="password" required="true" >
-				<span>Password</span>
+			<div class="inputBox">
+				<input type="email" required="true"  placeholder=" " >
+				<span>Email Test</span>
 				<i></i>
-			</div> -->
+			</div>
 			<!-- <div class="links">
 				<a href="#">Forgot password</a>
 				<a href="#">Signup</a>
