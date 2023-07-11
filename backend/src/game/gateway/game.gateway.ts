@@ -14,6 +14,8 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
 import { GameClass } from '../ping_pong/GamePong';
+import { UserService } from 'src/user/user.service';
+import { UserStatus } from '@prisma/client';
 
 @WebSocketGateway({ namespace: 'game', cors: { origin: '*' } })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -26,6 +28,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		private gameService: GameService,
 		private socketService: SocketService,
 		private playerService: PlayerService,
+		private userService: UserService,
 	) {}
 
 	async afterInit(server: any) {
@@ -55,6 +58,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		player.gameSocket = client;
 		client.data.userId = userId;
+		this.userService.status(userId, UserStatus.IN_GAME);
 	}
 
 	async handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -90,6 +94,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				);
 				// Leave the room for the game
 				client.leave(`game-${gameId}-player`);
+				this.userService.status(userId, UserStatus.ONLINE);
 			} else if (isWatcher) {
 				this.socketService.gameIdToWatcherId.set(
 					gameId,
@@ -164,7 +169,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const player = this.playerService.getPlayer(userId);
 		
 		const game = await this.gameService.matchMakingGame(player, body);
-		this.server.emit('match_making_game', game);
+		if (game)
+			this.server.emit('match_making_game', game);
 	}
 
 	// @SubscribeMessage('new_game')

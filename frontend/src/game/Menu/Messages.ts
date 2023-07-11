@@ -19,36 +19,13 @@ export class Messages {
   private onResult: (result: any) => void = () => {};
   
   constructor() {
-    this.fetchUsers();
-  }
+    this.menu.add(this.background);
+    this.menu.add(this.createButtonExit(38, 16));
 
-  async fetchUsers() {
-    try {
-      // Obtenha os usuários da base de dados
-     // this.friendRequests = await userStore().getFriendRequests();
-
-     // this.friendRequests = this.friendRequests.filter((request: { requestorId: number; }) => request.requestorId !== this.user.id);
-      
-
-      console.log("friendRequests: ", this.friendRequests);
-      
-      this.menu.add(this.background);
-      this.menu.add(this.createButtonExit(38, 16));
-
-      this.menu.add(this.background, this.createMessageButton(38.5, 16 + 1 * 6, "Request", "Request Friends"));
-      this.menu.add(this.background, this.createMessageButton(38.5, 16 + 2 * 6, "Block", "Your Block List"));
-      this.menu.add(this.background, this.createMessageButton(38.5, 16 + 3 * 6, "Blocked", "Who Blocked You!"));
-
-    } catch (error) {
-      const confirmButton = new ConfirmButton(error, STATUS_CONFIRM.ERROR);
-			confirmButton.show((value) => {
-				if (value == "OK") {
-					this.menu.close();
-					this.onResult("EXIT");
-				}
-			});
-    }
-  }
+    this.menu.add(this.background, this.createMessageButton(38.5, 16 + 1 * 6, "Request", "Request Friends"));
+    this.menu.add(this.background, this.createMessageButton(38.5, 16 + 2 * 6, "Block", "Your Block List"));
+    this.menu.add(this.background, this.createMessageButton(38.5, 16 + 3 * 6, "Blocked", "Who Blocked You!"));
+}
 
   private createBackground(): ElementUI {
     const background: ElementUI = {

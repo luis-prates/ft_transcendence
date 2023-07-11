@@ -20,6 +20,7 @@ export class Game {
   protected camera: Camera;
   protected map: Map;
   protected player: Player;
+  public your_menu;
   public isRunning;
 
   constructor(map: Map, player: Player) {
@@ -39,7 +40,8 @@ export class Game {
     this.canvas.addEventListener("contextmenu", this.mouseClick.bind(this));
     Game.instance = this;
     //Your Menu
-    Game.instance.addMenu(new YourMenu().menu);
+    this.your_menu = new YourMenu();
+    Game.instance.addMenu(this.your_menu.menu);
     // Adicione os event listeners para os eventos de drag e drop
     this.canvas.addEventListener("dragover", (event) => event.preventDefault());
     this.canvas.addEventListener("drop", (event) => {
@@ -157,6 +159,12 @@ export class Game {
     window.removeEventListener("keyup", this.keyUp);
   }
 
+  public gameNotification() {
+    const user = userStore().user;
+    const numberOfFriendRequest = user.friendsRequests.filter((friendship) => friendship.requesteeId === user.id).length;
+    this.your_menu.notification = numberOfFriendRequest == 0 ? "" : (numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99" );;
+  }
+
   public static MouseColision(x: number, y: number): GameObject | undefined {
     if (Game.gameObjectSelected && Game.gameObjectSelected.onDeselected) Game.gameObjectSelected.onDeselected();
     for (let gameObject of Game.instance.gameObjets) {
@@ -210,4 +218,9 @@ export class Game {
   public static removeMenu(menu: Menu) {
     Game.instance.removeMenu(menu);
   }
+
+  public static updateNotifications() {
+    Game.instance.gameNotification();
+  }
+
 }

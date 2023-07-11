@@ -20,10 +20,10 @@ export class YourMenu {
   private leaderBoardMenu: boolean = false;
   private messagesMenu: boolean = false;
 
-
   private img_battle = new Image();
   private img_leaderBoard = new Image();
   private img_message = new Image();
+  public notification: string = "";
 
   private user = userStore().user;
 
@@ -37,8 +37,6 @@ export class YourMenu {
     this.menu.add(this.background, this.createButton("message", 42.5 + 0.5, 0.5, "Messages", 9));
     this.menu.add(this.background, this.createButton("battle", 42.5 + 5.5, 0.5, "Battles", 9));
     this.menu.add(this.background, this.createButton("leaderboard", 42.5 + 10.5, 0.5, "LeaderBoard", 9));
-
-
   }
 
   private createBackground(): ElementUI {
@@ -74,7 +72,7 @@ export class YourMenu {
       img = this.img_leaderBoard;
 
     const numberOfFriendRequest = this.user.friendsRequests.filter((friendship) => friendship.requesteeId === this.user.id).length;
-    let notification = numberOfFriendRequest == 0 ? "" : (numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99" );
+    this.notification = numberOfFriendRequest == 0 ? "" : (numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99" );
 
 	  const button: ElementUI = {
 		type: type,
@@ -103,7 +101,7 @@ export class YourMenu {
         if (type == "message")
         {
           ctx.fillStyle = "red";
-          this.fillTextCenter(ctx, notification, 
+          this.fillTextCenter(ctx, this.notification, 
           button.rectangle.x + button.rectangle.w * 0.6, 
           button.rectangle.y + button.rectangle.h * 0.65, 
           button.rectangle.w * 0.16,
@@ -123,7 +121,7 @@ export class YourMenu {
         {
           if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
             return ;
-          notification = "";
+          this.notification = "";
           this.messagesMenu = true;
           const confirmButton = new Messages();
           confirmButton.show((value) => {
@@ -200,7 +198,6 @@ export class YourMenu {
       ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
     ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
   }
-
 
   get menu(): Menu {
     return this._menu;

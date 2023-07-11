@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
-import { GameStatus, Prisma } from '@prisma/client';
+import { GameStatus, Prisma, UserStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameDto, GameEndDto } from './dto';
 import { EventEmitter } from 'events';
@@ -111,18 +111,46 @@ export class GameService {
 
 		//TODO
 		//verificar se ambos estao em jogo ou nao pelo Status
+		try {
+			let player1 = await this.prisma.user.findUnique({
+				where: {
+					id: player1Id,
+				},
+			});
 
-		const gameCreated = await this.createGame({
-			"gameType": "PUBLIC",
-			"players": [ player1Id, player2Id],
-			"gameRequest": {"objectId": `gametest_${player1Id}_${player2Id}`,
-			"maxScore": 3,
-			"table": "#1e8c2f",
-			"tableSkin": "",
-			"bot": false}
-		} as GameDto) as any;
-		console.log(gameCreated);
-		return gameCreated.id;
+			let player2 = await this.prisma.user.findUnique({
+				where: {
+					id: player2Id,
+				},
+			});
+
+			if (player1.status == UserStatus.IN_GAME || player2.status == UserStatus.IN_GAME)
+				return undefined;
+
+			const gameCreated = await this.createGame({
+				"gameType": "PUBLIC",
+				"players": [ player1Id, player2Id],
+				"gameRequest": {"objectId": `gametest_${player1Id}_${player2Id}`,
+				"maxScore": 3,
+				"table": "#1e8c2f",
+				"tableSkin": "",
+				"bot": false}
+			} as GameDto) as any;
+			console.log(gameCreated);
+			return gameCreated.id;
+
+		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2002') {
+					throw new ForbiddenException(
+						`Defined field value already exists. Error: ${error.message.substring(
+							error.message.indexOf('Unique constraint'),
+						)}`,
+					);
+				}
+			}
+			throw error;
+		}
 	}
 
 	async getActiveGames(status: GameStatus[]) {

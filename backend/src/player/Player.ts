@@ -126,7 +126,6 @@ export class Player {
 		// this.playerService.players = Lobby.players.splice(Lobby.players.indexOf(this), 1);
 		// this.playerService?.removePlayer(this);
 		//! need to check this
-		console.log("destroy caralho")
 		this.map?.removePlayer(this);
 	}
 }

@@ -100,15 +100,17 @@ onMounted(() => {
         user.friendsRequests.push(event);
         console.log("is pushed!");
       }  
-      console.log("Send Friend!", event, "Friend Request:", user.friendsRequests);
-		});
+      //console.log("Send Friend!", event, "Friend Request:", user.friendsRequests);
+      Game.updateNotifications();
+    });
 
     //Cancel Friend Request
     socket.on("cancelFriendRequest",  (event: Friendship) => {
       user.friendsRequests = user.friendsRequests.filter((friend: Friendship) => friend.requestorId != event.requestorId);
 
-      console.log("Cancel Friend!", event, "Friend Request:", user.friendsRequests);
-		});
+      //console.log("Cancel Friend!", event, "Friend Request:", user.friendsRequests);
+      Game.updateNotifications();
+    });
 
     //Accept Friend Request
     socket.on("acceptFriendRequest",  (event: Friendship) => {
@@ -117,21 +119,21 @@ onMounted(() => {
       
       if (!existingEvent)
         user.friends.push(event);
-      console.log("Accept Friend!", event);
+      //console.log("Accept Friend!", event);
+      Game.updateNotifications();
 		});
     
     //Reject Friend Request
     socket.on("rejectFriendRequest",  (event: Friendship) => {
       user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.requesteeId);
-
-      console.log("Reject Friend Request!", event);
+      //console.log("Reject Friend Request!", event);
+      Game.updateNotifications();
 		});
 
     //Delete Friend
     socket.on("deleteFriend",  (event: Friendship) => {
       user.friends = user.friends.filter((friend: Friendship) => friend.id != event.id);
-      
-      console.log("Delete Friend!", event);
+      //console.log("Delete Friend!", event);
 		});
 });
 

@@ -130,3 +130,8 @@ export class UserUpdateStatsDto {
 	@IsNumber()
 	money?: number;
 }
+
+export class UserStatusDto {
+	@IsString()
+	status: UserStatus;
+}

@@ -18,7 +18,6 @@ export class MessageList {
   private background: ElementUI = this.createBackground();
   
   private pagination_list: any | PaginationMenu;
-  private users: any | void [] = [];
   private user = userStore().user;
   private functions = userStore();
   private usersList : any | void [] = [];
@@ -27,24 +26,7 @@ export class MessageList {
   
   constructor(tittle: string) {
     this.title = tittle;
-    this.fetchOtherUsers();
-    this.fetchUsers();
-  }
-
-  // Obtenha os usuários da base de dados
-  async fetchOtherUsers() {
-    try {
-      this.users = await userStore().getUsers();      
-    } catch (error) {
-      console.error('Erro ao buscar os usuários:', error);
-      this.menu.close();
-    }
-  }
-
-  //Option: "Request", "Block", "Blocked"
-  async fetchUsers() {
-    try {
-      if (this.title == "Request")
+    if (this.title == "Request")
       {
         this.usersList = this.user.friendsRequests;
         this.usersList = this.usersList.filter((request: { requestorId: number; }) => request.requestorId !== this.user.id);
@@ -110,10 +92,6 @@ export class MessageList {
       this.menu.add(this.pagination_list.createArrowButton("left", 46.5, 16 + 9 * 6, 2));
       this.menu.add(this.pagination_list.createArrowButton("right", 51.5, 16 + 9 * 6, 2));
 
-    } catch (error) {
-      console.error('Erro ao buscar os usuários:', error);
-      this.menu.close();
-    }
   }
 
   private createBackground(): ElementUI {

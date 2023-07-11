@@ -14,6 +14,8 @@ import { Logger, UnauthorizedException } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
 import { GameService } from '../../game/game.service';
 import { sleep } from 'pactum';
+import { UserService } from 'src/user/user.service';
+import { UserStatus } from '@prisma/client';
 
 @WebSocketGateway({ namespace: 'lobby', cors: { origin: '*' } })
 export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -22,7 +24,7 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 	@WebSocketServer()
 	server: Server;
 
-	constructor(private lobbyService: LobbyService, private playerService: PlayerService, private gameService: GameService) {}
+	constructor(private lobbyService: LobbyService, private playerService: PlayerService, private gameService: GameService, private userService: UserService) {}
 
 	afterInit(server: Server) {
 		this.logger.log('LobbyGateway initialized');
@@ -51,6 +53,7 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 			this.lobbyService.connection(client, payload);
 			client.join('lobby');
 			client.to('lobby').emit('lobby_add_user', client.id);
+			this.userService.status(payload.userId, UserStatus.ONLINE);
 		});
 	}
 
@@ -61,8 +64,14 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 	handleDisconnect(client: Socket) {
 		this.logger.debug(`Client disconnected: ${client.id} from lobby namespace`);
+		
 		this.logger.log(`Clients Before: ${this.playerService.getPlayerCount()}`);
-		this.playerService.removePlayer(this.playerService.getPlayer(this.playerService.getUserIdBySocket(client)));
+		
+		const userId = this.playerService.getUserIdBySocket(client);
+		this.playerService.removePlayer(this.playerService.getPlayer(userId));
+		
+		this.userService.status(userId, UserStatus.OFFLINE);
+
 		this.logger.log(`Clients After: ${this.playerService.getPlayerCount()}`);
 	}
 	
@@ -283,6 +292,26 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		this.server.to(player.getSocket().id).emit('deleteFriend', {
 			id: id,
+		});
+	}
+
+	//Update Status
+	@SubscribeMessage('updateStatus')
+	async handleUpdateStatus(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.logger.debug(`Delete Friend received: ${JSON.stringify(body)}`);
+
+		const status = body.status;
+		const id = body.id;
+
+		//Verificar
+		const player = this.playerService.getPlayer(id);
+		
+		if (!player)
+			return ;
+
+		this.server.emit('updateStatus', {
+			id: id,
+			status: status,
 		});
 	}
 }
