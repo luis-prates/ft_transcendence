@@ -1,24 +1,9 @@
-import {
-	Body,
-	Controller,
-	Get,
-	Logger,
-	Post,
-	Req,
-	Res,
-	UnauthorizedException,
-	UseFilters,
-	UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Logger, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import passport from 'passport';
-import { FortyTwoGuard } from './guard/42.guard';
 import { AuthDto, TwoFADto } from './dto/auth.dto';
 import { JwtGuard } from './guard';
 import { User } from '@prisma/client';
 import { GetUser } from './decorator';
-import { Response } from 'express';
-import { OAuthExceptionFilter } from './filters/oauth-exception.filter';
 
 @Controller('auth')
 export class AuthController {
