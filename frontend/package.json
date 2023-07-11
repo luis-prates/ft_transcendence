@@ -12,6 +12,13 @@
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.4.0",
+    "@fortawesome/fontawesome-svg-core": "^6.4.0",
+    "@fortawesome/free-brands-svg-icons": "^6.4.0",
+    "@fortawesome/free-regular-svg-icons": "^6.4.0",
+    "@fortawesome/free-solid-svg-icons": "^6.4.0",
+    "@fortawesome/vue-fontawesome": "^3.0.3",
+    "@popperjs/core": "^2.11.8",
     "axios": "^1.4.0",
     "bootstrap": "^5.3.0",
     "mitt": "^3.0.1",
@@ -24,6 +31,7 @@
   },
   "devDependencies": {
     "@tsconfig/node18": "^2.0.0",
+    "@types/bootstrap": "^5.2.6",
     "@types/node": "^18.16.13",
     "@types/qrcode": "^1.5.0",
     "@vitejs/plugin-vue": "^4.2.1",
