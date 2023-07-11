@@ -1,15 +1,10 @@
 @import './base.css';
 
 #app {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	margin: 0;
-	padding: 0;
-	margin: 0;
-	background-color: #42434e;
-	background: url('/src/assets/images/lobby/layer_0.png');
-	overflow: hidden;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
 }

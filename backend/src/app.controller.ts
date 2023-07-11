@@ -8,7 +8,7 @@ import * as path from 'path';
 export class AppController {
 	constructor(private readonly appService: AppService) {}
 
-	@Get()
+	@Get('v2/hello')
 	getHello(): string {
 		return this.appService.getHello();
 	}
