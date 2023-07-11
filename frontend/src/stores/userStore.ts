@@ -157,16 +157,18 @@ export const userStore = defineStore("user", function () {
 			user.infoPong.skin.default.tableSkin = response.data.tableSkinEquipped;
 			user.infoPong.skin.default.paddle = response.data.paddleSkinEquipped;
 			user.infoPong.skin.tables = response.data.tableSkinsOwned;
-			user.infoPong.skin.paddles = response.data.paddleSkinsOwned;
+      user.infoPong.skin.paddles = response.data.paddleSkinsOwned;
+      getFriends();
+      getFriendRequests();
+      getBlockedUsers();
+      getBlockedBy();
+      getUserGames(user.id);
 		})
 			.catch(function (error) {
 			console.error(error);
 			user.isLogin = false;
 		});
-	user.isLogin = true;
-	getFriends();
-	getFriendRequests();
-	getBlockedUsers();
+	  user.isLogin = true;
   // .finally(() => window.location.href = window.location.origin);
   }
 
