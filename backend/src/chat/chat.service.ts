@@ -50,8 +50,11 @@ export class ChatService {
 			where: {
 				channelId: channelId,
 			},
+			include: {
+				user: true,	
+			},
 			orderBy: {
-				createdAt: 'desc',
+				createdAt: 'asc',
 			},
 		});
 	}
@@ -118,6 +121,7 @@ export class ChatService {
 								})),
 							],
 						},
+						...(createChannelDto.avatar && { avatar: createChannelDto.avatar })
 					},
 					include: {
 						users: true,

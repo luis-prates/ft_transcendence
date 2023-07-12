@@ -117,7 +117,7 @@ model Channel {
 	ownerId					Int?
 	owner					User? @relation("ChannelOwner", fields: [ownerId], references: [id])
 	type					ChannelType // Public, Private, Protected, DM
-
+	avatar					String?
 	@@map("channels")
 }
 

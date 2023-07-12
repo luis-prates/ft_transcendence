@@ -19,6 +19,9 @@
         <ul class="contacts" @click="toggleStatus">
           <u v-for="channel in store.channels">
             <ChatListChannels :channel="channel" @click="selectChannel(channel)" />
+            <div class="menu-container" v-if="isMenuOpen">
+              <Menus @toggleMenu="toggleMenu" @openChannel="openChannel" :channel="channel" @update-channel-status="updateChannelStatus" @update-create-channel="updateCreateChannel" v-show="selected?.objectId == channel.objectId" />
+            </div>
           </u>
         </ul>
       </div>
@@ -44,16 +47,31 @@ import ChatListChannels from "./ChatListChannels.vue";
 import ChatListUsers from "./ChatListUsers.vue";
 import { chatStore, type channel } from "@/stores/chatStore";
 import "./App.css";
-import { defineProps, ref, getCurrentInstance, type WebViewHTMLAttributes } from "vue";
+import { ref, getCurrentInstance, type WebViewHTMLAttributes } from "vue";
 import { onMounted } from 'vue';
 import { storeToRefs } from "pinia";
+import Menus from './Menu.vue';
 
 const store = chatStore();
 const { selected } = storeToRefs(store);
+const isMenuOpen = ref(false);
 
-function selectChannel(channel: channel) {
-  instance?.emit("update-create-channel", false);
-  store.showChannel(channel);
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value;
+};
+
+
+const selectChannel = (channel: channel) => {
+  //instance?.emit("update-create-channel", false);
+  if (selected.value != channel && isMenuOpen.value) {
+    toggleMenu();
+  }
+  store.selectChannel(channel);
+  toggleMenu();
+}
+
+const openChannel = (channel: channel) => {
+  store.getMessages(channel);
 }
 
 //Creating a new channel:
@@ -66,6 +84,16 @@ const createChannel = () => {
     console.log("Vai adicionar um novo user ao channel");
   }
   //instance?.emit("update-channel-status", newStatus);
+};
+
+// Method to update channelStatus when emitted from child component
+const updateChannelStatus = (newStatus: boolean) => {
+  instance?.emit('update-channel-status', newStatus);
+};
+
+// Method to update createChannel var when emitted from child component
+const updateCreateChannel = (newStatus: boolean) => {
+  instance?.emit("update-create-channel", newStatus);
 };
 
 //Testing the number of cahnnels created//Remover depois do backend devolver o objectId do channel em questao
@@ -96,8 +124,8 @@ const instance = getCurrentInstance();
 
 // Emit event from the child component
 const toggleStatus = () => {
-  const newStatus = !props.channelStatus;
-  instance?.emit("update-channel-status", newStatus);
+  //const newStatus = !props.channelStatus;
+  //instance?.emit("update-channel-status", newStatus);
 };
 
 // Variável para controlar o estado do chat
@@ -138,11 +166,19 @@ const toggleChat = () => {
   display: flex;
   justify-content: flex-end;
   pointer-events: all;
+  position: relative;
 }
 
 .contacts_card {
   flex: 1;
   max-height: 100%; /* Set the desired maximum height for the contacts card */
   overflow-y: auto;
+}
+
+.menu-container {
+  position: absolute;
+  z-index: 10; /* Adjust the z-index value as needed */
+  right: 0;
+  width: 30%;
 }
 </style>
