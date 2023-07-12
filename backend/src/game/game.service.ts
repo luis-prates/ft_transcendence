@@ -246,10 +246,11 @@ export class GameService {
 			user.wonGames.forEach(wongame => {
 				points += wongame.loserScore == 0 ? 3 : 2;
 			});
-			user.lostGames.forEach(lostgame => {
+			//TODO if lose 0 points lose -1?
+			/*user.lostGames.forEach(lostgame => {
 				points += lostgame.loserScore == 0 ? -1 : 0;
 				points = points < 0 ? 0 : points;
-			});
+			});*/
 
 			leaderboardReturn.push({
 				rank: 0,
@@ -264,8 +265,26 @@ export class GameService {
 
 		leaderboardReturn.sort((a, b) => b.points - a.points);
 
+		let last_points: number = -1;
+		let last_rank: number = -1;
 		leaderboardReturn.forEach((user, index) => {
-			user.rank = index + 1;
+			let cur_rank = index + 1;
+			if (index == 0)
+			{
+				last_rank = user.rank;
+				last_points = user.points;
+			}
+			else
+			{
+				if (last_points == user.points)
+					cur_rank = last_rank;
+				else
+				{
+					last_rank = cur_rank;
+					last_points = user.points;
+				}
+			}
+			user.rank = cur_rank;
 		});
 		return leaderboardReturn;
 	}
