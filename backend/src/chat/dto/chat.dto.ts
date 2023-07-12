@@ -1,5 +1,6 @@
+import { ChannelType } from '@prisma/client';
 import { IsNotEmpty, IsOptional, IsEnum, MinLength, IsArray, IsNumber, IsBase64, IsString } from 'class-validator';
-import { ChannelType } from '../../types';
+
 
 export class CreateChannelDto {
 	@IsOptional()

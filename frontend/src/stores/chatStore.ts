@@ -35,7 +35,7 @@ export interface channel {
 
 export const chatStore = defineStore("chat", () => {
   const channels = reactive<channel[]>([]);
-  const selected = ref<channel | undefined>(undefined);
+  const selected = ref<any | undefined>(undefined);
   const user = userStore().user;
 
   function addChannel(newChannel: any, message: String) {
@@ -91,6 +91,14 @@ export const chatStore = defineStore("chat", () => {
   function selectChannel(channel: channel | undefined) {
     if (channel) {
       selected.value = channel;
+    } else {
+      selected.value = undefined;
+    }
+  }
+  
+  function selectUser(user: ChatUser | undefined) {
+    if (user) {
+      selected.value = user;
     } else {
       selected.value = undefined;
     }
@@ -197,5 +205,5 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  return { channels, selected, addChannel, getMessages, addMessage, getChannels, createChannel, activateMessage, selectChannel };
+  return { channels, selected, addChannel, getMessages, addMessage, getChannels, createChannel, activateMessage, selectChannel, selectUser };
 });

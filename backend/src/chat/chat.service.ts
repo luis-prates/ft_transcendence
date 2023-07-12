@@ -24,6 +24,7 @@ export class ChatService {
 							select: {
 								id: true,
 								nickname: true,
+								status: true,
 								image: true,
 							},
 						},

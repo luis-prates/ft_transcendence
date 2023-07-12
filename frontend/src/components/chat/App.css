@@ -86,12 +86,6 @@ body,html{
     list-style: none;
     padding: 0;
   }
-  .item-box:hover {
-    background-color: black;
-    border-radius: 10px;
-    padding-top: 3%;
-    padding-left: 3%;
-  }
   .contacts li{
     width: 100% !important;
     padding: 5px 10px;
@@ -103,12 +97,14 @@ body,html{
   .user_img{
     height: 40px;
     width: 40px;
-    border:1.5px solid #f5f6fa;
+    border:1.5px solid #000000;
+    border-radius: 10px;
   }
   .user_img_msg{
     height: 40px;
     width: 40px;
     border:1.5px solid #f5f6fa;
+    border-radius: 10px;
   }
   .img_cont{
     position: relative;
@@ -125,12 +121,18 @@ body,html{
   width:15px;
   background-color: #4cd137;
   border-radius: 50%;
-  bottom: 0.2em;
-  right: 0.4em;
+  bottom: -0.2em;
+  right: -0.2em;
   border:1.5px solid white;
   }
-  .offline{
+  .ONLINE{
+    background-color: #4cd137 !important;
+  }
+  .OFFLINE{
   background-color: #c23616 !important;
+  }
+  .IN_GAME{
+  background-color: #c2ae16 !important;
   }
   .user_info{
   margin-top: auto;
@@ -267,6 +269,10 @@ body,html{
   .contacts_card{
   margin-bottom: 15px !important;
   }
+  }
+  .contacts_card ul li:hover{
+  cursor: pointer;
+  background-color: rgba(240, 223, 223, 0.2);
   }
   /* width */
   ::-webkit-scrollbar {

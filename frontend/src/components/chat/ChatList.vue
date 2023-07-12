@@ -17,21 +17,20 @@
           <button class="chat_filter_button">🌐</button>
         </div>
         <ul class="contacts" @click="toggleStatus">
-          <u v-for="channel in store.channels">
+          <li v-for="channel in store.channels">
             <ChatListChannels :channel="channel" @click="selectChannel(channel)" />
             <div class="menu-container" v-if="isMenuOpen">
               <Menus @toggleMenu="toggleMenu" @openChannel="openChannel" :channel="channel" @update-channel-status="updateChannelStatus" @update-create-channel="updateCreateChannel" v-show="selected?.objectId == channel.objectId" />
             </div>
-          </u>
+          </li>
         </ul>
       </div>
       <div v-else class="card-body contacts_body">
         <!-- Users inside the chat selected -->
         <ul class="contacts">
-          <li>
-            <u v-for="(user, index) in selected?.users" :key="index">
-              <ChatListUsers :user="user" />
-            </u>
+          <li v-for="(user, id) in selected?.users" :key="id">
+            <ChatListUsers :user="user" @click="selectUser(user)" />
+            
           </li>
         </ul>
       </div>
@@ -45,12 +44,16 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 import ChatListChannels from "./ChatListChannels.vue";
 import ChatListUsers from "./ChatListUsers.vue";
-import { chatStore, type channel } from "@/stores/chatStore";
+import { chatStore, type channel, type ChatUser } from "@/stores/chatStore";
 import "./App.css";
 import { ref, getCurrentInstance, type WebViewHTMLAttributes } from "vue";
 import { onMounted } from 'vue';
 import { storeToRefs } from "pinia";
 import Menus from './Menu.vue';
+import { Game, Lobby } from "@/game";
+import { Profile } from "@/game/Menu/Profile";
+import { userStore } from "@/stores/userStore";
+import { YourProfile } from "@/game/Menu/YourProfile";
 
 const store = chatStore();
 const { selected } = storeToRefs(store);
@@ -60,7 +63,6 @@ const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
 };
 
-
 const selectChannel = (channel: channel) => {
   //instance?.emit("update-create-channel", false);
   if (selected.value != channel && isMenuOpen.value) {
@@ -69,6 +71,33 @@ const selectChannel = (channel: channel) => {
   store.selectChannel(channel);
   toggleMenu();
 }
+
+let isProfileOpen: boolean = false;
+
+const selectUser = (user: ChatUser) => {
+  if (isProfileOpen)
+    return;
+
+  isProfileOpen = true;
+  //instance?.emit("update-create-channel", false);
+  let profile;
+  if (userStore().user.id == user.id)
+    profile = new YourProfile(Lobby.getPlayer());
+  else
+    profile = new Profile(user.id);
+  
+  profile.show((value) => {
+		if (value == "EXIT") {
+      isProfileOpen = false;
+		}
+	});
+  /*if (selected.value != user && isMenuOpen.value) {
+    toggleMenu();
+  }
+  store.selectUser(user);
+  toggleMenu();*/
+}
+
 
 const openChannel = (channel: channel) => {
   store.getMessages(channel);
@@ -177,8 +206,9 @@ const toggleChat = () => {
 
 .menu-container {
   position: absolute;
-  z-index: 10; /* Adjust the z-index value as needed */
-  right: 0;
-  width: 30%;
+    z-index: 10;
+    right: 0;
+    width: 128%;
+    top: 0%;
 }
 </style>

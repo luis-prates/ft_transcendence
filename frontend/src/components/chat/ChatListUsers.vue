@@ -2,11 +2,11 @@
   <div class="d-flex bd-highlight">
     <div class="img_cont">
       <img :src="getImage()" class="rounded-circle user_img" />
-      <span class="online_icon online"></span>
+      <span :class="getStatus()"></span>
     </div>
     <div class="user_info">
       <span>{{ props.user.nickname }}</span>
-      <p>:{{props.user.status}}</p>
+      <p>{{props.user.status}}</p>
     </div>
   </div>
 </template>
@@ -25,6 +25,9 @@ function getImage() {
   return props.user.image ? props.user.image : defaultAvatar;
 }
 
+function getStatus() {
+  return "online_icon " + props.user.status;
+}
 
 const props = defineProps<{ user: ChatUser }>();
 

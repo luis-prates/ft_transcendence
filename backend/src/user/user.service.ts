@@ -2,10 +2,23 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserBuySkinDto, UserDto, UserUpdateSkinTableDto, UserUpdateStatsDto } from './dto';
 import { Prisma, UserStatus } from '@prisma/client';
+import { Server } from 'socket.io';
 
 @Injectable()
 export class UserService {
-	constructor(private prisma: PrismaService) {}
+	private server: Server;
+
+	constructor(private prisma: PrismaService) {
+	}
+
+	
+	setServer(server: Server) {
+		this.server = server;
+	}
+
+	getServer(): Server {
+		return this.server;
+	}
 
 	async editUser(userId: number, dto: UserDto) {
 		try {
@@ -93,6 +106,12 @@ export class UserService {
 
 			delete user.hash;
 			console.log('user: ', userId, ' new status: ', status);
+			
+			this.server.emit('updateStatus', {
+				id: userId,
+				status: status,
+			});
+
 			return user;
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {

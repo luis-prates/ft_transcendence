@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="$props.channel">
       <!-- <button @click="toggleMenu">Toggle Menu</button> -->
       <div class="menu" :style="menuStyles">
         <ul style="color: aliceblue;">
@@ -9,11 +9,21 @@
         </ul>
       </div>
     </div>
+    <div v-else-if="$props.user">
+      <!-- <button @click="toggleMenu">Toggle Menu</button> -->
+      
+        <ul style="color: aliceblue;">
+          <li @click="handleMenuItemClick(1)">Open</li>
+          <li @click="handleMenuItemClick(2)">Item 2</li>
+          <li @click="handleMenuItemClick(3)">Item 3</li>
+        </ul>
+      
+    </div>
   </template>
   
   <script setup lang="ts">
   import { ref, watch, getCurrentInstance } from 'vue';
-  import { chatStore, type channel } from "@/stores/chatStore";
+  import { chatStore, type channel, type ChatUser } from "@/stores/chatStore";
 
   // Get the current component instance
   const instance = getCurrentInstance();
@@ -25,7 +35,11 @@
   const props = defineProps({
   channel: {
     type: Object as () => channel, // Specify the type as channel
-    required: true,
+    required: false,
+  },
+  user: {
+    type: Object as () => ChatUser, // Specify the type as channel
+    required: false,
   },
 });
 
@@ -61,10 +75,11 @@
   
   <style>
   .menu {
-    position: absolute;
+    position: fixed;
     background-color: #161616;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
+    border-radius: 10px;
   }
   
   .menu ul {
@@ -80,6 +95,7 @@
   
   .menu ul li:hover {
     background-color: #424242;
+    border-radius: 10px;
   }
   </style>
 
