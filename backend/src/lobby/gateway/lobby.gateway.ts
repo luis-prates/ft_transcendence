@@ -13,7 +13,7 @@ import { LobbyService } from '../lobby.service';
 import { Logger, UnauthorizedException } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
 import { GameService } from '../../game/game.service';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../../user/user.service';
 import { UserStatus } from '@prisma/client';
 
 @WebSocketGateway({ namespace: 'lobby', cors: { origin: '*' } })
