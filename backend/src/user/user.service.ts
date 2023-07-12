@@ -64,7 +64,7 @@ export class UserService {
 
 	async status(userId: number, status: UserStatus) {
 		console.log('status: ', userId, status);
-		if (!userId) {
+		if (!userId || !status) {
 			return;
 		}
 
