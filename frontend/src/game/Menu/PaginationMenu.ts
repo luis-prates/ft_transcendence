@@ -38,9 +38,11 @@ export class PaginationMenu {
 			this.arrowR = ((this.page + 1) * this.max_for_page - 1 >= this.array.length - 1) ? "grey" : "white";
 			this.arrowL = this.page > 0 ? "white" : "grey";
 
+			ctx.lineWidth = 2;
 			ctx.strokeStyle = "black";
 			ctx.fillStyle = dir == "right" ? this.arrowR : this.arrowL;
-	
+			
+
 			const arrowSize = Math.min(button.rectangle.w, button.rectangle.h);
 	
 			if (dir == "right") {

@@ -1,4 +1,4 @@
-import { Player } from '../../player/Player';
+/*import { Player } from '../../player/Player';
 import { GameClass, Status } from './GamePong';
 import { gameRequest, playerInfo } from '../../socket/SocketInterface';
 
@@ -56,3 +56,4 @@ export class Games {
 		this.games.forEach(game => isInGame(game));
 	}
 }
+*/

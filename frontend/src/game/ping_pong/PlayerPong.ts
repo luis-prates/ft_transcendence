@@ -26,6 +26,7 @@ export class PlayerPong {
   key_w_press: boolean = false;
   key_s_press: boolean = false;
   socket: Socket = socketClass.getGameSocket();
+  id: number = -1;
 
   constructor(game: GamePong, player_n: number, nickname: string, avatar: any) {
     this.game = game;

@@ -7,6 +7,7 @@ import { UserService } from '../../user/user.service';
 import { Server } from 'socket.io';
 import { GameStatus } from '@prisma/client';
 import { Player } from '../../player/Player';
+import { stat } from 'fs';
 
 export enum Status {
 	Waiting,
@@ -98,28 +99,40 @@ export class GameClass {
 			player: 1,
 			status: Status.Starting,
 			data: this.data,
-			nickname1: this.player1.nickname,
-			avatar1: this.player1.avatar,
-			color1: this.player1.color,
-			skin1: this.player1.skin,
-			nickname2: this.player2.nickname,
-			avatar2: this.player2.avatar,
-			color2: this.player2.color,
-			skin2: this.player2.skin,
+			player1: {
+				id: this.player1.userId,
+				nickname: this.player1.nickname,
+				avatar: this.player1.avatar,
+				color: this.player1.color,
+				skin: this.player1.skin,
+			},
+			player2: {
+				id: this.player2.userId,
+				nickname: this.player2.nickname,
+				avatar: this.player2.avatar,
+				color: this.player2.color,
+				skin: this.player2.skin,
+			},
 		});
 		if (this.bot == false) {
 			this.player2.socket.emitToGame('start_game', {
 				player: 2,
 				status: Status.Starting,
 				data: this.data,
-				nickname1: this.player1.nickname,
-				avatar1: this.player1.avatar,
-				color1: this.player1.color,
-				skin1: this.player1.skin,
-				nickname2: this.player2.nickname,
-				avatar2: this.player2.avatar,
-				color2: this.player2.color,
-				skin2: this.player2.skin,
+				player1: {
+					id: this.player1.userId,
+					nickname: this.player1.nickname,
+					avatar: this.player1.avatar,
+					color: this.player1.color,
+					skin: this.player1.skin,
+				},
+				player2: {
+					id: this.player2.userId,
+					nickname: this.player2.nickname,
+					avatar: this.player2.avatar,
+					color: this.player2.color,
+					skin: this.player2.skin,
+				},
 			});
 		}
 		console.log('emit_start_game');
@@ -145,17 +158,22 @@ export class GameClass {
 		} else if (!this.watchers.includes(user)) {
 			this.watchers.push(user);
 			user.emitToGame('start_game', {
-				//Game
-				status: this.status,
+				status: Status.Starting,
 				data: this.data,
-				nickname1: this.player1.nickname,
-				avatar1: this.player1.avatar,
-				color1: this.player1.color,
-				skin1: this.player1.skin,
-				nickname2: this.player2.nickname,
-				avatar2: this.player2.avatar,
-				color2: this.player2.color,
-				skin2: this.player2.skin,
+				player1: {
+					id: this.player1.userId,
+					nickname: this.player1.nickname,
+					avatar: this.player1.avatar,
+					color: this.player1.color,
+					skin: this.player1.skin,
+				},
+				player2: {
+					id: this.player2.userId,
+					nickname: this.player2.nickname,
+					avatar: this.player2.avatar,
+					color: this.player2.color,
+					skin: this.player2.skin,
+				},
 			});
 			this.emitAll('game_view', this.watchers.length);
 		}
@@ -190,7 +208,7 @@ export class GameClass {
 	endGame(playerNumber: number) {
 		if ((playerNumber == 1 || playerNumber == 2) && this.status != Status.Finish) {
 			this.updateStatus(Status.Finish);
-			//INSERT IN DATABASE
+
 			this.logger.debug('Game End');
 
 			if (playerNumber === 1) {
@@ -208,62 +226,82 @@ export class GameClass {
 		}
 	}
 
+	disconnect(disconnectPlayerNumber: number) {
+		if ((disconnectPlayerNumber == 1 || disconnectPlayerNumber == 2) && this.status != Status.Finish) {
+			if (!this.player1 || !this.player2) {
+				this.deleteGame();
+			} else {
+				this.emitAll('game_update_point', {
+					objectId: this.data.objectId,
+					disconnectPlayerNumber: disconnectPlayerNumber == 1 ? 2 : 1,
+					score: this.maxPoint,
+				});
+				if (disconnectPlayerNumber == 1) {
+					this.player2.score = this.maxPoint;
+				} else if (disconnectPlayerNumber == 2) {
+					this.player1.score = this.maxPoint;
+				}
+				this.endGame(disconnectPlayerNumber == 1 ? 2 : 1);
+			}
+		}
+	}
+
+	async deleteGame() {
+		this.logger.debug(`Delete game ${this.data.objectId}`);
+		await this.gameService.deleteGame(this.data.objectId);
+	}
+
 	private updateGameStatsForWinner(winner: Player_Pong, loser: Player_Pong) {
+		const gameResults = {
+			winnerId: winner.userId,
+			winnerName: winner.nickname,
+			winnerScore: winner.score,
+			loserId: loser.userId,
+			loserName: loser.nickname,
+			loserScore: loser.score,
+		};
+
 		if (winner.player_n !== 3) {
 			winner.socket.emitToGame('end_game', {
 				objectId: this.data.objectId,
 				result: 'You Win!',
-				exp: 0,
-				max_exp: this.maxPoint * (this.bot ? 50 : winner.score == 0 ? 150 : 100),
-				money: 0,
-				max_money: this.maxPoint * (this.bot ? 2 : winner.score == 0 ? 5 : 3),
-				watchers: 0,
-				max_watchers: this.watchers.length,
+				exp: this.maxPoint * (this.bot ? 50 : loser.score == 0 ? 150 : 100),
+				money: this.maxPoint * (this.bot ? 2 : loser.score == 0 ? 5 : 3),
+				watchers: this.watchers.length,
+				gameResults,
 			});
 			this.updatePlayerStats(winner.userId, {
-				xp: this.maxPoint * (this.bot ? 50 : winner.score == 0 ? 150 : 100),
-				money: this.maxPoint * (this.bot ? 2 : winner.score == 0 ? 5 : 3),
+				xp: this.maxPoint * (this.bot ? 50 : loser.score == 0 ? 150 : 100),
+				money: this.maxPoint * (this.bot ? 2 : loser.score == 0 ? 5 : 3),
 			});
 		}
 		if (loser.player_n !== 3) {
 			loser.socket.emitToGame('end_game', {
 				objectId: this.data.objectId,
 				result: 'You Lose!',
-				exp: 0,
-				max_exp: loser.score == 0 ? 10 : loser.score * (this.bot ? 10 : 20),
-				money: 0,
-				max_money: loser.score == 0 ? 1 : loser.score * (this.bot ? 1 : 2),
-				watchers: 0,
-				max_watchers: this.watchers.length,
+				exp: loser.score == 0 ? 10 : loser.score * (this.bot ? 10 : 20),
+				money: loser.score == 0 ? 1 : loser.score * (this.bot ? 1 : 2),
+				watchers: this.watchers.length,
+				gameResults,
 			});
 			this.updatePlayerStats(loser.userId, {
-				xp: this.maxPoint * (this.bot ? 50 : loser.score == 0 ? 150 : 100),
-				money: this.maxPoint * (this.bot ? 2 : loser.score == 0 ? 5 : 3),
+				xp: loser.score == 0 ? 10 : loser.score * (this.bot ? 10 : 20),
+				money: loser.score == 0 ? 1 : loser.score * (this.bot ? 1 : 2),
 			});
 		}
 		this.emitWatchers('end_game', {
 			objectId: this.data.objectId,
 			result: winner.nickname + ' Win!',
 			exp: 0,
-			max_exp: 0,
 			money: 0,
-			max_money: 0,
 			watchers: 0,
-			max_watchers: 0,
 		});
 
 		this.logger.debug(`Game End. Winner player ${winner.nickname}`);
 
 		this.updateGameStats({
 			status: GameStatus.FINISHED,
-			gameStats: {
-				winnerId: winner.userId,
-				winnerName: winner.nickname,
-				winnerScore: winner.score,
-				loserId: loser.userId,
-				loserName: loser.nickname,
-				loserScore: loser.score,
-			},
+			gameStats: gameResults,
 		});
 	}
 
@@ -280,7 +318,7 @@ export class GameClass {
 
 	//Update Status and Emit for ALL
 	updateStatus(status: number) {
-		if (this.status != status) {
+		if (this.status != status && this.status != Status.Finish) {
 			this.status = status;
 			this.emitAll('game_update_status', status);
 		}

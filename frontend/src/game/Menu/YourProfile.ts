@@ -1,8 +1,9 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
-import { userStore, type Historic } from "@/stores/userStore";
+import { userStore, type GAME } from "@/stores/userStore";
 import { skin, TypeSkin } from "../ping_pong/Skin";
 import { AnimationMenu } from "./AnimationMenu";
 import { PaginationMenu } from "./PaginationMenu";
+import { socketClass } from "@/socket/SocketClass";
 
 //Audio
 import sound_close_tab from "@/assets/audio/close.mp3";
@@ -12,9 +13,13 @@ import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
 import avatares from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
 import pencil from "@/assets/images/lobby/pencil.png";
 import green_sign from "@/assets/images/lobby/menu/green_sign.png";
+import { Profile } from "./Profile";
+import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
+import type { Socket } from "socket.io-client";
 
 export class YourProfile {
   private _menu = new Menu({ layer: "Global", isFocus: true });
+  public socket: Socket = socketClass.getLobbySocket();
 
   private background: ElementUI = this.createBackground();
   private customAvatar: ElementUI = this.createAvatar();
@@ -30,13 +35,15 @@ export class YourProfile {
   private paddle_pagination: PaginationMenu;
 
   private new_nickname = "";
+  private twoFactor: boolean = false;
 
   //MiniPerfil
   private avataresImage = new Image();
   private skinPadleImage: HTMLImageElement;
   private colorChoose: string = "";
   private skinPadle: string = "";
-
+  
+  private onResult: (result: any) => void = () => {};
 
   constructor(player: Player) {
     this.player = player;
@@ -64,8 +71,8 @@ export class YourProfile {
 
     //Custom and Save Buttons
     this.menu.add(this.background, this.createButton("photo", 1, 26, "Update Photo", 9));
+    this.menu.add(this.background, this.createQRCodeButton("qrcode", 12.5, 26, "QRCODE", 9));
     this.menu.add(this.background, this.createButton("save", 28, 26, "Save", 5));
-
 
     //Arrow Buttons
     this.menu.add(this.background, this.matche_pagination.createArrowButton("left", 2.5, 33.5, 2));
@@ -107,8 +114,6 @@ export class YourProfile {
     this.user.infoPong.skin.paddles.forEach((skinLabel: any, index: number) => {
       if ((index == 0 ? index + 1 : index) % this.paddle_pagination.max_for_page == 0) page++;
 
-      console.log("padle:'", skinLabel, "'");
-
       const i = index - page * this.paddle_pagination.max_for_page;
 
       const squareX = 35.5 + (i + 2 % this.paddle_pagination.max_for_line) * (10 / 3);
@@ -138,100 +143,93 @@ export class YourProfile {
 	  this.menu.add(this.background, this.createPencilButton(26.5, 9, 2, 3));
   }
 
-  private createMatches(index: number, matche: Historic, x: number, y: number): ElementUI {
-    const player1Image = new Image();
-    const player2Image = new Image();
+	private createMatches(index: number, matche: GAME, x: number, y: number): ElementUI {
+		const player1 = matche.players[0].id == matche.winnerId ? matche.players[0] : matche.players[1];
+		const player2 = matche.players[0] == player1 ? matche.players[1] : matche.players[0];
+	
+		const player1Image = player1.id == this.user.id ? this.avatarImage : new Image();
+		const player2Image = player2.id == this.user.id ? this.avatarImage : new Image();
 
-    const product: ElementUI = {
-      type: "image",
-      rectangle: { x: x + "%", y: y + "%", w: "15%", h: "15%" },
-      draw: (ctx: CanvasRenderingContext2D) => {
+		player1Image.src = player1.image;
+		player2Image.src = player2.image;
+
+		const product: ElementUI = {
+		  type: "image",
+		  rectangle: { x: x + "%", y: y + "%", w: "15%", h: "15%" },
+		  draw: (ctx: CanvasRenderingContext2D) => {
+
+			if (!(this.matche_pagination.isIndexInCurrentPage(index))) {
+				if (product.enable)
+				  product.enable = false;
+				return;
+			  }
+			if (!product.enable)
+				product.enable = true;
+
+			const offSetTittle = this.background.rectangle.y * 1.75;
+	
+			ctx.fillStyle = matche.winnerId == this.user.id ? "gold" : "silver";
+			ctx.strokeStyle = "#000";
+			ctx.lineWidth = 2;
+	
+			this.roundRect(ctx, product.parent?.rectangle.x + product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h, 10);
+	
+			ctx.fill();
+			ctx.stroke();
+
+			ctx.fillStyle = "#000";
+			ctx.font = product.rectangle.h * 0.175 + "px 'Press Start 2P', cursive";
+
+			ctx.fillText(matche.winnerScore + "-" + matche.loserScore, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
+
+			ctx.fillText(matche.winnerNickname, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
+	
+			ctx.fillText(matche.loserNickname, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
+
+			ctx.strokeRect(product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
+			ctx.strokeRect(product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - (product.rectangle.w * 0.295), product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
+
+			if (player1Image.complete)
+				ctx.drawImage(player1Image, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
+			if (player2Image.complete)
+				ctx.drawImage(player2Image, product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - (product.rectangle.w * 0.295), product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.20, product.rectangle.h * 0.35);
+			
         
-        if (!(this.matche_pagination.isIndexInCurrentPage(index))) {
-          if (product.enable)
-            product.enable = false;
-          return;
-        }
-        if (!product.enable)
-          product.enable = true;
+			ctx.lineWidth = 4;
+      ctx.strokeText(
+				matche.winnerId == this.user.id ? "WIN!" : "LOST.",
+				product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
+				product.rectangle.y + product.rectangle.h * 0.12,
+				product.rectangle.w * 0.3
+			  );
+			  ctx.fillStyle = matche.winnerId == this.user.id ? "gold" : "grey";
+			  ctx.fillText(
+				matche.winnerId == this.user.id ? "WIN!" : "LOST.",
+				product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
+				product.rectangle.y + product.rectangle.h * 0.12,
+				product.rectangle.w * 0.3
+			  );
+		},
+		  onClick: () => {
+			if (!(this.matche_pagination.isIndexInCurrentPage(index))) return ;
 
-        const offSetTittle = this.background.rectangle.y * 1.75;
-
-        ctx.fillStyle = "silver";
-        ctx.strokeStyle = "#000";
-        ctx.lineWidth = 2;
-
-        this.roundRect(ctx, product.parent?.rectangle.x + product.rectangle.x, product.rectangle.y, product.rectangle.w, product.rectangle.h, 10);
-
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = "#000";
-        ctx.font = "20px 'Press Start 2P', cursive";
-
-        ctx.fillText(matche.result, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w / 2.625, product.rectangle.y + offSetTittle, product.rectangle.w * 0.25);
-
-        ctx.fillText(matche.player1, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.05, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
-
-        ctx.fillText(matche.player2, product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.65, product.rectangle.y + product.rectangle.h * 0.9, product.rectangle.w * 0.3);
-
-        // matche.player1
-        player1Image.src = matche.player1 == this.user.nickname ? this.user.image : avatarDefault;
-        player2Image.src = matche.player2 == this.user.nickname ? this.user.image : avatarDefault;
-
-        ctx.strokeRect(product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095, product.rectangle.y + product.rectangle.h * 0.3, product.rectangle.w * 0.2, product.rectangle.h * 0.35);
-        ctx.strokeRect(
-          product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - product.rectangle.w * 0.295,
-          product.rectangle.y + product.rectangle.h * 0.3,
-          product.rectangle.w * 0.2,
-          product.rectangle.h * 0.35
-        );
-
-        ctx.drawImage(
-          player2Image,
-          product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.095,
-          product.rectangle.y + product.rectangle.h * 0.3,
-          product.rectangle.w * 0.2,
-          product.rectangle.h * 0.35
-        );
-        ctx.drawImage(
-          player2Image,
-          product.parent?.rectangle.x + (product.rectangle.x + product.rectangle.w) - product.rectangle.w * 0.295,
-          product.rectangle.y + product.rectangle.h * 0.3,
-          product.rectangle.w * 0.2,
-          product.rectangle.h * 0.35
-        );
-
-        /*if (player1Image.complete) 
-			else {
-				player1Image.src = avatarDefault;
-				ctx.drawImage(player1Image, product.rectangle.x + product.parent?.rectangle.w * 0.5, product.rectangle.y, product.rectangle.w, product.rectangle.h);
-			}*/
-
-        /*if (player2Image.complete) ctx.drawImage(player2Image, product.rectangle.x + this.background.rectangle.x * 0.25, product.rectangle.y, this.background.rectangle.x * 2, this.background.rectangle.y * 1.75);
-			else {
-				player2Image.src = avatarDefault;
-				ctx.drawImage(player2Image, product.rectangle.w - this.background.rectangle.x * 1.25, product.rectangle.y, this.background.rectangle.x * 2, this.background.rectangle.y * 1.75);
-			}*/
-        ctx.lineWidth = 5;
-        ctx.strokeText(
-          matche.winner == this.user.nickname ? "WIN!" : "LOSE.",
-          product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
-          product.rectangle.y + product.rectangle.h * 0.12,
-          product.rectangle.w * 0.3
-        );
-        ctx.fillStyle = matche.winner == this.user.nickname ? "gold" : "grey";
-        ctx.fillText(
-          matche.winner == this.user.nickname ? "WIN!" : "LOSE.",
-          product.parent?.rectangle.x + product.rectangle.x + product.rectangle.w * 0.35,
-          product.rectangle.y + product.rectangle.h * 0.12,
-          product.rectangle.w * 0.3
-        );
-      },
-      onClick: () => {},
-    };
-    return product;
-  }
+			const player_match_id = matche.players[0].id == this.user.id ? matche.players[1].id : matche.players[0].id;
+			if (player_match_id != this.user.id)
+      {
+        const confirmButton = new Profile(player_match_id);
+        this._menu.visible = false;
+        this._menu.enable = false;
+        confirmButton.show((value) => {
+          if (value == "EXIT") {
+            this._menu.close();
+            this.onResult("EXIT");
+          }
+        });
+      }
+		  },
+		};
+		return product;
+	}	
 
   private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
     const r = x + width;
@@ -288,26 +286,13 @@ export class YourProfile {
         }
         this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
         
-        
         ctx.fill();
         ctx.stroke();
         
         ctx.fillStyle = "black";
-        ctx.font = "10px 'Press Start 2P', cursive";
-
-        const begin = button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.1;
-        const max_with = button.rectangle.w - button.rectangle.w * 0.2;
-
-        let offset = 0;
-        let offsetmax = 0;
-        const labelWidth = ctx.measureText(label).width;
-        while (begin + offset + labelWidth < begin + max_with - offset) {
-          offsetmax += button.rectangle.w * 0.05;
-          if (begin + offsetmax + labelWidth > begin + max_with - offset) break;
-          offset = offsetmax;
-        }
-
-        ctx.fillText(label, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.1 + offset, button.rectangle.y + button.rectangle.h / 2 + 6, button.rectangle.w - button.rectangle.w * 0.2 - offset);
+        this.fillTextCenter(ctx, label, button.parent?.rectangle.x + button.rectangle.x, 
+        button.rectangle.y + button.rectangle.h / 2 + 6,
+        button.rectangle.w, button.rectangle.h * 0.4, undefined, "'Press Start 2P', cursive", false);
       },
       onClick: () => {
         if (type == "save") {
@@ -321,9 +306,22 @@ export class YourProfile {
 
             //DataBase
             this.updateProfile()
+            this.socket.emit("update_gameobject", {
+              className: "Character",
+              objectId: this.player.objectId,
+              name: this.player.name,
+              x: this.player.x,
+              y: this.player.y,
+              avatar: this.user.avatar,
+              nickname: this.user.nickname,
+              animation: { name: this.player.animation.name, isStop: false },
+            });
         }
-        if (type == "photo") {
+        else if (type == "photo") {
           fileInput.click();
+        }
+        else if (type == "qrcode") {
+          
         }
       },
     };
@@ -353,12 +351,66 @@ export class YourProfile {
               throw new Error("Erro na requisição");
             }
           } catch (error) {
-            console.error(error);
+            const confirmButton = new ConfirmButton(error, STATUS_CONFIRM.ERROR);
+            confirmButton.show((value) => {
+              if (value == "OK") {
+                this.menu.close();
+                this.onResult("EXIT");
+              }
+            });          
           }
         }
       });
     }
     
+    return button;
+  }
+
+  private createQRCodeButton(type: string, x: number, y: number, label: string, width: number): ElementUI {
+
+    const button: ElementUI = {
+      type: type,
+      rectangle: { x: x + "%", y: y + "%", w: width + "%", h: "4.5%" },
+      draw: (ctx: CanvasRenderingContext2D) => {
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+
+        this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
+        
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.fillStyle = "black";
+        this.fillTextCenter(ctx, label, button.parent?.rectangle.x + button.rectangle.x, 
+        button.rectangle.y + button.rectangle.h / 2 + 6,
+        button.rectangle.w * 0.6, button.rectangle.h * 0.4, undefined, "'Press Start 2P', cursive", false);
+
+        
+        ctx.fillStyle = this.twoFactor ? "green" : "red";
+        this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.6, button.rectangle.y + button.rectangle.h * 0.15, button.rectangle.w * 0.35, button.rectangle.h * 0.7, 10);
+
+        ctx.fill();
+        ctx.stroke();
+
+          
+        const centerX = this.twoFactor ? button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.87 : button.parent?.rectangle.x + button.rectangle.x + button.rectangle.w * 0.68;
+        const centerY = button.rectangle.y + button.rectangle.h * 0.5;
+        const radius = button.rectangle.w * 0.075;
+        const color = 'black';
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.closePath();
+
+      },
+      onClick: () => {
+        this.twoFactor = !this.twoFactor;
+        //TODO DATABASE
+      },
+    };
     return button;
   }
 
@@ -375,22 +427,22 @@ export class YourProfile {
     ctx.stroke();
 
     //Level
-    ctx.font = "12px 'Press Start 2P', cursive";
+    ctx.font = pos.h * 0.025 + "px 'Press Start 2P', cursive";
     ctx.fillStyle = "black";
-    ctx.fillText("Level: " + this.user.infoPong.level, pos.x + pos.w * 0.3, pos.y + pos.h * 0.13, pos.w - (pos.x + pos.w * 0.5));
+    ctx.fillText("Level: " + this.user.infoPong.level, pos.x + pos.w * 0.3, pos.y + pos.h * 0.13, pos.w * 0.25);
 
     //Money
-    ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.3, pos.y + pos.h * 0.16, pos.w - (pos.x + pos.w * 0.5));
+    ctx.fillText("Money: " + this.user.money + "₳", pos.x + pos.w * 0.3, pos.y + pos.h * 0.16, pos.w * 0.25);
 
-    //Level
-    const wins = this.user.infoPong.historic.filter((history: any) => history.winner == this.user.nickname).length;
-    ctx.fillText("Wins:  " + wins, pos.x + pos.w * 0.3, pos.y + pos.h * 0.19, pos.w - (pos.x + pos.w * 0.5));
+    //Win
+    const wins = this.user.infoPong.historic.filter((history: GAME) => history.winnerId == this.user.id).length;
+    ctx.fillText("Wins:  " + wins, pos.x + pos.w * 0.3, pos.y + pos.h * 0.19, pos.w * 0.25);
 
-    const loses = this.user.infoPong.historic.filter((history: any) => history.loser == this.user.nickname).length;
-    ctx.fillText("Loses: " + loses, pos.x + pos.w * 0.3, pos.y + pos.h * 0.22, pos.w - (pos.x + pos.w * 0.5));
+    //Losts
+    const loses = this.user.infoPong.historic.filter((history: GAME) => history.loserId == this.user.id).length;
+    ctx.fillText("Losts: " + loses, pos.x + pos.w * 0.3, pos.y + pos.h * 0.22, pos.w * 0.25);
 
     //Avatar
-
     ctx.strokeStyle = "black";
     ctx.lineWidth = 5;
     ctx.strokeRect(pos.x + pos.w * 0.05, pos.y + pos.h * 0.05, pos.w * 0.2, pos.h * 0.2);
@@ -420,8 +472,9 @@ export class YourProfile {
     ctx.lineWidth = 3;
     ctx.strokeRect(pos.x + pointx, pos.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
 
+
     //Matches
-    ctx.font = "22px 'Press Start 2P', cursive";
+    ctx.font =  pos.h * 0.045 + "px 'Press Start 2P', cursive";
     ctx.lineWidth = 4;
     ctx.strokeStyle = "black";
     ctx.strokeText("Matches", pos.x + pos.w * 0.35, pos.y + pos.h * 0.425, pos.w * 0.275);
@@ -430,15 +483,6 @@ export class YourProfile {
 
     ctx.fillStyle = "white";
     ctx.fillText("Matches", pos.x + pos.w * 0.35, pos.y + pos.h * 0.425, pos.w * 0.275);
-
-    /*if (this.avataresImage.complete) ctx.drawImage(this.avataresImage, 
-      ((this.chooseAvatar - 4 >= 0 ? this.chooseAvatar - 4 : this.chooseAvatar) * 144) + 48, //+3
-      (this.chooseAvatar - 4 >= 0 ? 1 : 0) * 320, //+4
-      48, 80,
-      pos.x + pos.w * 0.05, 
-      pos.y + pos.h * 0.04,
-      pos.w * 0.4,
-      pos.h * 0.80);*/
   }
 
   //✖
@@ -448,8 +492,6 @@ export class YourProfile {
       type: type,
       rectangle: { x: x + "%", y: y + "%", w: "1%", h: "2%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        
-        ctx.font = "8px 'Press Start 2P', cursive";
         ctx.fillStyle = "red";
         ctx.strokeStyle = "black";
         ctx.fillRect(button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
@@ -474,7 +516,8 @@ export class YourProfile {
           this.menu.close();
           const inputName = document.getElementById("inputName") as HTMLInputElement;
           inputName.disabled = true;
-          inputName.style.display = "none";
+          inputName.style.display = "none";        
+          this.onResult("EXIT");
         }
       },
     };
@@ -578,19 +621,18 @@ export class YourProfile {
 			
         //Tittle
         context.fillStyle = "#ffffff";
-        context.font = "25px 'Press Start 2P', cursive";
+        context.font = custom.rectangle.h * 0.1 + "px 'Press Start 2P', cursive";
         context.lineWidth = 4;
-        context.strokeText("Custom", custom.rectangle.x + custom.rectangle.w * 0.275, custom.rectangle.y + custom.rectangle.h * 0.125, custom.rectangle.w * 0.45);
-        context.fillText("Custom", custom.rectangle.x + custom.rectangle.w * 0.275, custom.rectangle.y + custom.rectangle.h * 0.125, custom.rectangle.w * 0.45);
+        context.strokeText("Custom", custom.rectangle.x + custom.rectangle.w * 0.275, custom.rectangle.y + custom.rectangle.h * 0.125, custom.rectangle.w * 0.4);
+        context.fillText("Custom", custom.rectangle.x + custom.rectangle.w * 0.275, custom.rectangle.y + custom.rectangle.h * 0.125, custom.rectangle.w * 0.4);
 
-        context.textAlign = "start";
         //Type
         context.fillStyle = "black";
-        context.font = "18px 'Press Start 2P', cursive";
-        context.fillText("Color:", custom.rectangle.x + custom.rectangle.w * 0.35, custom.rectangle.y + custom.rectangle.h * 0.285, custom.rectangle.w * 0.3);
+        context.font = custom.rectangle.h * 0.07 + "px 'Press Start 2P', cursive";
+        context.fillText("Color:", custom.rectangle.x + custom.rectangle.w * 0.35, custom.rectangle.y + custom.rectangle.h * 0.285, custom.rectangle.w * 0.275);
 
         //Skin
-        context.fillText("Skin:", custom.rectangle.x + custom.rectangle.w * 0.37, custom.rectangle.y + custom.rectangle.h * 0.625, custom.rectangle.w * 0.25);
+        context.fillText("Skin:", custom.rectangle.x + custom.rectangle.w * 0.37, custom.rectangle.y + custom.rectangle.h * 0.625, custom.rectangle.w * 0.225);
       },
     };
     return custom;
@@ -703,16 +745,13 @@ export class YourProfile {
         inputName.style.left = pos_x + "px";
         inputName.style.color = "black";
         inputName.style.backgroundColor = "transparent";
-        
-
-
 
         if (edit == false)
         {
 
           //NickName
           ctx.fillStyle = "black";
-          ctx.font = "22px 'Press Start 2P', cursive";
+          ctx.font = button.rectangle.h + "px 'Press Start 2P', cursive";
           ctx.fillText(this.new_nickname, 
             button.parent?.rectangle.x + button.parent?.rectangle.w * 0.3, 
             button.parent?.rectangle.y + button.parent?.rectangle.h * 0.1, 
@@ -754,8 +793,34 @@ export class YourProfile {
     };
     return button;
   }
+  
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
+    ctx.font = font ? h + "px " + font : h + "px Arial";
+    ctx.textAlign = "start";
+    
+    const begin = x + w * 0.1;
+    const max = max_with ? max_with : w - w * 0.2;
+
+    let offset = 0;
+    let offsetmax = 0;
+    const labelWidth = ctx.measureText(label).width;
+    while (begin + offset + labelWidth < begin + max - offset) {
+      offsetmax += w * 0.05;
+      if (begin + offsetmax + labelWidth > begin + max - offset) break;
+      offset = offsetmax;
+    }
+
+    if (stroke)
+      ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+  }
 
   get menu(): Menu {
     return this._menu;
+  }
+
+  public show(onResult: (result: any) => void) {
+    this.onResult = onResult;
+    Game.addMenu(this.menu);
   }
 }
