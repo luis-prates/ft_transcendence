@@ -14,7 +14,7 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
 import { GameClass } from '../ping_pong/GamePong';
-import { UserService } from ''../../user/user.service';
+import { UserService } from '../../user/user.service';
 import { UserStatus } from '@prisma/client';
 
 @WebSocketGateway({ namespace: 'game', cors: { origin: '*' } })
