@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Player } from './Player';
 import { PrismaService } from '../prisma/prisma.service';
-import { validateHeaderValue } from 'http';
 
 @Injectable()
 export class PlayerService {
