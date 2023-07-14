@@ -9,7 +9,8 @@ import { userStore } from "@/stores/userStore";
 import { PaginationMenu } from "./PaginationMenu";
 import axios from "axios";
 import { env } from "../../env";
-import { io, type Socket } from "socket.io-client";
+import { type Socket } from "socket.io-client";
+import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 
 export class CreateGame {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -42,7 +43,6 @@ export class CreateGame {
   private products = skin;
   private table_pagination: PaginationMenu;
 
-  //  constructor(player: Player) {
   constructor(data: any) {
     this.data = data;
 
@@ -149,10 +149,9 @@ export class CreateGame {
       type: type,
       rectangle: { x: x + "%", y: y + "%", w: "3%", h: "3%" },
       draw: (ctx: CanvasRenderingContext2D) => {
+        ctx.lineWidth = 3;
         ctx.strokeStyle = "black";
         ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
-
-        ctx.lineWidth = 3;
 
         ctx.beginPath();
         ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
@@ -205,7 +204,8 @@ export class CreateGame {
         ctx.fill();
         ctx.stroke();
 
-        this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.65, undefined, "12px 'Press Start 2P', cursive");
+        ctx.fillStyle = "black";
+        this.fillTextCenter(ctx, label, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.65, button.rectangle.w, button.rectangle.h * 0.35, undefined, "'Press Start 2P', cursive");     
       },
       onClick: () => {
         console.log(button.type, label);
@@ -331,30 +331,31 @@ export class CreateGame {
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = "black";
-
-        this.fillTextCenter(ctx, label, button.rectangle, button.rectangle.y + button.rectangle.h * 0.9, undefined, "30px 'Press Start 2P', cursive");
+        ctx.fillStyle = "black"
+        this.fillTextCenter(ctx, label, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.75, button.rectangle.w,
+        button.rectangle.h * 0.45, undefined, "'Press Start 2P', cursive", false);     
       },
       onClick: async () => {
         this.menu.close();
+        
         console.log({ objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
-        const token = this.user.access_token_server;
-        const headers = { headers: { Authorization: `Bearer ${token}` } };
-        const body = {
-          gameType: "PUBLIC",
-          players: [this.user.id],
-          gameRequest: { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" },
-        };
-        const gameCreate = await axios.post(env.BACKEND_PORT + "/game/create", body, headers);
-        console.log(`Axios Response: ${JSON.stringify(gameCreate.data)}`);
-        console.log("Axios Post Request completed. Emitting new_game event.");
-        this.data.objectId = gameCreate.data.id;
-        //! this should be unnecessary now. Post request above does the same
-        // this.gameSocket.emit("new_game", { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
-        console.log("Emitting new_gameobject event.");
-        this.lobbySocket.emit("new_gameobject", this.data);
-        console.log("Emitting new_gameobject event completed.");
-        Router.push(`/game?objectId=${this.data.objectId}`);
+
+        const gameCreate = await userStore().createGame(this.user.id, { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
+        if (gameCreate?.id) {
+          this.data.objectId = gameCreate.id;
+          this.data.objectId = gameCreate.id;
+          this.lobbySocket.emit("new_gameobject", this.data);
+          Router.push(`/game?objectId=${this.data.objectId}`);
+        }
+        else
+        {
+          const confirmButton = new ConfirmButton("Erro try to Create a new Game!", STATUS_CONFIRM.ERROR);
+            confirmButton.show((value) => {
+              if (value == "OK") {
+                this.menu.close();
+              }
+          });          
+        }
       },
     };
     return button;
@@ -373,24 +374,22 @@ export class CreateGame {
     ctx.stroke();
 
     //Tittle
+    ctx.lineWidth = 5;
     ctx.fillStyle = "#ffffff";
-    ctx.font = "30px 'Press Start 2P', cursive";
-    ctx.fillText("NEW GAME", pos.x + pos.w * 0.3, pos.y + pos.h * 0.075, pos.w * 0.4);
-    ctx.strokeText("NEW GAME", pos.x + pos.w * 0.3, pos.y + pos.h * 0.075, pos.w * 0.4);
+    this.fillTextCenter(ctx, "NEW GAME", pos.x + pos.w * 0.3, pos.y + pos.h * 0.075, pos.w * 0.4, pos.h * 0.045, undefined, "'Press Start 2P', cursive", true);
 
     //Type
     ctx.fillStyle = "black";
-    ctx.font = "18px 'Press Start 2P', cursive";
-    ctx.fillText("Type:", pos.x + pos.w * 0.08, pos.y + pos.h * 0.215, pos.w * 0.14);
+    this.fillTextCenter(ctx, "Type:", pos.x + pos.w * 0.08, pos.y + pos.h * 0.215, pos.w * 0.14, pos.h * 0.03, undefined, "'Press Start 2P', cursive", false);
 
     //Score
-    ctx.fillText("Score:", pos.x + pos.w * 0.05, pos.y + pos.h * 0.325, pos.w * 0.17);
+    this.fillTextCenter(ctx, "Score:", pos.x + pos.w * 0.05, pos.y + pos.h * 0.325, pos.w * 0.17, pos.h * 0.03, undefined, "'Press Start 2P', cursive", false);
 
     //View
-    ctx.fillText("View:", pos.x + pos.w * 0.08, pos.y + pos.h * 0.435, pos.w * 0.14);
+    this.fillTextCenter(ctx, "View:", pos.x + pos.w * 0.08, pos.y + pos.h * 0.435, pos.w * 0.14, pos.h * 0.03, undefined, "'Press Start 2P', cursive", false);
 
     //Table
-    ctx.fillText("Table:", pos.x + pos.w * 0.05, pos.y + pos.h * 0.535, pos.w * 0.17);
+    this.fillTextCenter(ctx, "Table:", pos.x + pos.w * 0.05, pos.y + pos.h * 0.535, pos.w * 0.17, pos.h * 0.03, undefined, "'Press Start 2P', cursive", false);
 
     //Draw Table
     this.drawTable(ctx, pos.x + pos.w * 0.3, pos.y + pos.h * 0.5, pos.w * 0.5, pos.h * 0.25, pos.w * 0.01, pos.h * 0.01);
@@ -425,46 +424,46 @@ export class CreateGame {
     ctx.strokeStyle = borderColor;
     ctx.lineWidth = 2;
     ctx.stroke();
-
+    
     //Tittle
+    ctx.lineWidth = 5;
     ctx.fillStyle = "#ffffff";
-    ctx.font = "30px 'Press Start 2P', cursive";
-    ctx.fillText("Custom", pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3);
-    ctx.strokeText("Custom", pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3);
+ this.fillTextCenter(ctx, "Custom", pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3, pos.h * 0.045, undefined, "'Press Start 2P', cursive", true);
 
     //Type
     ctx.fillStyle = "black";
-    ctx.font = "18px 'Press Start 2P', cursive";
-    ctx.fillText("Color:", pos.x + pos.w * 0.425, pos.y + pos.h * 0.175, pos.w * 0.15);
+    this.fillTextCenter(ctx, "Color:", pos.x + pos.w * 0.425, pos.y + pos.h * 0.175, pos.w * 0.15, pos.h * 0.03, undefined, "'Press Start 2P', cursive", false);
 
     //Skin
-    ctx.fillText("Skin:", pos.x + pos.w * 0.445, pos.y + pos.h * 0.4, pos.w * 0.14);
+    this.fillTextCenter(ctx, "Skin:", pos.x + pos.w * 0.445, pos.y + pos.h * 0.4, pos.w * 0.14, pos.h * 0.03, undefined, "'Press Start 2P', cursive", false);
 
     //Table
-    ctx.fillText("Table:", pos.x + pos.w * 0.445, pos.y + pos.h * 0.65, pos.w * 0.14);
+    this.fillTextCenter(ctx, "Table:", pos.x + pos.w * 0.445, pos.y + pos.h * 0.65, pos.w * 0.14, pos.h * 0.03, undefined, "'Press Start 2P', cursive", false);
 
     this.drawTable(ctx, pos.x + pos.w * 0.25, pos.y + pos.h * 0.7, pos.w * 0.5, pos.h * 0.25, pos.w * 0.01, pos.h * 0.01);
   }
 
-  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, rectangle: Rectangle, y: number, max_with?: number, font?: string) {
-    ctx.fillStyle = "#000";
-    ctx.font = font ? font : "12px Arial";
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
+    ctx.font = font ? h + "px " + font : h + "px Arial";
     ctx.textAlign = "start";
-
-    const begin = rectangle.x + rectangle.w * 0.1;
-    const max = max_with ? max_with : rectangle.w - rectangle.w * 0.2;
+    
+    const begin = x + w * 0.1;
+    const max = max_with ? max_with : w - w * 0.2;
 
     let offset = 0;
     let offsetmax = 0;
     const labelWidth = ctx.measureText(label).width;
     while (begin + offset + labelWidth < begin + max - offset) {
-      offsetmax += rectangle.w * 0.05;
+      offsetmax += w * 0.05;
       if (begin + offsetmax + labelWidth > begin + max - offset) break;
       offset = offsetmax;
     }
 
-    ctx.fillText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
+    if (stroke)
+      ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
   }
+
 
   get menu(): Menu {
     return this._menu;

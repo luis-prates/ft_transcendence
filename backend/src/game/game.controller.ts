@@ -57,7 +57,7 @@ export class GameController {
 		return this.gameService.endGame(gameId, body);
 	}
 
-	@Get(':userId')
+	@Get('/user/:userId')
 	getUserGames(@Param('userId', new ParseIntPipe()) userId: number) {
 		return this.gameService.getUserGames(userId);
 	}

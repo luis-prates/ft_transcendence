@@ -2,11 +2,16 @@ import imgUrl from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28
 import type { GameObject, GameObjectType } from "./GameObject";
 import { AnimationController } from "../animation/AnimationController";
 import { PathFinding, type PathNode } from "../path_finding/PathFinding";
+import { Game } from "./Game";
+import { Profile } from "../Menu/Profile";
+import { userStore } from "@/stores/userStore";
 
 export interface CharacterOnline {
   className: string;
   name: string;
   objectId: number;
+  nickname: string;
+  avatar: number;
   x: number;
   y: number;
   animation: { name: string; isStop: boolean, sx: number, sy: number };
@@ -17,6 +22,8 @@ export class Character implements GameObject {
   type: GameObjectType = "character";
   name: string = "player";
   objectId: number = 0;
+  nickname: string = "player";
+  avatar: number = 0;
   x: number = 64;
   y: number = 64;
   w: number = 32;
@@ -31,6 +38,15 @@ export class Character implements GameObject {
   isSelect: boolean = false;
 
   constructor(data?: CharacterOnline) {
+    if (data)
+    {
+      this.nickname = data.nickname;
+      this.avatar = data.avatar;
+      this.name = data.name;
+      this.objectId = data.objectId;
+      this.animation.sx = (this.avatar - 4 >= 0 ? this.avatar - 4 : this.avatar) * 3;
+      this.animation.sy = this.avatar - 4 >= 0 ? 4 : 0;
+    }
     this.imagem.src = imgUrl;
     this.animation.init(this.imagem, 48, 80, 8);
     this.animation.isRepeat = false;
@@ -60,9 +76,9 @@ export class Character implements GameObject {
     });
     this.animation.createAnimation("walk_bottom", {
       frames: [
-        { x: 0, y: 0 },
-        { x: 1, y: 0 },
-        { x: 2, y: 0 },
+        { x: 0, y:  + 0 },
+        { x: 1, y:  + 0 },
+        { x: 2, y:  + 0 },
       ],
     });
     this.animation.setAnimation("walk_bottom");
@@ -76,9 +92,13 @@ export class Character implements GameObject {
       this.objectId = data.objectId;
       this.x = data.x;
       this.y = data.y;
-      console.log("animation\n", data.animation);
+      this.avatar = data.avatar;
+      this.nickname = data.nickname;
+      this.animation.sx = (this.avatar - 4 >= 0 ? this.avatar - 4 : this.avatar) * 144;
+      this.animation.sy = (this.avatar - 4 >= 0 ? 1 : 0) * 320;
+      /*console.log("animation\n", data.animation);
       this.animation.sx = data.animation.sx ? data.animation.sx : this.animation.sx;
-      this.animation.sy = data.animation.sy ? data.animation.sy : this.animation.sy;
+      this.animation.sy = data.animation.sy ? data.animation.sy : this.animation.sy;*/
       this.animation?.setAnimation(data.animation.name);
       this.animation?.setStop(data.animation.isStop);
     }
@@ -93,6 +113,12 @@ export class Character implements GameObject {
       context.closePath();
     }
     this.animation?.draw(context, this.x, this.y - this.h / 2, this.w, this.h);
+    context.fillStyle = 'rgba(255, 255, 255, 0.65)';//"white";
+    context.strokeStyle = 'rgba(0, 0, 0, 0.65)';//"black";
+    context.lineWidth = 5;
+    context.font = "10px 'Press Start 2P', cursive";
+    context.strokeText(this.nickname, this.x - this.w / 2, this.y - this.h * 0.3, this.w * 2);
+    context.fillText(this.nickname, this.x - this.w / 2, this.y - this.h * 0.3, this.w * 2);
   }
 
   public move(x: number, y: number, animation: string) {
@@ -111,6 +137,11 @@ export class Character implements GameObject {
 
   onDeselected(): void {
     this.isSelect = false;
+  }
+
+  interaction?(gameObject: GameObject): void {
+    if (this.isSelect && this.objectId != userStore().user.id)
+      Game.instance.addMenu(new Profile(this.objectId).menu);
   }
 
   public setLookAt(gameObject: GameObject) {

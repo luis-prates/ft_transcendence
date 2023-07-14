@@ -10,5 +10,6 @@ import { UserModule } from '../user/user.module';
 	imports: [PlayerModule, SocketModule, UserModule],
 	providers: [GameGateway, GameService],
 	controllers: [GameController],
+	exports: [GameService],
 })
 export class GameModule {}

@@ -1,33 +1,38 @@
 import { Menu, type ElementUI, type Rectangle, Game, Lobby } from "@/game";
-import { MessageList } from "./MessageList";
-import { userStore, type Friendship } from "@/stores/userStore";
+import { userStore } from "@/stores/userStore";
 
 //Sound
 import sound_close_tab from "@/assets/audio/close.mp3";
-import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
+import { BattleList } from "./BattleList";
+import { socketClass } from "@/socket/SocketClass";
+import Router from "@/router";
 
-export class Messages {
+//image
+import battleImage from "@/assets/images/lobby/menu/battle.png";
+
+export class BattleMenu {
   private _menu = new Menu({ layer: "Global", isFocus: false });
   private radius: number = 10;
   private background: ElementUI = this.createBackground();
     
   private user = userStore().user;
   private functions = userStore();
- // private getUsers = userStore().getUsers;
-  private friendRequests : any | void [] = [];
-  private response: any | void [] = [];
+
   private onResult: (result: any) => void = () => {};
   
   constructor() {
     this.menu.add(this.background);
     this.menu.add(this.createButtonExit(38, 16));
 
-    this.menu.add(this.background, this.createMessageButton(38.5, 16 + 1 * 6, "Request", "Request Friends"));
-    this.menu.add(this.background, this.createMessageButton(38.5, 16 + 2 * 6, "Block", "Your Block List"));
-    this.menu.add(this.background, this.createMessageButton(38.5, 16 + 3 * 6, "Blocked", "Who Blocked You!"));
-}
+    this.menu.add(this.background, this.createBattleButton(38.5, 16 + 1 * 6, "Waiting", "Battles Waiting"));
+    this.menu.add(this.background, this.createBattleButton(38.5, 16 + 2 * 6, "Actives", "Battles Actives"));
+    this.menu.add(this.background, this.createBattleButton(38.5, 16 + 3 * 6, "MatchMaking", "Match Making!"));
+  }
 
   private createBackground(): ElementUI {
+    const battle_image = new Image();
+    battle_image.src = battleImage;
+
     const background: ElementUI = {
       type: "image",
       rectangle: { x: "37.5%", y: "15%", w: "25%", h: "27.5%" },
@@ -36,19 +41,24 @@ export class Messages {
         const backgroundColor = 'rgba(192, 192, 192, 0.6)'; // Cor de fundo castanho
         const borderColor = "#8B4513"; // Cor de contorno mais escuro
       
+        // Desenha o corpo do balão com cor de fundo castanho
         ctx.fillStyle = backgroundColor;
         this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
         ctx.fill();
     
+        // Desenha o contorno do balão com cor mais escura
         ctx.strokeStyle = borderColor;
         ctx.lineWidth = 1;
         ctx.stroke();
+
+        if (battle_image.complete)
+          ctx.drawImage(battle_image, pos.x + pos.w * 0.01, pos.y + pos.h * 0.01, pos.w * 0.98, pos.h * 0.98);
+        
     
-        ctx.fillStyle = "grey";
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 3;
-        this.fillTextCenter(ctx, "Messages", pos.x + pos.w * 0.25, pos.y + pos.h * 0.175, pos.w * 0.5, pos.h * 0.125, undefined, "'Press Start 2P', cursive", true);
-      },
+        ctx.fillStyle = "gold";
+        ctx.lineWidth = 5;
+        this.fillTextCenter(ctx, "Battle Menu", pos.x + pos.w * 0.25, pos.y + pos.h * 0.175, pos.w * 0.5, pos.h * 0.125, undefined, "'Press Start 2P', cursive", true);
+        },
     };
     return background;
   }
@@ -57,12 +67,11 @@ export class Messages {
     const close_tab = new Audio(sound_close_tab);
     const button: ElementUI = {
       type: "exit",
-      rectangle: { x: x + "%", y: y + "%", w: "3%", h: "3%" },
+      rectangle: { x: x + "%", y: y + "%", w: "2%", h: "3%" },
       draw: (ctx: CanvasRenderingContext2D) => {
+        ctx.lineWidth = 3;
         ctx.strokeStyle = "#8B4513";
         ctx.strokeRect(button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h);
-
-        ctx.lineWidth = 3;
 
         ctx.beginPath();
         ctx.moveTo(button.rectangle.x + 5, button.rectangle.y + 5);
@@ -87,14 +96,12 @@ export class Messages {
  
   }
 
-  private createMessageButton(x: number, y: number, type: string, tittle: string): ElementUI {
+  private createBattleButton(x: number, y: number, type: string, tittle: string): ElementUI {
 	const button: ElementUI = {
       type: type,
       rectangle: { x: x + "%", y: y + "%", w: "23%", h: "5%" },
       draw: (ctx: CanvasRenderingContext2D) => {
-        
-        ctx.font = "bold 18px Arial";
-        ctx.fillStyle = "grey";
+        ctx.fillStyle = 'rgba(192, 57, 43, 0.9)';//"#C0392B";
         ctx.strokeStyle = "black";
         ctx.lineWidth = 2;
 
@@ -109,15 +116,36 @@ export class Messages {
         this.fillTextCenter(ctx, tittle, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.625, button.rectangle.w, button.rectangle.h * 0.35, undefined, "'Press Start 2P', cursive", true);
       },
       onClick: () => {
-        const confirmButton = new MessageList(type);
-        this._menu.visible = false;
-        this._menu.enable = false;
-        confirmButton.show((value) => {
-          if (value == "EXIT") {
-            this._menu.visible = true;
-            this._menu.enable = true;
-          }
-        });
+        if (type == "MatchMaking")
+        {
+          socketClass.setGameSocket({
+            query: {
+              userId: this.user.id,
+            },
+          });
+            const gameSocket = socketClass.getGameSocket();
+            gameSocket.emit("match_making_game", { 
+            userId: this.user.id,
+          });
+
+          gameSocket.on("match_making_game", (e: any) => { 
+            const gameId = e;
+            gameSocket.off("match_making_game");
+            Router.push(`/game?objectId=${gameId}`);
+          });
+        }
+        else
+        {
+          const confirmButton = new BattleList(type);
+          this._menu.visible = false;
+          this._menu.enable = false;
+          confirmButton.show((value) => {
+            if (value == "EXIT") {
+              this._menu.visible = true;
+              this._menu.enable = true;
+            }
+          });
+        }
       },
     };
     return button;
@@ -138,7 +166,7 @@ export class Messages {
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
   }
-
+  
   private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
     ctx.font = font ? h + "px " + font : h + "px Arial";
     ctx.textAlign = "start";

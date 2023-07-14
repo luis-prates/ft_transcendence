@@ -75,7 +75,7 @@ function tes(event: any) {
 			}
 		});
 		socket = socketClass.getLobbySocket();
-		socket.emit("connection_lobby", { userId: objectId.value, objectId: objectId.value.toString() });
+		socket.emit("connection_lobby", { userId: objectId.value, objectId: objectId.value.toString(), nickname: store.user.nickname, avatar: store.user.avatar });
 		setTimeout(() => {
 			Router.setRoute(Router.ROUTE_ALL);
 			Router.push("/");
@@ -102,8 +102,9 @@ onMounted(() => {
 					userId: store.user.id,
 				}
 			});
+			objectId.value = store.user.id.toString();
 			socket = socketClass.getLobbySocket();
-			socket.emit("connection_lobby", { userId: objectId.value, objectId: store.user.id.toString() });
+			socket.emit("connection_lobby", { userId: store.user.id, objectId: store.user.id.toString(), nickname: store.user.nickname, avatar: store.user.avatar });
 			setTimeout(() => {
 				Router.setRoute(Router.ROUTE_ALL);
 				Router.push("/");
