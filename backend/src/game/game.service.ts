@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { GameStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { GameDto } from './dto';
+import { GameDto, GameEndDto } from './dto';
 import { EventEmitter } from 'events';
 import { GameClass, infoBot } from './ping_pong/GamePong';
 import { playerInfo } from '../socket/SocketInterface';
@@ -9,6 +9,16 @@ import { PlayerService } from '../player/player.service';
 import { Server } from 'socket.io';
 import { Player } from '../player/Player';
 import { UserService } from '../user/user.service';
+
+type LeaderBoard = {
+	rank: number;
+	userId: number;
+	nickname: string;
+	image: string;
+	points: number;
+	gamesWon: number;
+	gamesLost: number;
+};
 
 @Injectable()
 export class GameService {
@@ -37,11 +47,10 @@ export class GameService {
 		const game = await this.prisma.game.create({
 			data: {
 				gameType: body.gameType,
-				gameStats: Prisma.JsonNull,
 				//! used if players are added when game is created
-				// players: {
-				// 	connect: body.players.map(player => ({ id: player })),
-				// },
+				players: {
+					connect: body.players.map(player => ({ id: player })),
+				},
 			},
 			include: {
 				players: true,
@@ -81,6 +90,130 @@ export class GameService {
 		return game;
 	}
 
+	async getActiveGames(status: GameStatus[]) {
+		if (!status) {
+			throw new ForbiddenException('Cannot get games without status.');
+		}
+		if (status.includes(GameStatus.FINISHED)) {
+			throw new ForbiddenException('Cannot get finished games.');
+		}
+		return this.prisma.game.findMany({
+			where: {
+				status: {
+					in: status,
+				},
+			},
+			include: {
+				players: {
+					select: {
+						id: true,
+						nickname: true,
+						image: true,
+					},
+				},
+			},
+		});
+	}
+
+	// leaderboard ranks users first by their won games, then by their lost games
+	// if two users have the same number of won games, the user with the least
+	// number of lost games will be ranked higher
+	// if two users have the same number of won and lost games, their rank will be the same
+	async getLeaderboard() {
+		const leaderboard = await this.prisma.user.findMany({
+			where: {
+				id: {
+					not: 6969,
+				},
+			},
+			select: {
+				id: true,
+				nickname: true,
+				image: true,
+				wonGames: {
+					select: {
+						winnerId: true,
+						winnerNickname: true,
+						winnerScore: true,
+						loserId: true,
+						loserNickname: true,
+						loserScore: true,
+					},
+					where: {
+						AND: [{ status: GameStatus.FINISHED }, { players: { none: { id: 6969 } } }],
+					},
+				},
+				lostGames: {
+					select: {
+						winnerId: true,
+						winnerNickname: true,
+						winnerScore: true,
+						loserId: true,
+						loserNickname: true,
+						loserScore: true,
+					},
+					where: {
+						AND: [{ status: GameStatus.FINISHED }, { players: { none: { id: 6969 } } }],
+					},
+				},
+			},
+			orderBy: [
+				{
+					wonGames: {
+						_count: 'desc',
+					},
+				},
+				{
+					lostGames: {
+						_count: 'asc',
+					},
+				},
+			],
+		});
+
+		const leaderboardReturn: Array<LeaderBoard> = [];
+		let rank = 1;
+		let prevGamesWon: number = null;
+		let prevGamesLost: number = null;
+		(await leaderboard).forEach(user => {
+			const gamesWon = user.wonGames.length;
+			const gamesLost = user.lostGames.length;
+			let currentRank = rank;
+
+			let points = 0;
+
+			user.wonGames.forEach(wongame => {
+				points += wongame.winnerScore * (wongame.loserScore == 0 ? 150 : 100);
+			});
+			user.lostGames.forEach(lostgame => {
+				points += lostgame.loserScore == 0 ? 10 : lostgame.loserScore * 20;
+			});
+
+			if (prevGamesWon !== null && prevGamesLost !== null) {
+				if (gamesWon === prevGamesWon && gamesLost === prevGamesLost) {
+					currentRank = leaderboardReturn[leaderboardReturn.length - 1].rank;
+				} else {
+					currentRank = rank;
+				}
+			}
+
+			leaderboardReturn.push({
+				rank: currentRank,
+				userId: user.id,
+				nickname: user.nickname,
+				image: user.image,
+				points: points,
+				gamesWon,
+				gamesLost,
+			});
+
+			prevGamesWon = gamesWon;
+			prevGamesLost = gamesLost;
+			rank++;
+		});
+		return leaderboardReturn;
+	}
+
 	async enterGame(player: Player, isPlayer: boolean, info: playerInfo) {
 		const game = this.games.find(g => g.data.objectId === info.objectId);
 		if (!game) {
@@ -98,7 +231,6 @@ export class GameService {
 					id: gameId,
 				},
 				data: {
-					gameStats: body?.gameStats,
 					status: body?.status,
 				},
 				include: {
@@ -160,7 +292,7 @@ export class GameService {
 					id: gameId,
 				},
 				data: {
-					gameStats: body.gameStats,
+					status: body.status,
 				},
 				include: {
 					players: true,
@@ -180,14 +312,26 @@ export class GameService {
 	}
 
 	// handles what to do when the game ends
-	async endGame(gameId: string, body: GameDto) {
+	async endGame(gameId: string, body: GameEndDto) {
 		try {
 			const game = await this.prisma.game.update({
 				where: {
 					id: gameId,
 				},
 				data: {
-					gameStats: body.gameStats,
+					status: body?.status,
+					winnerScore: body.gameStats.winnerScore,
+					loserScore: body.gameStats.loserScore,
+					winner: {
+						connect: {
+							id: body.gameStats.winnerId,
+						},
+					},
+					loser: {
+						connect: {
+							id: body.gameStats.loserId,
+						},
+					},
 				},
 				include: {
 					players: true,
@@ -207,7 +351,7 @@ export class GameService {
 	}
 
 	async getUserGames(userId: number) {
-		this.prisma.game.findMany({
+		return this.prisma.game.findMany({
 			where: {
 				players: {
 					some: {
@@ -215,26 +359,6 @@ export class GameService {
 					},
 				},
 				status: GameStatus.FINISHED,
-			},
-			include: {
-				players: {
-					select: {
-						id: true,
-						nickname: true,
-						image: true,
-					},
-				},
-			},
-		});
-	}
-
-	async getActiveGames(status: GameStatus) {
-		if (status === GameStatus.FINISHED) {
-			throw new ForbiddenException('Cannot get finished games.');
-		}
-		return this.prisma.game.findMany({
-			where: {
-				status,
 			},
 			include: {
 				players: {

@@ -7,9 +7,36 @@ import { Prisma } from '@prisma/client';
 export class UserService {
 	constructor(private prisma: PrismaService) {}
 
-	/*async editUser(userId: number, dto: UserDto) {
+	async editUser(userId: number, dto: UserDto) {
 		try {
-			const user = await this.prisma.user.update({
+			let user = await this.prisma.user.findUnique({
+				where: {
+					id: userId,
+				},
+			});
+			if (dto.paddleSkinEquipped && user.paddleSkinEquipped !== dto.paddleSkinEquipped) {
+				const paddleSkinExists = user.paddleSkinsOwned.findIndex(skin => skin === dto.paddleSkinEquipped);
+				if (paddleSkinExists === -1) {
+					throw new ForbiddenException('Paddle skin not owned');
+				}
+			}
+			if (dto.tableSkinEquipped && user.tableSkinEquipped !== dto.tableSkinEquipped) {
+				const tableSkinExists = user.tableSkinsOwned.findIndex(skin => skin === dto.tableSkinEquipped);
+				if (tableSkinExists === -1) {
+					throw new ForbiddenException('Table skin not owned');
+				}
+			}
+			if (dto.nickname && user.nickname !== dto.nickname) {
+				user = await this.prisma.user.findUnique({
+					where: {
+						nickname: dto.nickname,
+					},
+				});
+				if (user) {
+					throw new ForbiddenException('Nickname already taken');
+				}
+			}
+			user = await this.prisma.user.update({
 				where: {
 					id: userId,
 				},
@@ -33,53 +60,53 @@ export class UserService {
 			}
 			throw error;
 		}
-	}*/
-
-	async updateProfile(userId: number, dto: UserDto) {
-		try {
-			// Check if image encoding is correct
-			/* var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-            if (!base64regex.test(dto.image)) {
-                throw new BadRequestException('Image is not base64 encoding');
-            }*/
-
-			// Check if user exists
-			const userExists = await this.prisma.user.findUnique({
-				where: {
-					id: userId,
-				},
-			});
-			if (userExists) {
-				const updatedUser = await this.prisma.user.update({
-					where: {
-						id: userId,
-					},
-					data: {
-						nickname: dto.nickname,
-						avatar: dto.avatar,
-						image: dto.image,
-						color: dto.color,
-						paddleSkinEquipped: dto.paddleSkinEquipped,
-					},
-				});
-
-				delete updatedUser.hash;
-
-				return updatedUser;
-			}
-		} catch (error) {
-			if (error instanceof Prisma.PrismaClientKnownRequestError) {
-				if (error.code === 'P2002') {
-					throw new ForbiddenException(
-						`The User don't Exist. Error: ${error.message.substring(
-							error.message.indexOf('Unique constraint'),
-						)}`,
-					);
-				}
-			}
-			throw error;
-		}
 	}
+
+	// async updateProfile(userId: number, dto: UserDto) {
+	// 	try {
+	// 		// Check if image encoding is correct
+	// 		/* var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+	//         if (!base64regex.test(dto.image)) {
+	//             throw new BadRequestException('Image is not base64 encoding');
+	//         }*/
+
+	// 		// Check if user exists
+	// 		const userExists = await this.prisma.user.findUnique({
+	// 			where: {
+	// 				id: userId,
+	// 			},
+	// 		});
+	// 		if (userExists) {
+	// 			const updatedUser = await this.prisma.user.update({
+	// 				where: {
+	// 					id: userId,
+	// 				},
+	// 				data: {
+	// 					nickname: dto.nickname,
+	// 					avatar: dto.avatar,
+	// 					image: dto.image,
+	// 					color: dto.color,
+	// 					paddleSkinEquipped: dto.paddleSkinEquipped,
+	// 				},
+	// 			});
+
+	// 			delete updatedUser.hash;
+
+	// 			return updatedUser;
+	// 		}
+	// 	} catch (error) {
+	// 		if (error instanceof Prisma.PrismaClientKnownRequestError) {
+	// 			if (error.code === 'P2002') {
+	// 				throw new ForbiddenException(
+	// 					`The User don't Exist. Error: ${error.message.substring(
+	// 						error.message.indexOf('Unique constraint'),
+	// 					)}`,
+	// 				);
+	// 			}
+	// 		}
+	// 		throw error;
+	// 	}
+	// }
 
 	async buySkin(userId: number, dto: UserBuySkinDto) {
 		try {
@@ -184,7 +211,7 @@ export class UserService {
 		}
 	}
 
-	async getUsers(userId: number) {
+	async getUsers() {
 		const users = this.prisma.user.findMany();
 
 		return users;

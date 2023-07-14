@@ -261,7 +261,7 @@ describe('Chat', () => {
 		it('should change a channel name', () => {
 			return pactum
 				.spec()
-				.patch('/chat/channels/$S{publicChannelId}')
+				.patch('/chat/channels/edit/$S{publicChannelId}')
 				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
 				.withBody({
 					name: 'aBetterNameForAPublicChannel',
@@ -271,7 +271,7 @@ describe('Chat', () => {
 		it('should change a channel from PUBLIC to PRIVATE type', () => {
 			return pactum
 				.spec()
-				.patch('/chat/channels/$S{publicChannelId}')
+				.patch('/chat/channels/edit/$S{publicChannelId}')
 				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
 				.withBody({
 					channelType: 'PRIVATE',
@@ -281,7 +281,7 @@ describe('Chat', () => {
 		it('should change a channel from PRIVATE to PROTECTED type', () => {
 			return pactum
 				.spec()
-				.patch('/chat/channels/$S{publicChannelId}')
+				.patch('/chat/channels/edit/$S{publicChannelId}')
 				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
 				.withBody({
 					channelType: 'PROTECTED',
@@ -292,7 +292,7 @@ describe('Chat', () => {
 		it('should change a channel from PROTECTED to PUBLIC type', () => {
 			return pactum
 				.spec()
-				.patch('/chat/channels/$S{publicChannelId}')
+				.patch('/chat/channels/edit/$S{publicChannelId}')
 				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
 				.withBody({
 					channelType: 'PUBLIC',
@@ -302,7 +302,7 @@ describe('Chat', () => {
 		it('should not allow to set a password to a public channel', () => {
 			return pactum
 				.spec()
-				.patch('/chat/channels/$S{publicChannelId}')
+				.patch('/chat/channels/edit/$S{publicChannelId}')
 				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
 				.withBody({
 					channelType: 'PUBLIC',
@@ -313,7 +313,7 @@ describe('Chat', () => {
 		it('should allow us to change the name back to the original', () => {
 			return pactum
 				.spec()
-				.patch('/chat/channels/$S{publicChannelId}')
+				.patch('/chat/channels/edit/$S{publicChannelId}')
 				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
 				.withBody({
 					name: 'myPublicChannel',
@@ -323,7 +323,7 @@ describe('Chat', () => {
 		it('should not allow to edit a DM channel', () => {
 			return pactum
 				.spec()
-				.patch('/chat/channels/$S{DMChannelId}')
+				.patch('/chat/channels/edit/$S{DMChannelId}')
 				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
 				.withBody({
 					name: 'aBetterNameForADMChannel',
@@ -334,7 +334,7 @@ describe('Chat', () => {
 		it('should not allow to remove password from a PROTECTED channel', () => {
 			return pactum
 				.spec()
-				.patch('/chat/channels/$S{protectedChannelId}')
+				.patch('/chat/channels/edit/$S{protectedChannelId}')
 				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
 				.withBody({
 					channelType: 'PROTECTED',
