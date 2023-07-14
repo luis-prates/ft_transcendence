@@ -103,7 +103,7 @@ export class UserService {
 					status: status,
 				},
 			});
-
+			delete user.twoFASecret;
 			delete user.hash;
 			console.log('user: ', userId, ' new status: ', status);
 			
