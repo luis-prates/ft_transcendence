@@ -61,6 +61,14 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
+  function isUserInSelectedChannel(id: number): boolean {
+    if (selected.value && selected.value) {
+      const selectedChannel = selected.value as channel;
+      return selectedChannel.users.some((u: ChatUser) => u.id === id);
+    }
+    return false;
+  }
+
   function addMessage(message: ChatMessage) {
     const channelSelected = channels.find((c) => c.objectId === message.channelId);
     console.log("channelSelected: ", channelSelected);
@@ -166,6 +174,24 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
+  async function leaveChannel(channelId: string) {
+    const options = {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+      try {
+        // Leave the channel
+        await axios.delete(`${env.BACKEND_PORT}/chat/channels/${channelId}/leave`, options);
+  
+        // Process the response if needed
+        console.log("Left the channel successfully");
+  
+      } catch (error) {
+        console.error(error);
+      }
+    
+  }
+
   async function createChannel(channel: channel) {
     const createChannelDto = {
       name: channel.name,
@@ -205,5 +231,5 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  return { channels, selected, addChannel, getMessages, addMessage, getChannels, createChannel, activateMessage, selectChannel, selectUser };
+  return { channels, selected, addChannel, getMessages, addMessage, getChannels, createChannel, activateMessage, selectChannel, selectUser, isUserInSelectedChannel, leaveChannel };
 });
