@@ -1,6 +1,7 @@
 <template>
 	<!-- Modal -->
 	<ErrorModal v-model:errorMessage="errorMessage" ref="errorModalRef" />
+	<TwoFactorPrompt ref="twoFactorPromptRef" @submit="twoFactorSubmit" />
 	<div class="loginElement" href>
 		<span class="borderLine"></span>
 		<form>
@@ -36,9 +37,8 @@ import { socketClass } from "@/socket/SocketClass";
 import { env } from "@/env";
 import type { Socket } from "socket.io-client";
 import ErrorModal from '@/components/login/ErrorModal.vue'
-import { Modal } from 'bootstrap';
-
-type BootstrapModal = InstanceType<typeof Modal>
+import axios from "axios";
+import TwoFactorPrompt from '@/components/login/TwoFactorPrompt.vue'
 
 const props = defineProps({
 	token: String,
@@ -49,16 +49,28 @@ const name = "LoginPage";
 const objectId = ref("");
 
 const errorMessage = ref('');
-const errorModalRef = ref<BootstrapModal | null>(null);
+const errorModalRef = ref<InstanceType<typeof ErrorModal> | null>(null);
+const twoFactorPromptRef = ref<InstanceType<typeof TwoFactorPrompt> | null>(null);
+
 let socket: Socket | any = null;
 
 const showErrorModal = (message: string) => {
 	errorMessage.value = message;
+	(errorModalRef.value as typeof ErrorModal | null)?.showModal();
+};
+
+let resolveTwoFactorPrompt: (value: boolean) => void;
+
+let twoFactorSubmit = async (code: string) => {
+    // Code to handle the submitted 2FA code
+	const isValid = await twoFactorPrompt(code.toString());
+	resolveTwoFactorPrompt(isValid);
 };
 
 const store = userStore();
 
 function tes(event: any) {
+	let validTwoFA = false;
 	event.preventDefault();
 	console.log("objectId.value in nessage box 1: ", objectId.value);
 	store.user.id = parseInt(objectId.value);
@@ -68,7 +80,23 @@ function tes(event: any) {
 	store.user.email = "user_" + objectId.value + "@gmail.com";
 	store
         .loginTest()
-        .then(() => {
+        .then(async (isTwoFAEnabled) => {
+		if (isTwoFAEnabled) {
+			await new Promise<boolean>((resolve) => {
+				resolveTwoFactorPrompt = resolve;
+				twoFactorPromptRef.value?.showModal();
+			}).then((isValid) => {
+				if (!isValid) {
+					showErrorModal("Two Factor Authentication code is invalid. Please try again.");
+					validTwoFA = false;
+				} else {
+					validTwoFA = true;
+				}
+			});
+			if (!validTwoFA) {
+				return ;
+			}
+		}
 		socketClass.setLobbySocket({
 			query: {
 				userId: store.user.id,
@@ -83,7 +111,7 @@ function tes(event: any) {
 		console.log(store.user.isLogin);
 		})
 		.catch((err) => {
-		console.log(err);
+			console.log(err);
 		});
 }
 
@@ -116,6 +144,36 @@ onMounted(() => {
 		});
 	}
 });
+
+async function twoFactorPrompt(twoFactorCode: string) {
+	let twoFAValid = false;
+	if (twoFactorCode) {
+		try {
+			await axios.post(env.BACKEND_PORT + "/auth/2fa/validate", {
+				twoFACode: twoFactorCode,
+			},
+			{
+				headers: {
+					Authorization: "Bearer " + store.user.access_token_server,
+				},
+			}).then((res) => {
+				console.log(res)
+				const message: string = res.data.message;
+				if (message.startsWith("2FA code is valid")) {
+					twoFAValid = true;
+				}
+				else {
+					twoFAValid = false;
+				}
+			});
+		} catch (error: any) {
+			// handle bad request
+			console.log(`${error.response.data.error} with status code ${error.response.status} and message: ${error.response.data.message}`)
+			twoFAValid = false;
+		}
+	}
+	return twoFAValid;
+}
 
 </script>
 

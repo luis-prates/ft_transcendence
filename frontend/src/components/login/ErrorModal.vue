@@ -1,5 +1,5 @@
 <template>
-	<div ref="modalElement" class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div ref="modalElement" class="modal fade" id="exampleModal" tabindex="0" aria-labelledby="exampleModalLabel" aria-hidden="true" @keyup.enter="hideModal">
 		<div class="modal-dialog">
 			<div class="modal-content bg-dark text-white rounded-5 shadow">
 				<div class="modal-header bg-danger text-white ">
@@ -45,18 +45,24 @@ export default defineComponent({
 		});
 
 		const hideModal = () => {
-			bootstrapModal.hide();
+			if (bootstrapModal)
+				bootstrapModal.hide();
 		};
 
 		watch(() => props.errorMessage, (newValue) => {
-			if (newValue) {
+			if (newValue && bootstrapModal) {
 				bootstrapModal.show();
 			}
 		});
 
+		const showModal = () => {
+			bootstrapModal?.show();
+		};
+
 		return {
 			modalElement,
 			hideModal,
+			showModal,
 		}
 	},
 });
