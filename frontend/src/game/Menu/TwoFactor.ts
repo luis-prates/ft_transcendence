@@ -1,4 +1,5 @@
 import { Menu, type ElementUI, type Rectangle, Game } from "@/game";
+import { userStore } from "@/stores/userStore";
 
 export class TwoFactor {
   private _menu = new Menu({ layer: "Global", isFocus: true});
@@ -7,16 +8,27 @@ export class TwoFactor {
 
   private onResult: (result: any) => void = () => {};
 
-  constructor(qrSrc: string) {
-    this.qrImage.src = qrSrc;
-    /*if (!this.qrImage.complete)
-    {
-      console.log("NAO ESTA A CARREGAR!")
-      return ;
-    }*/
+  constructor() {
+    if (!userStore().user.isTwoFAEnabled)
+      this.getQrImage();
+    this.qrImage.src = "";
     this.menu.add(this.background);
-    this.menu.add(this.createButton(40 + 10 / 4, 47, "CONFIRM"));
-    this.menu.add(this.createButton(55 - 10 / 4, 47, "CANCEL"));
+    this.menu.add(this.createButton(40 + 10 / 4, !userStore().user.isTwoFAEnabled ? 47 : 28, "CONFIRM"));
+    this.menu.add(this.createButton(55 - 10 / 4, !userStore().user.isTwoFAEnabled ? 47 : 28, "CANCEL"));
+  }
+
+  async getQrImage()
+  {
+    try {
+      const data = await userStore().twofagenerate();
+      console.log(data);
+      this.qrImage.src = data;
+    }
+    catch(error)
+    {
+      console.error("Error converting file to base64:", error);
+      this.menu.close();
+    }
   }
 
   private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
@@ -71,7 +83,7 @@ export class TwoFactor {
 
     const background: ElementUI = {
       type: "image",
-      rectangle: { x: "40%", y: "20%", w: "20%", h: "35%" },
+      rectangle: { x: "40%", y: "20%", w: "20%", h: userStore().user.isTwoFAEnabled ? "15%" :"35%" },
       draw: (ctx: any) => {
         const pos = background.rectangle;
         const backgroundColor = "#FFC857";
@@ -85,10 +97,10 @@ export class TwoFactor {
         ctx.lineWidth = 3;
         ctx.stroke();
 
-        const input_y = pos.y + pos.h * 0.575;
+        const input_y = userStore().user.isTwoFAEnabled ? pos.y + pos.h * 0.1 : pos.y + pos.h * 0.575;
         
         inputTwoFactor.style.width = pos.w * 0.8 + "px";
-        inputTwoFactor.style.height = pos.h * 0.15 + "px";
+        inputTwoFactor.style.height = userStore().user.isTwoFAEnabled ? pos.h * 0.35 + "px" : pos.h * 0.15 + "px";
         inputTwoFactor.style.top = input_y + "px";
         inputTwoFactor.style.left = pos.x + pos.w * 0.1 + "px";
 
@@ -106,7 +118,8 @@ export class TwoFactor {
 
         ctx.strokeStyle = "black";
         ctx.lineWidth = 3;
-        ctx.strokeRect(pos.x + pos_image_x, image_y, lado, lado);
+        if (!userStore().user.isTwoFAEnabled)
+          ctx.strokeRect(pos.x + pos_image_x, image_y, lado, lado);
       },
     };
     return background;
@@ -132,12 +145,37 @@ export class TwoFactor {
       	
           this.fillTextCenter(ctx, label, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.6, button.rectangle.w, button.rectangle.h * 0.2, undefined, "'Press Start 2P', cursive", false);
         },
-      	onClick: () => {
+      	onClick: async () => {
+
           const inputTwoFactor = document.getElementById("inputTwoFactor") as HTMLInputElement;
-          inputTwoFactor.disabled = true;
-          inputTwoFactor.style.display = "none";
-      	  this.menu.close();
-      	  this.onResult(label);
+          if (label == "CONFIRM")
+          {
+            try {
+              if (!userStore().user.isTwoFAEnabled)
+                await userStore().twofaTurnOn(inputTwoFactor.value.toString())
+              else
+                await userStore().twofaTurnOff(inputTwoFactor.value.toString())
+                
+              inputTwoFactor.style.borderColor = "green";
+              inputTwoFactor.disabled = true;
+              inputTwoFactor.style.display = "none";
+              inputTwoFactor.value = "";
+              this.menu.close();
+              this.onResult(label);
+            }
+            catch(error) {
+              inputTwoFactor.style.borderColor = "red";
+            }
+          }
+          else
+          {
+            inputTwoFactor.disabled = true;
+            inputTwoFactor.style.display = "none";
+            inputTwoFactor.value = "";
+            this.menu.close();
+            this.onResult(label);
+          }
+
       	},
     };
     return button;

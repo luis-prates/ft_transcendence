@@ -54,6 +54,7 @@ export class YourProfile {
     this.matche_pagination = new PaginationMenu(this.user.infoPong.historic, 4, 2, this.background, this.menu);
 
     this.new_nickname = this.user.nickname;
+    this.twoFactor = this.user.isTwoFAEnabled;
 
     this.avataresImage.src = avatares;
 
@@ -321,9 +322,6 @@ export class YourProfile {
         else if (type == "photo") {
           fileInput.click();
         }
-        else if (type == "qrcode") {
-          
-        }
       },
     };
 
@@ -368,9 +366,6 @@ export class YourProfile {
   }
 
   private createQRCodeButton(type: string, x: number, y: number, label: string, width: number): ElementUI {
-    let twoFactorImage = new Image();
-    twoFactorImage.src = "";
-
     const button: ElementUI = {
       type: type,
       rectangle: { x: x + "%", y: y + "%", w: width + "%", h: "4.5%" },
@@ -410,15 +405,13 @@ export class YourProfile {
 
       },
       onClick: () => {
-        const confirmButton = new TwoFactor(avatarDefault);
-        confirmButton.show((value) => {
-          if (value == "OK") {
+        const twoFactorMenu = new TwoFactor();
+        twoFactorMenu.show((value) => {
+          if (value == "CONFIRM") {
+            this.twoFactor = this.user.isTwoFAEnabled;
+            this.user.isTwoFAEnabled = this.user.isTwoFAEnabled;
           }
-        });          
-        
-        this.twoFactor = !this.twoFactor;
-        
-        //TODO DATABASE
+        });
       },
     };
     return button;
