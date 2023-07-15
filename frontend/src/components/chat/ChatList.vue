@@ -69,7 +69,7 @@ const { selected } = storeToRefs(store);
 const isMenuOpen = ref(false);
 const channelsFilters = ref([] as channel[]);
 const searchTerm = ref('');
-const usersInChannelSelecet = ref([] as ChatUser[]);
+const usersInChannelSelect = ref([] as ChatUser[]);
 const usersFilters = ref([] as ChatUser[]);
 const searchUser = ref('');
 let isChatFilterType = "inside";
@@ -81,15 +81,13 @@ const handleSearch = () => {
 const handleSearchUser = () => {
   if (!usersFilters.value)
     return;
-  console.log("USERS CHANEL", usersFilters.value)
 
   const searchBar = document.getElementById('searchUser') as HTMLInputElement;
   const searchValue = searchBar.value.toLowerCase();
-  usersFilters.value = usersInChannelSelecet.value.filter((user: ChatUser) => {
+  usersFilters.value = usersInChannelSelect.value.filter((user: ChatUser) => {
     const userName = user.nickname.toLowerCase();
     return userName.includes(searchValue);
   });
-  console.log("USER SEARCH;", usersFilters)
   return usersFilters;
 };
 
@@ -142,7 +140,7 @@ const selectChannel = (channel: channel) => {
   if (selected.value != channel && isMenuOpen.value) {
     toggleMenu();
   }
-  usersInChannelSelecet.value = channel.users;
+  usersInChannelSelect.value = channel.users;
   usersFilters.value = channel.users;
   store.selectChannel(channel);
   toggleMenu();
