@@ -3,9 +3,8 @@
       <!-- <button @click="toggleMenu">Toggle Menu</button> -->
       <div class="menu" :style="menuStyles">
         <ul style="color: aliceblue;">
-          <li @click="handleMenuItemClick(1)">Open</li>
-          <li @click="handleMenuItemClick(2)">Item 2</li>
-          <li @click="handleMenuItemClick(3)">Item 3</li>
+          <li @click="handleMenuItemClick(1)">{{ getOpenJoin() }}</li>
+          <li v-if="store.isUserInSelectedChannel(userStore().user.id)" @click="handleMenuItemClick(2)">Leave</li>
         </ul>
       </div>
     </div>
@@ -14,8 +13,6 @@
       
         <ul style="color: aliceblue;">
           <li @click="handleMenuItemClick(1)">Open</li>
-          <li @click="handleMenuItemClick(2)">Item 2</li>
-          <li @click="handleMenuItemClick(3)">Item 3</li>
         </ul>
       
     </div>
@@ -24,7 +21,11 @@
   <script setup lang="ts">
   import { ref, watch, getCurrentInstance } from 'vue';
   import { chatStore, type channel, type ChatUser } from "@/stores/chatStore";
+  import { storeToRefs } from "pinia";
+  import { userStore } from "@/stores/userStore";
 
+  const store = chatStore();
+  const { selected } = storeToRefs(store);
   // Get the current component instance
   const instance = getCurrentInstance();
   
@@ -43,6 +44,12 @@
   },
 });
 
+  function getOpenJoin(){
+    if (store.isUserInSelectedChannel(userStore().user.id))
+      return "Open";
+    return "Join";
+  };
+
   const toggleMenu = () => {
     isMenuOpen.value = !isMenuOpen.value;
     instance?.emit('toggleMenu');
@@ -52,11 +59,13 @@
     // Handle menu item click logic
     if (item == 1) {
       instance?.emit('openChannel', props.channel);
-      instance?.emit('update-create-channel', false);
-      instance?.emit("update-channel-status", true);
-      console.log("Vai abrir o chat" + instance?.isMounted);
     }
-    toggleMenu();
+    else if (item == 2){
+      console.log("O id do channel onde vai dar elave: ", selected.value.objectId)
+      store.leaveChannel(selected.value.objectId);
+    }
+    if (isMenuOpen)
+      toggleMenu();
   };
   
   const menuStyles = ref({});

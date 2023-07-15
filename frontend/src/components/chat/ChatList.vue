@@ -20,7 +20,7 @@
         </div>
         <ul class="contacts" @click="toggleStatus">
           <li v-for="channel in channelsFilters">
-            <ChatListChannels :channel="channel" @click="selectChannel(channel)" />
+            <ChatListChannels :channel="channel" @click="selectChannel(channel)" @contextmenu="handleContextMenu(channel)" />
             <div class="menu-container" v-if="isMenuOpen">
               <Menus @toggleMenu="toggleMenu" @openChannel="openChannel" :channel="channel" @update-channel-status="updateChannelStatus" @update-create-channel="updateCreateChannel" v-show="selected?.objectId == channel.objectId" />
             </div>
@@ -63,6 +63,8 @@ import { Game, Lobby } from "@/game";
 import { Profile } from "@/game/Menu/Profile";
 import { userStore } from "@/stores/userStore";
 import { YourProfile } from "@/game/Menu/YourProfile";
+
+
 
 const store = chatStore();
 const { selected } = storeToRefs(store);
@@ -143,9 +145,20 @@ const selectChannel = (channel: channel) => {
   usersInChannelSelect.value = channel.users;
   usersFilters.value = channel.users;
   store.selectChannel(channel);
-  toggleMenu();
+  openChannel(store.selected);
+  if (isMenuOpen.value)
+    toggleMenu();
 }
 
+  const handleContextMenu = (channel: channel)  => {
+    //instance?.emit("update-create-channel", false);
+    if (selected.value != channel && isMenuOpen.value) {
+      toggleMenu();
+    }
+    store.selectChannel(channel);
+    toggleMenu();
+  };
+  
 let isProfileOpen: boolean = false;
 
 const selectUser = (user: ChatUser) => {
@@ -172,9 +185,17 @@ const selectUser = (user: ChatUser) => {
   toggleMenu();*/
 }
 
-
 const openChannel = (channel: channel) => {
-  store.getMessages(channel);
+  if (store.isUserInSelectedChannel(userStore().user.id))
+  {
+    store.getMessages(channel);
+    instance?.emit('update-create-channel', false);
+    instance?.emit("update-channel-status", true);
+  }
+  else
+  {
+    console.log("I will try to put the password!");
+  }
 }
 
 //Creating a new channel:
