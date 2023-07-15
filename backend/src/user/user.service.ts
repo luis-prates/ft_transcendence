@@ -8,10 +8,8 @@ import { Server } from 'socket.io';
 export class UserService {
 	private server: Server;
 
-	constructor(private prisma: PrismaService) {
-	}
+	constructor(private prisma: PrismaService) {}
 
-	
 	setServer(server: Server) {
 		this.server = server;
 	}
@@ -106,7 +104,7 @@ export class UserService {
 			delete user.twoFASecret;
 			delete user.hash;
 			console.log('user: ', userId, ' new status: ', status);
-			
+
 			this.server.emit('updateStatus', {
 				id: userId,
 				status: status,

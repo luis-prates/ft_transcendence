@@ -59,7 +59,6 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 			client.join('lobby');
 			client.to('lobby').emit('lobby_add_user', client.id);
 			this.userService.status(payload.userId, UserStatus.ONLINE);
-
 		});
 	}
 

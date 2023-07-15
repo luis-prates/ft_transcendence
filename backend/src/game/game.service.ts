@@ -101,7 +101,7 @@ export class GameService {
 					maxScore: 3,
 					table: '#1e8c2f',
 					tableSkin: '',
-					bot: false
+					bot: false,
 				},
 			} as GameDto)) as any;
 			return gameCreated.id;
@@ -265,21 +265,17 @@ export class GameService {
 
 		leaderboardReturn.sort((a, b) => b.points - a.points);
 
-		let last_points: number = -1;
-		let last_rank: number = -1;
+		let last_points = -1;
+		let last_rank = -1;
 		leaderboardReturn.forEach((user, index) => {
 			let cur_rank = index + 1;
-			if (index == 0)
-			{
+			if (index == 0) {
 				last_rank = user.rank;
 				last_points = user.points;
-			}
-			else
-			{
-				if (last_points == user.points)
+			} else {
+				if (last_points == user.points) {
 					cur_rank = last_rank;
-				else
-				{
+				} else {
 					last_rank = cur_rank;
 					last_points = user.points;
 				}
