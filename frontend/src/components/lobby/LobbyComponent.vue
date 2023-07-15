@@ -15,7 +15,7 @@
 
     <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoad" />
   </div>
-  <ChatComponent class="chat_component"/>
+  <ChatComponent class="chat_component" />
 </template>
 
 <script setup lang="ts">
@@ -58,80 +58,78 @@ onMounted(() => {
     }, 1000);
   });
   socket.on("invite_request_game", (e: any) => {
-      const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
-      Game.instance.addMenu(confirmButton.menu);
-			confirmButton.show((value) => {
-          if (value == "CONFIRM") {
-            socket.emit("challenge_game", {
-              challenged: store.user.id, 
-              challenger: e.playerId,
-            });
-          }
-		  });
+    const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
+    Game.instance.addMenu(confirmButton.menu);
+    confirmButton.show((value) => {
+      if (value == "CONFIRM") {
+        socket.emit("challenge_game", {
+          challenged: store.user.id,
+          challenger: e.playerId,
+        });
+      }
     });
-    socket.on("challenge_game", (gameId: string) => {
-      console.log("Challenge begin!")
-			socket.off("invite_confirm_game");
-			Router.push(`/game?objectId=${gameId}`);
-		});
+  });
+  socket.on("challenge_game", (gameId: string) => {
+    console.log("Challenge begin!");
+    socket.off("invite_confirm_game");
+    Router.push(`/game?objectId=${gameId}`);
+  });
 
-    //Block
-    socket.on("block_user",  (event: Block) => {
-      const existingEvent = user.block.find((block: any) => block.blockerId === event.blockerId);
-      
-      if (!existingEvent) user.block.push(event);
+  //Block
+  socket.on("block_user", (event: Block) => {
+    const existingEvent = user.block.find((block: any) => block.blockerId === event.blockerId);
 
-      console.log("Block!", event, "Block List:", user.block);
-		});
+    if (!existingEvent) user.block.push(event);
 
-    //Unblock
-    socket.on("unblock_user", (event: Block) => {
-      user.block = user.block.filter((block: Block) => block.blockerId !== event.blockerId);
+    console.log("Block!", event, "Block List:", user.block);
+  });
 
-      console.log("Unblock!", event, "Block List:", user.block);
-		});
+  //Unblock
+  socket.on("unblock_user", (event: Block) => {
+    user.block = user.block.filter((block: Block) => block.blockerId !== event.blockerId);
 
-    //Send Friend Request
-    socket.on("sendFriendRequest",  (event: Friendship) => {
-      const existingEvent = user.friendsRequests.find((friend: Friendship) => friend.requestorId === event.requestorId);
-      
-      if (!existingEvent)
-        user.friendsRequests.push(event);
-      //console.log("Send Friend!", event, "Friend Request:", user.friendsRequests);
-      Game.updateNotifications();
-    });
+    console.log("Unblock!", event, "Block List:", user.block);
+  });
 
-    //Cancel Friend Request
-    socket.on("cancelFriendRequest",  (event: Friendship) => {
-      user.friendsRequests = user.friendsRequests.filter((friend: Friendship) => friend.requestorId != event.requestorId);
+  //Send Friend Request
+  socket.on("sendFriendRequest", (event: Friendship) => {
+    const existingEvent = user.friendsRequests.find((friend: Friendship) => friend.requestorId === event.requestorId);
 
-      //console.log("Cancel Friend!", event, "Friend Request:", user.friendsRequests);
-      Game.updateNotifications();
-    });
+    if (!existingEvent) user.friendsRequests.push(event);
+    //console.log("Send Friend!", event, "Friend Request:", user.friendsRequests);
+    Game.updateNotifications();
+  });
 
-    //Accept Friend Request
-    socket.on("acceptFriendRequest",  (event: Friendship) => {
-      user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.id);
-      const existingEvent = user.friends.find((friend: Friendship) => friend.requesteeId === event.id);
-      
-      if (!existingEvent)
-        user.friends.push(event);
-      //console.log("Accept Friend!", event);
-      Game.updateNotifications();
-		});
-    
-    //Reject Friend Request
-    socket.on("rejectFriendRequest",  (event: Friendship) => {
-      user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.requesteeId);
-      //console.log("Reject Friend Request!", event);
-      Game.updateNotifications();
-		});
+  //Cancel Friend Request
+  socket.on("cancelFriendRequest", (event: Friendship) => {
+    user.friendsRequests = user.friendsRequests.filter((friend: Friendship) => friend.requestorId != event.requestorId);
 
-    //Delete Friend
-    socket.on("deleteFriend",  (event: Friendship) => {
-      user.friends = user.friends.filter((friend: Friendship) => friend.id != event.id);
-      //console.log("Delete Friend!", event);
-		});
+    //console.log("Cancel Friend!", event, "Friend Request:", user.friendsRequests);
+    Game.updateNotifications();
+  });
+
+  //Accept Friend Request
+  socket.on("acceptFriendRequest", (event: Friendship) => {
+    user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.id);
+    const existingEvent = user.friends.find((friend: Friendship) => friend.requesteeId === event.id);
+
+    if (!existingEvent) user.friends.push(event);
+    //console.log("Accept Friend!", event);
+    Game.updateNotifications();
+  });
+
+  //Reject Friend Request
+  socket.on("rejectFriendRequest", (event: Friendship) => {
+    user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.requesteeId);
+    //console.log("Reject Friend Request!", event);
+    Game.updateNotifications();
+  });
+
+  //Delete Friend
+  socket.on("deleteFriend", (event: Friendship) => {
+    user.friends = user.friends.filter((friend: Friendship) => friend.id != event.id);
+    //console.log("Delete Friend!", event);
+  });
 });
 
 onUnmounted(() => {
@@ -173,8 +171,7 @@ function test() {
   background-color: rgb(30, 39, 210);
 }
 
-.chat_component
-{
+.chat_component {
   width: 70%;
   height: 60%;
   right: 0px;

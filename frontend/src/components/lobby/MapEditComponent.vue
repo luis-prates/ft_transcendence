@@ -5,6 +5,8 @@
     <button @click="action(1)" :class="MapObject.action.value == 1 ? 'buttonSelect' : ''">Start Possition</button>
     <button @click="action(2)" :class="MapObject.action.value == 2 ? 'buttonSelect' : ''">Player</button>
     <button @click="action(3)" :class="MapObject.action.value == 3 ? 'buttonSelect' : ''">Tree</button>
+    <button @click="action(6)" :class="MapObject.action.value == 6 ? 'buttonSelect' : ''">Door</button>
+    <button @click="action(7)" :class="MapObject.action.value == 7 ? 'buttonSelect' : ''">NPC</button>
     <button @click="action(4)" :class="MapObject.action.value == 4 ? 'buttonSelect' : ''">Water Font</button>
     <input @input="(e: any) => MapObject.typefont.value = e.target.value" value="0" type="number" />
     <button @click="action(5)" :class="MapObject.action.value == 5 ? 'buttonSelect' : ''">Opacity</button>
@@ -68,7 +70,9 @@ function loadMap(event: any) {
       loadLobby(j);
     };
     reader.readAsText(file);
+    MapObject.file = file;
   } else {
+    MapObject.file = null;
     console.log("file: ", file);
   }
 }
@@ -76,7 +80,7 @@ function loadMap(event: any) {
 function loadLobby(data: any) {
   console.log("json: ", data);
   if (lobby) lobby.destructor();
-  socket.emit("join_map", { objectId: store.user.id, map: { name: "lobby" } });
+  socket.emit("join_map", { objectId: store.user.id, map: { name: data.objectId } });
   const map = new MapObject();
   map.setData(data).then(() => {
     console.log("Map: Dados carregados");

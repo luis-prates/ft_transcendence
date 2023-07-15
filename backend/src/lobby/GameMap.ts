@@ -15,6 +15,7 @@ export class GameMap {
 		const jsonData = fs.readFileSync(jsonPath, 'utf-8');
 		const jsonObject = JSON.parse(jsonData);
 		this.map = jsonObject;
+		console.log('====================================', mapFile, '====================================');
 	}
 
 	public join(player: Player, position?: { x: number; y: number }): void {
