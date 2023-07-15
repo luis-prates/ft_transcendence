@@ -4,8 +4,7 @@ import { PrismaController } from './prisma.controller';
 
 @Global()
 @Module({
-  providers: [PrismaService],
-  exports: [PrismaService],
-  controllers: [PrismaController]
+	providers: [PrismaService],
+	exports: [PrismaService],
 })
 export class PrismaModule {}

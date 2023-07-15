@@ -3,6 +3,7 @@ dist
 node_modules
 dist-ssr
 *.local
+package-lock.json
 
 # Logs
 logs
@@ -36,7 +37,7 @@ coverage
 *.njsproj
 *.sln
 *.sw?
-frontend/src/env.ts
+# frontend/src/env.ts
 
 # IDE - VSCode
 .vscode/*
@@ -49,3 +50,9 @@ frontend/src/env.ts
 /cypress/screenshots/
 
 .env
+
+# Prisma migrations
+backend/prisma/migrations/
+
+# Frontend env.ts
+frontend/src/env.ts
