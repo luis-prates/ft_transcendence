@@ -39,7 +39,10 @@
         <!-- Users inside the chat selected -->
         <ul class="contacts">
           <li v-for="(user, id) in usersFilters" :key="id">
-            <ChatListUsers :user="user" @click="selectUser(user)" />
+            <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser(user)" />
+            <div class="menu-container" v-if="isMenuOpen">
+              <Menus @toggleMenu="toggleMenu" :user="user" v-show="selected?.objectId == user.id" />/>
+            </div>
           </li>
         </ul>
       </div>
@@ -142,22 +145,30 @@ const selectChannel = (channel: channel) => {
   if (selected.value != channel && isMenuOpen.value) {
     toggleMenu();
   }
-  usersInChannelSelect.value = channel.users;
-  usersFilters.value = channel.users;
   store.selectChannel(channel);
   openChannel(store.selected);
   if (isMenuOpen.value)
     toggleMenu();
 }
 
-  const handleContextMenu = (channel: channel)  => {
-    //instance?.emit("update-create-channel", false);
-    if (selected.value != channel && isMenuOpen.value) {
-      toggleMenu();
-    }
-    store.selectChannel(channel);
+const handleContextMenu = (channel: channel)  => {
+  //instance?.emit("update-create-channel", false);
+  if (selected.value != channel && isMenuOpen.value) {
     toggleMenu();
-  };
+  }
+  store.selectChannel(channel);
+  toggleMenu();
+};
+
+
+const handleContextMenuUser = (user: ChatUser)  => {
+  //instance?.emit("update-create-channel", false);
+  if (selected.value != user && isMenuOpen.value) {
+    toggleMenu();
+  }
+  store.selectUser(user);
+  toggleMenu();
+};
   
 let isProfileOpen: boolean = false;
 
@@ -191,6 +202,8 @@ const openChannel = (channel: channel) => {
     store.getMessages(channel);
     instance?.emit('update-create-channel', false);
     instance?.emit("update-channel-status", true);
+    usersInChannelSelect.value = channel.users;
+    usersFilters.value = channel.users;
   }
   else
   {
@@ -276,8 +289,10 @@ const toggleChat = () => {
     }
     chatElement.style.bottom = "-57%";
     //Limpar Conteudo
-    searchUser.value = "";
-    searchChannel.value = "";
+    if (searchUser)
+      searchUser.value = '';
+    if (searchChannel)
+      searchChannel.value = '';
     
   } else {
     // Mostrar o chat
