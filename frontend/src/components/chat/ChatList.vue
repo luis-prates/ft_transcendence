@@ -38,7 +38,7 @@
         </div>
         <!-- Users inside the chat selected -->
         <ul class="contacts">
-          <li v-for="(user, id) in selected?.users" :key="id">
+          <li v-for="(user, id) in usersFilters" :key="id">
             <ChatListUsers :user="user" @click="selectUser(user)" />
           </li>
         </ul>
@@ -69,20 +69,15 @@ const { selected } = storeToRefs(store);
 const isMenuOpen = ref(false);
 const channelsFilters = ref([] as channel[]);
 const searchTerm = ref('');
+const usersInChannelSelecet = ref([] as ChatUser[]);
 const usersFilters = ref([] as ChatUser[]);
 const searchUser = ref('');
 let isChatFilterType = "inside";
-
-const saveChannel = () => {
-  usersFilters.value = selected?.value.users.value;
-  console.log("USERS CHANEL", usersFilters);
-};
 
 const handleSearch = () => {
   getFilteredChannels();
 };
 
-//TODO SEARCH USERS
 const handleSearchUser = () => {
   if (!usersFilters.value)
     return;
@@ -90,7 +85,7 @@ const handleSearchUser = () => {
 
   const searchBar = document.getElementById('searchUser') as HTMLInputElement;
   const searchValue = searchBar.value.toLowerCase();
-  usersFilters.value = selected?.value.users.value.filter((user: ChatUser) => {
+  usersFilters.value = usersInChannelSelecet.value.filter((user: ChatUser) => {
     const userName = user.nickname.toLowerCase();
     return userName.includes(searchValue);
   });
@@ -147,6 +142,8 @@ const selectChannel = (channel: channel) => {
   if (selected.value != channel && isMenuOpen.value) {
     toggleMenu();
   }
+  usersInChannelSelecet.value = channel.users;
+  usersFilters.value = channel.users;
   store.selectChannel(channel);
   toggleMenu();
 }
@@ -250,6 +247,8 @@ const buttonString = ref("⇑"); // Set initial button text
 // Função para alternar o estado do chat
 const toggleChat = () => {
   const chatElement = document.querySelector(".chat") as any;
+  const searchUser = document.getElementById('searchUser') as HTMLInputElement;
+  const searchChannel = document.getElementById('searchChannel') as HTMLInputElement;
 
   if (isChatHidden) {
     // Ocultar o chat
@@ -257,6 +256,10 @@ const toggleChat = () => {
       instance?.emit('update-channel-status', false);
     }
     chatElement.style.bottom = "-57%";
+    //Limpar Conteudo
+    searchUser.value = "";
+    searchChannel.value = "";
+    
   } else {
     // Mostrar o chat
     chatElement.style.bottom = "0%";
