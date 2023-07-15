@@ -85,7 +85,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
 import ChatContentMessages from "./ChatContentMessages.vue";
-import { nextTick, defineProps, getCurrentInstance, watch } from "vue";
+import { nextTick, getCurrentInstance, watch } from "vue";
 import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
 import { storeToRefs } from "pinia";
 import { userStore } from "@/stores/userStore";

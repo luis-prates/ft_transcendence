@@ -31,7 +31,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
-import { defineProps } from "vue";
 import { userStore } from "@/stores/userStore";
 
 const user = userStore();
