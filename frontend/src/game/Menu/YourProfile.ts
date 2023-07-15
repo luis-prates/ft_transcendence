@@ -16,6 +16,7 @@ import green_sign from "@/assets/images/lobby/menu/green_sign.png";
 import { Profile } from "./Profile";
 import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 import type { Socket } from "socket.io-client";
+import { TwoFactor } from "./TwoFactor";
 
 export class YourProfile {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -357,7 +358,7 @@ export class YourProfile {
                 this.menu.close();
                 this.onResult("EXIT");
               }
-            });          
+            });
           }
         }
       });
@@ -367,6 +368,8 @@ export class YourProfile {
   }
 
   private createQRCodeButton(type: string, x: number, y: number, label: string, width: number): ElementUI {
+    let twoFactorImage = new Image();
+    twoFactorImage.src = "";
 
     const button: ElementUI = {
       type: type,
@@ -407,7 +410,14 @@ export class YourProfile {
 
       },
       onClick: () => {
+        const confirmButton = new TwoFactor(avatarDefault);
+        confirmButton.show((value) => {
+          if (value == "OK") {
+          }
+        });          
+        
         this.twoFactor = !this.twoFactor;
+        
         //TODO DATABASE
       },
     };
