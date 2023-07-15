@@ -1,20 +1,21 @@
 <template>
 	<!-- Modal -->
-	<ErrorModal v-model:errorMessage="errorMessage" ref="errorModalRef" />
+	<CustomModal @closeModal="modalClosed" v-model:message="customMessage" :type="modalType" ref="customModalRef" />
+	<TwoFactorPrompt ref="twoFactorPromptRef" @submit="twoFactorSubmit" />
 	<div class="loginElement" href>
 		<span class="borderLine"></span>
 		<form>
 			<h2>Sign In</h2>
 			<div class="inputBox">
-				<input type="text" required="true" v-model="objectId" >
+				<input type="number" required="true" v-model="objectId" placeholder=" " >
 				<span>User Id (for testing)</span>
 				<i></i>
 			</div>
-			<!-- <div class="inputBox">
-				<input type="password" required="true" >
-				<span>Password</span>
+			<div class="inputBox">
+				<input type="email" required="true" placeholder=" " >
+				<span>Email Test</span>
 				<i></i>
-			</div> -->
+			</div>
 			<!-- <div class="links">
 				<a href="#">Forgot password</a>
 				<a href="#">Signup</a>
@@ -35,25 +36,37 @@ import { ref } from "vue";
 import { socketClass } from "@/socket/SocketClass";
 import { env } from "@/env";
 import type { Socket } from "socket.io-client";
-import ErrorModal from '@/components/login/ErrorModal.vue'
-import { Modal } from 'bootstrap';
-
-type BootstrapModal = InstanceType<typeof Modal>
+import CustomModal from '@/components/utils/CustomModal.vue'
+import axios from "axios";
+import TwoFactorPrompt from '@/components/login/TwoFactorPrompt.vue'
 
 const props = defineProps({
 	token: String,
 	error: String,
 });
 
-const name = "LoginPage";
 const objectId = ref("");
 
-const errorMessage = ref('');
-const errorModalRef = ref<BootstrapModal | null>(null);
+const customMessage = ref('');
+const customModalRef = ref<InstanceType<typeof CustomModal> | null>(null);
+const twoFactorPromptRef = ref<InstanceType<typeof TwoFactorPrompt> | null>(null);
+const modalType = ref('');
+const resolveCondition = ref(false);
+const modalClosed = () => {
+	if(resolveCondition.value) {
+		onModalClose(true);
+		resolveCondition.value = false;
+	}
+};
+
 let socket: Socket | any = null;
 
-const showErrorModal = (message: string) => {
-	errorMessage.value = message;
+let resolveTwoFactorPrompt: (value: boolean) => void;
+
+let twoFactorSubmit = async (code: string) => {
+    // Code to handle the submitted 2FA code
+	const isValid = await twoFactorPrompt(code.toString());
+	resolveTwoFactorPrompt(isValid);
 };
 
 function encodeImageToBase64(filePath: string) {
@@ -65,7 +78,32 @@ function encodeImageToBase64(filePath: string) {
     });
 }
 
+let onModalClose: (value: boolean) => void;
+
+let modalClosePromise = new Promise((resolve) => {
+	onModalClose = resolve
+});
+
 const store = userStore();
+
+async function handleTwoFA() {
+	let isTwoFASuccessful = false;
+	try {
+		let validTwoFA = await new Promise<boolean>((resolve) => {
+			resolveTwoFactorPrompt = resolve;
+			twoFactorPromptRef.value?.showModal();
+			isTwoFASuccessful = true;
+		});
+		if (!validTwoFA) {
+			showModal("Two Factor Authentication code is invalid. Please try again.", "warning");
+			isTwoFASuccessful = false;
+		}	
+	} catch (error) {
+		console.log(error);
+		isTwoFASuccessful = false;
+	}
+	return isTwoFASuccessful;
+}
 
 function tes(event: any) {
 	event.preventDefault();
@@ -85,35 +123,66 @@ function tes(event: any) {
 
 	store
         .loginTest()
-        .then(() => {
-		socketClass.setLobbySocket({
-			query: {
-				userId: store.user.id,
+        .then(async (isTwoFAEnabled) => {
+			if (isTwoFAEnabled) {
+				const twoFASuccess = await handleTwoFA();
+				if (!twoFASuccess) {
+					return;
+				}
 			}
-		});
-		socket = socketClass.getLobbySocket();
-		socket.emit("connection_lobby", { userId: objectId.value, objectId: objectId.value.toString(), nickname: store.user.nickname, avatar: store.user.avatar });
-		setTimeout(() => {
+
+			showModal("Login Success", "success");
+			resolveCondition.value = true;
+			await Promise.race([sleep(3000), modalClosePromise]);
+			resolveCondition.value = false;
+			hideModal();
+
+			socketClass.setLobbySocket({
+				query: {
+					userId: store.user.id,
+				}
+			});
+			socket = socketClass.getLobbySocket();
+			socket.emit("connection_lobby", {
+				userId: objectId.value,
+				objectId: objectId.value.toString(),
+				nickname: store.user.nickname,
+				avatar: store.user.avatar
+			});
+
+			await sleep(2000);
 			Router.setRoute(Router.ROUTE_ALL);
 			Router.push("/");
-		}, 1000);
-		console.log(store.user.isLogin);
+			console.log(store.user.isLogin);
 		})
 		.catch((err) => {
-		console.log(err);
+			console.log(err);
 		});
 }
 
 onMounted(() => {
 	console.log("props.code : ", props.token);
 	if (props.error) {
-		showErrorModal(props.error);
+		showModal(props.error, "error");
 	}
 	if (props.token || store.user.isLogin)
 	{
 		store
 		.login(props.token)
-		.then(() => {
+		.then(async (isTwoFAEnabled) => {
+			if (isTwoFAEnabled) {
+				const twoFASuccess = await handleTwoFA();
+				if (!twoFASuccess) {
+					return;
+				}
+			}
+
+			showModal("Login Success", "success");
+			resolveCondition.value = true;
+			await Promise.race([sleep(3000), modalClosePromise]);
+			resolveCondition.value = false;
+			hideModal();
+
 			socketClass.setLobbySocket({
 				query: {
 					userId: store.user.id,
@@ -122,10 +191,9 @@ onMounted(() => {
 			objectId.value = store.user.id.toString();
 			socket = socketClass.getLobbySocket();
 			socket.emit("connection_lobby", { userId: store.user.id, objectId: store.user.id.toString(), nickname: store.user.nickname, avatar: store.user.avatar });
-			setTimeout(() => {
-				Router.setRoute(Router.ROUTE_ALL);
-				Router.push("/");
-			}, 1000);
+			await sleep(2000);
+			Router.setRoute(Router.ROUTE_ALL);
+			Router.push("/");
 			console.log(store.user.isLogin);
 		})
 		.catch((err) => {
@@ -133,6 +201,50 @@ onMounted(() => {
 		});
 	}
 });
+
+async function twoFactorPrompt(twoFactorCode: string) {
+	let twoFAValid = false;
+	if (twoFactorCode) {
+		try {
+			await axios.post(env.BACKEND_PORT + "/auth/2fa/validate", {
+				twoFACode: twoFactorCode,
+			},
+			{
+				headers: {
+					Authorization: "Bearer " + store.user.access_token_server,
+				},
+			}).then((res) => {
+				console.log(res)
+				const message: string = res.data.message;
+				if (message.startsWith("2FA code is valid")) {
+					twoFAValid = true;
+				}
+				else {
+					twoFAValid = false;
+				}
+			});
+		} catch (error: any) {
+			// handle bad request
+			console.log(`${error.response.data.error} with status code ${error.response.status} and message: ${error.response.data.message}`)
+			twoFAValid = false;
+		}
+	}
+	return twoFAValid;
+}
+
+const showModal = (message: string, type: string) => {
+	customMessage.value = message;
+	modalType.value = type;
+	(customModalRef.value as typeof CustomModal | null)?.showModal();
+};
+
+function hideModal() {
+	(customModalRef.value as typeof CustomModal | null)?.hideModal();
+}
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 </script>
 
