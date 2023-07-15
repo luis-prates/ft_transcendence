@@ -1,6 +1,6 @@
 <template>
 	<!-- Modal -->
-	<ErrorModal v-model:errorMessage="errorMessage" ref="errorModalRef" />
+	<ErrorModal @closeModal="modalClosed" v-model:message="errorMessage" :type="modalType" ref="errorModalRef" />
 	<TwoFactorPrompt ref="twoFactorPromptRef" @submit="twoFactorSubmit" />
 	<div class="loginElement" href>
 		<span class="borderLine"></span>
@@ -45,19 +45,21 @@ const props = defineProps({
 	error: String,
 });
 
-const name = "LoginPage";
 const objectId = ref("");
 
 const errorMessage = ref('');
 const errorModalRef = ref<InstanceType<typeof ErrorModal> | null>(null);
 const twoFactorPromptRef = ref<InstanceType<typeof TwoFactorPrompt> | null>(null);
+const modalType = ref('');
+const resolveCondition = ref(false);
+const modalClosed = () => {
+	if(resolveCondition.value) {
+		onModalClose(true);
+		resolveCondition.value = false;
+	}
+};
 
 let socket: Socket | any = null;
-
-const showErrorModal = (message: string) => {
-	errorMessage.value = message;
-	(errorModalRef.value as typeof ErrorModal | null)?.showModal();
-};
 
 let resolveTwoFactorPrompt: (value: boolean) => void;
 
@@ -67,10 +69,34 @@ let twoFactorSubmit = async (code: string) => {
 	resolveTwoFactorPrompt(isValid);
 };
 
+let onModalClose: (value: boolean) => void;
+
+let modalClosePromise = new Promise((resolve) => {
+	onModalClose = resolve
+});
+
 const store = userStore();
 
+async function handleTwoFA() {
+	let isTwoFASuccessful = false;
+	try {
+		let validTwoFA = await new Promise<boolean>((resolve) => {
+			resolveTwoFactorPrompt = resolve;
+			twoFactorPromptRef.value?.showModal();
+			isTwoFASuccessful = true;
+		});
+		if (!validTwoFA) {
+			showModal("Two Factor Authentication code is invalid. Please try again.", "warning");
+			isTwoFASuccessful = false;
+		}	
+	} catch (error) {
+		console.log(error);
+		isTwoFASuccessful = false;
+	}
+	return isTwoFASuccessful;
+}
+
 function tes(event: any) {
-	let validTwoFA = false;
 	event.preventDefault();
 	console.log("objectId.value in nessage box 1: ", objectId.value);
 	store.user.id = parseInt(objectId.value);
@@ -81,34 +107,36 @@ function tes(event: any) {
 	store
         .loginTest()
         .then(async (isTwoFAEnabled) => {
-		if (isTwoFAEnabled) {
-			await new Promise<boolean>((resolve) => {
-				resolveTwoFactorPrompt = resolve;
-				twoFactorPromptRef.value?.showModal();
-			}).then((isValid) => {
-				if (!isValid) {
-					showErrorModal("Two Factor Authentication code is invalid. Please try again.");
-					validTwoFA = false;
-				} else {
-					validTwoFA = true;
+			if (isTwoFAEnabled) {
+				const twoFASuccess = await handleTwoFA();
+				if (!twoFASuccess) {
+					return;
+				}
+			}
+
+			showModal("Login Success", "success");
+			resolveCondition.value = true;
+			await Promise.race([sleep(3000), modalClosePromise]);
+			resolveCondition.value = false;
+			hideModal();
+
+			socketClass.setLobbySocket({
+				query: {
+					userId: store.user.id,
 				}
 			});
-			if (!validTwoFA) {
-				return ;
-			}
-		}
-		socketClass.setLobbySocket({
-			query: {
-				userId: store.user.id,
-			}
-		});
-		socket = socketClass.getLobbySocket();
-		socket.emit("connection_lobby", { userId: objectId.value, objectId: objectId.value.toString(), nickname: store.user.nickname, avatar: store.user.avatar });
-		setTimeout(() => {
+			socket = socketClass.getLobbySocket();
+			socket.emit("connection_lobby", {
+				userId: objectId.value,
+				objectId: objectId.value.toString(),
+				nickname: store.user.nickname,
+				avatar: store.user.avatar
+			});
+
+			await sleep(2000);
 			Router.setRoute(Router.ROUTE_ALL);
 			Router.push("/");
-		}, 1000);
-		console.log(store.user.isLogin);
+			console.log(store.user.isLogin);
 		})
 		.catch((err) => {
 			console.log(err);
@@ -118,13 +146,26 @@ function tes(event: any) {
 onMounted(() => {
 	console.log("props.code : ", props.token);
 	if (props.error) {
-		showErrorModal(props.error);
+		showModal(props.error, "error");
 	}
 	if (props.token || store.user.isLogin)
 	{
 		store
 		.login(props.token)
-		.then(() => {
+		.then(async (isTwoFAEnabled) => {
+			if (isTwoFAEnabled) {
+				const twoFASuccess = await handleTwoFA();
+				if (!twoFASuccess) {
+					return;
+				}
+			}
+
+			showModal("Login Success", "success");
+			resolveCondition.value = true;
+			await Promise.race([sleep(3000), modalClosePromise]);
+			resolveCondition.value = false;
+			hideModal();
+
 			socketClass.setLobbySocket({
 				query: {
 					userId: store.user.id,
@@ -133,10 +174,9 @@ onMounted(() => {
 			objectId.value = store.user.id.toString();
 			socket = socketClass.getLobbySocket();
 			socket.emit("connection_lobby", { userId: store.user.id, objectId: store.user.id.toString(), nickname: store.user.nickname, avatar: store.user.avatar });
-			setTimeout(() => {
-				Router.setRoute(Router.ROUTE_ALL);
-				Router.push("/");
-			}, 1000);
+			await sleep(2000);
+			Router.setRoute(Router.ROUTE_ALL);
+			Router.push("/");
 			console.log(store.user.isLogin);
 		})
 		.catch((err) => {
@@ -173,6 +213,20 @@ async function twoFactorPrompt(twoFactorCode: string) {
 		}
 	}
 	return twoFAValid;
+}
+
+const showModal = (message: string, type: string) => {
+	errorMessage.value = message;
+	modalType.value = type;
+	(errorModalRef.value as typeof ErrorModal | null)?.showModal();
+};
+
+function hideModal() {
+	(errorModalRef.value as typeof ErrorModal | null)?.hideModal();
+}
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 </script>
