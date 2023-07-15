@@ -264,7 +264,7 @@ describe('Game', () => {
 		it('should get user games', () => {
 			return pactum
 				.spec()
-				.get('/game/$S{user1Id}')
+				.get('/game/user/$S{user1Id}')
 				.withHeaders({
 					Authorization: 'Bearer $S{userAt1}',
 				})
