@@ -1,6 +1,6 @@
 <template>
 	<!-- Modal -->
-	<ErrorModal @closeModal="modalClosed" v-model:message="errorMessage" :type="modalType" ref="errorModalRef" />
+	<CustomModal @closeModal="modalClosed" v-model:message="customMessage" :type="modalType" ref="customModalRef" />
 	<TwoFactorPrompt ref="twoFactorPromptRef" @submit="twoFactorSubmit" />
 	<div class="loginElement" href>
 		<span class="borderLine"></span>
@@ -12,7 +12,7 @@
 				<i></i>
 			</div>
 			<div class="inputBox">
-				<input type="email" required="true"  placeholder=" " >
+				<input type="email" required="true" placeholder=" " >
 				<span>Email Test</span>
 				<i></i>
 			</div>
@@ -36,7 +36,7 @@ import { ref } from "vue";
 import { socketClass } from "@/socket/SocketClass";
 import { env } from "@/env";
 import type { Socket } from "socket.io-client";
-import ErrorModal from '@/components/login/ErrorModal.vue'
+import CustomModal from '@/components/utils/CustomModal.vue'
 import axios from "axios";
 import TwoFactorPrompt from '@/components/login/TwoFactorPrompt.vue'
 
@@ -47,8 +47,8 @@ const props = defineProps({
 
 const objectId = ref("");
 
-const errorMessage = ref('');
-const errorModalRef = ref<InstanceType<typeof ErrorModal> | null>(null);
+const customMessage = ref('');
+const customModalRef = ref<InstanceType<typeof CustomModal> | null>(null);
 const twoFactorPromptRef = ref<InstanceType<typeof TwoFactorPrompt> | null>(null);
 const modalType = ref('');
 const resolveCondition = ref(false);
@@ -216,13 +216,13 @@ async function twoFactorPrompt(twoFactorCode: string) {
 }
 
 const showModal = (message: string, type: string) => {
-	errorMessage.value = message;
+	customMessage.value = message;
 	modalType.value = type;
-	(errorModalRef.value as typeof ErrorModal | null)?.showModal();
+	(customModalRef.value as typeof CustomModal | null)?.showModal();
 };
 
 function hideModal() {
-	(errorModalRef.value as typeof ErrorModal | null)?.hideModal();
+	(customModalRef.value as typeof CustomModal | null)?.hideModal();
 }
 
 function sleep(ms: number) {

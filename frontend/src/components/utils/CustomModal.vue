@@ -28,7 +28,7 @@ import { Modal } from 'bootstrap';
 type BootstrapModal = InstanceType<typeof Modal>
 
 export default defineComponent({
-	name: 'ErrorModal',
+	name: 'CustomModal',
 	props: {
 		message: {
 			type: String,
