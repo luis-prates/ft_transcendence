@@ -10,8 +10,9 @@ import { Table } from "./lobby/objects/Table";
 import { Tree } from "./lobby/objects/Tree";
 import { WaterFont } from "./lobby/objects/WaterFont";
 import { Menu, type ElementUI, type MenuLayer, type ElementUIType } from "./Menu/Menu";
+import { Door } from "./lobby/objects/Door";
 
-export { Player, Camera, Map, Npc, Game, Character, Lobby, Table, Tree, WaterFont, Menu };
+export { Player, Camera, Map, Npc, Game, Character, Lobby, Table, Tree, WaterFont, Menu, Door };
 export type { GameObject, Rectangle, ElementUI, MenuLayer, ElementUIType };
 
 export const listClass: { [key: string]: any } = {
@@ -20,5 +21,6 @@ export const listClass: { [key: string]: any } = {
   Npc,
   Table,
   Tree,
+  Door,
   WaterFont,
 };

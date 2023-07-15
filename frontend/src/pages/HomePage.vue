@@ -1,9 +1,8 @@
 <template>
   <link rel="preconnect" href="https://fonts.gstatic.com" />
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
-  <input id="fileInput" type="file" style="display: none;" accept="image/*">
+  <input id="fileInput" type="file" style="display: none" accept="image/*" />
   <div class="box" href>
-    
     <!-- <ProfileComponent class="profile" />     -->
     <LobbyComponent />
     <!-- <MapEditComponent /> -->
@@ -53,14 +52,12 @@ console.log(store.user);
 function cleanInput(event: Event) {
   const input = event.target as HTMLInputElement;
   const inputValue = input.value;
-  
-  const sanitizedValue = inputValue.replace(/[^A-Za-z0-9_-]+/g, '');
-  
+
+  const sanitizedValue = inputValue.replace(/[^A-Za-z0-9_-]+/g, "");
+
   const firstChar = sanitizedValue.charAt(0);
-  if (/[0-9]/.test(firstChar))
-    input.value = sanitizedValue.substring(1);
-  else
-    input.value = sanitizedValue;
+  if (/[0-9]/.test(firstChar)) input.value = sanitizedValue.substring(1);
+  else input.value = sanitizedValue;
 }
 </script>
 

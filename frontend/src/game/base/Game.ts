@@ -28,7 +28,7 @@ export class Game {
 
   constructor(map: Map, player: Player) {
     //For What?
-	this.socket = socketClass.getGameSocket();
+    this.socket = socketClass.getGameSocket();
     console.log("Map: ", map.w, " / ", map.h);
     this.camera = new Camera(player, map);
     this.canvas.width = map.w;
@@ -78,6 +78,9 @@ export class Game {
     this.menusGlobal.forEach((menu) => {
       if (menu.KeyClose && menu.KeyClose == event.key) this.removeMenu(menu);
     });
+    this.menusLocal.forEach((menu) => {
+      if (menu.KeyClose && menu.KeyClose == event.key) this.removeMenu(menu);
+    });
   }
 
   public addMenu(menu: Menu) {
@@ -111,6 +114,7 @@ export class Game {
 
   draw() {
     this.camera.update();
+    this.bufferCanvas.getContext("2d")?.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
     this.camera.render(this.buffer, this.gameObjets);
     this.menusGlobal.forEach((menu) => menu.draw(this.buffer));
     this.context.drawImage(this.bufferCanvas, 0, 0);
@@ -139,14 +143,14 @@ export class Game {
 
   addGameObject(gameObject: GameObject): GameObject {
     this.gameObjets.push(gameObject);
-    if (gameObject.type == "character" || gameObject.type == "player")
-      console.log("Add: ", gameObject);
+    if (gameObject.type == "character" || gameObject.type == "player") console.log("Add: ", gameObject);
     if (gameObject.mouseClick) this.mouseEvents.push(gameObject.mouseClick.bind(gameObject));
     if (gameObject.update) this.gameObjetsUpdate.push(gameObject);
     return gameObject;
   }
 
   addGameObjectData(data: any): GameObject {
+    console.log("Add: ", data);
     return this.addGameObject(new listClass[data.className](data));
   }
 
@@ -167,7 +171,7 @@ export class Game {
   public gameNotification() {
     const user = userStore().user;
     const numberOfFriendRequest = user.friendsRequests.filter((friendship) => friendship.requesteeId === user.id).length;
-    this.your_menu.notification = numberOfFriendRequest == 0 ? "" : (numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99" );;
+    this.your_menu.notification = numberOfFriendRequest == 0 ? "" : numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99";
   }
 
   public static MouseColision(x: number, y: number): GameObject | undefined {
@@ -227,5 +231,4 @@ export class Game {
   public static updateNotifications() {
     Game.instance.gameNotification();
   }
-
 }
