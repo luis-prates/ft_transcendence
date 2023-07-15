@@ -255,8 +255,11 @@ const toggleChat = () => {
     }
     chatElement.style.bottom = "-57%";
     //Limpar Conteudo
-    searchUser.value = "";
-    searchChannel.value = "";
+	  
+    if (searchUser)
+	searchUser.value = "";
+    if (searchChannel)
+	searchChannel.value = "";
     
   } else {
     // Mostrar o chat
