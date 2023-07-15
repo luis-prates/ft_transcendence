@@ -87,6 +87,7 @@ export interface User {
   friends: any;
   friendsRequests: Friendship[];
   block: Block[];
+  twofagenerate: boolean;
 }
 
 export const userStore = defineStore("user", function () {
@@ -130,7 +131,7 @@ export const userStore = defineStore("user", function () {
     friends: Array(),
     friendsRequests: Array(),
     block: Array(),
-	isTwoFAEnabled: false,
+	  isTwoFAEnabled: false,
   });
 
   async function login(authorizationCode: string | undefined) {
@@ -160,7 +161,7 @@ export const userStore = defineStore("user", function () {
         user.infoPong.skin.default.paddle = response.data.paddleSkinEquipped;
         user.infoPong.skin.tables = response.data.tableSkinsOwned;
         user.infoPong.skin.paddles = response.data.paddleSkinsOwned;
-		user.isTwoFAEnabled = response.data.isTwoFAEnabled;
+		    user.isTwoFAEnabled = response.data.isTwoFAEnabled;
         getFriends();
         getFriendRequests();
         getBlockedUsers();
@@ -202,7 +203,7 @@ export const userStore = defineStore("user", function () {
         user.infoPong.skin.default.paddle = response.data.dto.paddleSkinEquipped;
         user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
         user.infoPong.skin.paddles = response.data.dto.paddleSkinsOwned;
-		user.isTwoFAEnabled = response.data.dto.isTwoFAEnabled;
+		    user.isTwoFAEnabled = response.data.dto.isTwoFAEnabled;
         getFriends();
         getFriendRequests();
         getBlockedUsers();
@@ -652,6 +653,59 @@ export const userStore = defineStore("user", function () {
         console.error(error);
       });
   }
+  
+  async function twofagenerate() : Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .post(env.BACKEND_PORT + "/auth/2fa/generate", undefined, options)
+      .then(function (response: any) {
+        console.log(`2Fa: ${response.data}`);
+        return response.data.responseObj;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
+
+  async function twofaTurnOn(twoFactorCode: string) : Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+    console.log("code:", twoFactorCode)
+    return await axios
+      .post(env.BACKEND_PORT + "/auth/2fa/turn-on", { twoFACode: twoFactorCode }, options)
+      .then(function (response: any) {
+        console.log(`2Fa ON: ${response.data}`);
+        user.isTwoFAEnabled = true;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
+  
+  async function twofaTurnOff(twoFactorCode: string) : Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .post(env.BACKEND_PORT + "/auth/2fa/turn-off", { twoFACode: twoFactorCode }, options)
+      .then(function (response: any) {
+        console.log(`2Fa OFF: ${response.data}`);
+        user.isTwoFAEnabled = false;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
 
   return {
     user,
@@ -688,5 +742,10 @@ export const userStore = defineStore("user", function () {
     getGames,
     getLeaderboard,
     createGame,
+
+    //TwoFactor
+    twofagenerate,
+    twofaTurnOn,
+    twofaTurnOff,
   };
 });

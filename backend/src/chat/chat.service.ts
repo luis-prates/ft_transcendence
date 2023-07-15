@@ -122,6 +122,7 @@ export class ChatService {
 								})),
 							],
 						},
+						...(createChannelDto.avatar && { avatar: createChannelDto.avatar }),
 					},
 					include: {
 						users: true,
@@ -398,15 +399,15 @@ export class ChatService {
 					data: { ownerId: newOwner.userId },
 				});
 			} else {
-          // If the owner is the last member of the channel, delete it
-          if (channelUsers.length <= 1) {
-            // First, delete the owner channelUser
-            await this.prisma.channelUser.deleteMany({
-                where: {
-                    channelId: channelId,
-                },
-            });
-          }
+				// If the owner is the last member of the channel, delete it
+				if (channelUsers.length <= 1) {
+					// First, delete the owner channelUser
+					await this.prisma.channelUser.deleteMany({
+						where: {
+							channelId: channelId,
+						},
+					});
+				}
 				await this.prisma.channel.delete({ where: { id: channelId } });
 				return;
 			}

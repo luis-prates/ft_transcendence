@@ -11,15 +11,19 @@ import ChatContent from "./ChatContent.vue";
 import { onMounted, onUnmounted, ref } from "vue";
 import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
 import { userStore } from "@/stores/userStore";
-import { provide } from 'vue';//channelStatus
 import { socketClass } from "@/socket/SocketClass";
+import { provide } from 'vue';//channelStatus
+import type { Socket } from "socket.io-client";
+//import { send } from "process";
+//import { AxiosHeaders } from "axios";
 
 const store = chatStore();
 const user = userStore();
 
 const showTesss = ref(false);
 const showbuttom = ref(false);
-const socket = socketClass.getLobbySocket();
+
+let socket: Socket = socketClass.getChatSocket();
 
 function toggleTesss() {
   showTesss.value = !showTesss.value;
@@ -27,18 +31,40 @@ function toggleTesss() {
 }
 
 onMounted(() => {
-  socketClass.setChatSocket({ query: { userId: user.user.id } });//testing chatSocket
-  
+  if (!socket)
+  {
+    socketClass.setChatSocket({ query: { userId: user.user.id } });
+  }
+  socket = socketClass.getChatSocket();  
   store.getChannels();
 
-  socket.on("join_chat", (data: channel) => {
+ /* socket.on("join_chat", (data: channel) => {
     console.log("join_chat", data);
     store.addChannel(data);
+  });*/
+  socket.on('message', (data: { channelId: number, senderId: number, message: string }) => {
+    const { channelId, senderId, message } = data;
+    
+    console.log("Received message", data);
+    console.log(`Received message from ${senderId} in channel ${channelId}: ${message}`);
+    store.addMessage({channelId: channelId, content: message, id: "1", user: "user_" + senderId.toString(), userId: senderId})
+    console.log("Channels: do socket ", store.channels);
+    //store.addMessage(channelId, message);
+  });
+
+  socket.on('channel-created', (eventData: { newChannel: any, message: any }) => {
+    const { newChannel, message } = eventData;
+    store.addChannel(newChannel, message);
+  });
+  
+  socket.onAny((eventName, eventData) => {
+    console.log("Received event: ", eventName);
+    console.log("Event data: ", eventData);
   });
 });
 
 onUnmounted(() => {
-  socket.off("join_chat");
+  socket.off("message");
 });
 
 // Data initialization

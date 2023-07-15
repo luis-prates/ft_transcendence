@@ -41,6 +41,7 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 			return next(new UnauthorizedException('Authentication error'));
 		});
+		this.userService.setServer(this.server);
 	}
 
 	isValidConnection(token: string): boolean {
@@ -305,27 +306,6 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		this.server.to(player.getSocket().id).emit('deleteFriend', {
 			id: id,
-		});
-	}
-
-	//Update Status
-	@SubscribeMessage('updateStatus')
-	async handleUpdateStatus(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		this.logger.debug(`Delete Friend received: ${JSON.stringify(body)}`);
-
-		const status = body.status;
-		const id = body.id;
-
-		//Verificar
-		const player = this.playerService.getPlayer(id);
-
-		if (!player) {
-			return;
-		}
-
-		this.server.emit('updateStatus', {
-			id: id,
-			status: status,
 		});
 	}
 }

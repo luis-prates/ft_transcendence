@@ -69,6 +69,15 @@ let twoFactorSubmit = async (code: string) => {
 	resolveTwoFactorPrompt(isValid);
 };
 
+function encodeImageToBase64(filePath: string) {
+  return fetch(filePath)
+    .then(response => response.arrayBuffer())
+    .then(buffer => {
+      const base64String = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      return `data:image/png;base64,${base64String}`;
+    });
+}
+
 let onModalClose: (value: boolean) => void;
 
 let modalClosePromise = new Promise((resolve) => {
@@ -104,6 +113,14 @@ function tes(event: any) {
 	store.user.nickname = "user_" + objectId.value;
 	store.user.money = 0;
 	store.user.email = "user_" + objectId.value + "@gmail.com";
+	encodeImageToBase64('src/assets/images/pingpong/avatar_default.jpg')
+		.then(base64Image => {
+			store.user.image = base64Image;
+		})
+		.catch(error => {
+			console.error('Ocorreu um erro ao codificar a imagem:', error);
+	  	});
+
 	store
         .loginTest()
         .then(async (isTwoFAEnabled) => {
