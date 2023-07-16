@@ -205,7 +205,7 @@ export class CreateGame {
         ctx.stroke();
 
         ctx.fillStyle = "black";
-        this.fillTextCenter(ctx, label, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.65, button.rectangle.w, button.rectangle.h * 0.35, undefined, "'Press Start 2P', cursive");     
+        this.fillTextCenter(ctx, label, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.65, button.rectangle.w, button.rectangle.h * 0.35, undefined, "'Press Start 2P', cursive");
       },
       onClick: () => {
         console.log(button.type, label);
@@ -331,13 +331,12 @@ export class CreateGame {
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = "black"
-        this.fillTextCenter(ctx, label, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.75, button.rectangle.w,
-        button.rectangle.h * 0.45, undefined, "'Press Start 2P', cursive", false);     
+        ctx.fillStyle = "black";
+        this.fillTextCenter(ctx, label, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.75, button.rectangle.w, button.rectangle.h * 0.45, undefined, "'Press Start 2P', cursive", false);
       },
       onClick: async () => {
         this.menu.close();
-        
+
         console.log({ objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
 
         const gameCreate = await userStore().createGame(this.user.id, { objectId: this.data.objectId, maxScore: this.score, table: this.tableColor, tableSkin: this.skinImage.src, bot: this.type == "solo" });
@@ -346,15 +345,13 @@ export class CreateGame {
           this.data.objectId = gameCreate.id;
           this.lobbySocket.emit("new_gameobject", this.data);
           Router.push(`/game?objectId=${this.data.objectId}`);
-        }
-        else
-        {
+        } else {
           const confirmButton = new ConfirmButton("Erro try to Create a new Game!", STATUS_CONFIRM.ERROR);
-            confirmButton.show((value) => {
-              if (value == "OK") {
-                this.menu.close();
-              }
-          });          
+          confirmButton.show((value) => {
+            if (value == "OK") {
+              this.menu.close();
+            }
+          });
         }
       },
     };
@@ -424,11 +421,11 @@ export class CreateGame {
     ctx.strokeStyle = borderColor;
     ctx.lineWidth = 2;
     ctx.stroke();
-    
+
     //Tittle
     ctx.lineWidth = 5;
     ctx.fillStyle = "#ffffff";
- this.fillTextCenter(ctx, "Custom", pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3, pos.h * 0.045, undefined, "'Press Start 2P', cursive", true);
+    this.fillTextCenter(ctx, "Custom", pos.x + pos.w * 0.35, pos.y + pos.h * 0.075, pos.w * 0.3, pos.h * 0.045, undefined, "'Press Start 2P', cursive", true);
 
     //Type
     ctx.fillStyle = "black";
@@ -446,7 +443,7 @@ export class CreateGame {
   private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
     ctx.font = font ? h + "px " + font : h + "px Arial";
     ctx.textAlign = "start";
-    
+
     const begin = x + w * 0.1;
     const max = max_with ? max_with : w - w * 0.2;
 
@@ -459,11 +456,9 @@ export class CreateGame {
       offset = offsetmax;
     }
 
-    if (stroke)
-      ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    if (stroke) ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
     ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
   }
-
 
   get menu(): Menu {
     return this._menu;

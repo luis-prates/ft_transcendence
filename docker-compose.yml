@@ -5,11 +5,6 @@ services:
     build: ./frontend # path to dockerfile
     ports: # Port binding to host from docker container
       - "80:80" # Bind port 80 of host to 80 of container
-    environment:
-      - CLIENT_ID
-      - CLIENT_SECRET
-      - REDIRECT_URI
-      - SERVER_API_URL
     container_name: frontend-docker
     restart: always # What to do if container crashes
     depends_on:
@@ -23,12 +18,16 @@ services:
     expose:
       - BACKEND_PORT # Expose port 3370 to other containers
     ports:
-      - ${BACKEND_PORT}:3370 # For debugging - Bind port 3370 of host to 3370 of container
-      - "5555:5555" # For debugging - access to prisma studio
+      - ${BACKEND_PORT}:3000 # For debugging - Bind port 3370 of host to 3370 of container
+      - "5555:5555" # For debugging - access to prisma studio 
     environment:
       - DATABASE_URL
       - JWT_SECRET
       - BACKEND_PORT
+      - FORTYTWO_CLIENT_ID
+      - FORTYTWO_CLIENT_SECRET
+      - FORTYTWO_CALLBACK_URL
+      - FRONTEND_REDIRECT_URL
     container_name: backend-docker
     restart: always
     depends_on:
@@ -39,6 +38,8 @@ services:
   dev-db:
     image: postgres:alpine
     container_name: ${POSTGRES_CONTAINER_NAME}
+    expose:
+      - POSTGRES_PORT
     ports:
       - ${POSTGRES_PORT}:5432
     environment:

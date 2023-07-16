@@ -1,6 +1,6 @@
 import { Game, Map, Menu, Npc, type ElementUI, type Player } from "@/game";
 import { io, type Socket } from "socket.io-client";
-import { env } from "../../env";
+import { env } from "../../env.ts";
 import { userStore } from "../../stores/userStore";
 import { socketClass } from "../../socket/SocketClass";
 
@@ -12,7 +12,7 @@ export class Lobby extends Game {
   constructor(map: Map, player: Player) {
     super(map, player);
     this.addGameObject(new Npc());
-	this.lobbySocket.on("new_gameobject", (data: any) => {
+    this.lobbySocket.on("new_gameobject", (data: any) => {
       this.addGameObjectData(data);
       console.log("new_gameobject", data);
     });

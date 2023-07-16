@@ -514,12 +514,12 @@
 		]
 	],
 	"layer_1": {
-		"image": "src/assets/images/lobby/layer_0.png",
+		"image": "assets/images/lobby/layer_0.png",
 		"opacity": 1
 	},
 	"layer_2": { "image": "", "opacity": 1 },
 	"layer_3": {
-		"image": "src/assets/images/lobby/layer_3.png",
+		"image": "assets/images/lobby/layer_3.png",
 		"opacity": 0.5,
 		"objects": []
 	},

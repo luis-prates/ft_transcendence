@@ -3,7 +3,7 @@ FROM node:alpine AS base
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json ./
 
 RUN npm install
 
@@ -13,6 +13,8 @@ FROM base AS build
 WORKDIR /app
 
 COPY . .
+
+RUN npx prisma generate
 
 RUN npm run build
 
