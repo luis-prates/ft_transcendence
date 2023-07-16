@@ -39,7 +39,10 @@
         <!-- Users inside the chat selected -->
         <ul class="contacts">
           <li v-for="(user, id) in usersFilters" :key="id">
-            <ChatListUsers :user="user" @click="selectUser(user)" />
+            <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser(user)" />
+            <div class="menu-container" v-if="isMenuOpen">
+              <Menus @toggleMenu="toggleMenu" :user="user" v-show="userSelect.id == user.id" />/>
+            </div>
           </li>
         </ul>
       </div>
@@ -67,6 +70,8 @@ import { YourProfile } from "@/game/Menu/YourProfile";
 
 
 const store = chatStore();
+
+const userSelect = ref('' as any);
 const { selected } = storeToRefs(store);
 const isMenuOpen = ref(false);
 const channelsFilters = ref([] as channel[]);
@@ -142,26 +147,48 @@ const selectChannel = (channel: channel) => {
   if (selected.value != channel && isMenuOpen.value) {
     toggleMenu();
   }
-  usersInChannelSelect.value = channel.users;
-  usersFilters.value = channel.users;
   store.selectChannel(channel);
   openChannel(store.selected);
   if (isMenuOpen.value)
     toggleMenu();
 }
 
-  const handleContextMenu = (channel: channel)  => {
-    //instance?.emit("update-create-channel", false);
-    if (selected.value != channel && isMenuOpen.value) {
-      toggleMenu();
-    }
-    store.selectChannel(channel);
+const handleContextMenu = (channel: channel)  => {
+  //instance?.emit("update-create-channel", false);
+  if (selected.value != channel && isMenuOpen.value) {
     toggleMenu();
-  };
+  }
+  store.selectChannel(channel);
+  toggleMenu();
+};
+
+
+const handleContextMenuUser = (user: ChatUser)  => {
+  //instance?.emit("update-create-channel", false);
+  console.log("click direito:", user.nickname)
+  if (selected.value != user && isMenuOpen.value) {
+    toggleMenu();
+  }
+  userSelect.value = user;
+  toggleMenu();
+};
   
 let isProfileOpen: boolean = false;
 
 const selectUser = (user: ChatUser) => {
+//instance?.emit("update-create-channel", false);
+
+console.log("user Selecionado:", user.nickname);
+if (selected.value != user && isMenuOpen.value) {
+    toggleMenu();
+  }
+  userSelect.value = user;
+  //openChannel(store.selected);
+  if (isMenuOpen.value)
+    toggleMenu();
+}
+
+/*openPerfilUser{
   if (isProfileOpen)
     return;
 
@@ -182,8 +209,8 @@ const selectUser = (user: ChatUser) => {
     toggleMenu();
   }
   store.selectUser(user);
-  toggleMenu();*/
-}
+  toggleMenu();
+}*/
 
 const openChannel = (channel: channel) => {
   if (store.isUserInSelectedChannel(userStore().user.id))
@@ -191,6 +218,8 @@ const openChannel = (channel: channel) => {
     store.getMessages(channel);
     instance?.emit('update-create-channel', false);
     instance?.emit("update-channel-status", true);
+    usersInChannelSelect.value = channel.users;
+    usersFilters.value = channel.users;
   }
   else
   {
@@ -282,11 +311,10 @@ const toggleChat = () => {
     }
     chatElement.style.bottom = "-57%";
     //Limpar Conteudo
-	  
     if (searchUser)
-	searchUser.value = "";
+      searchUser.value = '';
     if (searchChannel)
-	searchChannel.value = "";
+      searchChannel.value = '';
     
   } else {
     // Mostrar o chat

@@ -21,7 +21,6 @@ import { type ChatUser } from "@/stores/chatStore";
 const defaultAvatar = "src/assets/chat/avatar.png";
 
 function getImage() {
-  console.log("USER:", props.user);
   return props.user.image ? props.user.image : defaultAvatar;
 }
 
