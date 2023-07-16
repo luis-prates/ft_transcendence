@@ -328,6 +328,10 @@ const toggleChat = () => {
 
 };
 
+defineExpose({
+        getFilteredChannels
+    });
+
 </script>
 
 <style>

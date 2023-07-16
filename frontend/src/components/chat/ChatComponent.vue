@@ -1,7 +1,7 @@
 <template>
   <div class="chat">
     <ChatContent  @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_mensagen" />
-    <ChatList @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_list" />
+    <ChatList ref="chatListRef" @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_list"/>
   </div>
 </template>
 
@@ -22,6 +22,7 @@ const user = userStore();
 
 const showTesss = ref(false);
 const showbuttom = ref(false);
+const chatListRef = ref<InstanceType<typeof ChatList> | null>(null);
 
 let socket: Socket = socketClass.getChatSocket();
 
@@ -65,10 +66,13 @@ onMounted(() => {
     const { channelId } = eventData;
     console.log("CHANNEL REMOVED: ", eventData)
     store.removeUserFromChannel(channelId, user.user.id);
+    chatListRef.value?.getFilteredChannels();
+
   });
   socket.on("channel-added", (eventData) => {
     const { channelId } = eventData;
     store.addUserToChannel(channelId, user.user);
+      chatListRef.value?.getFilteredChannels();
   });
 
   socket.on("user-added", (eventData) => {

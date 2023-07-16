@@ -13,15 +13,16 @@
         <ul style="color: aliceblue;">
           <!-- COMMANDS USER -->
           <li @click="handleMenuItemUserClick(1)">Open Profile</li>
-          <li @click="handleMenuItemUserClick(2)">{{ getFriend($props.user) }} Friend</li>
+          <li @click="handleMenuItemUserClick(2)">{{ getFriend($props.user) }}</li>
           <li @click="handleMenuItemUserClick(3)">{{ getBlock($props.user) }}</li>
           <li @click="handleMenuItemUserClick(4)">Challenge</li>
           <!-- COMMANDS ADMINSTRADOR -->
           <!-- <li @click="handleMenuItemUserClick(5)">{{ getMute($props.user) }}</li>
-          <li @click="handleMenuItemUserClick(6)">Kick</li> -->
+          <li @click="handleMenuItemUserClick(6)">Kick</li>
+          <li @click="handleMenuItemUserClick(7)">Ban</li> -->
           <!-- COMMANDS OWNER -->
-          <!-- <li @click="handleMenuItemUserClick(7)">Give Adminstrator</li> -->
-          <!-- <li @click="handleMenuItemUserClick(8)">Give OwnerShip</li> -->
+          <!-- <li @click="handleMenuItemUserClick(8)">Give Adminstrator</li> -->
+          <!-- <li @click="handleMenuItemUserClick(9)">Give OwnerShip</li> -->
         </ul>
       </div>
     </div>
@@ -54,15 +55,14 @@
 });
 
   const handleMenuItemUserClick = (item: number) => {
+    if (!props.user)
+      return ;
     //Open Menu
     if (item == 1) {
-      console.log("ABRE O MENU DO:", props.user?.nickname)
       instance?.emit('openPerfilUser', props.user);
     }
     //Friends
     else if (item == 2){
-      if (!props.user)
-      return ;
       const label = getFriend(props.user);
       if (label == "Add Friend")
         userStore().sendFriendRequest(props.user.id, props.user.nickname);
@@ -74,7 +74,13 @@
         userStore().deleteFriend(props.user.id);
     }
     // Block
-    else if (item == 2){
+    else if (item == 3){
+      const label = getBlock(props.user);
+      if (label == "Block")
+        userStore().blockUser(props.user.id, props.user.nickname, props.user.image);
+      else if (label == "UnBlock")
+        userStore().unblockUser(props.user.id);
+
       // console.log("O id do channel onde vai dar elave: ", selected.value.objectId)
       // store.leaveChannel(selected.value.objectId);
     }
@@ -94,7 +100,14 @@
       // console.log("O id do channel onde vai dar elave: ", selected.value.objectId)
       // store.leaveChannel(selected.value.objectId);
     }
+    //GIVE ADMINSTRATOR
     else if (item == 8){
+      //Ou esta Logica
+      instance?.emit('makeOrDemoteAdmin', props.user);
+      //Ou é mandado o channel tambem
+    }
+    //GIVE OWNERSHIP
+    else if (item == 9){
       // console.log("O id do channel onde vai dar elave: ", selected.value.objectId)
       // store.leaveChannel(selected.value.objectId);
     }
