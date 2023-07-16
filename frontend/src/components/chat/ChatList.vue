@@ -41,7 +41,7 @@
           <li v-for="(user, id) in usersFilters" :key="id">
             <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser(user)" />
             <div class="menu-container" v-if="isMenuOpen">
-              <Menus @toggleMenu="toggleMenu" @openPerfilUser="openPerfilUser" :user="user" v-show="userSelect.id == user.id" />/>
+              <Menus @toggleMenu="toggleMenu" @makeOrDemoteAdmin="makeOrDemoteAdmin" @openPerfilUser="openPerfilUser" :user="user" v-show="userSelect.id == user.id && userSelect.id != userStore().user.id" />/>
             </div>
           </li>
         </ul>
@@ -203,6 +203,14 @@ function openPerfilUser (user: ChatUser){
       isProfileOpen = false;
   	}
   });
+}
+
+function makeOrDemoteAdmin (user: ChatUser){
+  /*//TODO Verificar os Adminstradores do CHANEL 
+  //IF NAO FOR ADMIN
+    chatStore().makeAdmin(undefined, user);
+  //ELSE IF SE FOR ADMIN
+    chatStore().demoteAdmin(undefined, user);*/
 }
 
 const openChannel = (channel: channel) => {

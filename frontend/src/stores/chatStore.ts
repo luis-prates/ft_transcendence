@@ -223,5 +223,101 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  return { channels, selected, addChannel, getMessages, addMessage, getChannels, createChannel, activateMessage, selectChannel, isUserInSelectedChannel, leaveChannel };
+  
+  async function makeAdmin(channel: channel, userChat: ChatUser) {
+    if (channel.ownerId != user.id)
+    {
+      console.log("You aren't a OWNER!");
+    }
+
+    const makeAdmin = {
+      channelId: channel.objectId,
+      userId: userChat.id,
+    };
+
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.access_token_server}`,
+      },
+      body: JSON.stringify(makeAdmin),
+    };
+    try {
+      const response = await fetch(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/admin/${userChat.id}`, options);
+      const data = await response.json();
+      console.log("Make Admnstrator :", data);
+
+      // Check if the response indicates a successful operation
+      if (response.ok) {
+        // Return any relevant data here if needed
+        //store.getChannels();
+        return false;
+      } else if (response.status == 409) {
+        return "409"; //409 == Conflit error (same name || same id?)
+      } else {
+        return "GENERIC_ERROR";
+      }
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  
+  async function demoteAdmin(channel: channel, userChat: ChatUser) {
+    if (channel.ownerId != user.id)
+    {
+      console.log("You aren't a OWNER!");
+    }
+
+    const makeAdmin = {
+      channelId: channel.objectId,
+      userId: userChat.id,
+    };
+
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.access_token_server}`,
+      },
+      body: JSON.stringify(makeAdmin),
+    };
+    try {
+      const response = await fetch(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/admin/${userChat.id}/demote`, options);
+      const data = await response.json();
+      console.log("Demote Admnstrator :", data);
+
+      // Check if the response indicates a successful operation
+      if (response.ok) {
+        // Return any relevant data here if needed
+        //store.getChannels();
+        return false;
+      } else if (response.status == 409) {
+        return "409"; //409 == Conflit error (same name || same id?)
+      } else {
+        return "GENERIC_ERROR";
+      }
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  return { channels, selected, 
+    
+    getChannels, 
+    addChannel, 
+    createChannel, 
+    makeAdmin,
+    demoteAdmin,
+    
+    getMessages,
+    addMessage, 
+    activateMessage,
+    
+    
+
+    selectChannel, isUserInSelectedChannel, leaveChannel };
 });

@@ -18,10 +18,11 @@
           <li @click="handleMenuItemUserClick(4)">Challenge</li>
           <!-- COMMANDS ADMINSTRADOR -->
           <!-- <li @click="handleMenuItemUserClick(5)">{{ getMute($props.user) }}</li>
-          <li @click="handleMenuItemUserClick(6)">Kick</li> -->
+          <li @click="handleMenuItemUserClick(6)">Kick</li>
+          <li @click="handleMenuItemUserClick(7)">Ban</li> -->
           <!-- COMMANDS OWNER -->
-          <!-- <li @click="handleMenuItemUserClick(7)">Give Adminstrator</li> -->
-          <!-- <li @click="handleMenuItemUserClick(8)">Give OwnerShip</li> -->
+          <!-- <li @click="handleMenuItemUserClick(8)">Give Adminstrator</li> -->
+          <!-- <li @click="handleMenuItemUserClick(9)">Give OwnerShip</li> -->
         </ul>
       </div>
     </div>
@@ -99,7 +100,14 @@
       // console.log("O id do channel onde vai dar elave: ", selected.value.objectId)
       // store.leaveChannel(selected.value.objectId);
     }
+    //GIVE ADMINSTRATOR
     else if (item == 8){
+      //Ou esta Logica
+      instance?.emit('makeOrDemoteAdmin', props.user);
+      //Ou é mandado o channel tambem
+    }
+    //GIVE OWNERSHIP
+    else if (item == 9){
       // console.log("O id do channel onde vai dar elave: ", selected.value.objectId)
       // store.leaveChannel(selected.value.objectId);
     }
