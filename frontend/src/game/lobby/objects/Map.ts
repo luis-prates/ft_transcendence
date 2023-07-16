@@ -36,10 +36,10 @@ export class Map implements GameObject {
   public layer_3: layer_3;
   public datas: any[] = [];
 
-  public cachedLayer3: HTMLCanvasElement | null = null;
-  public cachedLayer3Context: CanvasRenderingContext2D | null = null;
-  public cachedMapObjs: HTMLCanvasElement | null = null;
-  public cachedMapObjsContext: CanvasRenderingContext2D | null = null;
+  private cachedLayer3: HTMLCanvasElement | null = null;
+  private cachedLayer3Context: CanvasRenderingContext2D | null = null;
+  private cachedMapObjs: HTMLCanvasElement | null = null;
+  private cachedMapObjsContext: CanvasRenderingContext2D | null = null;
 
   constructor(data?: any) {
     this.type = "map";
@@ -98,57 +98,57 @@ export class Map implements GameObject {
   draw(contex: CanvasRenderingContext2D): void {
     if (this.isLoaded === false) return;
 
-	// If the cached canvas doesn't exist or the layer's size has changed, create a new cached canvas
-	if (!this.cachedMapObjs || this.cachedMapObjs.width !== this.w || this.cachedMapObjs.height !== this.h) {
-		this.cachedMapObjs = document.createElement('canvas');
-		this.cachedMapObjs.width = this.w;
-		this.cachedMapObjs.height = this.h;
-		this.cachedMapObjsContext = this.cachedMapObjs.getContext('2d');
-	  }
+    // If the cached canvas doesn't exist or the layer's size has changed, create a new cached canvas
+    if (!this.cachedMapObjs || this.cachedMapObjs.width !== this.w || this.cachedMapObjs.height !== this.h) {
+      this.cachedMapObjs = document.createElement("canvas");
+      this.cachedMapObjs.width = this.w;
+      this.cachedMapObjs.height = this.h;
+      this.cachedMapObjsContext = this.cachedMapObjs.getContext("2d");
+    }
 
-	// Now, instead of drawing directly to the main context, you're doing so on the cached context
-	if (this.layer_1.image.complete && this.cachedMapObjsContext) {
-		this.cachedMapObjsContext.strokeStyle = "blue";
-		this.cachedMapObjsContext.drawImage(this.layer_1.image, 0, 0, this.w, this.h);
-	}
+    // Now, instead of drawing directly to the main context, you're doing so on the cached context
+    if (this.layer_1.image.complete && this.cachedMapObjsContext) {
+      this.cachedMapObjsContext.strokeStyle = "blue";
+      this.cachedMapObjsContext.drawImage(this.layer_1.image, 0, 0, this.w, this.h);
+    }
 
-	if (this.cachedMapObjs) {
-		contex.drawImage(this.cachedMapObjs, 0, 0);
-	}
+    if (this.cachedMapObjs) {
+      contex.drawImage(this.cachedMapObjs, 0, 0);
+    }
   }
 
   drawLayer_3(contex: CanvasRenderingContext2D): void {
-	// If the cached canvas doesn't exist or the layer's size has changed, create a new cached canvas
-	if (!this.cachedLayer3 || this.cachedLayer3.width !== this.layer_3.context.canvas.width || this.cachedLayer3.height !== this.layer_3.context.canvas.height) {
-		this.cachedLayer3 = document.createElement('canvas');
-		this.cachedLayer3.width = this.layer_3.context.canvas.width;
-		this.cachedLayer3.height = this.layer_3.context.canvas.height;
-		this.cachedLayer3Context = this.cachedLayer3.getContext('2d');
-	  }
+    // If the cached canvas doesn't exist or the layer's size has changed, create a new cached canvas
+    if (!this.cachedLayer3 || this.cachedLayer3.width !== this.layer_3.context.canvas.width || this.cachedLayer3.height !== this.layer_3.context.canvas.height) {
+      this.cachedLayer3 = document.createElement("canvas");
+      this.cachedLayer3.width = this.layer_3.context.canvas.width;
+      this.cachedLayer3.height = this.layer_3.context.canvas.height;
+      this.cachedLayer3Context = this.cachedLayer3.getContext("2d");
+    }
 
     if (this.layer_3.image.complete && this.cachedLayer3Context) {
-		this.cachedLayer3Context.clearRect(0, 0, this.cachedLayer3.width, this.cachedLayer3.height);
-    	this.cachedLayer3Context.drawImage(this.layer_3.image, 0, 0);
-		const rect = this.layer_3.colision();
-		this.layer_3.context.clearRect(0, 0, this.layer_3.context.canvas.width, this.layer_3.context.canvas.height);
-		this.layer_3.context.drawImage(this.layer_3.image, 0, 0);
-		if (rect) {
-		  const imageData = this.layer_3.context.getImageData(0, 0, this.layer_3.context.canvas.width, this.layer_3.context.canvas.height);
-		  const data = imageData.data;
-		  for (let row = rect.y; row < rect.y + rect.h; row++) {
-			for (let col = rect.x; col < rect.x + rect.w; col++) {
-			  const index = (row * this.layer_3.context.canvas.width + col) * 4;
-			  const alpha = data[index + 3];
-			  const opacity = 128; //  Opacidade de 50%
-			  data[index + 3] = (alpha * opacity) / 255;
-			}
-		  }
-		  this.layer_3.context.putImageData(imageData, 0, 0);
-		}
-	}
-	if (this.cachedLayer3) {
-    	contex.drawImage(this.cachedLayer3, 0, 0);
-	}
+      this.cachedLayer3Context.clearRect(0, 0, this.cachedLayer3.width, this.cachedLayer3.height);
+      this.cachedLayer3Context.drawImage(this.layer_3.image, 0, 0);
+      const rect = this.layer_3.colision();
+      this.layer_3.context.clearRect(0, 0, this.layer_3.context.canvas.width, this.layer_3.context.canvas.height);
+      this.layer_3.context.drawImage(this.layer_3.image, 0, 0);
+      if (rect) {
+        const imageData = this.layer_3.context.getImageData(0, 0, this.layer_3.context.canvas.width, this.layer_3.context.canvas.height);
+        const data = imageData.data;
+        for (let row = rect.y; row < rect.y + rect.h; row++) {
+          for (let col = rect.x; col < rect.x + rect.w; col++) {
+            const index = (row * this.layer_3.context.canvas.width + col) * 4;
+            const alpha = data[index + 3];
+            const opacity = 128; //  Opacidade de 50%
+            data[index + 3] = (alpha * opacity) / 255;
+          }
+        }
+        this.layer_3.context.putImageData(imageData, 0, 0);
+      }
+    }
+    if (this.cachedLayer3) {
+      contex.drawImage(this.cachedLayer3, 0, 0);
+    }
   }
 
   mouseClick(x: number, y: number, button: number): void {}
