@@ -231,5 +231,38 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  return { channels, selected, addChannel, getMessages, addMessage, getChannels, createChannel, activateMessage, selectChannel, selectUser, isUserInSelectedChannel, leaveChannel };
+  async function joinChannel(channelId: string) {
+    const joinChannelDto = {
+      channelId: channelId,
+    };
+    console.log("joinChannelDto:", joinChannelDto);
+
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.access_token_server}`,
+      },
+      body: JSON.stringify(joinChannelDto),
+    };
+    try {
+      const response = await fetch(`${env.BACKEND_PORT}/chat/channels/${channelId}/join`, options);
+      //const data = await response.json();
+      //console.log("JOINED CHANNEL:", data);
+
+      // Check if the response indicates a successful operation
+      if (response.ok) {
+        // Return any relevant data here if needed
+        //store.getChannels();
+        return false;
+      } else {
+        return "GENERIC_ERROR";
+      }
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  return { channels, selected, addChannel, getMessages, addMessage, getChannels, createChannel, activateMessage, selectChannel, selectUser, isUserInSelectedChannel, leaveChannel, joinChannel };
 });

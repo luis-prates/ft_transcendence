@@ -115,7 +115,13 @@ const openChannel = (channel: channel) => {
   }
   else
   {
-    console.log("I will try to put the password!");
+    if (channel.type == "PUBLIC"){
+      store.joinChannel(channel.objectId);
+      store.getMessages(channel);
+    }
+    else{
+      console.log("I will try to put the password!");
+    }
   }
 }
 
