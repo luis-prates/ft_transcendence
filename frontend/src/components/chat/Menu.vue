@@ -54,30 +54,29 @@
 });
 
   const handleMenuItemUserClick = (item: number) => {
-    // Handle menu item click logic
+    //Open Menu
     if (item == 1) {
       console.log("ABRE O MENU DO:", props.user?.nickname)
       instance?.emit('openPerfilUser', props.user);
     }
+    //Friends
+    else if (item == 2){
+      if (!props.user)
+      return ;
+      const label = getFriend(props.user);
+      if (label == "Add Friend")
+        userStore().sendFriendRequest(props.user.id, props.user.nickname);
+      else if (label == "Cancel Request")
+        userStore().cancelFriendRequest(props.user.id);
+      else if (label == "You have a Request")
+        return ;
+      else if (label == "Remove Friend")
+        userStore().deleteFriend(props.user.id);
+    }
+    // Block
     else if (item == 2){
       // console.log("O id do channel onde vai dar elave: ", selected.value.objectId)
       // store.leaveChannel(selected.value.objectId);
-    }
-    //Friends
-    else if (item == 3){
-      if (!props.user)
-        return ;
-     /* const label = getFriend(props.user);
-      if (label == "Remove Friend")
-        //TODO
-      else if (label == "You have a Request")
-        //TODO
-      else if (label == "Add Friend")
-        //TODO
-      else if (label == "Cancel Request")
-        //TODO
-      else if (label == "Remove Friend")
-        //TODO*/
     }
     else if (item == 4){
       if (props.user)
@@ -118,13 +117,12 @@
 		const heSendARequestFriend = index == -1 ? false : true;
     
 		index = userStore().user.friendsRequests.findIndex((friendship) => friendship.requesteeId === chatUser.id);
-		let friend = isYourFriend ? "-" : (heSendARequestFriend ? "0" : (index == -1 ? "+" : "-"));
+    const yourSendAFriendRequest = index == -1 ? false : true;
     
-    return isYourFriend ? "Remove Friend" : (heSendARequestFriend ? "You have a Request" : (friend == "+" ? "Add Friend" : "Cancel Request"));
+    return isYourFriend ? "Remove Friend" : (heSendARequestFriend ? "You have a Request" : (yourSendAFriendRequest ? "Cancel Request" : "Add Friend"));
   };
 
   function getBlock(chatUser: ChatUser){
-    console.log("USER:", chatUser.nickname)
     const userIndex = userStore().user.block.findIndex(block => block.blockedId == chatUser.id);
     if (userIndex !== -1) {
       return "UnBlock"
