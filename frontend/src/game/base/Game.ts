@@ -25,10 +25,12 @@ export class Game {
   public your_menu;
   public isRunning;
   public socket: Socket;
+  private boundUpdate: any;
 
   constructor(map: Map, player: Player) {
     //For What?
-	this.socket = socketClass.getGameSocket();
+    this.boundUpdate = this.update.bind(this);
+    this.socket = socketClass.getGameSocket();
     console.log("Map: ", map.w, " / ", map.h);
     this.camera = new Camera(player, map);
     this.canvas.width = map.w;
@@ -129,7 +131,7 @@ export class Game {
       });
       this.draw();
       Game.lastFrameTime = currentTime;
-      requestAnimationFrame(this.update.bind(this));
+      requestAnimationFrame(this.boundUpdate);
     } else {
       this.gameObjets = [];
       this.gameObjetsUpdate = [];
@@ -139,8 +141,7 @@ export class Game {
 
   addGameObject(gameObject: GameObject): GameObject {
     this.gameObjets.push(gameObject);
-    if (gameObject.type == "character" || gameObject.type == "player")
-      console.log("Add: ", gameObject);
+    if (gameObject.type == "character" || gameObject.type == "player") console.log("Add: ", gameObject);
     if (gameObject.mouseClick) this.mouseEvents.push(gameObject.mouseClick.bind(gameObject));
     if (gameObject.update) this.gameObjetsUpdate.push(gameObject);
     return gameObject;
@@ -167,7 +168,7 @@ export class Game {
   public gameNotification() {
     const user = userStore().user;
     const numberOfFriendRequest = user.friendsRequests.filter((friendship) => friendship.requesteeId === user.id).length;
-    this.your_menu.notification = numberOfFriendRequest == 0 ? "" : (numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99" );;
+    this.your_menu.notification = numberOfFriendRequest == 0 ? "" : numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99";
   }
 
   public static MouseColision(x: number, y: number): GameObject | undefined {
@@ -227,5 +228,4 @@ export class Game {
   public static updateNotifications() {
     Game.instance.gameNotification();
   }
-
 }
