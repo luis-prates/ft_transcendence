@@ -2,7 +2,7 @@
   <div class="parent-container">
     <div class="d-flex item-box">
       <div class="img_cont">
-        <img :src="props.channel.avatar !== '' ? props.channel.avatar : defaultAvatar" class="user_img" />
+        <img :src="getImage()" class="user_img" />
         <span v-if="isBlocked()" style="right: 10%; top: 30%;">🔒</span>
       </div>
       <div class="user_info">
@@ -21,6 +21,10 @@ const user = userStore();
 
 const props = defineProps<{ channel: channel }>();
 const defaultAvatar = "src/assets/chat/chat_avatar.png";
+
+function getImage() {
+  return props.channel.avatar !== '' ? props.channel.avatar : defaultAvatar;
+}
 
 const isBlocked = () => {
   const foundUser = props.channel.users.find((users) => users.id === user.user.id);

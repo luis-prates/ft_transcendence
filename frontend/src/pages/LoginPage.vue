@@ -133,7 +133,7 @@ function tes(event: any) {
 
 			showModal("Login Success", "success");
 			resolveCondition.value = true;
-			await Promise.race([sleep(3000), modalClosePromise]);
+			await Promise.race([sleep(500), modalClosePromise]);
 			resolveCondition.value = false;
 			hideModal();
 
@@ -150,7 +150,7 @@ function tes(event: any) {
 				avatar: store.user.avatar
 			});
 
-			await sleep(2000);
+			await sleep(500);
 			Router.setRoute(Router.ROUTE_ALL);
 			Router.push("/");
 			console.log(store.user.isLogin);

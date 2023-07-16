@@ -103,14 +103,6 @@ export const chatStore = defineStore("chat", () => {
       selected.value = undefined;
     }
   }
-  
-  function selectUser(user: ChatUser | undefined) {
-    if (user) {
-      selected.value = user;
-    } else {
-      selected.value = undefined;
-    }
-  }
 
   async function getMessages(channel: channel | undefined) {
     if (channel) {
@@ -231,5 +223,5 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  return { channels, selected, addChannel, getMessages, addMessage, getChannels, createChannel, activateMessage, selectChannel, selectUser, isUserInSelectedChannel, leaveChannel };
+  return { channels, selected, addChannel, getMessages, addMessage, getChannels, createChannel, activateMessage, selectChannel, isUserInSelectedChannel, leaveChannel };
 });

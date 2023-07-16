@@ -264,41 +264,11 @@ export class Profile {
 			},
 			onClick: () => {
 			if (type == "challenge") {
-				const confirmButton = new ConfirmButton(this.user.nickname, STATUS_CONFIRM.CHALLENGE);
-        		confirmButton.show((value) => {
-        		  if (value == "CONFIRM") {
+				if (userStore().challengeUser(this.user.id, this.user.nickname) == "CONFIRM") 
+				{
 					this._menu.close();
 					this.onResult("EXIT");
-
-					this.lobbySocket.emit("invite_game", { 
-						//Desafiador
-						challengerId: this.your_user.id,
-						challengerNickname: this.your_user.nickname,
-						//Desafiado
-						challengedId: this.user.id,
-						challengedNickname: this.user.nickname,
-					});
-
-					this.lobbySocket.on("invite_request_game", (e: any) => {				  
-						const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
-						Game.instance.addMenu(confirmButton.menu);
-							  confirmButton.show((value) => {
-							if (value == "CONFIRM") {
-								this.lobbySocket.emit("challenge_game", {
-								challenged: this.your_user.id, 
-								challenger: e.playerId,
-							  });
-							}
-						});
-					});
-			
-					this.lobbySocket.on("invite_confirm_game", (message: string) => {
-						const confirmButton = new ConfirmButton(message, STATUS_CONFIRM.ERROR, 5000);
-						Game.instance.addMenu(confirmButton.menu);
-						this.lobbySocket.off("invite_confirm_game");
-					});
-        		  }
-        		});
+				}
 			}
 			else if (type == "send_message") {
 				chatStore().createChannel({
@@ -313,8 +283,6 @@ export class Profile {
 				
 			}
 			else if (type == "block") {
-
-				const lobbySocket = socketClass.getLobbySocket();
 				if (this.isBlocked)
 				{
 					userStore().unblockUser(this.user.id);
