@@ -79,7 +79,7 @@ const searchTerm = ref('');
 const usersInChannelSelect = ref([] as ChatUser[]);
 const usersFilters = ref([] as ChatUser[]);
 const searchUser = ref('');
-let isChatFilterType = "inside";
+const isChatFilterType = ref("inside");
 
 const handleSearch = () => {
   getFilteredChannels();
@@ -100,26 +100,26 @@ const handleSearchUser = () => {
 
 function changeFilter (filter: string)
 {
-  isChatFilterType = filter;
+  isChatFilterType.value = filter;
   
   const dmButton = document.getElementById('dmButton') as HTMLElement;
   const insideButton = document.getElementById('insideButton') as HTMLElement;
   const allButton = document.getElementById('allButton') as HTMLElement;
 
-  dmButton.style.backgroundColor = isChatFilterType == "dm" ? "rgba(17, 9, 9, 0.2)" : "transparent";
-  insideButton.style.backgroundColor = isChatFilterType == "inside" ? "rgba(17, 9, 9, 0.2)" : "transparent";
-  allButton.style.backgroundColor = isChatFilterType == "all" ? "rgba(17, 9, 9, 0.2)" : "transparent";
+  dmButton.style.backgroundColor = isChatFilterType.value == "dm" ? "rgba(17, 9, 9, 0.2)" : "transparent";
+  insideButton.style.backgroundColor = isChatFilterType.value == "inside" ? "rgba(17, 9, 9, 0.2)" : "transparent";
+  allButton.style.backgroundColor = isChatFilterType.value == "all" ? "rgba(17, 9, 9, 0.2)" : "transparent";
 
   getFilteredChannels();
 }
 
 function getFilteredChannels()
 {
-  if (isChatFilterType == "dm")
+  if (isChatFilterType.value == "dm")
   {
     channelsFilters.value = store.channels.filter((channel: channel) => channel.type == "DM" && channel.users.some((user) => user.id === userStore().user.id));    
   }
-  else if (isChatFilterType == "inside") //need verific i'm inside
+  else if (isChatFilterType.value == "inside") //need verific i'm inside
   {
     channelsFilters.value = store.channels.filter((channel: channel) => (channel.type == "PROTECTED" || channel.type == "PRIVATE" || channel.type == "PUBLIC") && channel.users.some((user) => user.id == userStore().user.id)); 
   }

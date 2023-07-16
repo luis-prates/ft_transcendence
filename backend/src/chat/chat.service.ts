@@ -28,6 +28,8 @@ export class ChatService {
 								image: true,
 							},
 						},
+						isAdmin: true,
+						isMuted: true,
 					},
 				},
 			},

@@ -56,6 +56,34 @@ onMounted(() => {
     const { newChannel, message } = eventData;
     store.addChannel(newChannel, message);
   });
+
+  socket.on('user-removed', (eventData: { channelId: any, message: any, userId: any }) => {
+    const { channelId, userId } = eventData;
+    store.removeUserFromChannel(channelId, userId);
+  });
+  socket.on("channel-removed", (eventData) => {
+    const { channelId } = eventData;
+    console.log("CHANNEL REMOVED: ", eventData)
+    store.removeUserFromChannel(channelId, user.user.id);
+  });
+  socket.on("channel-added", (eventData) => {
+    const { channelId } = eventData;
+    store.addUserToChannel(channelId, user.user);
+  });
+
+  socket.on("user-added", (eventData) => {
+    //TODO receber todos os atributos do user
+    console.log("Acionou o evento: eventData" , eventData);
+    const { channelId, userId } = eventData;
+    const user = {
+      id: userId,
+      image: "",
+      nickname: "Teste",
+      status: "ONLINE",
+    };
+    store.addUserToChannel(channelId, user);
+  });
+
   
   socket.onAny((eventName, eventData) => {
     console.log("Received event: ", eventName);

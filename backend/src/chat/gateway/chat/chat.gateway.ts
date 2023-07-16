@@ -71,6 +71,10 @@ export class ChatGateway implements OnGatewayConnection {
 				channelId,
 				userId,
 				message: `User ${userId} has been added to channel ${channelId}`,
+				//TODO NEED THIS
+				/*userNickname: user.nickname,
+				userImage: user.image,
+				userStatus: user.status,*/
 			});
 		});
 

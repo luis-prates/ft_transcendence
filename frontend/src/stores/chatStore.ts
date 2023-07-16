@@ -18,6 +18,8 @@ export interface ChatUser {
   image: string;
   nickname: string;
   status: any;
+  isAdmin?: boolean;
+  isMuted?: boolean;
 }
 
 export interface channel {
@@ -144,6 +146,8 @@ export const chatStore = defineStore("chat", () => {
             image: user.user.image ?? "",
             nickname: user.user.nickname ?? "",
             status: user.user.status ?? "",
+            isAdmin: user.isAdmin ?? false,
+            isMuted: user.isMuted ?? false,
           })) ?? [];
           return {
             objectId: channelData.id ?? "",
@@ -256,5 +260,43 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  return { channels, selected, addChannel, getMessages, addMessage, getChannels, createChannel, activateMessage, selectChannel, isUserInSelectedChannel, leaveChannel, joinChannel };
+  // Function to remove a user from a specific channel
+  function removeUserFromChannel(channelId: any, userId:any) {
+    const channel = channels.find((channel) => channel.objectId === channelId);
+
+    if (channel) {
+      const userIndex = channel.users.findIndex((user) => user.id === userId);
+
+      if (userIndex !== -1) {
+        channel.users.splice(userIndex, 1);
+      }
+      else {
+        console.warn(`User with ID ${userId} not found inside ${channelId} channel ID.`);
+      }
+
+    } else {
+      console.warn(`Channel with ID ${channelId} not found.`);
+    }
+  }
+
+  // Function to add a user to a specific channel
+function addUserToChannel(channelId: any, user: ChatUser) {
+  const channel = channels.find((channel) => channel.objectId === channelId);
+
+  if (channel) {
+    const userExists = channel.users.some((existingUser) => existingUser.id === user.id);
+
+    if (!userExists) {
+      channel.users.push(user);
+    }
+    else {
+      console.warn(`User with ID ${user.id} is already inside ${channelId} channel ID.`);
+    }
+
+  } else {
+    console.warn(`Channel with ID ${channelId} not found.`);
+  }
+}
+
+  return { channels, selected, addChannel, getMessages, addMessage, getChannels, createChannel, activateMessage, selectChannel, isUserInSelectedChannel, leaveChannel, joinChannel, removeUserFromChannel, addUserToChannel };
 });
