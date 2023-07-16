@@ -2,7 +2,8 @@
   <div class="parent-container">
     <div class="d-flex item-box">
       <div class="img_cont">
-        <img :src="props.channel.avatar !== '' ? props.channel.avatar : 'https://therichpost.com/wp-content/uploads/2020/06/avatar2.png'" class="user_img" />
+        <img :src="props.channel.avatar !== '' ? props.channel.avatar : defaultAvatar" class="user_img" />
+        <span v-if="isBlocked()" style="right: 10%; top: 30%;">🔒</span>
       </div>
       <div class="user_info">
         <span>{{ props.channel.name }}</span>
@@ -14,9 +15,21 @@
 
 <script setup lang="ts">
 import { type channel } from "@/stores/chatStore";
-import { defineProps } from "vue";
+import { userStore } from "@/stores/userStore";
+
+const user = userStore();
 
 const props = defineProps<{ channel: channel }>();
+const defaultAvatar = "src/assets/chat/chat_avatar.png";
+
+const isBlocked = () => {
+  const foundUser = props.channel.users.find((users) => users.id === user.user.id);
+  if (foundUser || props.channel.type != "PROTECTED") {
+    return false;
+  }
+  return true;
+};
+
 </script>
 
 <style scoped>

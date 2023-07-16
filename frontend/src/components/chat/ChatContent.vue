@@ -3,8 +3,11 @@
     <div class="card-header msg_head">
       <div class="d-flex bd-highlight">
         <!-- cabeca do formulario -->
+        <div class="img_cont">
+          <img :src=defaultAvatar class="user_img" />
+        </div>
         <div class="user_info">
-          <span>New Channel</span>
+          <span>{{ channelName }}</span>
         </div>
         <div class="video_cam">
           <!-- <button class="config_chat">⚙</button> -->
@@ -34,7 +37,7 @@
             <option value="PRIVATE">Private</option>
           </select>
         </div>
-        <button type="submit" class="btn btn-primary">Create Channel</button>
+        <button type="submit" class="btn btn-primary">{{ getButtomOp() }}</button>
         <!-- Display error message if channel creation failed -->
       <p v-if="errorMessage" class="text-danger">{{ errorMessage }}</p>
       </form>
@@ -47,14 +50,14 @@
     <div class="card-header msg_head">
       <div class="d-flex bd-highlight">
         <div class="img_cont">
-          <img src="https://therichpost.com/wp-content/uploads/2020/06/avatar2.png" class="user_img" />
+          <img :src=getChatAvatar() class="user_img" />
         </div>
         <div class="user_info">
           <span>{{ getChannelName() }}</span>
           <p>{{selected?.messages?.length + " Messages"}}</p>
         </div>
         <div class="video_cam">
-          <button class="config_chat">⚙</button>
+          <button v-if=imOwner() @click="editChannel" class="config_chat">⚙</button>
           <button @click="toggleStatus" class="close_chat">✖</button>
         </div>
       </div>
@@ -63,7 +66,7 @@
     <div class="card-body msg_card_body" ref="scrollContainer">
       <div v-for="(message, index) in selected?.messages" :key="index">
         <div>
-          <ChatContentMessages :message="message" :displayUser="index == 0 || message.nickname !=  selected?.messages[index - 1].nickname"/>
+          <ChatContentMessages :message="message" :displayUser="index == 0 || message.user.nickname !=  selected?.messages[index - 1].user.nickname"/>
         </div>
       </div>
     </div>
@@ -91,15 +94,24 @@ import { storeToRefs } from "pinia";
 import { userStore } from "@/stores/userStore";
 import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
-// import chatSocket from "@/socket/SocketChat";
 import { onMounted, onUnmounted, ref } from "vue";
 
 const store = chatStore();
 const user = userStore();
 const { selected } = storeToRefs(store);
 
+socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
-const socket = socketClass.getLobbySocket();
+console.log("Socket criado na instancia do componente: ", chatSocket);
+
+let defaultAvatar = ref("src/assets/chat/chat_avatar.png");
+
+//Check if the user is the owner of channel
+const imOwner = () => {
+  if (selected.value?.ownerId == user.user.id)
+    return true;
+  return false;
+}
 
 // Get channel name from chatStore
 const getChannelName = () => {
@@ -107,32 +119,70 @@ const getChannelName = () => {
   return store.selected?.name;
 };
 
-// Props declaration
-const props = defineProps({
-  createChannel: Boolean,
-  channelStatus: Boolean,
-});
+// Vai retornar a operacao createChannel ou Save channel consoante a operacao
+const getButtomOp = () => {
+  if (props.channelStatus && props.createChannel)
+    return "Update Channel";
+  return "Create Channel";
+}
 
-// Define reactive variables
-const errorMessage = ref('');
+function getChatAvatar() {
+  if (selected.value?.avatar == "" || !selected.value?.avatar){
+    return defaultAvatar.value;
+  }
+  return selected.value?.avatar;
+  }
+  
+  // Props declaration
+  const props = defineProps({
+    createChannel: Boolean,
+    channelStatus: Boolean,
+  });
+  
+  // Define reactive variables
+  const errorMessage = ref('');
+  
+  // Get the current component instance
+  const instance = getCurrentInstance();
+  
+  //form testing
+  // Define reactive variables for form inputs
+  const channelName = ref('');
+  const channelPassword = ref('');
+  const channelType = ref('PUBLIC');
+  const channelAvatar = ref(null);
 
-// Get the current component instance
-const instance = getCurrentInstance();
+function editChannel() {
+  instance?.emit("update-channel-status", true);
+  instance?.emit("update-create-channel", true);
+  channelName.value = selected.value?.name as any;
+  channelPassword.value = selected.value?.password as any;
+  channelType.value = selected.value?.type as any;
+  if (selected.value?.avatar != "")
+    defaultAvatar.value = selected.value?.avatar as any;
+  else
+    defaultAvatar.value = "src/assets/chat/chat_avatar.png";
+}
 
 // Emit event from the child component
 const toggleStatus = () => {
   instance?.emit("update-channel-status", false);
   instance?.emit("update-create-channel", false);
+  channelName.value = '';
+  channelPassword.value = '';
+  channelType.value = 'PUBLIC';
+  defaultAvatar.value = "src/assets/chat/chat_avatar.png";
 };
 
 const text = ref();
 
 function send() {
   console.log("Chat Emit event: ", text.value);
-  if (text.value) {
-    const mensagem: ChatMessage = { objectId: user.user.id, id: user.user.id + "_" + Date.now(), message: text.value.trim(), nickname: "user_" + user.user.id };
-    store.addMessage(selected.value?.objectId, mensagem);
-    socket.emit("send_message", { message: mensagem, objectId: selected.value?.objectId });
+  const message = text.value.trim();
+  if (message) {
+    //store.addMessage(selected.value?.objectId, menreceived message fromsagem);
+    const channelId = selected.value?.objectId;
+    chatSocket.emit("message", { message: message, channelId: channelId });
     text.value = "";
     // Use nextTick to wait for the DOM to update
     nextTick(() => {
@@ -141,15 +191,24 @@ function send() {
   }
 }
 
+
 onMounted(() => {
-  socket.on("send_message", (data: any) => {
-    store.addMessage(data.objectId, data.message);
-    scrollToBottom();
-  });
+  //const chatSocket: Socket = socketClass.getChatSocket();
+  //console.log("Socket criado onMounted: ", chatSocket);
+ /* chatSocket.on('message', (data: { channelId: string, message: string }) => {
+    const { channelId, message } = data;
+    
+    console.log(`Received message in channel ${channelId}: ${message}`);
+  });*/
+  // chatSocket.on("message", (data: any) => {
+  //   store.addMessage(data.objectId, data.message);
+  //   scrollToBottom();
+  // });
 });
 
 onUnmounted(() => {
-  socket.off("send_message");
+  //socket.off("send_message");
+  //chatSocket.off("message");
 });
 
 const scrollContainer = ref<HTMLElement | null>(null);
@@ -177,18 +236,47 @@ function scrollToBottom() {
   }
 }
 
-//form testing
-// Define reactive variables for form inputs
-const channelName = ref('');
-const channelPassword = ref('');
-const channelType = ref('PUBLIC');
-const channelAvatar = ref(null);
+
+// Define reactive variable for the base64 string
+const avatarBase64 = ref('');
 
 // Handle avatar file change
-const handleAvatarChange = (event:any) => {
-  const file = event.target.files[0];
-  // You can handle the file as needed, e.g., upload it to a server or display a preview
-  channelAvatar.value = file;
+const handleAvatarChange = (event: Event) => {
+  const fileInput = event.target as HTMLInputElement;
+  const file = fileInput.files?.[0];
+
+  if (file) {
+    convertFileToBase64(file)
+      .then((base64String) => {
+        avatarBase64.value = base64String;
+        defaultAvatar.value = URL.createObjectURL(file);
+        console.log("Base64 string:", base64String);
+      })
+      .catch((error) => {
+        console.error("Error converting file to base64:", error);
+      });
+  }
+};
+
+// Convert file to base64 string
+const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("Invalid file type"));
+      }
+    };
+
+    reader.onerror = (error) => {
+      reject(error);
+    };
+
+    reader.readAsDataURL(file);
+  });
 };
 
 // Create new channel function
@@ -198,14 +286,15 @@ const createNewChannel = async () => {
     const name = channelName.value;
     const password = channelType.value == "PUBLIC" ? channelPassword.value : undefined;
     const type = password ? "PROTECTED" : channelType.value;
-    const avatar = channelAvatar.value; // This is the File object
+    const avatar = avatarBase64.value ? avatarBase64.value : ""; // This is the File object
+    console.log("Avatar base64 string:", avatar);
 
     // Perform your logic here, e.g., make an API call to create the channel
     // You can use the values (name, password, type, avatar) as needed
     const newChannel = {
       objectId: 1,
       name: name,
-      avatar: avatar ? avatar : "",
+      avatar: avatar,
       password: password,
       messages: [], // initialize with an empty array of messages
       users: [], // initialize with an empty array of users

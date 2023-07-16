@@ -58,7 +58,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		player.gameSocket = client;
 		client.data.userId = userId;
-		this.userService.status(userId, UserStatus.IN_GAME);
 	}
 
 	async handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -122,6 +121,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const gameId = body.objectId;
 		const userId = client.data.userId;
 		client.data.gameId = gameId;
+		this.userService.status(userId, UserStatus.IN_GAME);
+
 		const isInTheGamePlayer = this.socketService.gameIdToPlayerId.get(gameId)
 			? this.socketService.gameIdToPlayerId.get(gameId).includes(userId)
 			: false;

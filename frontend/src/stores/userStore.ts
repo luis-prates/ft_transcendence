@@ -87,6 +87,7 @@ export interface User {
   friends: any;
   friendsRequests: Friendship[];
   block: Block[];
+  isTwoFAEnabled: boolean;
 }
 
 export const userStore = defineStore("user", function () {
@@ -136,6 +137,7 @@ export const userStore = defineStore("user", function () {
   async function login(authorizationCode: string | undefined) {
     if (user.isLogin || authorizationCode === undefined) return;
     user.access_token_server = authorizationCode;
+    user.isLogin = false;
 
     await axios
       .get(env.BACKEND_SERVER_URL + "/users/me", {
@@ -166,12 +168,12 @@ export const userStore = defineStore("user", function () {
         getBlockedUsers();
         getBlockedBy();
         getUserGames(user.id);
+		user.isLogin = true;
       })
       .catch(function (error) {
         console.error(error);
         user.isLogin = false;
       });
-    user.isLogin = true;
     // .finally(() => window.location.href = window.location.origin);
     return user.isTwoFAEnabled;
   }
@@ -653,6 +655,59 @@ export const userStore = defineStore("user", function () {
       });
   }
 
+  async function twoFAGenerate(): Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .post(env.BACKEND_SERVER_URL + "/auth/2fa/generate", undefined, options)
+      .then(function (response: any) {
+        console.log(`2Fa: ${response.data}`);
+        return response.data.responseObj;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
+
+  async function twoFATurnOn(twoFactorCode: string): Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+    console.log("code:", twoFactorCode);
+    return await axios
+      .post(env.BACKEND_SERVER_URL + "/auth/2fa/turn-on", { twoFACode: twoFactorCode }, options)
+      .then(function (response: any) {
+        console.log(`2Fa ON: ${response.data}`);
+        user.isTwoFAEnabled = true;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
+
+  async function twoFATurnOff(twoFactorCode: string): Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .post(env.BACKEND_SERVER_URL + "/auth/2fa/turn-off", { twoFACode: twoFactorCode }, options)
+      .then(function (response: any) {
+        console.log(`2Fa OFF: ${response.data}`);
+        user.isTwoFAEnabled = false;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
+
   return {
     user,
     login,
@@ -688,5 +743,10 @@ export const userStore = defineStore("user", function () {
     getGames,
     getLeaderboard,
     createGame,
+
+    //TwoFactor
+    twoFAGenerate,
+    twoFATurnOn,
+    twoFATurnOff,
   };
 });

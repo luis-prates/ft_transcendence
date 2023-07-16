@@ -16,6 +16,7 @@ import green_sign from "@/assets/images/lobby/menu/green_sign.png";
 import { Profile } from "./Profile";
 import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 import type { Socket } from "socket.io-client";
+import { TwoFactor } from "./TwoFactor";
 
 export class YourProfile {
   private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -53,6 +54,7 @@ export class YourProfile {
     this.matche_pagination = new PaginationMenu(this.user.infoPong.historic, 4, 2, this.background, this.menu);
 
     this.new_nickname = this.user.nickname;
+    this.twoFactor = this.user.isTwoFAEnabled;
 
     this.avataresImage.src = avatares;
 
@@ -320,9 +322,6 @@ export class YourProfile {
         else if (type == "photo") {
           fileInput.click();
         }
-        else if (type == "qrcode") {
-          
-        }
       },
     };
 
@@ -357,7 +356,7 @@ export class YourProfile {
                 this.menu.close();
                 this.onResult("EXIT");
               }
-            });          
+            });
           }
         }
       });
@@ -367,7 +366,6 @@ export class YourProfile {
   }
 
   private createQRCodeButton(type: string, x: number, y: number, label: string, width: number): ElementUI {
-
     const button: ElementUI = {
       type: type,
       rectangle: { x: x + "%", y: y + "%", w: width + "%", h: "4.5%" },
@@ -407,8 +405,13 @@ export class YourProfile {
 
       },
       onClick: () => {
-        this.twoFactor = !this.twoFactor;
-        //TODO DATABASE
+        const twoFactorMenu = new TwoFactor();
+        twoFactorMenu.show((value) => {
+          if (value == "CONFIRM") {
+            this.twoFactor = this.user.isTwoFAEnabled;
+            this.user.isTwoFAEnabled = this.user.isTwoFAEnabled;
+          }
+        });
       },
     };
     return button;
