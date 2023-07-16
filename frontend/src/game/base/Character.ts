@@ -113,12 +113,10 @@ export class Character implements GameObject {
       context.closePath();
     }
     this.animation?.draw(context, this.x, this.y - this.h / 2, this.w, this.h);
-    context.fillStyle = 'rgba(255, 255, 255, 0.65)';//"white";
-    context.strokeStyle = 'rgba(0, 0, 0, 0.65)';//"black";
+    context.fillStyle = userStore().user.id != this.objectId ? 'rgba(255, 255, 255, 0.65)' : 'rgba(255, 255, 255, 0.8)';//White
+    context.strokeStyle = userStore().user.id != this.objectId ? 'rgba(0, 0, 0, 0.65)' : 'rgba(0,0,0, 0.8)';//Black
     context.lineWidth = 5;
-    context.font = "10px 'Press Start 2P', cursive";
-    context.strokeText(this.nickname, this.x - this.w / 2, this.y - this.h * 0.3, this.w * 2);
-    context.fillText(this.nickname, this.x - this.w / 2, this.y - this.h * 0.3, this.w * 2);
+    this.fillTextCenter(context, this.nickname, this.x - this.w / 2, this.y - this.h * 0.3, this.w * 2, 10, undefined, "'Press Start 2P', cursive", true)
   }
 
   public move(x: number, y: number, animation: string) {
@@ -159,4 +157,26 @@ export class Character implements GameObject {
     }
     this.animation.setStop(isStop);
   }
+
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
+    ctx.font = font ? h + "px " + font : h + "px Arial";
+    ctx.textAlign = "start";
+    
+    const begin = x + w * 0.1;
+    const max = max_with ? max_with : w - w * 0.2;
+
+    let offset = 0;
+    let offsetmax = 0;
+    const labelWidth = ctx.measureText(label).width;
+    while (begin + offset + labelWidth < begin + max - offset) {
+      offsetmax += w * 0.05;
+      if (begin + offsetmax + labelWidth > begin + max - offset) break;
+      offset = offsetmax;
+    }
+    
+    if (stroke)
+    ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+  }
+
 }

@@ -11,10 +11,10 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 /* import font awesome icon component */
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 /* import specific icons */
-import { faWarning } from '@fortawesome/free-solid-svg-icons'
+import { faCheckCircle, faExclamationCircle, faExclamationTriangle, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 
 /* add icons to the library */
-library.add(faWarning)
+library.add(faExclamationCircle, faExclamationTriangle, faInfoCircle, faCheckCircle);
 
 const app = createApp(App);
 

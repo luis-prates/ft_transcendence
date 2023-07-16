@@ -7,9 +7,9 @@ import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
 
 export enum GameStatus {
-	NOT_STARTED = "NOT_STARTED",
-	IN_PROGESS = "IN_PROGESS",
-	FINISHED = "FINISHED",
+  NOT_STARTED = "NOT_STARTED",
+  IN_PROGESS = "IN_PROGESS",
+  FINISHED = "FINISHED",
 }
 
 enum UserStatus {
@@ -20,12 +20,12 @@ enum UserStatus {
 
 export interface Block {
   blocker: {
-    id: number,
-    nickname: string,
-    image: string,
-  },
-  blockerId: number,
-  blockedId: number,
+    id: number;
+    nickname: string;
+    image: string;
+  };
+  blockerId: number;
+  blockedId: number;
 }
 
 export interface Friendship {
@@ -40,12 +40,12 @@ export interface Friendship {
 }
 
 export interface GAME {
-  winnerId: number,
-  winnerNickname: string,
-  winnerScore: number,
-  loserId: number, 
-  loserNickname: string,
-  loserScore: number,
+  winnerId: number;
+  winnerNickname: string;
+  winnerScore: number;
+  loserId: number;
+  loserNickname: string;
+  loserScore: number;
   gameType: string;
   id: string;
   players: {
@@ -84,9 +84,10 @@ export interface User {
   avatar: number; //Avatar in The Lobby
   infoPong: InfoPong;
   money: number;
-  friends: any,
-  friendsRequests: Friendship[],
-  block: Block[],
+  friends: any;
+  friendsRequests: Friendship[];
+  block: Block[];
+  twofagenerate: boolean;
 }
 
 export const userStore = defineStore("user", function () {
@@ -130,59 +131,61 @@ export const userStore = defineStore("user", function () {
     friends: Array(),
     friendsRequests: Array(),
     block: Array(),
+	  isTwoFAEnabled: false,
   });
 
   async function login(authorizationCode: string | undefined) {
-	if (user.isLogin || authorizationCode === undefined)
-		return;
-	user.access_token_server = authorizationCode;
+    if (user.isLogin || authorizationCode === undefined) return;
+    user.access_token_server = authorizationCode;
 
-	await axios.get(env.BACKEND_PORT + "/users/me", {
-		headers: {
-			Authorization: "Bearer " + authorizationCode,
-		},
-	}).then(function (response: any){
-		console.log("This is the response from server: " + JSON.stringify(response));
-      user.id = response.data.id;
-			user.name = response.data.name;
-			user.nickname = response.data.nickname;
-			user.email = response.data.email;
-      user.status = response.data.status;
-			user.image = response.data.image;
-			user.money = response.data.money;
-			user.avatar = response.data.avatar;
-			user.infoPong.level = response.data.level;
-			user.infoPong.xp = response.data.xp;
-			user.infoPong.color = response.data.color;
-			user.infoPong.skin.default.tableColor = response.data.tableColorEquipped;
-			user.infoPong.skin.default.tableSkin = response.data.tableSkinEquipped;
-			user.infoPong.skin.default.paddle = response.data.paddleSkinEquipped;
-			user.infoPong.skin.tables = response.data.tableSkinsOwned;
-      user.infoPong.skin.paddles = response.data.paddleSkinsOwned;
-      getFriends();
-      getFriendRequests();
-      getBlockedUsers();
-      getBlockedBy();
-      getUserGames(user.id);
-      console.log(response);
-		})
-			.catch(function (error) {
-			console.error(error);
-			user.isLogin = false;
-		});
-	  user.isLogin = true;
-  // .finally(() => window.location.href = window.location.origin);
+    await axios
+      .get(env.BACKEND_PORT + "/users/me", {
+        headers: {
+          Authorization: "Bearer " + authorizationCode,
+        },
+      })
+      .then(function (response: any) {
+        user.id = response.data.id;
+        user.name = response.data.name;
+        user.nickname = response.data.nickname;
+        user.email = response.data.email;
+        user.status = response.data.status;
+        user.image = response.data.image;
+        user.money = response.data.money;
+        user.avatar = response.data.avatar;
+        user.infoPong.level = response.data.level;
+        user.infoPong.xp = response.data.xp;
+        user.infoPong.color = response.data.color;
+        user.infoPong.skin.default.tableColor = response.data.tableColorEquipped;
+        user.infoPong.skin.default.tableSkin = response.data.tableSkinEquipped;
+        user.infoPong.skin.default.paddle = response.data.paddleSkinEquipped;
+        user.infoPong.skin.tables = response.data.tableSkinsOwned;
+        user.infoPong.skin.paddles = response.data.paddleSkinsOwned;
+		    user.isTwoFAEnabled = response.data.isTwoFAEnabled;
+        getFriends();
+        getFriendRequests();
+        getBlockedUsers();
+        getBlockedBy();
+        getUserGames(user.id);
+      })
+      .catch(function (error) {
+        console.error(error);
+        user.isLogin = false;
+      });
+    user.isLogin = true;
+    // .finally(() => window.location.href = window.location.origin);
+	return (user.isTwoFAEnabled);
   }
 
   async function loginTest() {
-    if (user.isLogin) return;
+    // if (user.isLogin) return;
     await axios
       .post(env.BACKEND_PORT + "/auth/signin", user)
 
       // axios.request(options)
       .then(function (response: any) {
         console.log("response: ", response.data);
-        
+
         user.access_token_server = response.data.access_token;
         user.id = response.data.dto.id;
         user.status = response.data.dto.status;
@@ -200,6 +203,7 @@ export const userStore = defineStore("user", function () {
         user.infoPong.skin.default.paddle = response.data.dto.paddleSkinEquipped;
         user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
         user.infoPong.skin.paddles = response.data.dto.paddleSkinsOwned;
+		    user.isTwoFAEnabled = response.data.dto.isTwoFAEnabled;
         getFriends();
         getFriendRequests();
         getBlockedUsers();
@@ -212,6 +216,7 @@ export const userStore = defineStore("user", function () {
     user.isLogin = true;
     console.log("USER: ", user);
     // .finally(() => window.location.href = window.location.origin);
+	return (user.isTwoFAEnabled);
   }
 
   async function updateProfile() {
@@ -284,7 +289,6 @@ export const userStore = defineStore("user", function () {
   }
 
   async function getUserProfile(userId: number) {
-
     const options = {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -303,7 +307,7 @@ export const userStore = defineStore("user", function () {
       });
   }
 
-  async function update(userUpdate: { name: string; email: string; nickname: string; image: string; }) {
+  async function update(userUpdate: { name: string; email: string; nickname: string; image: string }) {
     let body = {} as any;
     if (user.name != userUpdate.name) body.name = userUpdate.name;
     if (user.email != userUpdate.email) body.email = userUpdate.email;
@@ -321,9 +325,7 @@ export const userStore = defineStore("user", function () {
       .catch((err) => console.error(err));
   }
 
-
   async function getFriends() {
-
     const options = {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -344,7 +346,6 @@ export const userStore = defineStore("user", function () {
   }
 
   async function getFriendRequests() {
-
     const options = {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -363,7 +364,6 @@ export const userStore = defineStore("user", function () {
   }
 
   async function sendFriendRequest(userId: number, userNickname: string) {
-
     const options = {
       method: "POST",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -372,10 +372,10 @@ export const userStore = defineStore("user", function () {
     await fetch(env.BACKEND_PORT + "/friendship/send/" + userId, options)
       .then(async function (response: any) {
         //Add Store()
-        console.log(response)
+        console.log(response);
         console.log(user.friendsRequests);
 
-        const request = { 
+        const request = {
           requesteeId: userId,
           requesteeName: userNickname,
           requestorId: user.id,
@@ -391,7 +391,6 @@ export const userStore = defineStore("user", function () {
   }
 
   async function cancelFriendRequest(userId: number) {
-
     const options = {
       method: "DELETE",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -399,7 +398,6 @@ export const userStore = defineStore("user", function () {
 
     await fetch(env.BACKEND_PORT + "/friendship/cancel/" + userId, options)
       .then(async function (response: any) {
-
         //Add Store()
         const index = user.friendsRequests.findIndex((friendship) => friendship.requesteeId === userId);
         if (index !== -1) user.friendsRequests.splice(index, 1);
@@ -407,17 +405,15 @@ export const userStore = defineStore("user", function () {
 
         //Emit
         const lobbySocket: Socket = socketClass.getLobbySocket();
-        lobbySocket.emit("cancelFriendRequest", { 
+        lobbySocket.emit("cancelFriendRequest", {
           requesteeId: userId,
           requestorId: user.id,
         });
-
       })
       .catch((err) => console.error(err));
   }
 
   async function acceptFriendRequest(userId: number, userNickname: string) {
-
     const options = {
       method: "POST",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -425,7 +421,6 @@ export const userStore = defineStore("user", function () {
 
     await fetch(env.BACKEND_PORT + "/friendship/accept/" + userId, options)
       .then(async function (response: any) {
-        
         user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requestorId != userId);
         user.friends.push({
           id: userId,
@@ -435,7 +430,7 @@ export const userStore = defineStore("user", function () {
 
         //Emit
         const lobbySocket: Socket = socketClass.getLobbySocket();
-        lobbySocket.emit("acceptFriendRequest", { 
+        lobbySocket.emit("acceptFriendRequest", {
           requesteeId: user.id,
           requesteeName: user.nickname,
           requestorId: userId,
@@ -445,7 +440,6 @@ export const userStore = defineStore("user", function () {
   }
 
   async function rejectFriendRequest(userId: number) {
-
     const options = {
       method: "DELETE",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -453,13 +447,12 @@ export const userStore = defineStore("user", function () {
 
     await fetch(env.BACKEND_PORT + "/friendship/reject/" + userId, options)
       .then(async function (response: any) {
-
         const index = user.friendsRequests.findIndex((friendship) => friendship.requestorId == userId);
         if (index !== -1) user.friendsRequests.splice(index, 1);
 
         //Emit
         const lobbySocket: Socket = socketClass.getLobbySocket();
-        lobbySocket.emit("rejectFriendRequest", { 
+        lobbySocket.emit("rejectFriendRequest", {
           requesteeId: user.id,
           requesteeName: user.nickname,
           requestorId: userId,
@@ -470,7 +463,6 @@ export const userStore = defineStore("user", function () {
   }
 
   async function deleteFriend(userId: number) {
-
     const options = {
       method: "DELETE",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -478,7 +470,6 @@ export const userStore = defineStore("user", function () {
 
     await fetch(env.BACKEND_PORT + "/friendship/unfriend/" + userId, options)
       .then(async function (response: any) {
-
         const index = user.friends.findIndex((friendship) => friendship.id === userId);
         if (index !== -1) user.friends.splice(index, 1);
         console.log("Unfriend: ", userId, ": ", user.friends);
@@ -494,7 +485,6 @@ export const userStore = defineStore("user", function () {
   }
 
   async function getBlockedUsers() {
-
     const options = {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -520,26 +510,24 @@ export const userStore = defineStore("user", function () {
 
     await fetch(env.BACKEND_PORT + "/blocklist/block/" + userId, options)
       .then(async function (response: any) {
-
         //Add in Store
         const existingEvent = user.block.find((block: any) => block.blockedId === userId);
-				if (!existingEvent)
-				{
-					user.block.push({
-						blocked: {
-							id: userId,
-							nickname: userNickname,
-							image: userImage,
-						},
-						blockedId: userId,
-						blockerId: user.id,
-					});
-				}  
+        if (!existingEvent) {
+          user.block.push({
+            blocked: {
+              id: userId,
+              nickname: userNickname,
+              image: userImage,
+            },
+            blockedId: userId,
+            blockerId: user.id,
+          });
+        }
         console.log("Block User:", userNickname, user.block);
 
         //Emit
         const lobbySocket: Socket = socketClass.getLobbySocket();
-        lobbySocket.emit("block_user", { 
+        lobbySocket.emit("block_user", {
           blockerId: user.id,
           blockerNickname: user.nickname,
           blockId: userId,
@@ -556,14 +544,13 @@ export const userStore = defineStore("user", function () {
 
     await fetch(env.BACKEND_PORT + "/blocklist/block/" + userId, options)
       .then(async function (response: any) {
-
         //Add in Store
         user.block = user.block.filter((block: any) => block.blockedId == userId);
         console.log("Block: ", userId, ": ", user.block);
 
         //Emit
         const lobbySocket: Socket = socketClass.getLobbySocket();
-        lobbySocket.emit("unblock_user", { 
+        lobbySocket.emit("unblock_user", {
           blockerId: user.id,
           blockerNickname: user.nickname,
           blockId: userId,
@@ -573,7 +560,6 @@ export const userStore = defineStore("user", function () {
   }
 
   async function getBlockedBy() {
-
     const options = {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -593,7 +579,6 @@ export const userStore = defineStore("user", function () {
   }
 
   async function getUserGames(userId: number) {
-    
     const options = {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -603,8 +588,7 @@ export const userStore = defineStore("user", function () {
       .get(env.BACKEND_PORT + "/game/user/" + userId, options)
       .then(function (response: any) {
         console.log("Games: ", response.data);
-        if (user.id == userId)
-          user.infoPong.historic = response.data;
+        if (user.id == userId) user.infoPong.historic = response.data;
         return response.data;
       })
       .catch(function (error) {
@@ -613,11 +597,10 @@ export const userStore = defineStore("user", function () {
   }
 
   async function getGames(status: GameStatus) {
-
     const options = {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
-      params: new URLSearchParams([['status', status]]),
+      params: new URLSearchParams([["status", status]]),
     };
 
     return await axios
@@ -634,7 +617,6 @@ export const userStore = defineStore("user", function () {
   }
 
   async function getLeaderboard() {
-
     const options = {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -651,15 +633,14 @@ export const userStore = defineStore("user", function () {
       });
   }
 
-  
   async function createGame(userId: number, gameRequest: any) {
     let body = {} as any;
-    body.gameType ="PUBLIC";
-    body.players = [ userId ];
+    body.gameType = "PUBLIC";
+    body.players = [userId];
     body.gameRequest = gameRequest;
 
-      const options = {
-        headers: { Authorization: `Bearer ${user.access_token_server}` },
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
 
     return await axios
@@ -672,23 +653,99 @@ export const userStore = defineStore("user", function () {
         console.error(error);
       });
   }
+  
+  async function twofagenerate() : Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .post(env.BACKEND_PORT + "/auth/2fa/generate", undefined, options)
+      .then(function (response: any) {
+        console.log(`2Fa: ${response.data}`);
+        return response.data.responseObj;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
+
+  async function twofaTurnOn(twoFactorCode: string) : Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+    console.log("code:", twoFactorCode)
+    return await axios
+      .post(env.BACKEND_PORT + "/auth/2fa/turn-on", { twoFACode: twoFactorCode }, options)
+      .then(function (response: any) {
+        console.log(`2Fa ON: ${response.data}`);
+        user.isTwoFAEnabled = true;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
+  
+  async function twofaTurnOff(twoFactorCode: string) : Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .post(env.BACKEND_PORT + "/auth/2fa/turn-off", { twoFACode: twoFactorCode }, options)
+      .then(function (response: any) {
+        console.log(`2Fa OFF: ${response.data}`);
+        user.isTwoFAEnabled = false;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
 
   return {
-    user, login, loginTest,
+    user,
+    login,
+    loginTest,
 
     //User Information
-    update, updateProfile, buy_skin, updateTableDefault, getUsers, getUserProfile,
+    update,
+    updateProfile,
+    buy_skin,
+    updateTableDefault,
+    getUsers,
+    getUserProfile,
 
     //Friends
-    getFriends, getFriendRequests,
+    getFriends,
+    getFriendRequests,
 
     //Send Request Friend
-    sendFriendRequest, acceptFriendRequest, cancelFriendRequest, rejectFriendRequest, deleteFriend,
+    sendFriendRequest,
+    acceptFriendRequest,
+    cancelFriendRequest,
+    rejectFriendRequest,
+    deleteFriend,
 
     //Block
-    getBlockedUsers, blockUser, unblockUser, getBlockedBy,
+    getBlockedUsers,
+    blockUser,
+    unblockUser,
+    getBlockedBy,
 
     //Game
-    getUserGames, getGames, getLeaderboard, createGame
+    getUserGames,
+    getGames,
+    getLeaderboard,
+    createGame,
+
+    //TwoFactor
+    twofagenerate,
+    twofaTurnOn,
+    twofaTurnOff,
   };
 });
