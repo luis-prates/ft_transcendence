@@ -57,7 +57,7 @@ export const chatStore = defineStore("chat", () => {
     if (channel) {
       selected.value = channel;
       try {
-        const response = await axios.get(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/messages`, {
+        const response = await axios.get(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/messages`, {
           headers: { Authorization: `Bearer ${user.access_token_server}` },
         });
         const messages = response.data;
@@ -78,7 +78,7 @@ export const chatStore = defineStore("chat", () => {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
     try {
-      const response = await axios.get(env.BACKEND_PORT + "/chat/channels", options);
+      const response = await axios.get(env.BACKEND_SERVER_URL + "/chat/channels", options);
       const responseData = response.data;
       console.log("response: ", responseData);
 
@@ -127,14 +127,14 @@ export const chatStore = defineStore("chat", () => {
       body: JSON.stringify(createChannelDto),
     };
     try {
-      const response = await fetch(`${env.BACKEND_PORT}/chat/channels`, options);
+      const response = await fetch(`${env.BACKEND_SERVER_URL}/chat/channels`, options);
       const data = await response.json();
       console.log("CREATE CHANNEL:", data);
 
       // Check if the response indicates a successful operation
       if (response.ok) {
         // Return any relevant data here if needed
-		  getChannels();
+        getChannels();
         return false;
       } else if (response.status == 409) {
         return "409"; //409 == Conflit error (same name || same id?)

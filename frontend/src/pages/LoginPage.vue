@@ -189,7 +189,7 @@ async function twoFactorPrompt(twoFactorCode: string) {
 	let twoFAValid = false;
 	if (twoFactorCode) {
 		try {
-			await axios.post(env.BACKEND_PORT + "/auth/2fa/validate", {
+			await axios.post(env.BACKEND_SERVER_URL + "/auth/2fa/validate", {
 				twoFACode: twoFactorCode,
 			},
 			{
