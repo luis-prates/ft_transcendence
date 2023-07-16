@@ -504,7 +504,7 @@ export const userStore = defineStore("user", function () {
       });
   }
 
-  async function blockUser(userId: number, userNickname: string, userImage: string) {
+  async function blockUser(userId: number, userNickname: string, userImage: string) { 
     const options = {
       method: "POST",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -547,8 +547,8 @@ export const userStore = defineStore("user", function () {
     await fetch(env.BACKEND_PORT + "/blocklist/block/" + userId, options)
       .then(async function (response: any) {
         //Add in Store
-        user.block = user.block.filter((block: any) => block.blockedId == userId);
-        console.log("Block: ", userId, ": ", user.block);
+        user.block = user.block.filter((block: any) => block.blockedId != userId);
+        console.log("UnBlock: ", userId, ": ", user.block);
 
         //Emit
         const lobbySocket: Socket = socketClass.getLobbySocket();
