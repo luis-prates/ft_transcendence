@@ -42,9 +42,7 @@ export class Camera {
     for (let gameObjec of gameObjecs) {
       gameObjec.draw(context);
     }
-	setTimeout(() => {
-    	this.map.drawLayer_3(context);
-	}, 0);
+	this.map.drawLayer_3(context);
     Game.instance.drawMenuLocal(context);
     context.restore();
   }
