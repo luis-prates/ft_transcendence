@@ -222,15 +222,22 @@ export class ChatService {
 			this.events.emit('channel-created', newChannel);
 
 			// emit event to creator for new channel
+      const user_db = await this.prisma.user.findUnique({
+        where: { id: user.id },
+      });
+
 			this.events.emit('user-added-to-channel', {
 				channelId: newChannel.id,
 				userId: user.id,
+        user: user_db,
 			});
+
 			// emit event to all other users added to channel
 			for (user of createChannelDto.usersToAdd) {
 				this.events.emit('user-added-to-channel', {
 					channelId: newChannel.id,
 					userId: user,
+          user: user_db
 				});
 			}
 		} catch (error) {
@@ -258,6 +265,20 @@ export class ChatService {
 			throw new NotFoundException('Channel not found');
 		}
 
+    // send back error if they are already in the channel
+    const channelUser = await this.prisma.channelUser.findUnique({
+      where: {
+        userId_channelId: {
+          channelId: channelId,
+          userId: userId,
+        },
+      },
+    });
+
+    if (channelUser) {
+      throw new BadRequestException('User is already part of this channel');
+    }
+
 		if (channel.type == 'DM') {
 			throw new ForbiddenException('Cannot add users to a DM');
 		}
@@ -270,7 +291,10 @@ export class ChatService {
 		});
 
 		// Emit an event when a user is added to a new channel
-		this.events.emit('user-added-to-channel', { channelId, userId });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+		this.events.emit('user-added-to-channel', { channelId, userId, user });
 
 		return newChannelUser;
 	}
@@ -284,6 +308,10 @@ export class ChatService {
 				},
 			},
 		});
+
+    const db_user = await this.prisma.user.findUnique({
+      where: { id: removedUserId },
+    });
 
 		if (!removeUser) {
 			throw new NotFoundException('User is not part of this channel');
@@ -320,6 +348,7 @@ export class ChatService {
 		this.events.emit('user-removed-from-channel', {
 			channelId,
 			userId: removedUserId,
+      user: db_user
 		});
 	}
 
@@ -367,8 +396,12 @@ export class ChatService {
 			},
 		});
 
+    const user_db = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
 		// Emit an event when a user is added to a new channel
-		this.events.emit('user-added-to-channel', { channelId, userId });
+		this.events.emit('user-added-to-channel', { channelId, userId, user_db });
 	}
 
 	async leaveChannel(channelId: number, user: any) {
@@ -424,9 +457,16 @@ export class ChatService {
 			await this.prisma.channel.delete({ where: { id: channelId } });
 		}
 
+    // get data of user to inform channel
+    const db_user = await this.prisma.user.findUnique({
+      where: { id: user.id },
+    });
+
+
 		this.events.emit('user-removed-from-channel', {
 			channelId,
 			userId: user.id,
+      user: db_user
 		});
 	}
 
@@ -695,9 +735,15 @@ export class ChatService {
 
 		// Emit events to all channel users when a channel is deleted
 		for (const user of users) {
+      // get data of user to inform channel
+      const db_user = await this.prisma.user.findUnique({
+        where: { id: user.id },
+      });
+
 			this.events.emit('user-removed-from-channel', {
 				channelId,
 				userId: user.id,
+        user: db_user
 			});
 		}
 	}

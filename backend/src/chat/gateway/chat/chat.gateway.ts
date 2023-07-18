@@ -42,7 +42,7 @@ export class ChatGateway implements OnGatewayConnection {
 		});
 
 		// event for a user being added to a channel
-		this.chatService.events.on('user-added-to-channel', async ({ channelId, userId }) => {
+		this.chatService.events.on('user-added-to-channel', async ({ channelId, userId, user }) => {
 			const client: Socket = this.userIdToSocketMap.get(userId);
 			if (!client) {
 				// if socketId not found, client is not currently connected and doesnt need the websocket event
@@ -66,20 +66,24 @@ export class ChatGateway implements OnGatewayConnection {
 				message: `You have been added to channel ${channelId}`,
 			});
 
-			// Send a message to all users in the channel that a new user has been added
+      // remove the hash field from the user object
+      delete user.hash;
+
 			client.broadcast.to(`channel-${channelId}`).emit('user-added', {
 				channelId,
-				userId,
+        user,
 				message: `User ${userId} has been added to channel ${channelId}`,
 			});
 		});
 
-		this.chatService.events.on('user-removed-from-channel', async ({ channelId, userId }) => {
+		this.chatService.events.on('user-removed-from-channel', async ({ channelId, userId, user }) => {
 			const client: Socket = this.userIdToSocketMap.get(userId);
 			if (!client) {
 				// if socketId not found, client is not currently connected and doesnt need the websocket event
 				return;
 			}
+
+      delete user.hash;
 
 			client.leave(`channel-${channelId}`);
 			console.log(`User ${userId} left a room: channel-${channelId}`);
@@ -103,7 +107,7 @@ export class ChatGateway implements OnGatewayConnection {
 			// Send a message to all users in the channel that a user has been removed
 			client.broadcast.to(`channel-${channelId}`).emit('user-removed', {
 				channelId,
-				userId,
+				user,
 				message: `User ${userId} has left the channel ${channelId}`,
 			});
 		});
