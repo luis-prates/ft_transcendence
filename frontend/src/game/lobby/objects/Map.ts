@@ -41,6 +41,8 @@ export class Map implements GameObject {
   private cachedMapObjs: HTMLCanvasElement | null = null;
   private cachedMapObjsContext: CanvasRenderingContext2D | null = null;
 
+  public paintedOnce = false;
+
   constructor(data?: any) {
     this.type = "map";
     const canva = document.createElement("canvas") as HTMLCanvasElement;
@@ -118,40 +120,33 @@ export class Map implements GameObject {
   }
 
   drawLayer_3(contex: CanvasRenderingContext2D): void {
-    let rect: Rectangle | undefined;
-    // If the cached canvas doesn't exist or the layer's size has changed, create a new cached canvas
-    if (!this.cachedLayer3 || this.cachedLayer3.width !== this.layer_3.context.canvas.width || this.cachedLayer3.height !== this.layer_3.context.canvas.height) {
-      this.cachedLayer3 = document.createElement("canvas");
-      this.cachedLayer3.width = this.layer_3.context.canvas.width;
-      this.cachedLayer3.height = this.layer_3.context.canvas.height;
-      this.cachedLayer3Context = this.cachedLayer3.getContext("2d");
-    }
-
-    if (this.layer_3.image.complete && this.cachedLayer3Context) {
-      this.cachedLayer3Context.clearRect(0, 0, this.cachedLayer3.width, this.cachedLayer3.height);
-      //   this.cachedLayer3Context.drawImage(this.layer_3.image, 0, 0);
-      rect = this.layer_3.colision();
-      if (rect) {
-        this.layer_3.context.clearRect(rect.x, rect.y, rect.w, rect.h);
-        this.layer_3.context.drawImage(this.layer_3.image, 0, 0);
-        const imageData = this.layer_3.context.getImageData(rect.x, rect.y, rect.w, rect.h);
-        const data = imageData.data;
-        for (let row = 0; row < rect.h; row++) {
-          for (let col = 0; col < rect.w; col++) {
-            const index = (row * rect.w + col) * 4;
-            const alpha = data[index + 3];
-            const opacity = 128; //  Opacidade de 50%
-            data[index + 3] = (alpha * opacity) / 255;
-          }
-        }
-        this.layer_3.context.putImageData(imageData, rect.x, rect.y);
-      }
-    }
-    if (this.cachedLayer3 && rect === undefined) {
-      contex.drawImage(this.cachedLayer3, 0, 0);
-    } else if (rect) {
-      contex.drawImage(this.layer_3.context.canvas, 0, 0);
-    }
+	if (!this.paintedOnce) {
+		// If the cached canvas doesn't exist or the layer's size has changed, create a new cached canvas
+		if (!this.cachedLayer3 || this.cachedLayer3.width !== this.layer_3.context.canvas.width || this.cachedLayer3.height !== this.layer_3.context.canvas.height) {
+		  this.cachedLayer3 = document.createElement("canvas");
+		  this.cachedLayer3.width = this.layer_3.context.canvas.width;
+		  this.cachedLayer3.height = this.layer_3.context.canvas.height;
+		  this.cachedLayer3Context = this.cachedLayer3.getContext("2d");
+		}
+	
+		if (this.layer_3.image.complete && this.cachedLayer3Context) {
+		  this.cachedLayer3Context.clearRect(0, 0, this.cachedLayer3.width, this.cachedLayer3.height);
+		  //   this.cachedLayer3Context.drawImage(this.layer_3.image, 0, 0);
+		  this.layer_3.context.drawImage(this.layer_3.image, 0, 0);
+		  const imageData = this.layer_3.context.getImageData(0, 0, this.layer_3.image.width, this.layer_3.image.height);
+		  const data = imageData.data;
+		  const opacityFactor = 128 / 255; // Opacidade de 50%
+		  // Modify the copied data
+		  for (let i = 3; i < data.length; i += 4) {
+			data[i] = data[i] * opacityFactor;
+		  }
+		  this.cachedLayer3Context.putImageData(imageData, 0, 0);
+		}
+		this.paintedOnce = true;
+	}
+	if (this.cachedLayer3) {
+	  contex.drawImage(this.cachedLayer3, 0, 0);
+	}
   }
 
   mouseClick(x: number, y: number, button: number): void {}
