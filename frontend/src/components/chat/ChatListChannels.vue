@@ -1,5 +1,4 @@
 <template>
-  <div class="parent-container">
     <div class="d-flex item-box">
       <div class="img_cont">
         <img :src="getImage()" class="user_img" />
@@ -10,7 +9,6 @@
         <p>{{ props.channel.users.length + " Users"}}</p>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">

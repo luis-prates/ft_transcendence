@@ -89,7 +89,6 @@ body,html{
   .contacts li{
     width: 100% !important;
     padding: 5px 10px;
-    margin-bottom: 15px !important;
   }
   .active{
     background-color: rgba(0,0,0,0.3);
