@@ -279,11 +279,6 @@ body,html{
     max-width: 30px; /* Set the maximum width */
     max-height: 30px; /* Set the maximum height */
   }
-  /* .chat_filter_button:hover{
-    cursor: pointer;
-    background-color: rgba(17, 9, 9, 0.2); 
-    border-radius: 10px;
-  } */
   @media(max-width: 576px){
   .contacts_card{
   margin-bottom: 15px !important;
