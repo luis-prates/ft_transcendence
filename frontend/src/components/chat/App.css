@@ -165,10 +165,19 @@ body,html{
   .config_chat {
     background-color: transparent;
     border-color: transparent;
+    width: 30px; /* Set the desired width */
+    height: 30px; /* Set the desired height */
+    max-width: 30px; /* Set the maximum width */
+    max-height: 30px; /* Set the maximum height */
+    padding-right: 30%;
   }
   .close_chat {
     background-color: transparent;
     border-color: transparent;
+    width: 30px; /* Set the desired width */
+    height: 30px; /* Set the desired height */
+    max-width: 30px; /* Set the maximum width */
+    max-height: 30px; /* Set the maximum height */
   }
   .hide_chat {
     background-color: black; 
@@ -259,17 +268,22 @@ body,html{
     align-items: center;
     justify-content: center;
     gap: 25%;
+    padding-bottom: 10%;
   }
   .chat_filter_button{
     background-color: transparent;
     border-color: transparent;
     border-radius: 10px;
+    width: 30px; /* Set the desired width */
+    height: 30px; /* Set the desired height */
+    max-width: 30px; /* Set the maximum width */
+    max-height: 30px; /* Set the maximum height */
   }
-  .chat_filter_button:hover{
+  /* .chat_filter_button:hover{
     cursor: pointer;
     background-color: rgba(17, 9, 9, 0.2); 
     border-radius: 10px;
-  }
+  } */
   @media(max-width: 576px){
   .contacts_card{
   margin-bottom: 15px !important;

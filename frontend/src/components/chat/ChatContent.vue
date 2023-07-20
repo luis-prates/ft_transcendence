@@ -11,7 +11,9 @@
         </div>
         <div class="video_cam">
           <!-- <button class="config_chat">⚙</button> -->
-          <button @click="toggleStatus" class="close_chat">✖</button>
+          <button @click="toggleStatus" class="close_chat">
+            <img class="close_chat" src="src/assets/chat/close_channel.png" alt="Close" />
+          </button>
         </div>
       </div>
     </div>
@@ -57,8 +59,12 @@
           <p>{{selected?.messages?.length + " Messages"}}</p>
         </div>
         <div class="video_cam">
-          <button v-if=imOwner() @click="editChannel" class="config_chat">⚙</button>
-          <button @click="toggleStatus" class="close_chat">✖</button>
+          <button v-if=imOwner() @click="editChannel" class="config_chat">
+            <img class="config_chat" src="src/assets/chat/edit_channel.png" alt="Edit" />
+          </button>
+          <button @click="toggleStatus" class="close_chat">
+            <img class="close_chat" src="src/assets/chat/close_channel.png" alt="Close" />
+          </button>
         </div>
       </div>
     </div>

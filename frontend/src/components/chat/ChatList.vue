@@ -14,9 +14,15 @@
         </div>
         <!-- Add chat list items here -->
         <div class="chat_filter">
-          <button id="dmButton" class="chat_filter_button" @click="changeFilter('dm')">💬</button>
-          <button id="insideButton" class="chat_filter_button" @click="changeFilter('inside')">🗪</button>
-          <button id="allButton" class="chat_filter_button" @click="changeFilter('all')">🌐</button>
+          <button id="dmButton" class="chat_filter_button" @click="changeFilter('dm')">
+            <img class="chat_filter_button" src="src/assets/chat/dm_messages.png" alt="DMs" />
+          </button>
+          <button id="insideButton" class="chat_filter_button" @click="changeFilter('inside')">
+            <img class="chat_filter_button" src="src/assets/chat/my_channels.png" alt="My Channels" />
+          </button>
+          <button id="allButton" class="chat_filter_button" @click="changeFilter('all')">
+            <img class="chat_filter_button" src="src/assets/chat/all_channels.png" alt="All Channels" />
+          </button>
         </div>
         <ul class="contacts" @click="toggleStatus">
           <li v-for="channel in channelsFilters">
@@ -106,9 +112,9 @@ function changeFilter (filter: string)
   const insideButton = document.getElementById('insideButton') as HTMLElement;
   const allButton = document.getElementById('allButton') as HTMLElement;
 
-  dmButton.style.backgroundColor = isChatFilterType.value == "dm" ? "rgba(17, 9, 9, 0.2)" : "transparent";
-  insideButton.style.backgroundColor = isChatFilterType.value == "inside" ? "rgba(17, 9, 9, 0.2)" : "transparent";
-  allButton.style.backgroundColor = isChatFilterType.value == "all" ? "rgba(17, 9, 9, 0.2)" : "transparent";
+  // dmButton.style.backgroundColor = isChatFilterType.value == "dm" ? "rgba(17, 9, 9, 0.2)" : "transparent";
+  // insideButton.style.backgroundColor = isChatFilterType.value == "inside" ? "rgba(17, 9, 9, 0.2)" : "transparent";
+  // allButton.style.backgroundColor = isChatFilterType.value == "all" ? "rgba(17, 9, 9, 0.2)" : "transparent";
 
   getFilteredChannels();
 }
