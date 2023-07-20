@@ -9,7 +9,7 @@
 import ChatList from "./ChatList.vue";
 import ChatContent from "./ChatContent.vue";
 import { onMounted, onUnmounted, ref } from "vue";
-import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
+import { chatStore, type channel, type ChatMessage, type ChatUser } from "@/stores/chatStore";
 import { userStore } from "@/stores/userStore";
 import { socketClass } from "@/socket/SocketClass";
 import { provide } from 'vue';//channelStatus
@@ -88,11 +88,77 @@ onMounted(() => {
     store.addUserToChannel(channelId, user);
   });
 
+  //Mute
+  socket.on("user-muted-in-channel", (eventData) => {
+    console.log("Mute" , eventData);
+    const { channelId, userId } = eventData;
+
+    const curUser = getUserInChannel(channelId, userId);
+    if (curUser)
+      curUser.isMuted = true;
+  });
+
+  //Unmute
+  socket.on("user-unmuted-in-channel", (eventData) => {
+    console.log("UnMuted" , eventData);
+    const { channelId, userId } = eventData;
+
+    const curUser = getUserInChannel(channelId, userId);
+    if (curUser)
+      curUser.isMuted = false;
+  });
+
+  //Make Admin
+  socket.on("user-promoted-in-channel", (eventData) => {
+    console.log("Mute" , eventData);
+    const { channelId, userId } = eventData;
+
+    const curUser = getUserInChannel(channelId, userId);
+    if (curUser)
+      curUser.isAdmin = true;
+  });
+
+  //Demote
+  socket.on("user-demoted-in-channel", (eventData) => {
+    console.log("Mute" , eventData);
+    const { channelId, userId } = eventData;
+
+    const curUser = getUserInChannel(channelId, userId);
+    if (curUser)
+      curUser.isAdmin = false;
+  });
+
+  //Kick
+  socket.on("user-removed-from-channel", (eventData) => {
+    console.log("Kick" , eventData);
+    const { channelId, userId } = eventData;
+
+    const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
+    if (curChannel)
+    {
+      const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userId);
+      if (curUser)
+        curChannel.users = curChannel.users.filter((userChannel: ChatUser) => userChannel.id != userId);
+    }
+  });
   
   socket.onAny((eventName, eventData) => {
     console.log("Received event: ", eventName);
     console.log("Event data: ", eventData);
   });
+
+  function getUserInChannel(channelId: any, userId: any) : ChatUser | undefined
+  {
+    const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
+    if (curChannel)
+    {
+      const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userId);
+      if (curUser)
+        return curUser;
+    }
+    return undefined
+  }
+
 });
 
 onUnmounted(() => {

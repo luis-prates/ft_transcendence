@@ -185,7 +185,6 @@ export const chatStore = defineStore("chat", () => {
       } catch (error) {
         console.error(error);
       }
-    
   }
 
   async function createChannel(channel: channel) {
@@ -297,87 +296,118 @@ function addUserToChannel(channelId: any, user: ChatUser) {
     console.warn(`Channel with ID ${channelId} not found.`);
   }
 }
-  
-  async function makeAdmin(channel: channel, userChat: ChatUser) {
-    if (channel.ownerId != user.id)
-    {
-      console.log("You aren't a OWNER!");
-    }
 
-    const makeAdmin = {
-      channelId: channel.objectId,
-      userId: userChat.id,
-    };
-
-    const options = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user.access_token_server}`,
-      },
-      body: JSON.stringify(makeAdmin),
-    };
-    try {
-      const response = await fetch(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/admin/${userChat.id}`, options);
-      const data = await response.json();
-      console.log("Make Admnstrator :", data);
-
-      // Check if the response indicates a successful operation
-      if (response.ok) {
-        // Return any relevant data here if needed
-        //store.getChannels();
-        return false;
-      } else if (response.status == 409) {
-        return "409"; //409 == Conflit error (same name || same id?)
-      } else {
-        return "GENERIC_ERROR";
-      }
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
+async function makeAdmin(channel: channel, userChat: ChatUser) {
+  console.log("CHANNEL:", channel)
+  if (channel.ownerId != user.id)
+  {
+    console.log("You aren't a OWNER!");
   }
 
-  
-  async function demoteAdmin(channel: channel, userChat: ChatUser) {
-    if (channel.ownerId != user.id)
-    {
-      console.log("You aren't a OWNER!");
-    }
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${user.access_token_server}`,
+    },
+  };
 
-    const makeAdmin = {
-      channelId: channel.objectId,
-      userId: userChat.id,
-    };
+  await axios
+    .post(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/admin/${userChat.id}`, 
+      { channelId: channel.objectId, userId: userChat.id, }, options)
+    .then(function (response: any) {
+      console.log(`Make Adminstrator : ${response.data}`);
+      userChat.isAdmin = true;
+    })
+    .catch((err) => console.error(err));
+}
 
-    const options = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user.access_token_server}`,
-      },
-      body: JSON.stringify(makeAdmin),
-    };
-    try {
-      const response = await fetch(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/admin/${userChat.id}/demote`, options);
-      const data = await response.json();
-      console.log("Demote Admnstrator :", data);
 
-      // Check if the response indicates a successful operation
-      if (response.ok) {
-        // Return any relevant data here if needed
-        //store.getChannels();
-        return false;
-      } else if (response.status == 409) {
-        return "409"; //409 == Conflit error (same name || same id?)
-      } else {
-        return "GENERIC_ERROR";
-      }
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
+async function demoteAdmin(channel: channel, userChat: ChatUser) {
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${user.access_token_server}`,
+    },
+  };
+
+  await axios
+  .post(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/users/${userChat.id}/demote`, 
+    { channelId: channel.objectId, userId: userChat.id, }, options)
+  .then(function (response: any) {
+    console.log(`Demote Adminstrator : ${response.data}`);
+    userChat.isAdmin = false;
+  })
+  .catch((err) => console.error(err));
+}
+
+
+async function muteUser(channel: channel, userChat: ChatUser) {
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${user.access_token_server}`,
+    },
+  };
+
+  await axios
+    .post(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/mute/${userChat.id}`, 
+      { channelId: channel.objectId, userId: userChat.id, }, options)
+    .then(function (response: any) {
+      console.log(`Mute: ${userChat.nickname}, ${response.data}`);
+      userChat.isMuted = true;
+    })
+    .catch((err) => console.error(err));
+}
+
+async function unmuteUser(channel: channel, userChat: ChatUser) {
+  if (channel.ownerId != user.id)
+  {
+    console.log("You aren't a OWNER!");
   }
+
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${user.access_token_server}`,
+    },
+  };
+
+  await axios
+  .post(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/unmute/${userChat.id}`, 
+    { channelId: channel.objectId, userId: userChat.id, }, options)
+  .then(function (response: any) {
+    console.log(`Unmute : ${userChat.nickname}, ${response.data}`);
+    userChat.isMuted = false;
+  })
+  .catch((err) => console.error(err));
+}
+
+async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
+ 
+  if (userChat.isAdmin)
+  {
+    console.log("Is admin!");
+  }
+
+  const options = {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${user.access_token_server}`, },
+  };
+
+  console.log("ENVIO;", channel.objectId, ", ", userChat.id)
+
+  await axios
+    .delete(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/users/${userChat.id}`, options)
+    .then(function (response: any) {
+      console.log(`KickUser : ${userChat.nickname}, ${response.data}`);
+      userChat.isMuted = false;
+    })
+    .catch((err) => console.error(err));
+}
 
   return {
     channels,
@@ -396,5 +426,8 @@ function addUserToChannel(channelId: any, user: ChatUser) {
     addUserToChannel,
     makeAdmin,
     demoteAdmin,
+    muteUser,
+    unmuteUser,
+    kickUserFromChannel,
   };
 });

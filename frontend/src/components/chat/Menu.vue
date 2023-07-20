@@ -17,12 +17,12 @@
           <li @click="handleMenuItemUserClick(3)">{{ getBlock($props.user) }}</li>
           <li @click="handleMenuItemUserClick(4)">Challenge</li>
           <!-- COMMANDS ADMINSTRADOR -->
-          <!-- <li @click="handleMenuItemUserClick(5)">{{ getMute($props.user) }}</li>
+          <li @click="handleMenuItemUserClick(5)">{{ getMute($props.user) }}</li>
+            <!-- IF CANNOT KICK ADMIN -->
           <li @click="handleMenuItemUserClick(6)">Kick</li>
-          <li @click="handleMenuItemUserClick(7)">Ban</li> -->
+          <li @click="handleMenuItemUserClick(7)">Ban</li>
           <!-- COMMANDS OWNER -->
-          <!-- <li @click="handleMenuItemUserClick(8)">Give Adminstrator</li> -->
-          <!-- <li @click="handleMenuItemUserClick(9)">Give OwnerShip</li> -->
+          <li @click="handleMenuItemUserClick(8)">{{ getAdmistrator($props.user) }} Adminstrator</li>
         </ul>
       </div>
     </div>
@@ -80,36 +80,26 @@
         userStore().blockUser(props.user.id, props.user.nickname, props.user.image);
       else if (label == "UnBlock")
         userStore().unblockUser(props.user.id);
-
-      // console.log("O id do channel onde vai dar elave: ", selected.value.objectId)
-      // store.leaveChannel(selected.value.objectId);
     }
+    // Change
     else if (item == 4){
-      if (props.user)
-        getChallenge(props.user)
+      getChallenge(props.user)
     }
+    // Mute or Unmute
     else if (item == 5){
-      // console.log("O id do channel onde vai dar elave: ", selected.value.objectId)
-      // store.leaveChannel(selected.value.objectId);
+      instance?.emit('muteOrUnmute', props.user);
     }
+    // Kick
     else if (item == 6){
-      // console.log("O id do channel onde vai dar elave: ", selected.value.objectId)
-      // store.leaveChannel(selected.value.objectId);
+      instance?.emit('kickUser', props.user);
     }
+    // Ban
     else if (item == 7){
-      // console.log("O id do channel onde vai dar elave: ", selected.value.objectId)
-      // store.leaveChannel(selected.value.objectId);
+      //TODO
     }
     //GIVE ADMINSTRATOR
     else if (item == 8){
-      //Ou esta Logica
       instance?.emit('makeOrDemoteAdmin', props.user);
-      //Ou é mandado o channel tambem
-    }
-    //GIVE OWNERSHIP
-    else if (item == 9){
-      // console.log("O id do channel onde vai dar elave: ", selected.value.objectId)
-      // store.leaveChannel(selected.value.objectId);
     }
     if (isMenuOpen)
       toggleMenu();
@@ -145,6 +135,20 @@
 
   function getChallenge(chatUser: ChatUser){
     userStore().challengeUser(chatUser.id, chatUser.nickname);
+  };
+
+  function getMute(chatUser: ChatUser){
+    if (chatUser.isMuted)
+      return "UnMute";
+    else
+      return "Mute";
+  };
+  
+  function getAdmistrator(chatUser: ChatUser){
+    if (chatUser.isAdmin)
+      return "Remove";
+    else
+      return "Give";
   };
 
   const toggleMenu = () => {

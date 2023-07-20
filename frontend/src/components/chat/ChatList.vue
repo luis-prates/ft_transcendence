@@ -41,7 +41,7 @@
           <li v-for="(user, id) in usersFilters" :key="id">
             <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser(user)" />
             <div class="menu-container" v-if="isMenuOpen">
-              <Menus @toggleMenu="toggleMenu" :user="user" v-show="userSelect.id == user.id" />/>
+              <Menus @toggleMenu="toggleMenu" :user="user" @kickUser="kickUser" @muteOrUnmute="muteOrUnmute" @makeOrDemoteAdmin="makeOrDemoteAdmin" @openPerfilUser="openPerfilUser" v-show="userSelect.id == user.id" />/>
             </div>
           </li>
         </ul>
@@ -188,29 +188,53 @@ if (selected.value != user && isMenuOpen.value) {
     toggleMenu();
 }
 
-/*openPerfilUser{
+function openPerfilUser (user: ChatUser){
   if (isProfileOpen)
     return;
-
   isProfileOpen = true;
-  //instance?.emit("update-create-channel", false);
   let profile;
+
   if (userStore().user.id == user.id)
     profile = new YourProfile(Lobby.getPlayer());
   else
     profile = new Profile(user.id);
-  
+
   profile.show((value) => {
-		if (value == "EXIT") {
+  	if (value == "EXIT") {
       isProfileOpen = false;
-		}
-	});
-  /*if (selected.value != user && isMenuOpen.value) {
-    toggleMenu();
-  }
-  store.selectUser(user);
-  toggleMenu();
-}*/
+  	}
+  });
+}
+
+function makeOrDemoteAdmin (userChannel: ChatUser){
+  const channel = chatStore().selected as channel;
+
+  if (!channel)
+    return ;
+
+  if (userChannel.isAdmin)
+    chatStore().demoteAdmin(channel, userChannel);
+  else
+    chatStore().makeAdmin(channel, userChannel);
+}
+
+function muteOrUnmute (userChannel: ChatUser){
+  const channel = chatStore().selected as channel;
+
+  if (!channel)
+    return ;
+  if (userChannel.isMuted)
+    chatStore().unmuteUser(channel, userChannel);
+  else
+    chatStore().muteUser(channel, userChannel);
+}
+
+function kickUser (userChannel: ChatUser){
+  const channel = chatStore().selected as channel;
+
+  if (channel)
+    chatStore().kickUserFromChannel(channel, userChannel);
+}
 
 const openChannel = (channel: channel) => {
   if (store.isUserInSelectedChannel(userStore().user.id))
