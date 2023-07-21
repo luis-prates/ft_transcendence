@@ -161,7 +161,7 @@ export const userStore = defineStore("user", function () {
         user.infoPong.skin.default.paddle = response.data.paddleSkinEquipped;
         user.infoPong.skin.tables = response.data.tableSkinsOwned;
         user.infoPong.skin.paddles = response.data.paddleSkinsOwned;
-		    user.isTwoFAEnabled = response.data.isTwoFAEnabled;
+        user.isTwoFAEnabled = response.data.isTwoFAEnabled;
         getFriends();
         getFriendRequests();
         getBlockedUsers();
@@ -174,8 +174,18 @@ export const userStore = defineStore("user", function () {
       });
     user.isLogin = true;
     // .finally(() => window.location.href = window.location.origin);
-	return (user.isTwoFAEnabled);
+	return ( user );
   }
+
+  async function firstTimePrompt() {
+	if (user.isLogin) return;
+	await axios
+	  .patch(env.BACKEND_PORT + "/users/update_profile", user, {
+		headers: {
+		  Authorization: "Bearer " + user.access_token_server,
+		},
+	  })
+	}
 
   async function loginTest() {
     // if (user.isLogin) return;
@@ -186,24 +196,24 @@ export const userStore = defineStore("user", function () {
       .then(function (response: any) {
         console.log("response: ", response.data);
 
-        user.access_token_server = response.data.access_token;
-        user.id = response.data.dto.id;
-        user.status = response.data.dto.status;
-        user.name = response.data.dto.name;
-        user.email = response.data.dto.email;
-        user.nickname = response.data.dto.nickname;
-        user.image = response.data.dto.image;
-        user.money = response.data.dto.money;
-        user.avatar = response.data.dto.avatar;
-        user.infoPong.level = response.data.dto.level;
-        user.infoPong.xp = response.data.dto.xp;
-        user.infoPong.color = response.data.dto.color;
-        user.infoPong.skin.default.tableColor = response.data.dto.tableColorEquipped;
-        user.infoPong.skin.default.tableSkin = response.data.dto.tableSkinEquipped;
-        user.infoPong.skin.default.paddle = response.data.dto.paddleSkinEquipped;
-        user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
-        user.infoPong.skin.paddles = response.data.dto.paddleSkinsOwned;
-		    user.isTwoFAEnabled = response.data.dto.isTwoFAEnabled;
+        user.access_token_server = response.data.user.access_token;
+        user.id = response.data.user.dto.id;
+        user.status = response.data.user.dto.status;
+        user.name = response.data.user.dto.name;
+        user.email = response.data.user.dto.email;
+        user.nickname = response.data.user.dto.nickname;
+        user.image = response.data.user.dto.image;
+        user.money = response.data.user.dto.money;
+        user.avatar = response.data.user.dto.avatar;
+        user.infoPong.level = response.data.user.dto.level;
+        user.infoPong.xp = response.data.user.dto.xp;
+        user.infoPong.color = response.data.user.dto.color;
+        user.infoPong.skin.default.tableColor = response.data.user.dto.tableColorEquipped;
+        user.infoPong.skin.default.tableSkin = response.data.user.dto.tableSkinEquipped;
+        user.infoPong.skin.default.paddle = response.data.user.dto.paddleSkinEquipped;
+        user.infoPong.skin.tables = response.data.user.dto.tableSkinsOwned;
+        user.infoPong.skin.paddles = response.data.user.dto.paddleSkinsOwned;
+        user.isTwoFAEnabled = response.data.user.dto.isTwoFAEnabled;
         getFriends();
         getFriendRequests();
         getBlockedUsers();

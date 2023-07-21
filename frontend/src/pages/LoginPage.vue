@@ -2,6 +2,7 @@
 	<!-- Modal -->
 	<CustomModal @closeModal="modalClosed" v-model:message="customMessage" :type="modalType" ref="customModalRef" />
 	<TwoFactorPrompt ref="twoFactorPromptRef" @submit="twoFactorSubmit" />
+	<FirstLoginPrompt ref="firstLoginPromptRef" v-model:type="firstLoginType" :prefilledCode="prefilledCode" @submit="firstLoginSubmit" />
 	<div class="loginElement" href>
 		<span class="borderLine"></span>
 		<form>
@@ -39,10 +40,12 @@ import type { Socket } from "socket.io-client";
 import CustomModal from '@/components/utils/CustomModal.vue'
 import axios from "axios";
 import TwoFactorPrompt from '@/components/login/TwoFactorPrompt.vue'
+import FirstLoginPrompt from "@/components/login/FirstLoginPrompt.vue";
 
 const props = defineProps({
 	token: String,
 	error: String,
+	firstTime: Boolean,
 });
 
 const objectId = ref("");
@@ -50,7 +53,10 @@ const objectId = ref("");
 const customMessage = ref('');
 const customModalRef = ref<InstanceType<typeof CustomModal> | null>(null);
 const twoFactorPromptRef = ref<InstanceType<typeof TwoFactorPrompt> | null>(null);
+const firstLoginPromptRef = ref<InstanceType<typeof FirstLoginPrompt> | null>(null);
 const modalType = ref('');
+const firstLoginType = ref('');
+const prefilledCode = ref('');
 const resolveCondition = ref(false);
 const modalClosed = () => {
 	if(resolveCondition.value) {
@@ -68,6 +74,15 @@ let twoFactorSubmit = async (code: string) => {
 	const isValid = await twoFactorPrompt(code.toString());
 	resolveTwoFactorPrompt(isValid);
 };
+
+let resolveFirstLoginPrompt: (value: string) => void;
+
+let newNickname = "";
+
+let firstLoginSubmit = async (nickname: string) => {
+	newNickname = nickname;
+	resolveFirstLoginPrompt(nickname);
+}
 
 function encodeImageToBase64(filePath: string) {
   return fetch(filePath)
@@ -103,6 +118,19 @@ async function handleTwoFA() {
 		isTwoFASuccessful = false;
 	}
 	return isTwoFASuccessful;
+}
+
+async function handleFirstLogin() {
+	let newNewNickname = "";
+	try {
+		newNewNickname = await new Promise<string>((resolve) => {
+			resolveFirstLoginPrompt = resolve;
+			showFirstLoginModal(store.user.nickname, "nickname");
+		});
+	} catch (error) {
+		console.log(error);
+	}
+	return newNewNickname;
 }
 
 function tes(event: any) {
@@ -167,14 +195,29 @@ onMounted(() => {
 	}
 	if (props.token || store.user.isLogin)
 	{
+		console.log(`type of props.firstTime: ${typeof props.firstTime}`);
+		if (props.firstTime === true) {
+			console.log("props.firstTime : ", props.firstTime);
+			console.log("it's first time login");
+			
+		}
+		else {
+			console.log("it's not first time login:" + props.firstTime);
+		}
+
 		store
-		.login(props.token)
-		.then(async (isTwoFAEnabled) => {
-			if (isTwoFAEnabled) {
+		.login(props.token).then(async (user) => {
+
+			if (user?.isTwoFAEnabled) {
 				const twoFASuccess = await handleTwoFA();
 				if (!twoFASuccess) {
 					return;
 				}
+			}
+			if (props.firstTime === true) {
+				console.log(`Old nickname: ${store.user.nickname}`);
+				store.user.nickname = await handleFirstLogin();
+				console.log(`New nickname: ${store.user.nickname}`);
 			}
 
 			showModal("Login Success", "success");
@@ -195,9 +238,6 @@ onMounted(() => {
 			Router.setRoute(Router.ROUTE_ALL);
 			Router.push("/");
 			console.log(store.user.isLogin);
-		})
-		.catch((err) => {
-			console.log(err);
 		});
 	}
 });
@@ -236,6 +276,13 @@ const showModal = (message: string, type: string) => {
 	customMessage.value = message;
 	modalType.value = type;
 	(customModalRef.value as typeof CustomModal | null)?.showModal();
+};
+
+const showFirstLoginModal = (code: string, type: string) => {
+	console.log(`code: ${code}, type: ${type}`);
+	prefilledCode.value = code;
+	firstLoginType.value = type;
+	(firstLoginPromptRef.value as typeof FirstLoginPrompt | null)?.showModal();
 };
 
 function hideModal() {

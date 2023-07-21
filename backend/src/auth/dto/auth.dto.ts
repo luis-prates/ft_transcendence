@@ -86,6 +86,13 @@ export class AuthDto {
 	status?: UserStatus;
 }
 
+export class FirstLoginDto {
+	@Transform(({ value }) => parseInt(value))
+	@IsNumber()
+	@IsNotEmpty()
+	id: number;
+}
+
 export class TwoFADto {
 	@IsString()
 	@Length(6, 6, {

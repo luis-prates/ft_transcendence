@@ -8,7 +8,11 @@ const routes_login = [
     path: "/:catchAll(.*)",
     name: "login",
     component: LoginPage,
-    props: (route: any) => ({ token: route.query.token, error: route.query.error }),
+    props: (route: any) => ({
+		token: route.query.token,
+		error: route.query.error,
+		firstTime: Boolean(route.query.isFirstTime),
+	}),
   },
 ];
 
