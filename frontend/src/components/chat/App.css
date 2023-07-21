@@ -165,19 +165,22 @@ body,html{
   .config_chat {
     background-color: transparent;
     border-color: transparent;
-    width: 30px; /* Set the desired width */
-    height: 30px; /* Set the desired height */
-    max-width: 30px; /* Set the maximum width */
-    max-height: 30px; /* Set the maximum height */
-    padding-right: 30%;
+  }
+  .config_chat_img {
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
+    max-width: 20px; /* Set the maximum width */
+    max-height: 20px; /* Set the maximum height */
   }
   .close_chat {
     background-color: transparent;
     border-color: transparent;
-    width: 30px; /* Set the desired width */
-    height: 30px; /* Set the desired height */
-    max-width: 30px; /* Set the maximum width */
-    max-height: 30px; /* Set the maximum height */
+  }
+  .close_chat_img {
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
+    max-width: 20px; /* Set the maximum width */
+    max-height: 20px; /* Set the maximum height */
   }
   .hide_chat {
     background-color: black; 
@@ -274,10 +277,15 @@ body,html{
     background-color: transparent;
     border-color: transparent;
     border-radius: 10px;
-    width: 30px; /* Set the desired width */
-    height: 30px; /* Set the desired height */
-    max-width: 30px; /* Set the maximum width */
-    max-height: 30px; /* Set the maximum height */
+  }
+  .chat_filter_button:hover{
+    background-color: black;
+  }
+  .chat_filter_img{
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
+    max-width: 20px; /* Set the maximum width */
+    max-height: 20px; /* Set the maximum height */
   }
   @media(max-width: 576px){
   .contacts_card{
