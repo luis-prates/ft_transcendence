@@ -286,10 +286,10 @@ onMounted(function () {
 	while (accumulatedTime > frameTime) {
 		game.update();
 		accumulatedTime -= frameTime;
-  }
+  	}
 
-  game.draw();
-  requestAnimationFrame(animate);
+  	game.draw();
+  	requestAnimationFrame(animate);
   }
   animate();
 });
