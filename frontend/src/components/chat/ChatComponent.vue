@@ -195,6 +195,8 @@ const updateCreateChannel = (newStatus: boolean) => {
     display: flex;
     flex-direction: row;
     pointer-events: none;
+    min-width: 580px;
+    min-height: 250px;
 }
 .chat_mensagen {
   flex-grow: 1;

@@ -172,6 +172,12 @@ body,html{
     max-width: 20px; /* Set the maximum width */
     max-height: 20px; /* Set the maximum height */
   }
+  .send_img {
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
+    max-width: 20px; /* Set the maximum width */
+    max-height: 20px; /* Set the maximum height */
+  }
   .close_chat {
     background-color: transparent;
     border-color: transparent;

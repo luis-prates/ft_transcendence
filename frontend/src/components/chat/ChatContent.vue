@@ -81,7 +81,9 @@
       <div class="input-group">
         <textarea v-model="text" name="" @keyup.enter="send" class="form-control type_msg" placeholder="Type your message..." style="resize: none"></textarea>
         <div class="input-group-append">
-          <span class="input-group-text send_btn" @click="send"><i class="fas fa-location-arrow"></i>➤</span>
+          <span class="input-group-text send_btn" @click="send"><i class="fas fa-location-arrow"></i>
+            <img class="send_img" src="src/assets/chat/send.png" alt="Send" />
+          </span>
         </div>
       </div>
     </div>
