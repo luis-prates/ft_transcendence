@@ -324,6 +324,16 @@ onMounted(() => {
   toggleChat();
   changeFilter("inside");
   // addChannel();
+
+  const cardBody = document.querySelector(".card-body") as HTMLElement;
+    const handleScroll = () => {
+      document.documentElement.style.setProperty('--scrollY', `${cardBody.scrollTop}px`);
+    };
+
+    cardBody.addEventListener('scroll', handleScroll);
+    onUnmounted(() => {
+      cardBody.removeEventListener('scroll', handleScroll);
+    });
 });
 
 const buttonString = ref("⇑"); // Set initial button text
@@ -384,6 +394,6 @@ defineExpose({
     z-index: 10;
     right: 0;
     width: 128%;
-    top: 0%;
+    top: calc(0px - var(--scrollY, 0px));
 }
 </style>
