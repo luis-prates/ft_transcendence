@@ -222,14 +222,14 @@ export class ChatService {
 			this.events.emit('channel-created', newChannel);
 
 			// emit event to creator for new channel
-      const user_db = await this.prisma.user.findUnique({
-        where: { id: user.id },
-      });
+			const user_db = await this.prisma.user.findUnique({
+				where: { id: user.id },
+			});
 
 			this.events.emit('user-added-to-channel', {
 				channelId: newChannel.id,
 				userId: user.id,
-        user: user_db,
+				user: user_db,
 			});
 
 			// emit event to all other users added to channel
@@ -237,7 +237,7 @@ export class ChatService {
 				this.events.emit('user-added-to-channel', {
 					channelId: newChannel.id,
 					userId: user,
-          user: user_db
+					user: user_db,
 				});
 			}
 		} catch (error) {
@@ -265,35 +265,35 @@ export class ChatService {
 			throw new NotFoundException('Channel not found');
 		}
 
-    // send back error if they are already in the channel
-    const channelUser = await this.prisma.channelUser.findUnique({
-      where: {
-        userId_channelId: {
-          channelId: channelId,
-          userId: userId,
-        },
-      },
-    });
+		// send back error if they are already in the channel
+		const channelUser = await this.prisma.channelUser.findUnique({
+			where: {
+				userId_channelId: {
+					channelId: channelId,
+					userId: userId,
+				},
+			},
+		});
 
-    if (channelUser) {
-      throw new BadRequestException('User is already part of this channel');
-    }
+		if (channelUser) {
+			throw new BadRequestException('User is already part of this channel');
+		}
 
-    // if user is banned from this channel
-    const isBanned = await this.prisma.channel.findFirst({
-      where: {
-        id: channelId,
-        banList: {
-          some: {
-            id: userId,
-          }
-        }
-      },
-    });
+		// if user is banned from this channel
+		const isBanned = await this.prisma.channel.findFirst({
+			where: {
+				id: channelId,
+				banList: {
+					some: {
+						id: userId,
+					},
+				},
+			},
+		});
 
-    if (isBanned) {
-      throw new BadRequestException('Cannot add users who are banned from this channel');
-    }
+		if (isBanned) {
+			throw new BadRequestException('Cannot add users who are banned from this channel');
+		}
 
 		if (channel.type == 'DM') {
 			throw new ForbiddenException('Cannot add users to a DM');
@@ -307,9 +307,9 @@ export class ChatService {
 		});
 
 		// Emit an event when a user is added to a new channel
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+		const user = await this.prisma.user.findUnique({
+			where: { id: userId },
+		});
 		this.events.emit('user-added-to-channel', { channelId, userId, user });
 
 		return newChannelUser;
@@ -325,9 +325,9 @@ export class ChatService {
 			},
 		});
 
-    const db_user = await this.prisma.user.findUnique({
-      where: { id: removedUserId },
-    });
+		const db_user = await this.prisma.user.findUnique({
+			where: { id: removedUserId },
+		});
 
 		if (!removeUser) {
 			throw new NotFoundException('User is not part of this channel');
@@ -364,7 +364,7 @@ export class ChatService {
 		this.events.emit('user-removed-from-channel', {
 			channelId,
 			userId: removedUserId,
-      user: db_user
+			user: db_user,
 		});
 	}
 
@@ -392,21 +392,21 @@ export class ChatService {
 			throw new ForbiddenException('Cannot join a private channel without an invite');
 		}
 
-    // if user is on the banlist
-    const isBanned = await this.prisma.channel.findFirst({
-      where: {
-        id: channelId,
-        banList: {
-          some: {
-            id: userId,
-          }
-        }
-      },
-    });
+		// if user is on the banlist
+		const isBanned = await this.prisma.channel.findFirst({
+			where: {
+				id: channelId,
+				banList: {
+					some: {
+						id: userId,
+					},
+				},
+			},
+		});
 
-    if (isBanned) {
-      throw new BadRequestException('You are banned from this channel');
-    }
+		if (isBanned) {
+			throw new BadRequestException('You are banned from this channel');
+		}
 
 		const channelUser = await this.prisma.channelUser.findUnique({
 			where: {
@@ -428,9 +428,9 @@ export class ChatService {
 			},
 		});
 
-    const user_db = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+		const user_db = await this.prisma.user.findUnique({
+			where: { id: userId },
+		});
 
 		// Emit an event when a user is added to a new channel
 		this.events.emit('user-added-to-channel', { channelId, userId, user_db });
@@ -463,15 +463,15 @@ export class ChatService {
 					data: { ownerId: newOwner.userId },
 				});
 			} else {
-          // If the owner is the last member of the channel, delete it
-          if (channelUsers.length <= 1) {
-            // First, delete the owner channelUser
-            await this.prisma.channelUser.deleteMany({
-                where: {
-                    channelId: channelId,
-                },
-            });
-          }
+				// If the owner is the last member of the channel, delete it
+				if (channelUsers.length <= 1) {
+					// First, delete the owner channelUser
+					await this.prisma.channelUser.deleteMany({
+						where: {
+							channelId: channelId,
+						},
+					});
+				}
 				await this.prisma.channel.delete({ where: { id: channelId } });
 				return;
 			}
@@ -489,16 +489,15 @@ export class ChatService {
 			await this.prisma.channel.delete({ where: { id: channelId } });
 		}
 
-    // get data of user to inform channel
-    const db_user = await this.prisma.user.findUnique({
-      where: { id: user.id },
-    });
-
+		// get data of user to inform channel
+		const db_user = await this.prisma.user.findUnique({
+			where: { id: user.id },
+		});
 
 		this.events.emit('user-removed-from-channel', {
 			channelId,
 			userId: user.id,
-      user: db_user
+			user: db_user,
 		});
 	}
 
@@ -767,15 +766,15 @@ export class ChatService {
 
 		// Emit events to all channel users when a channel is deleted
 		for (const user of users) {
-      // get data of user to inform channel
-      const db_user = await this.prisma.user.findUnique({
-        where: { id: user.id },
-      });
+			// get data of user to inform channel
+			const db_user = await this.prisma.user.findUnique({
+				where: { id: user.id },
+			});
 
 			this.events.emit('user-removed-from-channel', {
 				channelId,
 				userId: user.id,
-        user: db_user
+				user: db_user,
 			});
 		}
 	}
@@ -809,147 +808,147 @@ export class ChatService {
 		});
 	}
 
-  // Ban a user
-  async banUser(channelId: number, bannedUserId: number) {
-    const channel = await this.prisma.channel.findUnique({
-      where: {
-        id: channelId,
-      },
-    });
+	// Ban a user
+	async banUser(channelId: number, bannedUserId: number) {
+		const channel = await this.prisma.channel.findUnique({
+			where: {
+				id: channelId,
+			},
+		});
 
-    if (!channel) {
-      throw new NotFoundException('Channel not found');
-    }
+		if (!channel) {
+			throw new NotFoundException('Channel not found');
+		}
 
-    const bannedUser = await this.prisma.user.findUnique({
-      where: {
-        id: bannedUserId,
-      },
-    });
+		const bannedUser = await this.prisma.user.findUnique({
+			where: {
+				id: bannedUserId,
+			},
+		});
 
-    if (!bannedUser) {
-      throw new NotFoundException('User not found');
-    }
+		if (!bannedUser) {
+			throw new NotFoundException('User not found');
+		}
 
-    // Check if user is already banned
-    const isBanned = await this.prisma.channel.findFirst({
-      where: {
-        id: channelId,
-        banList: {
-          some: {
-            id: bannedUserId,
-          }
-        }
-      },
-    });
+		// Check if user is already banned
+		const isBanned = await this.prisma.channel.findFirst({
+			where: {
+				id: channelId,
+				banList: {
+					some: {
+						id: bannedUserId,
+					},
+				},
+			},
+		});
 
-    if (isBanned) {
-      throw new BadRequestException('User is already banned');
-    }
+		if (isBanned) {
+			throw new BadRequestException('User is already banned');
+		}
 
-    // If user is owner or admin, throw error
-    const channelUser = await this.prisma.channelUser.findUnique({
-      where: {
-        userId_channelId: {
-          channelId: channelId,
-          userId: bannedUserId,
-        },
-      },
-    });
+		// If user is owner or admin, throw error
+		const channelUser = await this.prisma.channelUser.findUnique({
+			where: {
+				userId_channelId: {
+					channelId: channelId,
+					userId: bannedUserId,
+				},
+			},
+		});
 
-    if (channelUser && channelUser.isAdmin) {
-      throw new ForbiddenException('Cannot ban an admin');
-    }
+		if (channelUser && channelUser.isAdmin) {
+			throw new ForbiddenException('Cannot ban an admin');
+		}
 
-    // Remove the user from the channel
-    await this.prisma.channelUser.delete({
-      where: {
-        userId_channelId: {
-          channelId: channelId,
-          userId: bannedUserId,
-        },
-      },
-    });
+		// Remove the user from the channel
+		await this.prisma.channelUser.delete({
+			where: {
+				userId_channelId: {
+					channelId: channelId,
+					userId: bannedUserId,
+				},
+			},
+		});
 
-    // Ban the user
-    await this.prisma.channel.update({
-      where: {
-        id: channelId,
-      },
-      data: {
-        banList: {
-          connect: {
-            id: bannedUserId,
-          }
-        }
-      },
-    });
+		// Ban the user
+		await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				banList: {
+					connect: {
+						id: bannedUserId,
+					},
+				},
+			},
+		});
 
-    // emit an event someone was banned
-    this.events.emit('user-banned-in-channel', {
-      channelId,
-      userId: bannedUserId,
-    });
-  }
+		// emit an event someone was banned
+		this.events.emit('user-banned-in-channel', {
+			channelId,
+			userId: bannedUserId,
+		});
+	}
 
-    // Unban a user
-    async unbanUser(channelId: number, userId: number) {
-      const channel = await this.prisma.channel.findUnique({
-        where: {
-          id: channelId,
-        },
-      });
+	// Unban a user
+	async unbanUser(channelId: number, userId: number) {
+		const channel = await this.prisma.channel.findUnique({
+			where: {
+				id: channelId,
+			},
+		});
 
-      if (!channel) {
-        throw new NotFoundException('Channel not found');
-      }
+		if (!channel) {
+			throw new NotFoundException('Channel not found');
+		}
 
-      const user = await this.prisma.user.findUnique({
-        where: {
-          id: userId,
-        },
-      });
+		const user = await this.prisma.user.findUnique({
+			where: {
+				id: userId,
+			},
+		});
 
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
 
-      // Check if user is not already banned
-      const isBanned = await this.prisma.channel.findFirst({
-        where: {
-          id: channelId,
-          banList: {
-            some: {
-              id: userId,
-            }
-          }
-        },
-      });
+		// Check if user is not already banned
+		const isBanned = await this.prisma.channel.findFirst({
+			where: {
+				id: channelId,
+				banList: {
+					some: {
+						id: userId,
+					},
+				},
+			},
+		});
 
-      if (!isBanned) {
-        throw new BadRequestException('User is not banned');
-      }
+		if (!isBanned) {
+			throw new BadRequestException('User is not banned');
+		}
 
-      // Unban the user
-      await this.prisma.channel.update({
-        where: {
-          id: channelId,
-        },
-        data: {
-          banList: {
-            disconnect: {
-              id: userId,
-            }
-          }
-        },
-      });
+		// Unban the user
+		await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				banList: {
+					disconnect: {
+						id: userId,
+					},
+				},
+			},
+		});
 
-      // emit an event someone was unbanned
-      this.events.emit('user-unbanned-in-channel', {
-        channelId,
-        userId,
-      });
-    }
+		// emit an event someone was unbanned
+		this.events.emit('user-unbanned-in-channel', {
+			channelId,
+			userId,
+		});
+	}
 
 	// BELOW IS FOR WEBSOCKETS
 	async getUserChannels(userId: number): Promise<number[]> {

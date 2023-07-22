@@ -66,12 +66,12 @@ export class ChatGateway implements OnGatewayConnection {
 				message: `You have been added to channel ${channelId}`,
 			});
 
-      // remove the hash field from the user object
-      delete user.hash;
+			// remove the hash field from the user object
+			delete user.hash;
 
 			client.broadcast.to(`channel-${channelId}`).emit('user-added', {
 				channelId,
-        user,
+				user,
 				message: `User ${userId} has been added to channel ${channelId}`,
 			});
 		});
@@ -83,7 +83,7 @@ export class ChatGateway implements OnGatewayConnection {
 				return;
 			}
 
-      delete user.hash;
+			delete user.hash;
 
 			client.leave(`channel-${channelId}`);
 			console.log(`User ${userId} left a room: channel-${channelId}`);
@@ -192,27 +192,27 @@ export class ChatGateway implements OnGatewayConnection {
 			});
 		});
 
-    // Listener for a user being banned from a channel
-    this.chatService.events.on('user-banned-in-channel', async data => {
-      const { channelId, userId } = data;
-      // Send a message to all users in the channel that a user has been banned
-      this.server.emit('user-banned-in-channel', {
-        channelId,
-        userId,
-        message: `User ${userId} has been banned from channel ${channelId}`,
-      });
-    });
+		// Listener for a user being banned from a channel
+		this.chatService.events.on('user-banned-in-channel', async data => {
+			const { channelId, userId } = data;
+			// Send a message to all users in the channel that a user has been banned
+			this.server.emit('user-banned-in-channel', {
+				channelId,
+				userId,
+				message: `User ${userId} has been banned from channel ${channelId}`,
+			});
+		});
 
-    // Listener for a user being unbanned from a channel
-    this.chatService.events.on('user-unbanned-in-channel', async data => {
-      const { channelId, userId } = data;
-      // Send a message to all users in the channel that a user has been unbanned
-      this.server.emit('user-unbanned-in-channel', {
-        channelId,
-        userId,
-        message: `User ${userId} has been unbanned from channel ${channelId}`,
-      });
-    });
+		// Listener for a user being unbanned from a channel
+		this.chatService.events.on('user-unbanned-in-channel', async data => {
+			const { channelId, userId } = data;
+			// Send a message to all users in the channel that a user has been unbanned
+			this.server.emit('user-unbanned-in-channel', {
+				channelId,
+				userId,
+				message: `User ${userId} has been unbanned from channel ${channelId}`,
+			});
+		});
 
 		console.log('Chat Gateway Initialized!');
 	}

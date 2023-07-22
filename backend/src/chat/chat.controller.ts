@@ -140,19 +140,19 @@ export class ChatController {
 		return this.chatService.changeChannelPassword(joinChannelDto, Number(channelId));
 	}
 
-  // Ban a user from the channel
-  @Post(':channelId/ban/:userId')
-  @UseGuards(RolesGuard)
-  @Roles('admin', 'owner')
-  async banUser(@Param('channelId') channelId: string, @Param('userId') userId: string) {
-    return this.chatService.banUser(Number(channelId), Number(userId));
-  }
+	// Ban a user from the channel
+	@Post(':channelId/ban/:userId')
+	@UseGuards(RolesGuard)
+	@Roles('admin', 'owner')
+	async banUser(@Param('channelId') channelId: string, @Param('userId') userId: string) {
+		return this.chatService.banUser(Number(channelId), Number(userId));
+	}
 
-  // Unban a user from the channel
-  @Post(':channelId/unban/:userId')
-  @UseGuards(RolesGuard)
-  @Roles('admin', 'owner')
-  async unbanUser(@Param('channelId') channelId: string, @Param('userId') userId: string) {
-    return this.chatService.unbanUser(Number(channelId), Number(userId));
-  }
+	// Unban a user from the channel
+	@Post(':channelId/unban/:userId')
+	@UseGuards(RolesGuard)
+	@Roles('admin', 'owner')
+	async unbanUser(@Param('channelId') channelId: string, @Param('userId') userId: string) {
+		return this.chatService.unbanUser(Number(channelId), Number(userId));
+	}
 }
