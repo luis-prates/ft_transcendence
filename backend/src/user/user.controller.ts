@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { User, UserStatus } from '@prisma/client';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
 import { UserService } from './user.service';
@@ -24,6 +24,12 @@ export class UserController {
 	updateProfile(@GetUser('id') userId: number, @Body() dto: UserDto) {
 		console.log('update_profile:', dto);
 		return this.userService.editUser(userId, dto);
+	}
+
+	@Post('status')
+	status(@GetUser('id') userId: number, @Body() status: UserStatus) {
+		console.log(userId, status);
+		return this.userService.status(userId, status);
 	}
 
 	@Patch('buy_skin')

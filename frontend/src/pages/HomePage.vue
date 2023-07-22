@@ -10,6 +10,7 @@
     <!-- <ProfileComponent class="profile" /> -->
   </div>
   <input id="inputName" type="text" pattern="[A-Za-z0-9]+" value="" disabled="false" style="display: none; background-color: transparent; font-family: 'Press Start 2P';" @input="cleanInput" :maxlength="15">
+  <input id="inputTwoFactor" type="text" pattern="[0-9]+" value="" disabled="false" style="display: none; background-color: transparent; font-family: 'Press Start 2P';" :maxlength="6">
 </template>
 
 <script setup lang="ts">
@@ -22,18 +23,19 @@ import { onBeforeRouteLeave } from "vue-router";
 
 const store = userStore();
 onBeforeRouteLeave((to, from, next) => {
-  console.log("to", to);
-  // Aqui você pode executar a lógica desejada quando o usuário tenta sair da página
-
-  // Por exemplo, exibir uma mensagem de confirmação
-  const shouldLeave = window.confirm("Deseja sair desta página?");
-  if (shouldLeave) {
-    // Se o usuário confirmar, permita a saída
-    next();
-  } else {
-    // Caso contrário, cancele a navegação
-    next(false);
-  }
+  //console.log("to", to);
+  //// Aqui você pode executar a lógica desejada quando o usuário tenta sair da página
+  //
+  //// Por exemplo, exibir uma mensagem de confirmação
+  //const shouldLeave = window.confirm("Deseja sair desta página?");
+  //if (shouldLeave) {
+  //  // Se o usuário confirmar, permita a saída
+  //  next();
+  //} else {
+  //  // Caso contrário, cancele a navegação
+  //  next(false);
+  //}
+  next();
 });
 
 console.log(store.user);

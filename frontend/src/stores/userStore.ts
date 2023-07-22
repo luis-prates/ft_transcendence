@@ -2,7 +2,15 @@ import { reactive } from "vue";
 import { defineStore } from "pinia";
 import { env } from "../env";
 import axios from "axios";
-import type { ProductSkin, TypeSkin } from "@/game/ping_pong/Skin";
+import type { TypeSkin } from "@/game/ping_pong/Skin";
+import type { Socket } from "socket.io-client";
+import { socketClass } from "@/socket/SocketClass";
+
+export enum GameStatus {
+  NOT_STARTED = "NOT_STARTED",
+  IN_PROGESS = "IN_PROGESS",
+  FINISHED = "FINISHED",
+}
 
 enum UserStatus {
   OFFLINE = "OFFLINE",
@@ -11,8 +19,13 @@ enum UserStatus {
 }
 
 export interface Block {
-  blockedId: number;
+  blocker: {
+    id: number;
+    nickname: string;
+    image: string;
+  };
   blockerId: number;
+  blockedId: number;
 }
 
 export interface Friendship {
@@ -26,12 +39,20 @@ export interface Friendship {
   updatedAt: string;
 }
 
-export interface Historic {
-  winner: string;
-  loser: string;
-  player1: string;
-  player2: string;
-  result: string;
+export interface GAME {
+  winnerId: number;
+  winnerNickname: string;
+  winnerScore: number;
+  loserId: number;
+  loserNickname: string;
+  loserScore: number;
+  gameType: string;
+  id: string;
+  players: {
+    id: number;
+    nickname: string;
+    image: string;
+  }[];
 }
 
 export interface InfoPong {
@@ -47,7 +68,7 @@ export interface InfoPong {
     tables: string[];
     paddles: string[];
   };
-  historic: Historic[];
+  historic: GAME[];
 }
 
 export interface User {
@@ -63,10 +84,10 @@ export interface User {
   avatar: number; //Avatar in The Lobby
   infoPong: InfoPong;
   money: number;
-  friends: any,
-  friendsRequests: Friendship[],
-  isPlayer: boolean;
-  block: Block[],
+  friends: any;
+  friendsRequests: Friendship[];
+  block: Block[];
+  twofagenerate: boolean;
 }
 
 export const userStore = defineStore("user", function () {
@@ -79,7 +100,6 @@ export const userStore = defineStore("user", function () {
     return color;
   };
 
-  //! wallet - should it be deleted?
   const user = reactive({
     access_token_server: "",
     accessToken: "",
@@ -93,7 +113,6 @@ export const userStore = defineStore("user", function () {
     image: "",
     avatar: 0,
     money: 10,
-	isPlayer: true,
     infoPong: {
       level: 1,
       xp: 0,
@@ -112,67 +131,61 @@ export const userStore = defineStore("user", function () {
     friends: Array(),
     friendsRequests: Array(),
     block: Array(),
+	  isTwoFAEnabled: false,
   });
 
   async function login(authorizationCode: string | undefined) {
-    if (user.isLogin) return;
+    if (user.isLogin || authorizationCode === undefined) return;
+    user.access_token_server = authorizationCode;
+
     await axios
-      .post("https://api.intra.42.fr/oauth/token", {
-        grant_type: "authorization_code",
-        client_id: env.CLIENT_ID,
-        client_secret: env.CLIENT_SECRET,
-        code: authorizationCode,
-        redirect_uri: env.REDIRECT_URI,
+      .get(env.BACKEND_PORT + "/users/me", {
+        headers: {
+          Authorization: "Bearer " + authorizationCode,
+        },
       })
-      .then(async (response) => {
-        user.accessToken = response.data.access_token;
-        user.refreshToken = response.data.refresh_token;
-
-        const userInfoResponse = await axios.get("https://api.intra.42.fr/v2/me", {
-          headers: {
-            Authorization: `Bearer ${user.accessToken}`,
-          },
-        });
-        user.image = userInfoResponse.data.image.link;
-        console.log(userInfoResponse.data);
-        user.name = userInfoResponse.data.displayname;
-        user.email = userInfoResponse.data.email;
-        user.id = userInfoResponse.data.id;
-        user.nickname = userInfoResponse.data.login;
-        user.money = userInfoResponse.data.money;
-        console.log("user\n", JSON.stringify(user));
-        await axios
-          .post(env.BACKEND_PORT + "/auth/signin", user)
-
-          // axios.request(options)
-          .then(function (response: any) {
-            user.access_token_server = response.data.access_token;
-            user.name = response.data.dto.name;
-            user.email = response.data.dto.email;
-            user.id = response.data.dto.id;
-            user.nickname = response.data.dto.nickname;
-            user.image = response.data.dto.image;
-            user.money = response.data.dto.money;
-          })
-          .catch(function (error) {
-            console.error(error);
-          });
-        user.isLogin = true;
+      .then(function (response: any) {
+        user.id = response.data.id;
+        user.name = response.data.name;
+        user.nickname = response.data.nickname;
+        user.email = response.data.email;
+        user.status = response.data.status;
+        user.image = response.data.image;
+        user.money = response.data.money;
+        user.avatar = response.data.avatar;
+        user.infoPong.level = response.data.level;
+        user.infoPong.xp = response.data.xp;
+        user.infoPong.color = response.data.color;
+        user.infoPong.skin.default.tableColor = response.data.tableColorEquipped;
+        user.infoPong.skin.default.tableSkin = response.data.tableSkinEquipped;
+        user.infoPong.skin.default.paddle = response.data.paddleSkinEquipped;
+        user.infoPong.skin.tables = response.data.tableSkinsOwned;
+        user.infoPong.skin.paddles = response.data.paddleSkinsOwned;
+		    user.isTwoFAEnabled = response.data.isTwoFAEnabled;
+        getFriends();
+        getFriendRequests();
+        getBlockedUsers();
+        getBlockedBy();
+        getUserGames(user.id);
       })
-      .catch((error) => {
+      .catch(function (error) {
         console.error(error);
         user.isLogin = false;
       });
+    user.isLogin = true;
     // .finally(() => window.location.href = window.location.origin);
+	return (user.isTwoFAEnabled);
   }
 
   async function loginTest() {
-    if (user.isLogin) return;
+    // if (user.isLogin) return;
     await axios
       .post(env.BACKEND_PORT + "/auth/signin", user)
 
       // axios.request(options)
       .then(function (response: any) {
+        console.log("response: ", response.data);
+
         user.access_token_server = response.data.access_token;
         user.id = response.data.dto.id;
         user.status = response.data.dto.status;
@@ -190,18 +203,20 @@ export const userStore = defineStore("user", function () {
         user.infoPong.skin.default.paddle = response.data.dto.paddleSkinEquipped;
         user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
         user.infoPong.skin.paddles = response.data.dto.paddleSkinsOwned;
-        //TODO
-        //user.infoPong.historic = [],
-        console.log("response: ", response.data.dto);
+		    user.isTwoFAEnabled = response.data.dto.isTwoFAEnabled;
+        getFriends();
+        getFriendRequests();
+        getBlockedUsers();
+        getBlockedBy();
+        getUserGames(user.id);
       })
       .catch(function (error) {
         console.error(error);
       });
     user.isLogin = true;
-    getFriends();
-    getFriendRequests();
-    getBlockedUsers();
+    console.log("USER: ", user);
     // .finally(() => window.location.href = window.location.origin);
+	return (user.isTwoFAEnabled);
   }
 
   async function updateProfile() {
@@ -274,167 +289,202 @@ export const userStore = defineStore("user", function () {
   }
 
   async function getUserProfile(userId: number) {
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
 
-      const options = {
-        method: "GET",
-        headers: { Authorization: `Bearer ${user.access_token_server}` },
-      };
+    return await axios
+      .get(env.BACKEND_PORT + "/users/get_profile/" + userId, options)
 
-      return await axios
-        .get(env.BACKEND_PORT + "/users/get_profile/" + userId, options)
-
-        // axios.request(options)
-        .then(function (response: any) {
-          console.log("Profile: ", response.data);
-          return response.data;
-        })
-        .catch(function (error) {
-          console.error(error);
-        });
+      // axios.request(options)
+      .then(function (response: any) {
+        console.log("Profile: ", response.data);
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
   }
 
-  async function update(userUpdate: { name: string; email: string; nickname: string; image: string; }) {
-      let body = {} as any;
-      if (user.name != userUpdate.name) body.name = userUpdate.name;
-      if (user.email != userUpdate.email) body.email = userUpdate.email;
-      if (user.nickname != userUpdate.nickname) body.nickname = userUpdate.nickname;
-      if (user.image != userUpdate.image) body.image = userUpdate.image;
-      console.log("body\n", body, "\nuser\n", user.access_token_server);
-      const options = {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${user.access_token_server}` },
-        body: new URLSearchParams(body),
-      };
+  async function update(userUpdate: { name: string; email: string; nickname: string; image: string }) {
+    let body = {} as any;
+    if (user.name != userUpdate.name) body.name = userUpdate.name;
+    if (user.email != userUpdate.email) body.email = userUpdate.email;
+    if (user.nickname != userUpdate.nickname) body.nickname = userUpdate.nickname;
+    if (user.image != userUpdate.image) body.image = userUpdate.image;
+    console.log("body\n", body, "\nuser\n", user.access_token_server);
+    const options = {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+      body: new URLSearchParams(body),
+    };
 
-      await fetch(env.BACKEND_PORT + "/users", options)
-        .then(async (response) => console.log(await response.json()))
-        .catch((err) => console.error(err));
+    await fetch(env.BACKEND_PORT + "/users", options)
+      .then(async (response) => console.log(await response.json()))
+      .catch((err) => console.error(err));
   }
-
 
   async function getFriends() {
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
 
-      const options = {
-        method: "GET",
-        headers: { Authorization: `Bearer ${user.access_token_server}` },
-      };
+    return await axios
+      .get(env.BACKEND_PORT + "/friendship/friends/", options)
 
-      return await axios
-        .get(env.BACKEND_PORT + "/friendship/friends/", options)
-
-        // axios.request(options)
-        .then(function (response: any) {
-          console.log("Friends: ", response.data.friends);
-          user.friends = response.data.friends;
-          return response.data;
-        })
-        .catch(function (error) {
-          console.error(error);
-        });
+      // axios.request(options)
+      .then(function (response: any) {
+        console.log("Friends: ", response.data.friends);
+        user.friends = response.data.friends;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
   }
 
   async function getFriendRequests() {
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
 
-      const options = {
-        method: "GET",
-        headers: { Authorization: `Bearer ${user.access_token_server}` },
-      };
-
-      return await axios
-        .get(env.BACKEND_PORT + "/friendship/requests/", options)
-        .then(function (response: any) {
-          console.log("FriendsRequests: ", response.data);
-          user.friendsRequests = response.data;
-          return response.data;
-        })
-        .catch(function (error) {
-          console.error(error);
-        });
+    return await axios
+      .get(env.BACKEND_PORT + "/friendship/requests/", options)
+      .then(function (response: any) {
+        console.log("FriendsRequests: ", response.data);
+        user.friendsRequests = response.data;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
   }
 
-  async function sendFriendRequest(userId: number) {
+  async function sendFriendRequest(userId: number, userNickname: string) {
+    const options = {
+      method: "POST",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
 
-      const options = {
-        method: "POST",
-        headers: { Authorization: `Bearer ${user.access_token_server}` },
-      };
+    await fetch(env.BACKEND_PORT + "/friendship/send/" + userId, options)
+      .then(async function (response: any) {
+        //Add Store()
+        console.log(response);
+        console.log(user.friendsRequests);
 
-      await fetch(env.BACKEND_PORT + "/friendship/send/" + userId, options)
-        .then(async function (response: any) {
-          user.friendsRequests.push(await response.json());
-          console.log(user.friendsRequests);
-        })
-        .catch((err) => console.error(err));
+        const request = {
+          requesteeId: userId,
+          requesteeName: userNickname,
+          requestorId: user.id,
+          requestorName: user.nickname,
+        };
+        user.friendsRequests.push(request);
+
+        //Emit
+        const lobbySocket: Socket = socketClass.getLobbySocket();
+        lobbySocket.emit("sendFriendRequest", request);
+      })
+      .catch((err) => console.error(err));
   }
 
   async function cancelFriendRequest(userId: number) {
+    const options = {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
 
-      const options = {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${user.access_token_server}` },
-      };
+    await fetch(env.BACKEND_PORT + "/friendship/cancel/" + userId, options)
+      .then(async function (response: any) {
+        //Add Store()
+        const index = user.friendsRequests.findIndex((friendship) => friendship.requesteeId === userId);
+        if (index !== -1) user.friendsRequests.splice(index, 1);
+        console.log("friendRequest: ", user.friendsRequests);
 
-      await fetch(env.BACKEND_PORT + "/friendship/cancel/" + userId, options)
-        .then(async function (response: any) {
-
-          const index = user.friendsRequests.findIndex((friendship) => friendship.requesteeId === userId);
-          if (index !== -1) user.friendsRequests.splice(index, 1);
-          console.log("friendRequest: ", user.friendsRequests);
-        })
-        .catch((err) => console.error(err));
+        //Emit
+        const lobbySocket: Socket = socketClass.getLobbySocket();
+        lobbySocket.emit("cancelFriendRequest", {
+          requesteeId: userId,
+          requestorId: user.id,
+        });
+      })
+      .catch((err) => console.error(err));
   }
 
-  async function acceptFriendRequest(userId: number) {
+  async function acceptFriendRequest(userId: number, userNickname: string) {
+    const options = {
+      method: "POST",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
 
-      const options = {
-        method: "POST",
-        headers: { Authorization: `Bearer ${user.access_token_server}` },
-      };
+    await fetch(env.BACKEND_PORT + "/friendship/accept/" + userId, options)
+      .then(async function (response: any) {
+        user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requestorId != userId);
+        user.friends.push({
+          id: userId,
+          nickname: userNickname,
+        });
+        console.log(user.friends);
 
-      await fetch(env.BACKEND_PORT + "/friendship/accept/" + userId, options)
-        .then(async function (response: any) {
-          user.friends.push(await response.json());
-          console.log(user.friends);
-        })
-        .catch((err) => console.error(err));
+        //Emit
+        const lobbySocket: Socket = socketClass.getLobbySocket();
+        lobbySocket.emit("acceptFriendRequest", {
+          requesteeId: user.id,
+          requesteeName: user.nickname,
+          requestorId: userId,
+        });
+      })
+      .catch((err) => console.error(err));
   }
 
   async function rejectFriendRequest(userId: number) {
+    const options = {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
 
-      const options = {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${user.access_token_server}` },
-      };
+    await fetch(env.BACKEND_PORT + "/friendship/reject/" + userId, options)
+      .then(async function (response: any) {
+        const index = user.friendsRequests.findIndex((friendship) => friendship.requestorId == userId);
+        if (index !== -1) user.friendsRequests.splice(index, 1);
 
-      await fetch(env.BACKEND_PORT + "/friendship/reject/" + userId, options)
-        .then(async function (response: any) {
-
-          const index = user.friendsRequests.findIndex((friendship) => friendship.requestorId == userId);
-          if (index !== -1) user.friendsRequests.splice(index, 1);
-          console.log("Reject: ", userId, ": ", user.friendsRequests);
-        })
-        .catch((err) => console.error(err));
+        //Emit
+        const lobbySocket: Socket = socketClass.getLobbySocket();
+        lobbySocket.emit("rejectFriendRequest", {
+          requesteeId: user.id,
+          requesteeName: user.nickname,
+          requestorId: userId,
+        });
+        console.log("Reject: ", userId, ": ", user.friendsRequests);
+      })
+      .catch((err) => console.error(err));
   }
 
   async function deleteFriend(userId: number) {
+    const options = {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
 
-      const options = {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${user.access_token_server}` },
-      };
+    await fetch(env.BACKEND_PORT + "/friendship/unfriend/" + userId, options)
+      .then(async function (response: any) {
+        const index = user.friends.findIndex((friendship) => friendship.id === userId);
+        if (index !== -1) user.friends.splice(index, 1);
+        console.log("Unfriend: ", userId, ": ", user.friends);
 
-      await fetch(env.BACKEND_PORT + "/friendship/unfriend/" + userId, options)
-        .then(async function (response: any) {
-
-          const index = user.friends.findIndex((friendship) => friendship.id === userId);
-          if (index !== -1) user.friendsRequests.splice(index, 1);
-          console.log("Unfriend: ", userId, ": ", user.friendsRequests);
-        })
-        .catch((err) => console.error(err));
+        //Emit
+        const lobbySocket: Socket = socketClass.getLobbySocket();
+        lobbySocket.emit("deleteFriend", {
+          unfriend: userId,
+          id: user.id,
+        });
+      })
+      .catch((err) => console.error(err));
   }
 
   async function getBlockedUsers() {
-
     const options = {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -443,8 +493,8 @@ export const userStore = defineStore("user", function () {
     return await axios
       .get(env.BACKEND_PORT + "/blocklist/", options)
       .then(function (response: any) {
+        user.block.push(...response.data);
         console.log("Block: ", response.data);
-        user.block = response.data;
         return response.data;
       })
       .catch(function (error) {
@@ -452,23 +502,41 @@ export const userStore = defineStore("user", function () {
       });
   }
 
-  async function blockUser(userId: number) {
+  async function blockUser(userId: number, userNickname: string, userImage: string) {
+    const options = {
+      method: "POST",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
 
-      const options = {
-        method: "POST",
-        headers: { Authorization: `Bearer ${user.access_token_server}` },
-      };
+    await fetch(env.BACKEND_PORT + "/blocklist/block/" + userId, options)
+      .then(async function (response: any) {
+        //Add in Store
+        const existingEvent = user.block.find((block: any) => block.blockedId === userId);
+        if (!existingEvent) {
+          user.block.push({
+            blocked: {
+              id: userId,
+              nickname: userNickname,
+              image: userImage,
+            },
+            blockedId: userId,
+            blockerId: user.id,
+          });
+        }
+        console.log("Block User:", userNickname, user.block);
 
-      await fetch(env.BACKEND_PORT + "/blocklist/block/" + userId, options)
-        .then(async function (response: any) {
-          user.friends.push(await response.json());
-          console.log(user.friends);
-        })
-        .catch((err) => console.error(err));
+        //Emit
+        const lobbySocket: Socket = socketClass.getLobbySocket();
+        lobbySocket.emit("block_user", {
+          blockerId: user.id,
+          blockerNickname: user.nickname,
+          blockId: userId,
+        });
+      })
+      .catch((err) => console.error(err));
   }
 
   async function unblockUser(userId: number) {
-
     const options = {
       method: "DELETE",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -476,16 +544,22 @@ export const userStore = defineStore("user", function () {
 
     await fetch(env.BACKEND_PORT + "/blocklist/block/" + userId, options)
       .then(async function (response: any) {
-
-        const index = user.block.findIndex((block) => block == userId);
-        if (index !== -1) user.friendsRequests.splice(index, 1);
+        //Add in Store
+        user.block = user.block.filter((block: any) => block.blockedId == userId);
         console.log("Block: ", userId, ": ", user.block);
+
+        //Emit
+        const lobbySocket: Socket = socketClass.getLobbySocket();
+        lobbySocket.emit("unblock_user", {
+          blockerId: user.id,
+          blockerNickname: user.nickname,
+          blockId: userId,
+        });
       })
       .catch((err) => console.error(err));
   }
 
   async function getBlockedBy() {
-
     const options = {
       method: "GET",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -494,8 +568,9 @@ export const userStore = defineStore("user", function () {
     return await axios
       .get(env.BACKEND_PORT + "/blocklist/blockedBy", options)
       .then(function (response: any) {
+        user.block.push(...response.data);
         console.log("Who Blocked Me: ", response.data);
-        user.block = response.data;
+        console.log("Block List", user.block);
         return response.data;
       })
       .catch(function (error) {
@@ -503,44 +578,174 @@ export const userStore = defineStore("user", function () {
       });
   }
 
-    /* async function createChannel() {
-      const createChannelDto = {
-        name: "asdasdasdas",
-        usersToAdd: [69], //diferente do gajo que criou
-        channelType: "PUBLIC",
-        password: "senha"
-      };
+  async function getUserGames(userId: number) {
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
 
-      const options = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.access_token_server}`
-        },
-        body: JSON.stringify(createChannelDto)
-      };
-      try {
-        const response = await fetch(`${env.BACKEND_PORT}/chat/channels`, options);
-        const data = await response.json();
-        console.log("CREATE CHANNEL:", data);
-      } catch (error) {
+    return await axios
+      .get(env.BACKEND_PORT + "/game/user/" + userId, options)
+      .then(function (response: any) {
+        console.log("Games: ", response.data);
+        if (user.id == userId) user.infoPong.historic = response.data;
+        return response.data;
+      })
+      .catch(function (error) {
         console.error(error);
-      }
-    }*/
+      });
+  }
+
+  async function getGames(status: GameStatus) {
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+      params: new URLSearchParams([["status", status]]),
+    };
+
+    return await axios
+      .get(env.BACKEND_PORT + "/game/active", options)
+
+      // axios.request(options)
+      .then(function (response: any) {
+        console.log("Games: ", response.data);
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  async function getLeaderboard() {
+    const options = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .get(env.BACKEND_PORT + "/game/leaderboard", options)
+      .then(function (response: any) {
+        console.log("LeaderBoard: ", response.data);
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  async function createGame(userId: number, gameRequest: any) {
+    let body = {} as any;
+    body.gameType = "PUBLIC";
+    body.players = [userId];
+    body.gameRequest = gameRequest;
+
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .post(env.BACKEND_PORT + "/game/create", body, options)
+      .then(function (response: any) {
+        console.log(`GAME: ${response.data}`);
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+  
+  async function twofagenerate() : Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .post(env.BACKEND_PORT + "/auth/2fa/generate", undefined, options)
+      .then(function (response: any) {
+        console.log(`2Fa: ${response.data}`);
+        return response.data.responseObj;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
+
+  async function twofaTurnOn(twoFactorCode: string) : Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+    console.log("code:", twoFactorCode)
+    return await axios
+      .post(env.BACKEND_PORT + "/auth/2fa/turn-on", { twoFACode: twoFactorCode }, options)
+      .then(function (response: any) {
+        console.log(`2Fa ON: ${response.data}`);
+        user.isTwoFAEnabled = true;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
+  
+  async function twofaTurnOff(twoFactorCode: string) : Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .post(env.BACKEND_PORT + "/auth/2fa/turn-off", { twoFACode: twoFactorCode }, options)
+      .then(function (response: any) {
+        console.log(`2Fa OFF: ${response.data}`);
+        user.isTwoFAEnabled = false;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
 
   return {
-    user, login, loginTest,
+    user,
+    login,
+    loginTest,
 
     //User Information
-    update, updateProfile, buy_skin, updateTableDefault, getUsers, getUserProfile,
+    update,
+    updateProfile,
+    buy_skin,
+    updateTableDefault,
+    getUsers,
+    getUserProfile,
 
     //Friends
-    getFriends, getFriendRequests,
+    getFriends,
+    getFriendRequests,
 
     //Send Request Friend
-    sendFriendRequest, acceptFriendRequest, cancelFriendRequest, rejectFriendRequest, deleteFriend,
+    sendFriendRequest,
+    acceptFriendRequest,
+    cancelFriendRequest,
+    rejectFriendRequest,
+    deleteFriend,
 
     //Block
-    getBlockedUsers, blockUser, unblockUser, getBlockedBy
+    getBlockedUsers,
+    blockUser,
+    unblockUser,
+    getBlockedBy,
+
+    //Game
+    getUserGames,
+    getGames,
+    getLeaderboard,
+    createGame,
+
+    //TwoFactor
+    twofagenerate,
+    twofaTurnOn,
+    twofaTurnOff,
   };
 });

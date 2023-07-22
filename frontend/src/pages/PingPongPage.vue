@@ -3,17 +3,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
   <div class="box" href>
     <canvas id="canvas1"></canvas>
-  </div>
+    <button id="buttonLeave" class="button">Leave</button>
+</div>
+
 </template>
 
 <script setup lang="ts">
 import { GamePong, TablePong, Status } from "@/game/ping_pong";
 import { onMounted, onUnmounted, ref } from "vue";
-import { type gameRequest, type updatePlayer, type updateBall, type gamePoint, type gameEnd } from "@/game/ping_pong/SocketInterface";
-import { userStore, type Historic } from "@/stores/userStore";
+import { type gameRequest, type updatePlayer, type updateBall, type gamePoint, type gameEnd, type GameStart } from "@/game/ping_pong/SocketInterface";
+import { userStore, type GAME } from "@/stores/userStore";
 import { socketClass } from "@/socket/SocketClass";
 
 import avatar_marvin from "@/assets/images/pingpong/marvin.jpg";
+import Router from "@/router";
 
 const props = defineProps({
   objectId: String,
@@ -25,26 +28,25 @@ let socket = socketClass.getGameSocket();
 
 onMounted(function () {
   const canvas = document.getElementById("canvas1") as HTMLCanvasElement;
+  const button = document.getElementById("buttonLeave") as HTMLButtonElement;;
   const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
   canvas.width = 1000;
   canvas.height = 750;
 
   const user = userStore().user;
-  if (!socket)
 	socketClass.setGameSocket({
 		query: {
 			userId: user.id,
 		}
 	});
 	socket = socketClass.getGameSocket();
-  socket.emit("entry_game", { 
+  socket.emit("entry_game", {
     objectId: props.objectId,
-	userId: user.id, 
+	  userId: user.id, 
     nickname: user.nickname,
     avatar: user.image,
     color: user.infoPong.color,
     skin: user.infoPong.skin.default.paddle,
-	isPlayer: user.isPlayer,
   });
 
   console.log("pros: ", props);
@@ -53,26 +55,83 @@ onMounted(function () {
   const game = new GamePong(canvas, canvas.width, canvas.height - 228, 164, ctx, props as gameRequest, tableBoard);
   console.log(props);
 
-  socket.on("start_game", (e: any) => {
-    console.log(e);
+  
+  //Resize Button
+  function updateButtonSizeAndPosition() {
+    const bodyWidth = document.body.clientWidth;
+    const bodyHeight = document.body.clientHeight;
+
+    const canvasWidth = Math.min(bodyWidth, 1000);
+    const canvasHeight = Math.min(bodyHeight, 750);
+
+    const percentageWidth = canvasWidth / 1000 ;
+    const percentageHeight = canvasHeight / 750;
+    const percentage = percentageWidth <= percentageHeight ? percentageWidth : percentageHeight;
+
+    if (game.status == Status.Finish)
+    {
+      button.style.width = `${290 * percentage}px`;
+      button.style.height = `${60 * percentage}px`;
+      button.style.top = `${610.5 * percentage}px`;
+    }
+    else
+    {
+      button.style.width = `${120 * percentage}px`;
+      button.style.height = `${30 * percentage}px`;
+      button.style.top = `${10.5 * percentage}px`;
+    }
+    
+    button.style.right = `${5 * percentage}px`;
+    button.style.border = `${5 * percentage}px solid black`;
+    button.style.fontSize = `${1 * percentage}rem`;
+    //Canva Border
+    canvas.style.border =  `${5 * percentage}px solid black`;
+  }
+
+  function leaveTheGame() {
+    const isgetall = (game.cur.exp == game.endGame.exp && game.cur.money == game.endGame.money && game.cur.watchers == game.endGame.watchers);
+
+    if (game.status == Status.Finish && !isgetall)
+    {
+      game.cur.exp = game.endGame.exp;
+      game.cur.money = game.endGame.money;
+      game.cur.watchers = game.endGame.watchers;
+    }
+    else
+    {
+      Router.push(`/`);
+      socket.disconnect();
+    }
+  }
+
+  updateButtonSizeAndPosition();
+  window.addEventListener('resize', updateButtonSizeAndPosition);
+  button.addEventListener("click", leaveTheGame);
+
+  socket.on("start_game", (e: GameStart) => {
+    console.log("Start:", e);
     console.log(game);
     game.audio("music_play");
 
     game.table.color = e.data.table;
     game.table.skin.src = e.data.tableSkin ? e.data.tableSkin : "";
 
-    game.player1.nickname = e.nickname1 ? e.nickname1 : game.player1.nickname;
-    game.player1.color = e.color1;
-    game.player1.avatar.src = e.avatar1 ? e.avatar1 : game.player1.avatar.src;
+    //Player 1
+    game.player1.id = e.player1.id;
+    game.player1.nickname = e.player1.nickname ? e.player1.nickname : game.player1.nickname;
+    game.player1.color = e.player1.color;
+    game.player1.avatar.src = e.player1.avatar ? e.player1.avatar : game.player1.avatar.src;
 
-    game.player2.nickname = e.nickname2 ? e.nickname2 : game.player1.nickname;;
-    game.player2.color = e.color2;
-    game.player2.avatar.src = e.avatar2 ? e.avatar2 : game.player2.avatar.src;
+    //Player 2
+    game.player2.id = e.player2.id;
+    game.player2.nickname =  e.player2.nickname ?  e.player2.nickname : game.player1.nickname;;
+    game.player2.color =  e.player2.color;
+    game.player2.avatar.src =  e.player2.avatar ?  e.player2.avatar : game.player2.avatar.src;
 
-    if (game.player2.nickname == "Marvin" && e.avatar2 == "marvin") game.player2.avatar.src = avatar_marvin;
+    if (game.player2.nickname == "Marvin" && e.player2.avatar == "marvin") game.player2.avatar.src = avatar_marvin;
 
-    e.skin1 ? game.player1.updateSkin(e.skin1) : "";
-    e.skin2 ? game.player2.updateSkin(e.skin2) : "";
+    e.player1.skin ? game.player1.updateSkin(e.player1.skin) : "";
+    e.player2.skin ? game.player2.updateSkin(e.player2.skin) : "";
 
     game.status = e.status;
     status.value = e.status;
@@ -129,11 +188,20 @@ onMounted(function () {
     console.log(e);
     game.endGame = e;
 
+    //Buton Leave
+    button.style.backgroundColor = 'yellow';
+    button.style.color = 'black';
+    button.textContent = "Go Back";
+    updateButtonSizeAndPosition();
+
+    //Animation
+    canvas.addEventListener("click", (event) => game.handleClick(event, game));
+
     //Add info in storage
     if (game.playerNumber == 1 || game.playerNumber == 2) {
 
-      user.money += e.max_money;
-      user.infoPong.xp += e.max_exp;
+      user.money += e.money;
+      user.infoPong.xp += e.exp;
 
       //Up Level!
       while (user.infoPong.xp >= user.infoPong.level * 200)
@@ -142,15 +210,44 @@ onMounted(function () {
 		    user.infoPong.level += 1;
       }
     
-      const player_2 = game.playerNumber == 1 ? game.player2 : game.player1;
-      const history_game: Historic = {
-        winner: e.result == "You Win!" ? user.nickname : player_2.nickname,
-        loser: e.result == "You Lose!" ? user.nickname : player_2.nickname,
-        player1: game.player1.nickname,
-        player2: game.player2.nickname,
-        result: game.player1.score + "-" + game.player2.score,
+      const player_1 = game.playerNumber == 1 ? game.player1 : game.player2;
+      const player_2 = player_1 == game.player1  ? game.player2 : game.player1;
+
+      const history_game: GAME = {
+        winnerId: e.gameResults.winnerId,
+        winnerNickname: e.gameResults.winnerName,
+        winnerScore: e.gameResults.winnerScore,
+        loserId: e.gameResults.loserId,
+        loserNickname: e.gameResults.loserName,
+        loserScore: e.gameResults.loserScore,
+        gameType: "PUBLIC",
+        id: "0",
+        players: [],
       }
-      user.infoPong.historic.push(history_game as never);
+      
+      const player1_historic: {
+        id: number;
+        nickname: string;
+        image: string;
+      } = {
+        id: player_1.id,
+        nickname: player_1.nickname,
+        image: player_1.avatar.src,
+      };
+
+      const player2_historic: {
+        id: number;
+        nickname: string;
+        image: string;
+      } = {
+        id: player_2.id,
+        nickname: player_2.nickname,
+        image: player_2.avatar.src,
+      };
+      history_game.players.push(player1_historic);
+      history_game.players.push(player2_historic);
+
+      user.infoPong.historic.unshift(history_game as never);
 
       game.animation_points();
     }
@@ -168,6 +265,8 @@ onMounted(function () {
     socket.off("game_sound");
     socket.off("game_view");
     socket.off("end_game");
+    window.removeEventListener('resize', updateButtonSizeAndPosition);
+    button.removeEventListener('click', leaveTheGame);
   });
 
   function animate() {
@@ -188,6 +287,7 @@ onMounted(function () {
   height: 100%;
   width: 100%;
   box-sizing: 0;
+  background-color: midnightblue;
 }
 
 #canvas1 {
@@ -199,5 +299,23 @@ onMounted(function () {
   max-width: 100%;
   max-height: 100%;
 }
+
+#buttonLeave {
+  border: 5px solid black;
+  position: absolute;
+  top: 75.7%;
+  left: 50%;
+  transform: translate(-50%, 5%);
+  background-color: red;
+  color: white;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 100%;
+}
+
+#buttonLeave:hover {
+  color: rgb(91, 91, 91);
+}
+
+
 </style>
 

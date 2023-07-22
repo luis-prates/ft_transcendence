@@ -1,5 +1,5 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
-import { ConfirmButton } from "./ConfirmButton";
+import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 import { skin, TypeSkin, type ProductSkin } from "../ping_pong/Skin";
 
 //Sound
@@ -38,7 +38,6 @@ export class Shop {
   }
 
   private createAll() {
-    // Configurações para desenhar os quadrados de produtos
     const squareW = 10;
     const squareH = 15;
     const paddingX = 6;
@@ -51,7 +50,6 @@ export class Shop {
 
       const i = index - page * this.pagination_shop.max_for_page;
 
-      // Loop para desenhar os quadrados de produtos
       const squareX = 10 + 3 + (i % this.pagination_shop.max_for_line) * (squareW + paddingX);
       const squareY = 10 + paddingY + Math.floor(i / this.pagination_shop.max_for_line) * (squareH + paddingY);
 
@@ -61,26 +59,6 @@ export class Shop {
     //Arrow Buttons
     this.menu.add(this.pagination_shop.createArrowButton("left", 11, 85, 2));
     this.menu.add(this.pagination_shop.createArrowButton("right", 87, 85, 2));
-  }
-
-  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, rectangle: Rectangle, y: number, max_with?: number, font?: string) {
-    ctx.fillStyle = "#000";
-    ctx.font = font ? font : "12px Arial";
-    ctx.textAlign = "start";
-
-    const begin = rectangle.x + rectangle.w * 0.1;
-    const max = max_with ? max_with : rectangle.w - rectangle.w * 0.2;
-
-    let offset = 0;
-    let offsetmax = 0;
-    const labelWidth = ctx.measureText(label).width;
-    while (begin + offset + labelWidth < begin + max - offset) {
-      offsetmax += rectangle.w * 0.05;
-      if (begin + offsetmax + labelWidth > begin + max - offset) break;
-      offset = offsetmax;
-    }
-
-    ctx.fillText(label, rectangle.x + rectangle.w * 0.1 + offset, y, rectangle.w - rectangle.w * 0.2 - offset);
   }
 
   private createProduct(index: number, skin: ProductSkin, x: number, y: number): ElementUI {
@@ -100,7 +78,7 @@ export class Shop {
           product.enable = true;
 
         const offSetTittle = this.background.rectangle.y * 0.05;
-        const offSetPrice = this.background.rectangle.y * 0.2;
+        const offSetPrice = this.background.rectangle.y * 0.25;
 
         ctx.fillStyle = "DarkSlateBlue";
         ctx.strokeStyle = "#000";
@@ -147,13 +125,15 @@ export class Shop {
           }
 
           ctx.strokeStyle = "black";
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 2;
           ctx.strokeRect(product.rectangle.x + pointx, product.rectangle.y + pointy, scaledWidth * 0.5, scaledHeight * 0.9);
         }
-
-        this.fillTextCenter(ctx, (skin.type == TypeSkin.Paddle ? "Paddle " : "Table ") + skin.tittle, product.rectangle, product.rectangle.y - offSetTittle);
-
-        this.fillTextCenter(ctx, skin.price == 0 ? "FREE" : skin.price.toString() + "₳", product.rectangle, product.rectangle.y + product.rectangle.h + offSetPrice);
+        ctx.lineWidth = 4;
+        ctx.fillStyle = "silver";
+        this.fillTextCenter(ctx, (skin.type == TypeSkin.Paddle ? "Paddle " : "Table ") + skin.tittle, product.rectangle.x, product.rectangle.y - offSetTittle, product.rectangle.w, product.rectangle.h * 0.2, undefined, undefined, true);
+        
+        ctx.fillStyle = "gold";
+        this.fillTextCenter(ctx, skin.price == 0 ? "FREE" : skin.price.toString() + "₳", product.rectangle.x + product.rectangle.w * 0.35, product.rectangle.y + product.rectangle.h + offSetPrice,  product.rectangle.w * 0.3, product.rectangle.h * 0.15, undefined, undefined, true);
       },
       onClick: () => {
 
@@ -164,7 +144,7 @@ export class Shop {
         else if (skin.type == TypeSkin.Table && !this.user.infoPong.skin.tables.includes(skin.name as never)) canBuy = true;
 
         if (this.yourMoney >= skin.price && canBuy) {
-          const confirmButton = new ConfirmButton(skin.tittle, skin.price);
+          const confirmButton = new ConfirmButton(skin, STATUS_CONFIRM.PRODUCT);
           confirmButton.show((value) => {
             if (value == "CONFIRM") {
               if (skin.type == TypeSkin.Paddle) this.user.infoPong.skin.paddles.push(skin.name as never);
@@ -213,26 +193,20 @@ export class Shop {
   }
 
   public draw(ctx: CanvasRenderingContext2D, pos: Rectangle) {
-    const backgroundColor = "rgba(210, 180, 140, 0.6)"; // Cor de fundo castanho
-    const borderColor = "#8B4513"; // Cor de contorno mais escuro
+    const backgroundColor = "rgba(210, 180, 140, 0.6)";
+    const borderColor = "#8B4513";
 
-    // Desenha o corpo do balão com cor de fundo castanho
     ctx.fillStyle = backgroundColor;
     this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
     ctx.fill();
 
-    // Desenha o contorno do balão com cor mais escura
     ctx.strokeStyle = borderColor;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 4;
     ctx.stroke();
 
-    // Escreve "Shop" no topo do balão
-    ctx.font = "bold 22px Arial";
     ctx.fillStyle = "gold";
-    ctx.fillText("Shop", pos.x + pos.w * 0.475, pos.y + pos.h * 0.05, pos.w * 0.05);
-    ctx.strokeText("Shop", pos.x + pos.w * 0.475, pos.y + pos.h * 0.05, pos.w * 0.05);
+    this.fillTextCenter(ctx, "Shop", pos.x + pos.w * 0.475, pos.y + pos.h * 0.05, pos.w * 0.05, pos.h * 0.04, undefined, undefined, true);
 
-    // Adiciona sublinhado ao título
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(pos.x + pos.w / 2 - 30, pos.y + pos.h * 0.06);
@@ -242,8 +216,8 @@ export class Shop {
     ctx.font = "bold 18px Arial";
     ctx.strokeStyle = "black";
     ctx.lineWidth = 3;
-    ctx.strokeText("Your Money: " + this.yourMoney + "₳", pos.x + pos.w * 0.055, pos.y + pos.h * 0.05, pos.w * 0.15);
-    ctx.fillText("Your Money: " + this.yourMoney + "₳", pos.x + pos.w * 0.055, pos.y + pos.h * 0.05, pos.w * 0.15);
+
+    this.fillTextCenter(ctx, "Your Money: " + this.yourMoney + "₳", pos.x + pos.w * 0.035, pos.y + pos.h * 0.045, pos.w * 0.15, pos.h * 0.03, undefined, undefined, true);
     ctx.lineWidth = 2;
   }
 
@@ -261,6 +235,27 @@ export class Shop {
     ctx.lineTo(x, y + radius);
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
+  }
+  
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
+    ctx.font = font ? h + "px " + font : h + "px Arial";
+    ctx.textAlign = "start";
+    
+    const begin = x + w * 0.1;
+    const max = max_with ? max_with : w - w * 0.2;
+
+    let offset = 0;
+    let offsetmax = 0;
+    const labelWidth = ctx.measureText(label).width;
+    while (begin + offset + labelWidth < begin + max - offset) {
+      offsetmax += w * 0.05;
+      if (begin + offsetmax + labelWidth > begin + max - offset) break;
+      offset = offsetmax;
+    }
+
+    if (stroke)
+      ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
   }
 
   get menu(): Menu {

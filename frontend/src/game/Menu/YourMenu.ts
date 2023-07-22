@@ -1,19 +1,16 @@
 import { Menu, type ElementUI, type Rectangle, Game, Player } from "@/game";
 import { LeaderBoard } from "./LeaderBoard";
+import { userStore } from "@/stores/userStore";
+import { Messages } from "./Messages";
+import { BattleMenu } from "./BattleMenu";
 
 //Sound
 import sound_close_tab from "@/assets/audio/close.mp3";
-import { userStore } from "@/stores/userStore";
-import { PaginationMenu } from "./PaginationMenu";
 
 //Images
 import battleImage from "@/assets/images/lobby/menu/battle_.png";
-// import leaderBoardImage from "@/assets/images/lobby/menu/leaderboard.png";
 import leaderBoardImage from "@/assets/images/lobby/menu/trofeo.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
-import { Messages } from "./Messages";
-import { MessageList } from "./MessageList";
-
 
 export class YourMenu {
   private _menu = new Menu({ layer: "Global", isFocus: false });
@@ -23,10 +20,10 @@ export class YourMenu {
   private leaderBoardMenu: boolean = false;
   private messagesMenu: boolean = false;
 
-
   private img_battle = new Image();
   private img_leaderBoard = new Image();
   private img_message = new Image();
+  public notification: string = "";
 
   private user = userStore().user;
 
@@ -40,8 +37,6 @@ export class YourMenu {
     this.menu.add(this.background, this.createButton("message", 42.5 + 0.5, 0.5, "Messages", 9));
     this.menu.add(this.background, this.createButton("battle", 42.5 + 5.5, 0.5, "Battles", 9));
     this.menu.add(this.background, this.createButton("leaderboard", 42.5 + 10.5, 0.5, "LeaderBoard", 9));
-
-
   }
 
   private createBackground(): ElementUI {
@@ -77,7 +72,7 @@ export class YourMenu {
       img = this.img_leaderBoard;
 
     const numberOfFriendRequest = this.user.friendsRequests.filter((friendship) => friendship.requesteeId === this.user.id).length;
-    let notification = numberOfFriendRequest == 0 ? "" : (numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99" );
+    this.notification = numberOfFriendRequest == 0 ? "" : (numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99" );
 
 	  const button: ElementUI = {
 		type: type,
@@ -94,84 +89,77 @@ export class YourMenu {
 			ctx.stroke();
 
 			ctx.fillStyle = "black";
-			ctx.font = "10px 'Press Start 2P', cursive";
 
-			const begin = button.rectangle.x + button.rectangle.w * 0.1;
-			const max_with = button.rectangle.w - (button.rectangle.w * 0.2);
-
-			let offset = 0;
-			let offsetmax = 0;
-			const labelWidth = ctx.measureText(label).width;
-			while (begin + offset + labelWidth < begin + max_with - offset)
-			{
-				offsetmax += button.rectangle.w * 0.05;
-				if (begin + offsetmax + labelWidth > begin + max_with - offset)
-					break ;
-				offset = offsetmax;
-			}
-
-      
 			if (img.complete)
-        ctx.drawImage(img, 
-          button.rectangle.x + button.rectangle.w * 0.25, 
-          button.rectangle.y + button.rectangle.h * 0.05, 
-          button.rectangle.w * 0.5, 
-          button.rectangle.h * 0.60);
-
+      ctx.drawImage(img, 
+        button.rectangle.x + button.rectangle.w * 0.25, 
+        button.rectangle.y + button.rectangle.h * 0.05, 
+        button.rectangle.w * 0.5, 
+        button.rectangle.h * 0.60);
+        
         
         if (type == "message")
         {
           ctx.fillStyle = "red";
-  			  ctx.fillText(notification, 
-            button.rectangle.x + button.rectangle.w * 0.60, 
-            button.rectangle.y + button.rectangle.h * 0.6, 
-            button.rectangle.w * 0.16);
+          this.fillTextCenter(ctx, this.notification, 
+          button.rectangle.x + button.rectangle.w * 0.6, 
+          button.rectangle.y + button.rectangle.h * 0.65, 
+          button.rectangle.w * 0.16,
+          button.rectangle.h * 0.25, undefined, "'Press Start 2P', cursive", false);
         }
-      
+          
         ctx.fillStyle = "black";
-
-			  ctx.fillText(label, 
-			  button.rectangle.x + button.rectangle.w * 0.1 + offset,
-			  button.rectangle.y + button.rectangle.h * 0.9, 
-			  button.rectangle.w - (button.rectangle.w * 0.2) - offset);
+        ctx.lineWidth = 1;
+        this.fillTextCenter(ctx, label, 
+        button.rectangle.x, 
+        button.rectangle.y + button.rectangle.h * 0.95,
+        button.rectangle.w,
+        button.rectangle.h * 0.25, undefined, "'Press Start 2P', cursive", false);
 			},
 			onClick: () => {
-      if (type == "message")
-      {
-        if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
-          return ;
-        notification = "";
-        this.messagesMenu = true;
-        const confirmButton = new Messages();
-        confirmButton.show((value) => {
-          if (value == "EXIT") {
-            this.messagesMenu = false;
-          }
-        });
-      }
-      else if (type == "battle")
-      {
-        if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
-          return ;
-        //Todo 
-      }
-      else if (type == "leaderboard")
-      {
-        if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
-          return ;
-        this.leaderBoardMenu = true;
-        const leaderBoard = new LeaderBoard();
-        leaderBoard.show((value) => {
-          if (value == "EXIT") {
-            this.leaderBoardMenu = false;
-          }
-        });
-      }
-		},
+        if (type == "message")
+        {
+          if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
+            return ;
+          this.notification = "";
+          this.messagesMenu = true;
+          const confirmButton = new Messages();
+          confirmButton.show((value) => {
+            if (value == "EXIT") {
+              this.messagesMenu = false;
+            }
+          });
+        }
+        else if (type == "battle")
+        {
+          if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
+            return ;
+          if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
+            return ;
+          this.battleMenu = true;
+          const battleBoard = new BattleMenu();
+          battleBoard.show((value) => {
+            if (value == "EXIT") {
+              this.battleMenu = false;
+            }
+          });
+        }
+        else if (type == "leaderboard")
+        {
+          if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
+            return ;
+          this.leaderBoardMenu = true;
+          const leaderBoard = new LeaderBoard();
+          leaderBoard.show((value) => {
+            if (value == "EXIT") {
+              this.leaderBoardMenu = false;
+            }
+          });
+        }
+		  },
 	  };
 	  return button;
 	}
-
 
   roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
     const r = x + width;
@@ -187,6 +175,28 @@ export class YourMenu {
     ctx.lineTo(x, y + radius);
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
+  }
+
+  private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
+    ctx.font = font ? h + "px " + font : h + "px Arial";
+    ctx.textAlign = "start";
+    
+    const begin = x + w * 0.1;
+    const max = max_with ? max_with : w - w * 0.2;
+
+    let offset = 0;
+    let offsetmax = 0;
+    const labelWidth = ctx.measureText(label).width;
+    while (begin + offset + labelWidth < begin + max - offset) {
+      offsetmax += w * 0.05;
+      if (begin + offsetmax + labelWidth > begin + max - offset) break;
+      offset = offsetmax;
+    }
+
+  
+    if (stroke)
+      ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
   }
 
   get menu(): Menu {

@@ -81,6 +81,13 @@ export class Menu implements GameObject {
 
   setData(data: any) {}
 
+  setTimeOut(timeOut: number)
+  {
+    setTimeout(() => {
+      Game.instance.removeMenu(this);
+  }, timeOut);
+  }
+
   public add(parent?: ElementUI, ...elements: ElementUI[]) {
     if (parent && (elements === null || elements === undefined || elements.length === 0)) {
       elements = parent ? [parent] : [];

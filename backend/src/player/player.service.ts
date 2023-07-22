@@ -28,7 +28,7 @@ export class PlayerService {
 								name: 'Marvin',
 								nickname: 'Marvin',
 								email: 'marvin@marvin.com',
-								image: 'asffgasgasdg',
+								image: 'src/assets/images/pingpong/marvin.jpg',
 								hash: 'asdgasdgasdg',
 							},
 						})
@@ -43,7 +43,7 @@ export class PlayerService {
 
 	//TODO: add namespace to keys maybe?
 	createPlayer(socket: Socket, payload: any): Player {
-		const player = new Player(socket, payload.objectId, this);
+		const player = new Player(socket, payload, this);
 		this.logger.debug(`created player: ${player.objectId}`);
 		this.players.set(player.objectId, player);
 		this.sockets.set(player.objectId, socket);
@@ -52,14 +52,17 @@ export class PlayerService {
 
 	removePlayer(player: Player): void {
 		//! is it needed?
-		const playerFromMap = this.getPlayer(player.objectId);
+		//verificar se existe no gateaway do game
+		this.logger.log(`Remove Player: ${player}`);
 		if (!player) {
 			return;
 		}
+		const playerFromMap = this.getPlayer(player.objectId);
 
 		playerFromMap.destroy();
-		this.players.delete(Number(player.objectId));
-		this.sockets.delete(Number(player.objectId));
+		this.players.delete(player.objectId);
+		this.sockets.delete(player.objectId);
+		this.logger.log(`Removed`);
 	}
 
 	getPlayer(userId: number): Player {
@@ -70,7 +73,6 @@ export class PlayerService {
 			if (key == userId) {
 				return value;
 			}
-			this.logger.debug(`key: ${key} value: ${value.name}`);
 		}
 		this.logger.debug(`userId: ${userId}`);
 		const player: Player = this.players.get(userId);
@@ -81,7 +83,7 @@ export class PlayerService {
 	getUserIdFromGameSocket(socket: Socket): number {
 		// find id in sockets map
 		for (const [key, value] of this.players.entries()) {
-			if (value.getGameSocket().id == socket.id) {
+			if (value.getGameSocket() && value.getGameSocket().id == socket.id) {
 				return key;
 			}
 		}
@@ -120,6 +122,15 @@ export class PlayerService {
 		return null;
 	}
 
+	getUserIdBySocket(socket: Socket): number | undefined {
+		for (const [number, value] of this.sockets.entries()) {
+			if (value === socket) {
+				return number;
+			}
+		}
+		return undefined;
+	}
+
 	updatePlayerSocket(socket: Socket): void {
 		this.logger.debug('updatePlayerSocket');
 		const playerSocket = this.sockets.get(Number(socket.id));
@@ -130,13 +141,35 @@ export class PlayerService {
 
 	onSocketConnected(socket: Socket, payload: any): Player {
 		// If this socket was already associated with a player, remove the old player data
-		if (this.players.has(Number(payload.userId))) {
-			this.players.delete(Number(payload.userId));
+		if (this.players.has(payload.userId)) {
+			this.players.delete(payload.userId);
 		}
 
 		// If this socket was already in the map, remove the old socket data
-		if (this.sockets.has(Number(payload.userId))) {
-			this.sockets.delete(Number(payload.userId));
+		if (this.sockets.has(payload.userId)) {
+			this.sockets.delete(payload.userId);
+		}
+
+		console.log('count', this.getPlayerCount());
+		// Then you can add the new player data associated with the new socket
+		const player = this.createPlayer(socket, payload);
+		// this.logger.debug('onSocketConnected');
+		// this.logger.debug('player: ' + JSON.stringify(player));
+		// this.logger.debug('socket: ' + JSON.stringify(socket));
+		console.log('count', this.getPlayerCount());
+		return player;
+	}
+
+	onSocketDisconnect(socket: Socket, payload: any): Player {
+		// If this socket was already associated with a player, remove the old player data
+		if (this.players.has(payload.userId)) {
+			this.players.delete(payload.userId);
+		}
+
+		// If this socket was already in the map, remove the old socket data
+		if (this.sockets.has(payload.userId)) {
+			console.log('SOCKETTT REMOVED!');
+			this.sockets.delete(payload.userId);
 		}
 
 		// Then you can add the new player data associated with the new socket

@@ -1,8 +1,9 @@
 import { Camera, Player, Menu, type GameObject, Map, listClass } from "@/game";
-import socket from "@/socket/Socket";
+import { socketClass } from "@/socket/SocketClass";
 import { userStore } from "@/stores/userStore";
 import { CreateGame } from "../Menu/CreateGame";
 import { YourMenu } from "../Menu/YourMenu";
+import type { Socket } from "socket.io-client";
 
 export class Game {
   public static instance: Game;
@@ -21,9 +22,13 @@ export class Game {
   protected camera: Camera;
   protected map: Map;
   protected player: Player;
+  public your_menu;
   public isRunning;
+  public socket: Socket;
 
   constructor(map: Map, player: Player) {
+    //For What?
+	this.socket = socketClass.getGameSocket();
     console.log("Map: ", map.w, " / ", map.h);
     this.camera = new Camera(player, map);
     this.canvas.width = map.w;
@@ -40,7 +45,8 @@ export class Game {
     this.canvas.addEventListener("contextmenu", this.mouseClick.bind(this));
     Game.instance = this;
     //Your Menu
-    Game.instance.addMenu(new YourMenu().menu);
+    this.your_menu = new YourMenu();
+    Game.instance.addMenu(this.your_menu.menu);
     // Adicione os event listeners para os eventos de drag e drop
     this.canvas.addEventListener("dragover", (event) => event.preventDefault());
     this.canvas.addEventListener("drop", (event) => {
@@ -133,7 +139,8 @@ export class Game {
 
   addGameObject(gameObject: GameObject): GameObject {
     this.gameObjets.push(gameObject);
-    console.log("Add: ", gameObject.objectId);
+    if (gameObject.type == "character" || gameObject.type == "player")
+      console.log("Add: ", gameObject);
     if (gameObject.mouseClick) this.mouseEvents.push(gameObject.mouseClick.bind(gameObject));
     if (gameObject.update) this.gameObjetsUpdate.push(gameObject);
     return gameObject;
@@ -155,6 +162,12 @@ export class Game {
     this.canvas.remove();
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("keyup", this.keyUp);
+  }
+
+  public gameNotification() {
+    const user = userStore().user;
+    const numberOfFriendRequest = user.friendsRequests.filter((friendship) => friendship.requesteeId === user.id).length;
+    this.your_menu.notification = numberOfFriendRequest == 0 ? "" : (numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99" );;
   }
 
   public static MouseColision(x: number, y: number): GameObject | undefined {
@@ -210,4 +223,9 @@ export class Game {
   public static removeMenu(menu: Menu) {
     Game.instance.removeMenu(menu);
   }
+
+  public static updateNotifications() {
+    Game.instance.gameNotification();
+  }
+
 }

@@ -13,6 +13,9 @@ import { GameService } from '../game.service';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
+import { GameClass } from '../ping_pong/GamePong';
+import { UserService } from '../../user/user.service';
+import { UserStatus } from '@prisma/client';
 
 @WebSocketGateway({ namespace: 'game', cors: { origin: '*' } })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -25,6 +28,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		private gameService: GameService,
 		private socketService: SocketService,
 		private playerService: PlayerService,
+		private userService: UserService,
 	) {}
 
 	async afterInit(server: any) {
@@ -57,18 +61,30 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	async handleDisconnect(@ConnectedSocket() client: Socket) {
-		const userId = this.playerService.getUserIdFromGameSocket(client);
+		console.log(client.data);
+		//const userId = this.playerService.getUserIdFromGameSocket(client);
+		const userId = client.data.userId;
 		this.logger.log(`Client disconnected on /game namespace: ${userId}`);
 		const player = this.playerService.getPlayer(userId);
-		this.logger.debug(`Removing Player ${userId} from playerService`);
-		this.playerService.removePlayer(player);
 		//! needs to be changed to check if player is in game
 		//! perhaps add game id to player object?
 		if (client.data.gameId) {
 			const gameId = client.data.gameId;
-			// Remove the player from the game
-			const isPlayer = this.socketService.gameIdToPlayerId.get(gameId).includes(Number(userId));
+
+			const isPlayer =
+				this.socketService.gameIdToPlayerId.get(gameId) &&
+				this.socketService.gameIdToPlayerId.get(gameId).includes(Number(userId));
+			const isWatcher = this.socketService.gameIdToWatcherId.get(gameId)
+				? this.socketService.gameIdToWatcherId.get(gameId).includes(Number(userId))
+				: false;
+			console.log(isPlayer, isWatcher);
+			const game = await this.gameService.games.find(g => g.data.objectId == gameId);
 			if (isPlayer) {
+				if (game) {
+					console.log('IS IN OTHER GAME!');
+					game.disconnect(game.player1.userId == userId ? 1 : 2);
+				}
+
 				this.socketService.gameIdToPlayerId.set(
 					gameId,
 					this.socketService.gameIdToPlayerId.get(gameId).filter(playerId => playerId !== Number(userId)),
@@ -79,28 +95,58 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				);
 				// Leave the room for the game
 				client.leave(`game-${gameId}-player`);
-			} else {
+				this.userService.status(userId, UserStatus.ONLINE);
+			} else if (isWatcher) {
 				this.socketService.gameIdToWatcherId.set(
 					gameId,
 					this.socketService.gameIdToWatcherId.get(gameId).filter(watcherId => watcherId !== userId),
 				);
 				this.logger.log(`Removed watcher ${userId} from game ${gameId}`);
 				client.leave(`game-${gameId}-watcher`);
+				game.emitAll('game_view', game.watchers.length);
 			}
 		}
+		/*
+		const userId = client.data.userId;
+		const player = this.playerService.getPlayer(userId);
+		this.logger.debug(`Removing Player ${userId} from playerService`);
+		this.playerService.removePlayer(player);
+		*/
+		//console.log("PLAYERS:", this.playerService.getPlayers());
 	}
 
 	@SubscribeMessage('entry_game')
 	async handleEnterGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.logger.debug(`Enter game received: ${JSON.stringify(body)}`);
-		const isPlayer = body.isPlayer;
 		const gameId = body.objectId;
-		client.data.gameId = gameId;
 		const userId = client.data.userId;
+		client.data.gameId = gameId;
+		this.userService.status(userId, UserStatus.IN_GAME);
+
+		const isInTheGamePlayer = this.socketService.gameIdToPlayerId.get(gameId)
+			? this.socketService.gameIdToPlayerId.get(gameId).includes(userId)
+			: false;
+		const isInTheGameWatcher = this.socketService.gameIdToWatcherId.get(gameId)
+			? this.socketService.gameIdToWatcherId.get(gameId).includes(userId)
+			: false;
+		if (isInTheGamePlayer || isInTheGameWatcher) {
+			console.log(`The Client is connected AGAIN!: ${client.id}`);
+			return;
+		}
 		const player = this.playerService.getPlayer(userId);
 		// Add userId to gameIdToUserId map
 		// if gameId not in map, create new entry
 		// if gameId in map, append userId to array
+		// const isInGame = this.socketService.playerIdToGameId.get(userId);
+		// if (isInGame)
+		// {
+
+		// }
+		const isPlayer = await this.gameService.enterGame(player, body);
+
+		//TODO Associar o player a um jogo
+		//this.socketService.playerIdToGameId.set(userId, gameId);
+
 		if (isPlayer) {
 			this.socketService.gameIdToPlayerId.set(gameId, [
 				...(this.socketService.gameIdToPlayerId.get(gameId) || []),
@@ -109,7 +155,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			// Join the room for the game
 			client.join(`game-${gameId}-player`);
 			this.logger.debug(`Client ${client.id} Joining game-${gameId}-player`);
-			this.gameService.enterGame(player, isPlayer, body);
 		}
 		// else, add userId to gameIdToWatcherId map
 		else {
@@ -119,7 +164,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			]);
 			this.logger.log(`Added watcher ${userId} to game ${gameId}`);
 			client.join(`game-${gameId}-watcher`);
-			this.gameService.enterGame(player, isPlayer, body.playerInfo);
+		}
+	}
+
+	@SubscribeMessage('match_making_game')
+	async handleMatchMakingGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.logger.debug(`Match Making game received: ${JSON.stringify(body)}`);
+
+		const userId = client.data.userId;
+		const player = this.playerService.getPlayer(userId);
+
+		const game = await this.gameService.matchMakingGame(player, body);
+		if (game) {
+			this.server.emit('match_making_game', game);
 		}
 	}
 

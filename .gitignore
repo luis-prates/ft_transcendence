@@ -3,6 +3,7 @@ dist
 node_modules
 dist-ssr
 *.local
+package-lock.json
 
 # Logs
 logs

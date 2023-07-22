@@ -4,7 +4,7 @@ import { Map } from "./Map";
 import { Game } from "@/game/base/Game";
 import type { GameObject } from "@/game/base/GameObject";
 import { type Ref } from "vue";
-import { userStore, type Historic } from "@/stores/userStore";
+import { userStore, type GAME } from "@/stores/userStore";
 import { LeaderBoard } from "@/game/Menu/LeaderBoard";
 import { Profile } from "@/game/Menu/Profile";
 import { YourProfile } from "@/game/Menu/YourProfile";
@@ -26,13 +26,15 @@ export class Player extends Character {
     this.x = data.x;
     this.y = data.y;
     this.menu = menu;
-    this.animation.sx = (this.store.user.avatar - 4 >= 0 ? this.store.user.avatar - 4 : this.store.user.avatar) * 144;;
+    this.animation.sx = (this.store.user.avatar - 4 >= 0 ? this.store.user.avatar - 4 : this.store.user.avatar) * 144;
     this.animation.sy = (this.store.user.avatar - 4 >= 0 ? 1 : 0) * 320;
     this.menu.value?.setAttribute("style", "display: none");
     this.type = "player";
     this.name = "Player_" + Date.now();
+    this.nickname = data.nickname;
+    this.avatar = data.avatar;
     console.log("Player", data);
-    this.socket.emit("new_player", { objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop, sx: this.animation.sx, sy: this.animation.sy} });
+    this.socket.emit("new_player", { objectId: this.objectId, name: this.name, nickname: this.nickname, avatar: this.avatar, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop, sx: this.animation.sx, sy: this.animation.sy} });
   }
 
   draw(contex: CanvasRenderingContext2D): void {
@@ -62,40 +64,6 @@ export class Player extends Character {
     if (button == 0) {
       this.select = Game.MouseColision(x, y);
       if (this.select == this) {
-        
-        const user = userStore().user;
-        const history_game_1: Historic = {
-          winner: user.nickname,
-          loser: "Marvin",
-          player1: user.nickname,
-          player2: "Marvin",
-          result: 3 + "-" + 0,
-        };
-        const history_game_2: Historic = {
-          winner: "Marvin2",
-          loser: user.nickname,
-          player1: user.nickname,
-          player2: "Marvin2",
-          result: 0 + "-" + 3,
-        }
-       /* user.infoPong.historic.push(history_game_1 as never);
-        user.infoPong.historic.push(history_game_1 as never);
-        user.infoPong.historic.push(history_game_1 as never);
-        user.infoPong.historic.push(history_game_2 as never);
-        user.infoPong.historic.push(history_game_2 as never);
-        user.infoPong.historic.push(history_game_2 as never);
-        user.infoPong.historic.push(history_game_2 as never);
-
-        //skin 
-        user.infoPong.skin.paddles.push("mario" as never);
-        user.infoPong.skin.paddles.push("pacman" as never);
-        user.infoPong.skin.paddles.push("onepiece" as never);
-        user.infoPong.skin.paddles.push("42Lisboa" as never);
-        user.infoPong.skin.paddles.push("42Lisboa" as never);
-        user.infoPong.skin.paddles.push("onepiece" as never);
-        user.infoPong.skin.paddles.push("pacman" as never);
-        user.infoPong.skin.paddles.push("mario" as never);
-        console.log(user.infoPong);*/
 
         Game.instance.addMenu(new YourProfile(this).menu);
 

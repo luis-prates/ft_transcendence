@@ -22,10 +22,14 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
-import { userStore } from "@/stores/userStore";
+import { userStore, type Block, type Friendship } from "@/stores/userStore";
 import ChatComponent from "@/components/chat/ChatComponent.vue";
+import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
+import Router from "@/router";
+import { chatStore } from "@/stores/chatStore";
 
 const store = userStore();
+const user = userStore().user;
 const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 let lobby: Lobby | null = null;
@@ -54,6 +58,95 @@ onMounted(() => {
       });
     }, 1000);
   });
+  socket.on("invite_request_game", (e: any) => {
+      const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
+      Game.instance.addMenu(confirmButton.menu);
+			confirmButton.show((value) => {
+          if (value == "CONFIRM") {
+            socket.emit("challenge_game", {
+              challenged: store.user.id, 
+              challenger: e.playerId,
+            });
+          }
+		  });
+    });
+    socket.on("challenge_game", (gameId: string) => {
+      console.log("Challenge begin!")
+			socket.off("invite_confirm_game");
+			Router.push(`/game?objectId=${gameId}`);
+		});
+
+    //Block
+    socket.on("block_user",  (event: Block) => {
+      const existingEvent = user.block.find((block: any) => block.blockerId === event.blockerId);
+      
+      if (!existingEvent) user.block.push(event);
+
+      console.log("Block!", event, "Block List:", user.block);
+		});
+
+    //Unblock
+    socket.on("unblock_user", (event: Block) => {
+      user.block = user.block.filter((block: Block) => block.blockerId !== event.blockerId);
+
+      console.log("Unblock!", event, "Block List:", user.block);
+		});
+
+    //Send Friend Request
+    socket.on("sendFriendRequest",  (event: Friendship) => {
+      const existingEvent = user.friendsRequests.find((friend: Friendship) => friend.requestorId === event.requestorId);
+      
+      if (!existingEvent)
+        user.friendsRequests.push(event);
+      //console.log("Send Friend!", event, "Friend Request:", user.friendsRequests);
+      Game.updateNotifications();
+    });
+
+    //Cancel Friend Request
+    socket.on("cancelFriendRequest",  (event: Friendship) => {
+      user.friendsRequests = user.friendsRequests.filter((friend: Friendship) => friend.requestorId != event.requestorId);
+
+      //console.log("Cancel Friend!", event, "Friend Request:", user.friendsRequests);
+      Game.updateNotifications();
+    });
+
+    //Accept Friend Request
+    socket.on("acceptFriendRequest",  (event: Friendship) => {
+      user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.id);
+      const existingEvent = user.friends.find((friend: Friendship) => friend.requesteeId === event.id);
+      
+      if (!existingEvent)
+        user.friends.push(event);
+      //console.log("Accept Friend!", event);
+      Game.updateNotifications();
+		});
+    
+    //Reject Friend Request
+    socket.on("rejectFriendRequest",  (event: Friendship) => {
+      user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.requesteeId);
+      //console.log("Reject Friend Request!", event);
+      Game.updateNotifications();
+		});
+
+    //Delete Friend
+    socket.on("deleteFriend",  (event: Friendship) => {
+      user.friends = user.friends.filter((friend: Friendship) => friend.id != event.id);
+      //console.log("Delete Friend!", event);
+		});
+
+
+    //Delete Friend
+    socket.on("updateStatus",  (event: any) => {
+      console.log("ENTROUUU", event)
+
+      chatStore().channels.forEach(channel => {
+        const userIndex = channel.users.findIndex(user => user.id == event.id);
+        if (userIndex !== -1) {
+          channel.users[userIndex].status = event.status;
+          console.log("new Status");
+        }
+      });
+    });
 });
 
 onUnmounted(() => {

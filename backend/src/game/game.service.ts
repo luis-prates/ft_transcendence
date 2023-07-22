@@ -1,9 +1,9 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
-import { GameStatus, Prisma } from '@prisma/client';
+import { GameStatus, Prisma, UserStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameDto, GameEndDto } from './dto';
 import { EventEmitter } from 'events';
-import { GameClass, infoBot } from './ping_pong/GamePong';
+import { GameClass, Status, infoBot } from './ping_pong/GamePong';
 import { playerInfo } from '../socket/SocketInterface';
 import { PlayerService } from '../player/player.service';
 import { Server } from 'socket.io';
@@ -23,7 +23,7 @@ type LeaderBoard = {
 @Injectable()
 export class GameService {
 	public events: EventEmitter;
-	private games: GameClass[] = [];
+	public games: GameClass[] = [];
 	private readonly logger = new Logger(GameService.name);
 	private server: Server;
 
@@ -88,6 +88,71 @@ export class GameService {
 		// });
 
 		return game;
+	}
+
+	async matchMakingGame(player: Player, info: playerInfo) {
+		const game = this.games.find(g => g.status == Status.Waiting);
+		if (!game) {
+			const gameCreated = (await this.createGame({
+				gameType: 'PUBLIC',
+				players: [],
+				gameRequest: {
+					objectId: `gametest_${info}`,
+					maxScore: 3,
+					table: '#1e8c2f',
+					tableSkin: '',
+					bot: false,
+				},
+			} as GameDto)) as any;
+			return gameCreated.id;
+		}
+		return game.data.objectId;
+	}
+
+	async challengeGame(player1Id: number, player2Id: number) {
+		//TODO TESTAR
+		try {
+			const player1 = await this.prisma.user.findUnique({
+				where: {
+					id: player1Id,
+				},
+			});
+
+			const player2 = await this.prisma.user.findUnique({
+				where: {
+					id: player2Id,
+				},
+			});
+
+			if (player1.status == UserStatus.IN_GAME || player2.status == UserStatus.IN_GAME) {
+				return undefined;
+			}
+
+			const gameCreated = (await this.createGame({
+				gameType: 'PUBLIC',
+				players: [player1Id, player2Id],
+				gameRequest: {
+					objectId: `gametest_${player1Id}_${player2Id}`,
+					maxScore: 3,
+					table: '#1e8c2f',
+					tableSkin: '',
+					bot: false,
+				},
+			} as GameDto)) as any;
+			console.log(gameCreated);
+			return gameCreated.id;
+		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2002') {
+					throw new ForbiddenException(
+						`Defined field value already exists. Error: ${error.message.substring(
+							error.message.indexOf('Unique constraint'),
+						)}`,
+					);
+				}
+			}
+			throw error;
+		}
 	}
 
 	async getActiveGames(status: GameStatus[]) {
@@ -172,33 +237,23 @@ export class GameService {
 		});
 
 		const leaderboardReturn: Array<LeaderBoard> = [];
-		let rank = 1;
-		let prevGamesWon: number = null;
-		let prevGamesLost: number = null;
 		(await leaderboard).forEach(user => {
 			const gamesWon = user.wonGames.length;
 			const gamesLost = user.lostGames.length;
-			let currentRank = rank;
 
 			let points = 0;
 
 			user.wonGames.forEach(wongame => {
-				points += wongame.winnerScore * (wongame.loserScore == 0 ? 150 : 100);
+				points += wongame.loserScore == 0 ? 3 : 2;
 			});
-			user.lostGames.forEach(lostgame => {
-				points += lostgame.loserScore == 0 ? 10 : lostgame.loserScore * 20;
-			});
-
-			if (prevGamesWon !== null && prevGamesLost !== null) {
-				if (gamesWon === prevGamesWon && gamesLost === prevGamesLost) {
-					currentRank = leaderboardReturn[leaderboardReturn.length - 1].rank;
-				} else {
-					currentRank = rank;
-				}
-			}
+			//TODO if lose 0 points lose -1?
+			/*user.lostGames.forEach(lostgame => {
+				points += lostgame.loserScore == 0 ? -1 : 0;
+				points = points < 0 ? 0 : points;
+			});*/
 
 			leaderboardReturn.push({
-				rank: currentRank,
+				rank: 0,
 				userId: user.id,
 				nickname: user.nickname,
 				image: user.image,
@@ -206,21 +261,42 @@ export class GameService {
 				gamesWon,
 				gamesLost,
 			});
+		});
 
-			prevGamesWon = gamesWon;
-			prevGamesLost = gamesLost;
-			rank++;
+		leaderboardReturn.sort((a, b) => b.points - a.points);
+
+		let last_points = -1;
+		let last_rank = -1;
+		leaderboardReturn.forEach((user, index) => {
+			let cur_rank = index + 1;
+			if (index == 0) {
+				last_rank = user.rank;
+				last_points = user.points;
+			} else {
+				if (last_points == user.points) {
+					cur_rank = last_rank;
+				} else {
+					last_rank = cur_rank;
+					last_points = user.points;
+				}
+			}
+			user.rank = cur_rank;
 		});
 		return leaderboardReturn;
 	}
 
-	async enterGame(player: Player, isPlayer: boolean, info: playerInfo) {
+	async enterGame(player: Player, info: playerInfo): Promise<boolean> {
+		console.log('ENTER GAME!');
 		const game = this.games.find(g => g.data.objectId === info.objectId);
 		if (!game) {
 			throw new ForbiddenException('Game does not exist');
 		}
-		this.addGameUser(info.objectId, info);
+		const isPlayer = !game.player1 || !game.player2;
+		if (isPlayer) {
+			this.addGameUser(info.objectId, info);
+		}
 		game.entry_game(player, isPlayer, info);
+		return isPlayer;
 	}
 
 	async updateGame(gameId: string, body?: any) {
@@ -368,6 +444,22 @@ export class GameService {
 						image: true,
 					},
 				},
+			},
+			orderBy: {
+				createdAt: 'desc',
+			},
+		});
+	}
+
+	async deleteGame(gameId: string) {
+		const index = this.games.findIndex(g => g.data.objectId === gameId);
+		if (index !== -1) {
+			this.games.splice(index, 1);
+		}
+		this.logger.log(`Delete Game ${gameId}`);
+		return this.prisma.game.delete({
+			where: {
+				id: gameId,
 			},
 		});
 	}

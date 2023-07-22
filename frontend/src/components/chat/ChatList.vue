@@ -2,33 +2,44 @@
   <div class="parent-container">
     <div class="card mb-sm-3 mb-md-0 contacts_card">
       <button class="hide_chat" @click="toggleChat">{{buttonString}}</button>
-      <div class="card-header">
-        <div class="input-group">
-          <input type="text" placeholder="Search..." name="" class="form-control search" />
-          <div class="input-group-prepend">
-            <span class="input-group-text search_btn" @click="createChannel">+<i class="fas fa-search"></i></span>
+      
+      <div v-if="channelStatus == false" class="card-body contacts_body">
+        <div class="card-header">
+          <div class="input-group">
+            <input id="searchChannel" type="text" placeholder="Search..." name="" class="form-control search" v-model="searchTerm" @input="handleSearch"/>
+            <div class="input-group-prepend">
+              <span class="input-group-text search_btn" @click="createChannel">+<i class="fas fa-search"></i></span>
+            </div>
           </div>
         </div>
-      </div>
-      <div v-if="channelStatus == false" class="card-body contacts_body">
         <!-- Add chat list items here -->
         <div class="chat_filter">
-          <button class="chat_filter_button">💬</button>
-          <button class="chat_filter_button">🌐</button>
+          <button id="dmButton" class="chat_filter_button" @click="changeFilter('dm')">💬</button>
+          <button id="insideButton" class="chat_filter_button" @click="changeFilter('inside')">🗪</button>
+          <button id="allButton" class="chat_filter_button" @click="changeFilter('all')">🌐</button>
         </div>
         <ul class="contacts" @click="toggleStatus">
-          <u v-for="channel in store.channels">
+          <li v-for="channel in channelsFilters">
             <ChatListChannels :channel="channel" @click="selectChannel(channel)" />
-          </u>
+            <div class="menu-container" v-if="isMenuOpen">
+              <Menus @toggleMenu="toggleMenu" @openChannel="openChannel" :channel="channel" @update-channel-status="updateChannelStatus" @update-create-channel="updateCreateChannel" v-show="selected?.objectId == channel.objectId" />
+            </div>
+          </li>
         </ul>
       </div>
       <div v-else class="card-body contacts_body">
+        <div class="card-header">
+          <div class="input-group">
+            <input id="searchUser" type="text" placeholder="Search..." name="" class="form-control search" v-model="searchUser" @input="handleSearchUser"/>
+            <div class="input-group-prepend">
+              <span class="input-group-text search_btn" @click="createChannel">+<i class="fas fa-search"></i></span>
+            </div>
+          </div>
+        </div>
         <!-- Users inside the chat selected -->
         <ul class="contacts">
-          <li>
-            <u v-for="(user, index) in selected?.users" :key="index">
-              <ChatListUsers :user="user" />
-            </u>
+          <li v-for="(user, id) in usersFilters" :key="id">
+            <ChatListUsers :user="user" @click="selectUser(user)" />
           </li>
         </ul>
       </div>
@@ -42,18 +53,128 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 import ChatListChannels from "./ChatListChannels.vue";
 import ChatListUsers from "./ChatListUsers.vue";
-import { chatStore, type channel } from "@/stores/chatStore";
+import { chatStore, type channel, type ChatUser } from "@/stores/chatStore";
 import "./App.css";
-import { defineProps, ref, getCurrentInstance, type WebViewHTMLAttributes } from "vue";
+import { ref, getCurrentInstance, type WebViewHTMLAttributes, reactive, onUnmounted } from "vue";
 import { onMounted } from 'vue';
 import { storeToRefs } from "pinia";
+import Menus from './Menu.vue';
+import { Game, Lobby } from "@/game";
+import { Profile } from "@/game/Menu/Profile";
+import { userStore } from "@/stores/userStore";
+import { YourProfile } from "@/game/Menu/YourProfile";
 
 const store = chatStore();
 const { selected } = storeToRefs(store);
+const isMenuOpen = ref(false);
+const channelsFilters = ref([] as channel[]);
+const searchTerm = ref('');
+const usersInChannelSelect = ref([] as ChatUser[]);
+const usersFilters = ref([] as ChatUser[]);
+const searchUser = ref('');
+let isChatFilterType = "inside";
 
-function selectChannel(channel: channel) {
-  instance?.emit("update-create-channel", false);
-  store.showChannel(channel);
+const handleSearch = () => {
+  getFilteredChannels();
+};
+
+const handleSearchUser = () => {
+  if (!usersFilters.value)
+    return;
+
+  const searchBar = document.getElementById('searchUser') as HTMLInputElement;
+  const searchValue = searchBar.value.toLowerCase();
+  usersFilters.value = usersInChannelSelect.value.filter((user: ChatUser) => {
+    const userName = user.nickname.toLowerCase();
+    return userName.includes(searchValue);
+  });
+  return usersFilters;
+};
+
+function changeFilter (filter: string)
+{
+  isChatFilterType = filter;
+  
+  const dmButton = document.getElementById('dmButton') as HTMLElement;
+  const insideButton = document.getElementById('insideButton') as HTMLElement;
+  const allButton = document.getElementById('allButton') as HTMLElement;
+
+  dmButton.style.backgroundColor = isChatFilterType == "dm" ? "rgba(17, 9, 9, 0.2)" : "transparent";
+  insideButton.style.backgroundColor = isChatFilterType == "inside" ? "rgba(17, 9, 9, 0.2)" : "transparent";
+  allButton.style.backgroundColor = isChatFilterType == "all" ? "rgba(17, 9, 9, 0.2)" : "transparent";
+
+  getFilteredChannels();
+}
+
+function getFilteredChannels()
+{
+  if (isChatFilterType == "dm")
+  {
+    channelsFilters.value = store.channels.filter((channel: channel) => channel.type == "DM" && channel.users.some((user) => user.id === userStore().user.id));    
+  }
+  else if (isChatFilterType == "inside") //need verific i'm inside
+  {
+    channelsFilters.value = store.channels.filter((channel: channel) => (channel.type == "PROTECTED" || channel.type == "PRIVATE" || channel.type == "PUBLIC") && channel.users.some((user) => user.id == userStore().user.id)); 
+  }
+  else //need verific i'm inside
+  {
+    channelsFilters.value = store.channels.filter((channel: channel) => (channel.type == "PROTECTED" || channel.type == "PUBLIC") && !channel.users.some((user) => user.id == userStore().user.id));    
+  }
+  const searchBar = document.getElementById('searchChannel') as HTMLInputElement;
+  const searchValue = searchBar.value.toLowerCase();
+  channelsFilters.value = channelsFilters.value.filter((channel: channel) => {
+  const channelName = channel.name.toLowerCase();
+  return channelName.includes(searchValue);
+  });
+  console.log("FILTRO COM SEARCH", channelsFilters);
+
+  return channelsFilters;
+}
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value;
+};
+
+const selectChannel = (channel: channel) => {
+  //instance?.emit("update-create-channel", false);
+  if (selected.value != channel && isMenuOpen.value) {
+    toggleMenu();
+  }
+  usersInChannelSelect.value = channel.users;
+  usersFilters.value = channel.users;
+  store.selectChannel(channel);
+  toggleMenu();
+}
+
+let isProfileOpen: boolean = false;
+
+const selectUser = (user: ChatUser) => {
+  if (isProfileOpen)
+    return;
+
+  isProfileOpen = true;
+  //instance?.emit("update-create-channel", false);
+  let profile;
+  if (userStore().user.id == user.id)
+    profile = new YourProfile(Lobby.getPlayer());
+  else
+    profile = new Profile(user.id);
+  
+  profile.show((value) => {
+		if (value == "EXIT") {
+      isProfileOpen = false;
+		}
+	});
+  /*if (selected.value != user && isMenuOpen.value) {
+    toggleMenu();
+  }
+  store.selectUser(user);
+  toggleMenu();*/
+}
+
+
+const openChannel = (channel: channel) => {
+  store.getMessages(channel);
 }
 
 //Creating a new channel:
@@ -66,6 +187,16 @@ const createChannel = () => {
     console.log("Vai adicionar um novo user ao channel");
   }
   //instance?.emit("update-channel-status", newStatus);
+};
+
+// Method to update channelStatus when emitted from child component
+const updateChannelStatus = (newStatus: boolean) => {
+  instance?.emit('update-channel-status', newStatus);
+};
+
+// Method to update createChannel var when emitted from child component
+const updateCreateChannel = (newStatus: boolean) => {
+  instance?.emit("update-create-channel", newStatus);
 };
 
 //Testing the number of cahnnels created//Remover depois do backend devolver o objectId do channel em questao
@@ -96,8 +227,8 @@ const instance = getCurrentInstance();
 
 // Emit event from the child component
 const toggleStatus = () => {
-  const newStatus = !props.channelStatus;
-  instance?.emit("update-channel-status", newStatus);
+  //const newStatus = !props.channelStatus;
+  //instance?.emit("update-channel-status", newStatus);
 };
 
 // Variável para controlar o estado do chat
@@ -105,6 +236,7 @@ let isChatHidden = true;
 
 onMounted(() => {
   toggleChat();
+  changeFilter("inside");
   // addChannel();
 });
 
@@ -113,21 +245,32 @@ const buttonString = ref("⇑"); // Set initial button text
 // Função para alternar o estado do chat
 const toggleChat = () => {
   const chatElement = document.querySelector(".chat") as any;
+  const searchUser = document.getElementById('searchUser') as HTMLInputElement;
+  const searchChannel = document.getElementById('searchChannel') as HTMLInputElement;
 
   if (isChatHidden) {
-    // Mostrar o chat
+    // Ocultar o chat
     if (props.channelStatus) {
       instance?.emit('update-channel-status', false);
     }
     chatElement.style.bottom = "-57%";
+    //Limpar Conteudo
+	  
+    if (searchUser)
+	searchUser.value = "";
+    if (searchChannel)
+	searchChannel.value = "";
+    
   } else {
-    // Ocultar o chat
+    // Mostrar o chat
     chatElement.style.bottom = "0%";
+    getFilteredChannels();
   }
   // Update the button text based on isChatHidden
   buttonString.value = isChatHidden ? "⇑" : "⇓";
   isChatHidden = !isChatHidden;//
   instance?.emit('update-create-channel', false);
+
 };
 
 </script>
@@ -138,11 +281,20 @@ const toggleChat = () => {
   display: flex;
   justify-content: flex-end;
   pointer-events: all;
+  position: relative;
 }
 
 .contacts_card {
   flex: 1;
   max-height: 100%; /* Set the desired maximum height for the contacts card */
   overflow-y: auto;
+}
+
+.menu-container {
+  position: absolute;
+    z-index: 10;
+    right: 0;
+    width: 128%;
+    top: 0%;
 }
 </style>

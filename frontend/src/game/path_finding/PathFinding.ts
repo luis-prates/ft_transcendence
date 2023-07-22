@@ -220,6 +220,8 @@ export class PathFinding {
       name: this.character.name,
       x: x,
       y: y,
+      avatar: this.character.avatar,
+      nickname: this.character.nickname,
       animation: { name: animation, isStop: isStop },
     });
   }

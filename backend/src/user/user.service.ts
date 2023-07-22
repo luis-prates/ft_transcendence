@@ -1,11 +1,22 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserBuySkinDto, UserDto, UserUpdateSkinTableDto, UserUpdateStatsDto } from './dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserStatus } from '@prisma/client';
+import { Server } from 'socket.io';
 
 @Injectable()
 export class UserService {
+	private server: Server;
+
 	constructor(private prisma: PrismaService) {}
+
+	setServer(server: Server) {
+		this.server = server;
+	}
+
+	getServer(): Server {
+		return this.server;
+	}
 
 	async editUser(userId: number, dto: UserDto) {
 		try {
@@ -46,6 +57,58 @@ export class UserService {
 			});
 
 			delete user.hash;
+
+			return user;
+		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2002') {
+					throw new ForbiddenException(
+						`Defined field value already exists. Error: ${error.message.substring(
+							error.message.indexOf('Unique constraint'),
+						)}`,
+					);
+				}
+			}
+			throw error;
+		}
+	}
+
+	async status(userId: number, status: UserStatus) {
+		console.log('status: ', userId, status);
+		if (!userId || !status) {
+			return;
+		}
+
+		const id = userId.toString();
+		userId = parseInt(id);
+		try {
+			let user = await this.prisma.user.findUnique({
+				where: {
+					id: userId,
+				},
+			});
+
+			if (user.status == status) {
+				console.log('Status already updated!');
+				return;
+			}
+
+			user = await this.prisma.user.update({
+				where: {
+					id: userId,
+				},
+				data: {
+					status: status,
+				},
+			});
+			delete user.twoFASecret;
+			delete user.hash;
+			console.log('user: ', userId, ' new status: ', status);
+
+			this.server.emit('updateStatus', {
+				id: userId,
+				status: status,
+			});
 
 			return user;
 		} catch (error) {
