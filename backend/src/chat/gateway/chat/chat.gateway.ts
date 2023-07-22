@@ -192,6 +192,28 @@ export class ChatGateway implements OnGatewayConnection {
 			});
 		});
 
+    // Listener for a user being banned from a channel
+    this.chatService.events.on('user-banned-in-channel', async data => {
+      const { channelId, userId } = data;
+      // Send a message to all users in the channel that a user has been banned
+      this.server.emit('user-banned-in-channel', {
+        channelId,
+        userId,
+        message: `User ${userId} has been banned from channel ${channelId}`,
+      });
+    });
+
+    // Listener for a user being unbanned from a channel
+    this.chatService.events.on('user-unbanned-in-channel', async data => {
+      const { channelId, userId } = data;
+      // Send a message to all users in the channel that a user has been unbanned
+      this.server.emit('user-unbanned-in-channel', {
+        channelId,
+        userId,
+        message: `User ${userId} has been unbanned from channel ${channelId}`,
+      });
+    });
+
 		console.log('Chat Gateway Initialized!');
 	}
 
