@@ -1,4 +1,5 @@
 import { GameClass } from './GamePong';
+import { Player_Pong } from './PlayerPong';
 
 export class Ball {
 	//Macros
@@ -29,6 +30,13 @@ export class Ball {
 		return (randomAngle * Math.PI) / 180;
 	}
 
+	createAngle(player: Player_Pong)
+	{
+		const relativeIntersectY = player.y + player.height / 2 - (this.y + this.height / 2);
+		const normalizedRelativeIntersectionY = relativeIntersectY / (player.height / 2);
+		const intercet = normalizedRelativeIntersectionY < -1 ? -1 : (normalizedRelativeIntersectionY > 1 ? 1 : normalizedRelativeIntersectionY);
+	}
+
 	ballColide() {
 		const random = this.generateRandomAngle(-1, 1);
 		// Verifica se a bola colidiu com a raquete do jogador 1
@@ -48,9 +56,37 @@ export class Ball {
 				const relativeIntersectY =
 					this.game.player1.y + this.game.player1.height / 2 - (this.y + this.height / 2);
 				const normalizedRelativeIntersectionY = relativeIntersectY / (this.game.player1.height / 2);
-				this.angle -= normalizedRelativeIntersectionY * (Math.PI / 4);
+				const intercet = normalizedRelativeIntersectionY < -1 ? -1 : (normalizedRelativeIntersectionY > 1 ? 1 : normalizedRelativeIntersectionY);
 
-				this.angle += random;
+				if (intercet > 1 || intercet < -1)
+					console.log("Erro")
+
+				this.angle -= intercet * (Math.PI / 4);
+
+				
+				const normalizedAngle = ((this.angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+				if (
+					(normalizedAngle >= 675 * (Math.PI / 180) && normalizedAngle <= 720 * (Math.PI / 180)) ||
+					(normalizedAngle >= 315 * (Math.PI / 180) && normalizedAngle <= 405 * (Math.PI / 180)) ||
+					(normalizedAngle >= 0 && normalizedAngle <= 45 * (Math.PI / 180)) ||
+					(normalizedAngle >= -2 * Math.PI && normalizedAngle <= -315 * (Math.PI / 180))
+					) {
+						// O ângulo está dentro dos limites desejados, não fazemos nada
+					} else {
+						console.log("ERRO NO ANGULO PLAYER 1:", normalizedAngle)
+						if (normalizedAngle >= 45 * (Math.PI / 180) && normalizedAngle <= 135 * (Math.PI / 180)) {
+							this.angle = 45 * (Math.PI / 180);
+						  } else if (normalizedAngle >= 135 * (Math.PI / 180) && normalizedAngle <= 225 * (Math.PI / 180)) {
+							this.angle = Math.PI;
+						  } else if (normalizedAngle >= 225 * (Math.PI / 180) && normalizedAngle <= 315 * (Math.PI / 180)) {
+							this.angle = 315 * (Math.PI / 180);
+						  } else {
+							this.angle = -45 * (Math.PI / 180);
+						  }		  
+						console.log("ANGULO NORMAL PLAYER 1:", this.angle)
+					}
+					
+					this.angle += random;
 
 				this.dir = 2;
 				this.speed += this.speedIncrement;
@@ -77,7 +113,32 @@ export class Ball {
 				const relativeIntersectY =
 					this.game.player2.y + this.game.player2.height / 2 - (this.y + this.height / 2);
 				const normalizedRelativeIntersectionY = relativeIntersectY / (this.game.player2.height / 2);
-				this.angle = normalizedRelativeIntersectionY * (Math.PI / 4) + Math.PI;
+				const intercet = normalizedRelativeIntersectionY < -1 ? -1 : (normalizedRelativeIntersectionY > 1 ? 1 : normalizedRelativeIntersectionY);
+
+
+				if (intercet > 1 || intercet < -1)
+					console.log("Erro")
+
+				this.angle = intercet * (Math.PI / 4) + Math.PI;
+
+				const normalizedAngle = ((this.angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      if (
+		  (normalizedAngle >= 495 * (Math.PI / 180) && normalizedAngle <= 585 * (Math.PI / 180) ||
+        (normalizedAngle >= 135 * (Math.PI / 180) && normalizedAngle <= 225 * (Math.PI / 180)) ||
+        (normalizedAngle >= -225 * (Math.PI / 180) && normalizedAngle <= -135 * (Math.PI / 180)))
+      ) {
+        // O ângulo está dentro dos limites desejados, não fazemos nada
+      } else {
+		console.log("ERRO NO ANGULO PLAYER 2:", normalizedAngle)
+		if (normalizedAngle >= 45 * (Math.PI / 180) && normalizedAngle <= 135 * (Math.PI / 180)) {
+			this.angle = 135 * (Math.PI / 180);
+		  } else if (normalizedAngle >= 225 * (Math.PI / 180) && normalizedAngle <= 315 * (Math.PI / 180)) {
+			this.angle = -135 * (Math.PI / 180);
+		  } else {
+			this.angle = 495 * (Math.PI / 180);
+		  }
+		console.log("ANGULO NORMAL PLAYER 2:", this.angle)
+	  }
 
 				this.angle += random;
 
