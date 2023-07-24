@@ -40,6 +40,7 @@ export const chatStore = defineStore("chat", () => {
   const selected = ref<any | undefined>(undefined);
   const user = userStore().user;
 
+  //TODO DM channel name must be something like: 'Denny conversation'
   function addChannel(newChannel: any, message: String) {
     const channel: channel = {
       objectId: newChannel.id,
@@ -283,7 +284,10 @@ function addUserToChannel(channelId: any, user: ChatUser) {
   const channel = channels.find((channel) => channel.objectId === channelId);
 
   if (channel) {
-    const userExists = channel.users.some((existingUser) => existingUser.id === user.id);
+    if (!Array.isArray(channel.users)) {
+      channel.users = [];
+    }
+    const userExists = Array.isArray(channel.users) && channel.users.some((existingUser) => existingUser.id === user.id);
 
     if (!userExists) {
       channel.users.push(user);

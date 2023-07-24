@@ -134,9 +134,12 @@ function getFilteredChannels()
     channelsFilters.value = store.channels.filter((channel: channel) => (channel.type == "PROTECTED" || channel.type == "PUBLIC") && !channel.users.some((user) => user.id == userStore().user.id));    
   }
   const searchBar = document.getElementById('searchChannel') as HTMLInputElement;
-  const searchValue = searchBar.value.toLowerCase();
+  let searchValue = '';
+  if (searchBar) {
+    searchValue = searchBar.value.toLowerCase();
+  }
   channelsFilters.value = channelsFilters.value.filter((channel: channel) => {
-  const channelName = channel.name.toLowerCase();
+  const channelName = (channel?.name ?? '').toLowerCase();
   return channelName.includes(searchValue);
   });
   console.log("FILTRO COM SEARCH", channelsFilters);

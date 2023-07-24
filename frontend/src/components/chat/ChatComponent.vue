@@ -38,11 +38,17 @@ onMounted(() => {
   }
   socket = socketClass.getChatSocket();  
   store.getChannels();
-
- /* socket.on("join_chat", (data: channel) => {
+  
+  /* socket.on("join_chat", (data: channel) => {
     console.log("join_chat", data);
     store.addChannel(data);
   });*/
+
+  socket.onAny((eventName, eventData) => {
+    console.log("Received event: ", eventName);
+    console.log("Event data: ", eventData);
+  });
+
   socket.on('message', (data: { channelId: number, senderId: number, message: string }) => {
     const { channelId, senderId, message } = data;
     
@@ -62,12 +68,14 @@ onMounted(() => {
     const { channelId, user } = eventData;
     store.removeUserFromChannel(channelId, user.id);
   });
+
   socket.on("channel-removed", (eventData) => {
     const { channelId } = eventData;
-    console.log("CHANNEL REMOVED: ", eventData)
+    if (store.selected &&  store.selected.objectId == channelId){
+      updateChannelStatus(false);
+    }
     store.removeUserFromChannel(channelId, user.user.id);
     chatListRef.value?.getFilteredChannels();
-
   });
   socket.on("channel-added", (eventData) => {
     const { channelId } = eventData;
@@ -157,23 +165,19 @@ onMounted(() => {
 
   //You Kick
   //TODO, se tiver o chat aberto da erro
-  socket.on("user-removed", (eventData) => {
-    console.log("Kick" , eventData);
-    const { channelId } = eventData;
+  // socket.on("user-removed", (eventData) => {
+  //   console.log("Kick" , eventData);
+  //   const { channelId } = eventData;
 
-    const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
-    if (curChannel)
-    {
-      const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == user.user.id);
-      if (curUser)
-        curChannel.users = curChannel.users.filter((userChannel: ChatUser) => userChannel.id != user.user.id);
-    }
-  });
+  //   const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
+  //   if (curChannel)
+  //   {
+  //     const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == user.user.id);
+  //     if (curUser)
+  //       curChannel.users = curChannel.users.filter((userChannel: ChatUser) => userChannel.id != user.user.id);
+  //   }
+  // });
   
-  socket.onAny((eventName, eventData) => {
-    console.log("Received event: ", eventName);
-    console.log("Event data: ", eventData);
-  });
 
   function getUserInChannel(channelId: any, userId: any) : ChatUser | undefined
   {

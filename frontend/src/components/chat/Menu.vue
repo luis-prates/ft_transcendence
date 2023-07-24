@@ -12,6 +12,7 @@
       <div class="menu" :style="menuStyles">
         <ul style="color: aliceblue;">
           <!-- COMMANDS USER -->
+          <li @click="handleMenuItemUserClick(0)">Send DM</li>
           <li @click="handleMenuItemUserClick(1)">Open Profile</li>
           <li @click="handleMenuItemUserClick(2)">{{ getFriend($props.user) }}</li>
           <li @click="handleMenuItemUserClick(3)">{{ getBlock($props.user) }}</li>
@@ -55,9 +56,43 @@
   },
 });
 
+const sendDM = async (user : ChatUser) => {
+  try {
+    const newChannel = {
+      objectId: 1,
+      name: "DM",
+      avatar: "",
+      password: "",
+      messages: [], // initialize with an empty array of messages
+      users: [] as any, // initialize with an empty array of users
+      type: "DM"
+    };
+    newChannel.users.push(user.id);
+
+    const response = await store.createChannel(newChannel);
+
+    if (!response) {
+      console.log("Erro inesperado!");
+    } else if (response == "409"){
+      // Handle channel creation failure here
+      console.log('Failed to create DM. DM already exists');
+      // Display error message in the form or take any other action
+    }
+  } catch (error) {
+    console.error(error);
+    // Handle any other errors that occurred during channel creation
+  }
+};
+
   const handleMenuItemUserClick = (item: number) => {
     if (!props.user)
       return ;
+    //Send DM
+    if (item == 0) {
+      //se DM ja existir entre players abre o chat
+      //else
+      sendDM(props.user);
+    }
     //Open Menu
     if (item == 1) {
       instance?.emit('openPerfilUser', props.user);
