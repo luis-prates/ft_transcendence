@@ -180,6 +180,8 @@ const handleContextMenuUser = (user: ChatUser)  => {
 };
   
 let isProfileOpen: boolean = false;
+let userProfileSelect: ChatUser;
+let profile: any;
 
 const selectUser = (user: ChatUser) => {
 //instance?.emit("update-create-channel", false);
@@ -189,23 +191,29 @@ if (selected.value != user && isMenuOpen.value) {
     toggleMenu();
   }
   userSelect.value = user;
-  //openChannel(store.selected);
+  openPerfilUser(user);
   if (isMenuOpen.value)
     toggleMenu();
 }
 
 function openPerfilUser (user: ChatUser){
   if (isProfileOpen)
-    return;
+  {
+    if (userProfileSelect == user)
+      return;
+    else
+      profile.menu.close();
+  }
+
   isProfileOpen = true;
-  let profile;
+  userProfileSelect = user;
 
   if (userStore().user.id == user.id)
     profile = new YourProfile(Lobby.getPlayer());
   else
     profile = new Profile(user.id);
 
-  profile.show((value) => {
+  profile.show((value: string) => {
   	if (value == "EXIT") {
       isProfileOpen = false;
   	}

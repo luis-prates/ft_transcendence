@@ -74,17 +74,10 @@ onMounted(() => {
     store.addUserToChannel(channelId, user.user);
       chatListRef.value?.getFilteredChannels();
   });
-
+  //TODO, user-added acionado 3x
   socket.on("user-added", (eventData) => {
-    //TODO receber todos os atributos do user
     console.log("Acionou o evento: eventData" , eventData);
-    const { channelId, userId, user } = eventData;
-    /*const userx = {
-      id: userId,
-      image: "",
-      nickname: "Teste",
-      status: "ONLINE",
-    };*/
+    const { channelId, user } = eventData;
     store.addUserToChannel(channelId, user);
   });
 
@@ -110,7 +103,7 @@ onMounted(() => {
 
   //Make Admin
   socket.on("user-promoted-in-channel", (eventData) => {
-    console.log("Mute" , eventData);
+    console.log("Admin" , eventData);
     const { channelId, userId, user } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
@@ -120,7 +113,7 @@ onMounted(() => {
 
   //Demote
   socket.on("user-demoted-in-channel", (eventData) => {
-    console.log("Mute" , eventData);
+    console.log("Demote" , eventData);
     const { channelId, userId, user } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
@@ -139,6 +132,41 @@ onMounted(() => {
       const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userId);
       if (curUser)
         curChannel.users = curChannel.users.filter((userChannel: ChatUser) => userChannel.id != userId);
+    }
+  });
+
+  //You Prometed
+  socket.on("user-promoted", (eventData) => {
+    console.log("Promoted" , eventData);
+    const { channelId, message} = eventData;
+
+    const curUser = getUserInChannel(channelId, userStore().user.id);
+    if (curUser)
+      curUser.isAdmin = true;
+  });
+
+  //You Demoted
+  socket.on("user-demoted", (eventData) => {
+    console.log("Promoted" , eventData);
+    const { channelId, message} = eventData;
+
+    const curUser = getUserInChannel(channelId, userStore().user.id);
+    if (curUser)
+      curUser.isAdmin = false;
+  });
+
+  //You Kick
+  //TODO, se tiver o chat aberto da erro
+  socket.on("user-removed", (eventData) => {
+    console.log("Kick" , eventData);
+    const { channelId } = eventData;
+
+    const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
+    if (curChannel)
+    {
+      const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == user.user.id);
+      if (curUser)
+        curChannel.users = curChannel.users.filter((userChannel: ChatUser) => userChannel.id != user.user.id);
     }
   });
   

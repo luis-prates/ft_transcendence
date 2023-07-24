@@ -20,7 +20,7 @@ import type { Socket } from "socket.io-client";
 import { chatStore, type channel } from "@/stores/chatStore";
 
 export class Profile {
-	private _menu = new Menu({ layer: "Global", isFocus: true });
+	public _menu = new Menu({ layer: "Global", isFocus: true });
 	
 	private radius: number = 10;
 	private background: ElementUI = this.createBackground();	

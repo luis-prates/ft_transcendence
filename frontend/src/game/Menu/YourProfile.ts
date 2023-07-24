@@ -19,7 +19,7 @@ import type { Socket } from "socket.io-client";
 import { TwoFactor } from "./TwoFactor";
 
 export class YourProfile {
-  private _menu = new Menu({ layer: "Global", isFocus: true });
+  public _menu = new Menu({ layer: "Global", isFocus: true });
   public socket: Socket = socketClass.getLobbySocket();
 
   private background: ElementUI = this.createBackground();

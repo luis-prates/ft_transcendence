@@ -17,10 +17,11 @@
           <li @click="handleMenuItemUserClick(3)">{{ getBlock($props.user) }}</li>
           <li @click="handleMenuItemUserClick(4)">Challenge</li>
           <!-- COMMANDS ADMINSTRADOR -->
-          <li @click="handleMenuItemUserClick(5)" v-if="iAmAdmin()">{{ getMute($props.user) }}</li>
+          <li @click="handleMenuItemUserClick(5)" v-if="isAdmin($props.user, true)">{{ getMute($props.user) }}</li>
             <!-- IF CANNOT KICK ADMIN -->
-          <li @click="handleMenuItemUserClick(6)" v-if="iAmAdmin()">Kick</li>
-          <li @click="handleMenuItemUserClick(7)" v-if="iAmAdmin()">Ban</li>
+          <li @click="handleMenuItemUserClick(6)" v-if="isAdmin($props.user)">Kick</li>
+          <li @click="handleMenuItemUserClick(7)" v-if="isAdmin($props.user)">Ban</li>
+            <!--  -->
           <!-- COMMANDS OWNER -->
           <li @click="handleMenuItemUserClick(8)" v-if="chatStore().selected.ownerId == userStore().user.id">{{ getAdmistrator($props.user) }} Adminstrator</li>
         </ul>
@@ -111,15 +112,23 @@
     return "Join";
   };
 
-  //NAO ESTA A ATUALIZAR EM TEMPO REAL
-  function iAmAdmin() {
-    const channel = chatStore().channels.find((chat: channel) => chat.objectId == store.selected.objectId);
+  function isAdmin(userChat: ChatUser, mute?: boolean) {
+    const channel = chatStore().channels.find((chat: channel) => chat.objectId == store.selected.objectId)
     if (!channel)
       return false;
     const myId = userStore().user.id;
-    const userInChannel = channel.users.find((userChat: ChatUser) => userChat.id == myId);
-    if (userInChannel && userInChannel.isAdmin)
+    const userId = userChat?.id;
+    const iAmInChannel = channel.users.find((userChat: ChatUser) => userChat.id == myId);
+    if (iAmInChannel && iAmInChannel.isAdmin && userId != channel.ownerId)
+    {
+      if (!mute)
+      {
+        const userInChannel = channel.users.find((userChat: ChatUser) => userChat.id == userId);
+        if (userInChannel && userInChannel.isAdmin)
+          return false;
+      }
       return true;
+    }
     return false;
   }
 
