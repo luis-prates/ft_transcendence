@@ -131,7 +131,7 @@ export const userStore = defineStore("user", function () {
     friends: Array(),
     friendsRequests: Array(),
     block: Array(),
-	  isTwoFAEnabled: false,
+    isTwoFAEnabled: false,
   });
 
   async function login(authorizationCode: string | undefined) {
@@ -174,18 +174,23 @@ export const userStore = defineStore("user", function () {
       });
     user.isLogin = true;
     // .finally(() => window.location.href = window.location.origin);
-	return ( user );
+    return user;
   }
 
   async function firstTimePrompt() {
-	if (user.isLogin) return;
-	await axios
-	  .patch(env.BACKEND_PORT + "/users/update_profile", user, {
-		headers: {
-		  Authorization: "Bearer " + user.access_token_server,
-		},
-	  })
-	}
+    await axios.patch(
+      env.BACKEND_PORT + "/users/update_profile",
+      {
+        nickname: user.nickname,
+        image: user.image,
+      },
+      {
+        headers: {
+          Authorization: "Bearer " + user.access_token_server,
+        },
+      }
+    );
+  }
 
   async function loginTest() {
     // if (user.isLogin) return;
@@ -226,7 +231,7 @@ export const userStore = defineStore("user", function () {
     user.isLogin = true;
     console.log("USER: ", user);
     // .finally(() => window.location.href = window.location.origin);
-	return (user.isTwoFAEnabled);
+    return user.isTwoFAEnabled;
   }
 
   async function updateProfile() {
@@ -663,8 +668,8 @@ export const userStore = defineStore("user", function () {
         console.error(error);
       });
   }
-  
-  async function twofagenerate() : Promise<string> {
+
+  async function twofagenerate(): Promise<string> {
     const options = {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
@@ -681,11 +686,11 @@ export const userStore = defineStore("user", function () {
       });
   }
 
-  async function twofaTurnOn(twoFactorCode: string) : Promise<string> {
+  async function twofaTurnOn(twoFactorCode: string): Promise<string> {
     const options = {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
-    console.log("code:", twoFactorCode)
+    console.log("code:", twoFactorCode);
     return await axios
       .post(env.BACKEND_PORT + "/auth/2fa/turn-on", { twoFACode: twoFactorCode }, options)
       .then(function (response: any) {
@@ -698,8 +703,8 @@ export const userStore = defineStore("user", function () {
         throw new Error(error);
       });
   }
-  
-  async function twofaTurnOff(twoFactorCode: string) : Promise<string> {
+
+  async function twofaTurnOff(twoFactorCode: string): Promise<string> {
     const options = {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
@@ -757,5 +762,8 @@ export const userStore = defineStore("user", function () {
     twofagenerate,
     twofaTurnOn,
     twofaTurnOff,
+
+    //First Time Prompt
+    firstTimePrompt,
   };
 });

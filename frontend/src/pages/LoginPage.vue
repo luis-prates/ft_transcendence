@@ -233,6 +233,7 @@ onMounted(() => {
 				if (newNewNickname && newNewImage) {
 					store.user.nickname = newNewNickname;
 					store.user.image = newNewImage;
+					store.firstTimePrompt();
 				}
 				await sleep(1000);
 			}
