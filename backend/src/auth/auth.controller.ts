@@ -42,7 +42,9 @@ export class AuthController {
 	@UseFilters(OAuthExceptionFilter)
 	@UseGuards(FortyTwoGuard)
 	callback42(@Req() req: any, @Res() res: Response) {
-		res.redirect(`${process.env.FRONTEND_REDIRECT_URL}/?token=${req.user.access_token}`);
+		res.redirect(
+			`${process.env.FRONTEND_REDIRECT_URL}/?token=${req.user.user.access_token}&isFirstTime=${req.user.firstTime}`,
+		);
 	}
 
 	@Post('2fa/turn-on')

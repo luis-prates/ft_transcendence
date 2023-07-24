@@ -77,11 +77,18 @@ let twoFactorSubmit = async (code: string) => {
 
 let resolveFirstLoginPrompt: (value: string) => void;
 
-let newNickname = "";
+let resolveFirstLoginPromptImage: (value: string) => void;
 
-let firstLoginSubmit = async (nickname: string) => {
-	newNickname = nickname;
-	resolveFirstLoginPrompt(nickname);
+let firstLoginSubmit = async (data: any) => {
+	console.log(`data: ${data}`);
+	if (data.type === "nickname") {
+		console.log(`inside data type nickname`);
+		resolveFirstLoginPrompt(data.content);
+	}
+	else if (data.type === "picture") {
+		console.log(`inside data type picture`);
+		resolveFirstLoginPromptImage(data.content);
+	}
 }
 
 function encodeImageToBase64(filePath: string) {
@@ -121,16 +128,22 @@ async function handleTwoFA() {
 }
 
 async function handleFirstLogin() {
-	let newNewNickname = "";
+	let newNewNickname;
+	let newNewImage;
 	try {
 		newNewNickname = await new Promise<string>((resolve) => {
 			resolveFirstLoginPrompt = resolve;
 			showFirstLoginModal(store.user.nickname, "nickname");
 		});
+		await sleep(1000);
+		newNewImage = await new Promise<string>((resolve) => {
+			resolveFirstLoginPromptImage = resolve;
+			showFirstLoginModal(store.user.image, "picture");
+		});
 	} catch (error) {
 		console.log(error);
 	}
-	return newNewNickname;
+	return { newNewNickname, newNewImage };
 }
 
 function tes(event: any) {
@@ -216,8 +229,12 @@ onMounted(() => {
 			}
 			if (props.firstTime === true) {
 				console.log(`Old nickname: ${store.user.nickname}`);
-				store.user.nickname = await handleFirstLogin();
-				console.log(`New nickname: ${store.user.nickname}`);
+				let { newNewNickname, newNewImage } = await handleFirstLogin();
+				if (newNewNickname && newNewImage) {
+					store.user.nickname = newNewNickname;
+					store.user.image = newNewImage;
+				}
+				await sleep(1000);
 			}
 
 			showModal("Login Success", "success");

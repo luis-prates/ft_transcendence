@@ -43,7 +43,7 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
 			nickname: username,
 			image: image,
 		};
-		const { user } = await this.authService.signin(dto);
+		const user = await this.authService.signin(dto);
 		if (!user) {
 			throw new UnauthorizedException();
 		}
