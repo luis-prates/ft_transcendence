@@ -63,6 +63,26 @@ export class AuthService {
 				},
 			});
 
+			////TODO (HENDRICK) Need to emit 'user-added'
+			//// emit event to all other users added to channel, when the user is 
+			//
+			// IF YOU WANT A IDEA MAYBE
+			//
+			// THE CHAT.GATEWAY IS NOT CREATED YEAT, IN THIS POINT
+			//
+			// const usersOnline = await this.prisma.user.findMany({
+			// 	where: {
+			// 		status: "ONLINE" || "IN_GAME",
+			// 	},
+			// });
+			// for (const userON of usersOnline) {
+			// 	this.events.emit('user-added-to-channel', {
+			// 		channelId: globalChannel.id,
+			// 		userId: userON.id,
+			// 		user: user,
+			// 	});
+			// }
+
 			delete user.hash;
 			delete user.twoFASecret;
 

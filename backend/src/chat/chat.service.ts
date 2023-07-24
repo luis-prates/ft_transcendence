@@ -431,12 +431,8 @@ export class ChatService {
 			},
 		});
 
-		const user_db = await this.prisma.user.findUnique({
-			where: { id: userId },
-		});
-
 		// Emit an event when a user is added to a new channel
-		this.events.emit('user-added-to-channel', { channelId, userId, user_db });
+		this.events.emit('user-added-to-channel', { channelId, userId, user });
 	}
 
 	async leaveChannel(channelId: number, user: any) {

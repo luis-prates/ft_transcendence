@@ -50,7 +50,7 @@ export class ChatGateway implements OnGatewayConnection {
 			}
 
 			client.join(`channel-${channelId}`);
-			console.log(`User ${userId} joined a room: channel-${channelId}`);
+			console.log(`User ${user} with ${userId} joined a room: channel-${channelId}`);
 
 			// New for blocklist: maintain the users to channels mapping
 			// Update the channelIdToUserIds map
@@ -73,10 +73,6 @@ export class ChatGateway implements OnGatewayConnection {
 				channelId,
 				user,
 				message: `User ${userId} has been added to channel ${channelId}`,
-				//TODO NEED THIS
-				/*userNickname: user.nickname,
-				userImage: user.image,
-				userStatus: user.status,*/
 			});
 		});
 

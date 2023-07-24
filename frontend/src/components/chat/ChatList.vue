@@ -47,7 +47,7 @@
           <li v-for="(user, id) in usersFilters" :key="id">
             <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser(user)" />
             <div class="menu-container" v-if="isMenuOpen">
-              <Menus @toggleMenu="toggleMenu" :user="user" @kickUser="kickUser" @muteOrUnmute="muteOrUnmute" @makeOrDemoteAdmin="makeOrDemoteAdmin" @openPerfilUser="openPerfilUser" v-show="userSelect.id == user.id" />/>
+              <Menus @toggleMenu="toggleMenu" :user="user" @kickUser="kickUser" @muteOrUnmute="muteOrUnmute" @makeOrDemoteAdmin="makeOrDemoteAdmin" @openPerfilUser="openPerfilUser" v-show="userSelect.id == user.id && userSelect.id != userStore().user.id" />/>
             </div>
           </li>
         </ul>
@@ -242,7 +242,7 @@ function kickUser (userChannel: ChatUser){
     chatStore().kickUserFromChannel(channel, userChannel);
 }
 
-const openChannel = (channel: channel) => {
+const openChannel = async function (channel: channel) {
   if (store.isUserInSelectedChannel(userStore().user.id))
   {
     store.getMessages(channel);
@@ -254,7 +254,7 @@ const openChannel = (channel: channel) => {
   else
   {
     if (channel.type == "PUBLIC"){
-      store.joinChannel(channel.objectId);
+      await store.joinChannel(channel.objectId);
       store.getMessages(channel);
     }
     else{

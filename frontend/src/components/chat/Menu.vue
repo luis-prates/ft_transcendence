@@ -17,12 +17,12 @@
           <li @click="handleMenuItemUserClick(3)">{{ getBlock($props.user) }}</li>
           <li @click="handleMenuItemUserClick(4)">Challenge</li>
           <!-- COMMANDS ADMINSTRADOR -->
-          <li @click="handleMenuItemUserClick(5)">{{ getMute($props.user) }}</li>
+          <li @click="handleMenuItemUserClick(5)" v-if="iAmAdmin()">{{ getMute($props.user) }}</li>
             <!-- IF CANNOT KICK ADMIN -->
-          <li @click="handleMenuItemUserClick(6)">Kick</li>
-          <li @click="handleMenuItemUserClick(7)">Ban</li>
+          <li @click="handleMenuItemUserClick(6)" v-if="iAmAdmin()">Kick</li>
+          <li @click="handleMenuItemUserClick(7)" v-if="iAmAdmin()">Ban</li>
           <!-- COMMANDS OWNER -->
-          <li @click="handleMenuItemUserClick(8)">{{ getAdmistrator($props.user) }} Adminstrator</li>
+          <li @click="handleMenuItemUserClick(8)" v-if="chatStore().selected.ownerId == userStore().user.id">{{ getAdmistrator($props.user) }} Adminstrator</li>
         </ul>
       </div>
     </div>
@@ -111,6 +111,17 @@
     return "Join";
   };
 
+  //NAO ESTA A ATUALIZAR EM TEMPO REAL
+  function iAmAdmin() {
+    const channel = chatStore().channels.find((chat: channel) => chat.objectId == store.selected.objectId);
+    if (!channel)
+      return false;
+    const myId = userStore().user.id;
+    const userInChannel = channel.users.find((userChat: ChatUser) => userChat.id == myId);
+    if (userInChannel && userInChannel.isAdmin)
+      return true;
+    return false;
+  }
 
   function getFriend(chatUser: ChatUser){
     let index = userStore().user.friends.findIndex(user => user.id == chatUser.id);

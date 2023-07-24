@@ -58,9 +58,9 @@ onMounted(() => {
     store.addChannel(newChannel, message);
   });
 
-  socket.on('user-removed', (eventData: { channelId: any, message: any, userId: any }) => {
-    const { channelId, userId } = eventData;
-    store.removeUserFromChannel(channelId, userId);
+  socket.on('user-removed', (eventData: { channelId: any, message: any, user: any }) => {
+    const { channelId, user } = eventData;
+    store.removeUserFromChannel(channelId, user.id);
   });
   socket.on("channel-removed", (eventData) => {
     const { channelId } = eventData;
@@ -78,20 +78,20 @@ onMounted(() => {
   socket.on("user-added", (eventData) => {
     //TODO receber todos os atributos do user
     console.log("Acionou o evento: eventData" , eventData);
-    const { channelId, userId } = eventData;
-    const user = {
+    const { channelId, userId, user } = eventData;
+    /*const userx = {
       id: userId,
       image: "",
       nickname: "Teste",
       status: "ONLINE",
-    };
+    };*/
     store.addUserToChannel(channelId, user);
   });
 
   //Mute
   socket.on("user-muted-in-channel", (eventData) => {
     console.log("Mute" , eventData);
-    const { channelId, userId } = eventData;
+    const { channelId, userId, user } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
     if (curUser)
@@ -101,7 +101,7 @@ onMounted(() => {
   //Unmute
   socket.on("user-unmuted-in-channel", (eventData) => {
     console.log("UnMuted" , eventData);
-    const { channelId, userId } = eventData;
+    const { channelId, userId, user } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
     if (curUser)
@@ -111,7 +111,7 @@ onMounted(() => {
   //Make Admin
   socket.on("user-promoted-in-channel", (eventData) => {
     console.log("Mute" , eventData);
-    const { channelId, userId } = eventData;
+    const { channelId, userId, user } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
     if (curUser)
@@ -121,7 +121,7 @@ onMounted(() => {
   //Demote
   socket.on("user-demoted-in-channel", (eventData) => {
     console.log("Mute" , eventData);
-    const { channelId, userId } = eventData;
+    const { channelId, userId, user } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
     if (curUser)
@@ -131,7 +131,7 @@ onMounted(() => {
   //Kick
   socket.on("user-removed-from-channel", (eventData) => {
     console.log("Kick" , eventData);
-    const { channelId, userId } = eventData;
+    const { channelId, userId, user } = eventData;
 
     const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
     if (curChannel)
