@@ -8,6 +8,8 @@ import {
 	ParseUUIDPipe,
 	Patch,
 	Post,
+	Query,
+	Req,
 	UseGuards,
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
@@ -30,7 +32,7 @@ export class GameController {
 	}
 
 	@Get('active')
-	getActiveGames(@Body('status') status: GameStatus[]) {
+	getActiveGames(@Query('status') status: GameStatus) {
 		return this.gameService.getActiveGames(status);
 	}
 

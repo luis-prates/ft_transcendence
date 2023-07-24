@@ -135,17 +135,19 @@ onMounted(() => {
 		});
 
 
-    //Delete Friend
+    //Update Status
     socket.on("updateStatus",  (event: any) => {
-      console.log("ENTROUUU", event)
-
       chatStore().channels.forEach(channel => {
         const userIndex = channel.users.findIndex(user => user.id == event.id);
         if (userIndex !== -1) {
           channel.users[userIndex].status = event.status;
-          console.log("new Status");
         }
       });
+      //TODO
+      const userFriend = userStore().user.friends.findIndex(user => user.id == event.id);
+        if (userFriend !== -1) {
+          userStore().user.friends[userFriend].status = event.status;
+        }
     });
 });
 
