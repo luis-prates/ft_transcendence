@@ -143,6 +143,11 @@ onMounted(() => {
           channel.users[userIndex].status = event.status;
         }
       });
+      //TODO
+      const userFriend = userStore().user.friends.findIndex(user => user.id == event.id);
+        if (userFriend !== -1) {
+          userStore().user.friends[userFriend].status = event.status;
+        }
     });
 });
 

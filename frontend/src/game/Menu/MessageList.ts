@@ -63,8 +63,8 @@ export class MessageList {
         if (this.title == "Request")
         {
           this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, 16, request.requestorName, request.requestorId));
-          this.menu.add(this.background, this.createButtonRequest(index, 55, 16 + (i + 1) * 6, "Accept", request.requestorId));
-          this.menu.add(this.background, this.createButtonRequest(index, 58.5, 16 + (i + 1) * 6, "Reject", request.requestorId));
+          this.menu.add(this.background, this.createButtonRequest(index, 55, 16 + (i + 1) * 6, "Accept", request.requestorId, request.requestorName));
+          this.menu.add(this.background, this.createButtonRequest(index, 58.5, 16 + (i + 1) * 6, "Reject", request.requestorId, request.requestorName));
         }
         else if (this.title == "Block")
         {
@@ -189,7 +189,7 @@ export class MessageList {
     return invite;
   }
 
-  private createButtonRequest(index: number, x: number, y: number, label: string, id: number): ElementUI {
+  private createButtonRequest(index: number, x: number, y: number, label: string, id: number, nickname: string): ElementUI {
     const close_tab = new Audio(sound_close_tab);
     const button: ElementUI = {
       type: label,
@@ -223,7 +223,7 @@ export class MessageList {
         close_tab.play();
         if (button.type == "Accept")
         {
-          this.functions.acceptFriendRequest(id, label);
+          this.functions.acceptFriendRequest(id, nickname);
           this.response[index] = 1;
         }
         else if (button.type == "Reject")

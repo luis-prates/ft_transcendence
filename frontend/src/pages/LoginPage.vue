@@ -165,7 +165,7 @@ onMounted(() => {
 	if (props.error) {
 		showModal(props.error, "error");
 	}
-	if (props.token || store.user.isLogin)
+	if (props.token)
 	{
 		store
 		.login(props.token)

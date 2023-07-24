@@ -99,6 +99,7 @@ onMounted(function () {
     }
     else
     {
+      game.audio("music_stop");
       Router.push(`/`);
       socket.disconnect();
     }
