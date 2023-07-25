@@ -3,7 +3,6 @@ import * as path from 'path';
 import { Player } from '../player/Player';
 import { Logger } from '@nestjs/common';
 import { PlayerService } from '../player/player.service';
-import e from 'express';
 
 export class GameMap {
 	public players: Player[] = [];
