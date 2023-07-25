@@ -1000,13 +1000,13 @@ export class ChatService {
 		return !!blockRecord;
 	}
 
-  async getGlobalChannelId(): Promise<number> {
-    const globalChannel = await this.prisma.channel.findFirst({
-      where: {
-        name: 'global',
-      },
-    });
+	async getGlobalChannelId(): Promise<number> {
+		const globalChannel = await this.prisma.channel.findFirst({
+			where: {
+				name: 'global',
+			},
+		});
 
-    return globalChannel.id;
-  }
+		return globalChannel.id;
+	}
 }

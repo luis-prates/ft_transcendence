@@ -13,7 +13,12 @@ import { ChatService } from '../chat/chat.service';
 export class AuthService {
 	private readonly logger = new Logger(AuthService.name);
 
-	constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService, private chatService: ChatService) {}
+	constructor(
+		private prisma: PrismaService,
+		private jwt: JwtService,
+		private config: ConfigService,
+		private chatService: ChatService,
+	) {}
 
 	async signin(dto: AuthDto) {
 		const hash = await argon.hash(dto.nickname);
@@ -56,8 +61,8 @@ export class AuthService {
 				throw new NotFoundException('Global channel not found');
 			}
 
-      // Add user to the global channel, emit event to socket etc
-      await this.chatService.joinChannel({password: ''}, globalChannel.id, user);
+			// Add user to the global channel, emit event to socket etc
+			await this.chatService.joinChannel({ password: '' }, globalChannel.id, user);
 
 			delete user.hash;
 			delete user.twoFASecret;
