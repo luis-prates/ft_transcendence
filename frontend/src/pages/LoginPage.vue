@@ -179,12 +179,16 @@ function tes(event: any) {
 
 	store
         .loginTest()
-        .then(async (isTwoFAEnabled) => {
-			if (isTwoFAEnabled) {
+        .then(async (response) => {
+			if (response.isTwoFAEnabled) {
 				const twoFASuccess = await handleTwoFA();
 				if (!twoFASuccess) {
 					return;
 				}
+			}
+			if (response.firstTime === true) {
+				await handleFirstLogin();
+				await sleep(1000);
 			}
 
 			showModal("Login Success", "success");
