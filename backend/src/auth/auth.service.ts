@@ -28,7 +28,12 @@ export class AuthService {
 				this.logger.warn(`User ${userExists.id} already exists.`);
 				delete userExists.hash;
 				delete userExists.twoFASecret;
-				return { firstTime: false, user: await this.signToken(userExists) };
+				const signedUser = await this.signToken(userExists);
+				const sentUser = {
+					...signedUser,
+					firstTime: false,
+				};
+				return sentUser;
 			}
 
 			const user = await this.prisma.user.create({
@@ -65,8 +70,13 @@ export class AuthService {
 
 			delete user.hash;
 			delete user.twoFASecret;
+			const signedUser = await this.signToken(user);
+			const sentUser = {
+				...signedUser,
+				firstTime: true,
+			};
 
-			return { firstTime: true, user: await this.signToken(user) };
+			return sentUser;
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				if (error.code === 'P2002') {
