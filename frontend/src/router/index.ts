@@ -9,10 +9,10 @@ const routes_login = [
     name: "login",
     component: LoginPage,
     props: (route: any) => ({
-		token: route.query.token,
-		error: route.query.error,
-		firstTime: Boolean(route.query.isFirstTime),
-	}),
+      token: route.query.token,
+      error: route.query.error,
+      firstTime: route.query.isFirstTime === "true",
+    }),
   },
 ];
 

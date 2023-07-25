@@ -178,18 +178,26 @@ export const userStore = defineStore("user", function () {
   }
 
   async function firstTimePrompt() {
-    await axios.patch(
-      env.BACKEND_PORT + "/users/update_profile",
-      {
-        nickname: user.nickname,
-        image: user.image,
-      },
-      {
-        headers: {
-          Authorization: "Bearer " + user.access_token_server,
+    let updateSuccess = false;
+    try {
+      await axios.patch(
+        env.BACKEND_PORT + "/users/update_profile",
+        {
+          nickname: user.nickname,
+          image: user.image,
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: "Bearer " + user.access_token_server,
+          },
+        }
+      );
+      updateSuccess = true;
+    } catch (error) {
+      console.error(error);
+      updateSuccess = false;
+    }
+    return updateSuccess;
   }
 
   async function loginTest() {

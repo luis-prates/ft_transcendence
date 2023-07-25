@@ -2,7 +2,7 @@
 	<!-- Modal -->
 	<CustomModal @closeModal="modalClosed" v-model:message="customMessage" :type="modalType" ref="customModalRef" />
 	<TwoFactorPrompt ref="twoFactorPromptRef" @submit="twoFactorSubmit" />
-	<FirstLoginPrompt ref="firstLoginPromptRef" v-model:type="firstLoginType" :prefilledCode="prefilledCode" @submit="firstLoginSubmit" />
+	<FirstLoginPrompt ref="firstLoginPromptRef" v-model:type="firstLoginType" :prefilledCode="prefilledCode" :errorMessage="invalidPatch" @submit="firstLoginSubmit" />
 	<div class="loginElement" href>
 		<span class="borderLine"></span>
 		<form>
@@ -57,6 +57,7 @@ const firstLoginPromptRef = ref<InstanceType<typeof FirstLoginPrompt> | null>(nu
 const modalType = ref('');
 const firstLoginType = ref('');
 const prefilledCode = ref('');
+const invalidPatch = ref('');
 const resolveCondition = ref(false);
 const modalClosed = () => {
 	if(resolveCondition.value) {
@@ -80,13 +81,10 @@ let resolveFirstLoginPrompt: (value: string) => void;
 let resolveFirstLoginPromptImage: (value: string) => void;
 
 let firstLoginSubmit = async (data: any) => {
-	console.log(`data: ${data}`);
 	if (data.type === "nickname") {
-		console.log(`inside data type nickname`);
 		resolveFirstLoginPrompt(data.content);
 	}
 	else if (data.type === "picture") {
-		console.log(`inside data type picture`);
 		resolveFirstLoginPromptImage(data.content);
 	}
 }
@@ -128,22 +126,39 @@ async function handleTwoFA() {
 }
 
 async function handleFirstLogin() {
-	let newNewNickname;
-	let newNewImage;
 	try {
-		newNewNickname = await new Promise<string>((resolve) => {
-			resolveFirstLoginPrompt = resolve;
-			showFirstLoginModal(store.user.nickname, "nickname");
-		});
+		let updateSuccess = false;
+		while (!updateSuccess) {
+			let newNickname = await new Promise<string>((resolve) => {
+				resolveFirstLoginPrompt = resolve;
+				showFirstLoginModal(store.user.nickname, "nickname");
+			});
+			store.user.nickname = newNickname;
+			updateSuccess = await store.firstTimePrompt();
+			if (!updateSuccess) {
+				invalidPatch.value = "Nickname is already taken. Please try again.";
+				await sleep(1000);
+			}
+		}
+		invalidPatch.value = "";
 		await sleep(1000);
-		newNewImage = await new Promise<string>((resolve) => {
-			resolveFirstLoginPromptImage = resolve;
-			showFirstLoginModal(store.user.image, "picture");
-		});
+		updateSuccess = false;
+		while (!updateSuccess) {
+			let newImage = await new Promise<string>((resolve) => {
+				resolveFirstLoginPromptImage = resolve;
+				showFirstLoginModal(store.user.image, "picture");
+			});
+			store.user.image = newImage;
+			updateSuccess = await store.firstTimePrompt();
+			if (!updateSuccess) {
+				invalidPatch.value = "Image failed to upload. Please try again.";
+				await sleep(1000);
+			}
+		}
+		invalidPatch.value = "";
 	} catch (error) {
 		console.log(error);
 	}
-	return { newNewNickname, newNewImage };
 }
 
 function tes(event: any) {
@@ -208,16 +223,6 @@ onMounted(() => {
 	}
 	if (props.token || store.user.isLogin)
 	{
-		console.log(`type of props.firstTime: ${typeof props.firstTime}`);
-		if (props.firstTime === true) {
-			console.log("props.firstTime : ", props.firstTime);
-			console.log("it's first time login");
-			
-		}
-		else {
-			console.log("it's not first time login:" + props.firstTime);
-		}
-
 		store
 		.login(props.token).then(async (user) => {
 
@@ -228,13 +233,7 @@ onMounted(() => {
 				}
 			}
 			if (props.firstTime === true) {
-				console.log(`Old nickname: ${store.user.nickname}`);
-				let { newNewNickname, newNewImage } = await handleFirstLogin();
-				if (newNewNickname && newNewImage) {
-					store.user.nickname = newNewNickname;
-					store.user.image = newNewImage;
-					store.firstTimePrompt();
-				}
+				await handleFirstLogin();
 				await sleep(1000);
 			}
 

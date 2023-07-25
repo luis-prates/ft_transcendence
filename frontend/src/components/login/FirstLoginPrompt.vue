@@ -4,18 +4,15 @@
             <div class="modal-content bg-dark text-white rounded-5 shadow">
                 <div class="modal-header bg-info">
                     <h5 class="modal-title" id="firstLoginModalLabel">{{ modalTitle }}</h5>
-					<!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-					</button> -->
                 </div>
 				<form @submit.prevent="submit">
 					<div class="modal-body">
-						<!-- <label for="firstLoginCodeInput">Enter 2FA Code:</label> -->
 						<input v-if="$props.type === 'picture'" type="file" id="firstLoginCodeInput" class="form-control" accept="image/*" @change="handlePictureChange" required />
 						<img v-if="profilePicURL" :src="profilePicURL" alt="Selected image" class="img-fluid mx-auto d-block mt-3" style="max-width: 400px; max-height: 400px;"/>
 						<input v-else type="text" id="firstLoginCodeInput" v-model="code" required />
+						<div v-if="errorMessage" class="invalid-feedback d-block">{{ errorMessage }}</div>
 					</div>
-					<div class="modal-footer border-top-0 text-white">
-						<!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="cancel">Cancel</button> -->
+						<div class="modal-footer border-top-0 text-white">
 						<button type="button" class="btn btn-primary" @click="submit">Submit</button>
 					</div>
 				</form>
@@ -40,6 +37,10 @@ export default defineComponent({
 		prefilledCode: {
 			type: String,
 			required: false
+		},
+		errorMessage: {
+			type: String,
+			default: ''
 		}
 	},
 	emits: ['submit'],
@@ -50,9 +51,13 @@ export default defineComponent({
 		const profilePicBase64 = ref('');
 		const profilePicURL = ref('');
 
-        onMounted(() => {
-			if (modalElement.value)
-            	bootstrapModal = new Modal(modalElement.value);
+		onMounted(() => {
+			if (modalElement.value) {
+				bootstrapModal = new Modal(modalElement.value, {
+					backdrop: 'static',
+					keyboard: false,
+				});
+			}
 			modalElement.value?.addEventListener('show.bs.modal', () => {
 				code.value = props.prefilledCode || '';
 				if (props.type === 'picture' && props.prefilledCode) {
@@ -80,13 +85,11 @@ export default defineComponent({
         const submit = () => {
 			if (props.type === 'picture') {
 				const payload = { type: props.type, content: profilePicBase64.value }
-				console.log("Emitting submit event for picture");
 				emit('submit', payload);
 				if (profilePicURL.value)
 					URL.revokeObjectURL(profilePicURL.value);
 				// Emit an event with the entered code
 			} else {
-				console.log("Emitting submit event for nickname");
             	emit('submit', { type: props.type, content: code.value });
 			}
             hideModal();
@@ -176,7 +179,8 @@ export default defineComponent({
 			modalTitle,
 			profilePicBase64,
 			profilePicURL,
-			handlePictureChange
+			handlePictureChange,
+			errosMessage: props.errorMessage,
         };
     },
 });
