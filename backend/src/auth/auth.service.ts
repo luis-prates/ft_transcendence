@@ -7,12 +7,13 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
+import { ChatService } from '../chat/chat.service';
 
 @Injectable()
 export class AuthService {
 	private readonly logger = new Logger(AuthService.name);
 
-	constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService) {}
+	constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService, private chatService: ChatService) {}
 
 	async signin(dto: AuthDto) {
 		const hash = await argon.hash(dto.nickname);
@@ -55,13 +56,8 @@ export class AuthService {
 				throw new NotFoundException('Global channel not found');
 			}
 
-			// Add user to the global channel
-			await this.prisma.channelUser.create({
-				data: {
-					userId: user.id,
-					channelId: globalChannel.id,
-				},
-			});
+      // Add user to the global channel, emit event to socket etc
+      await this.chatService.joinChannel({password: ''}, globalChannel.id, user);
 
 			delete user.hash;
 			delete user.twoFASecret;

@@ -44,7 +44,21 @@ export class ChatGateway implements OnGatewayConnection {
 		// event for a user being added to a channel
 		this.chatService.events.on('user-added-to-channel', async ({ channelId, userId, user }) => {
 			const client: Socket = this.userIdToSocketMap.get(userId);
+
+      // if a user was added to the global channel by the server, it means he doesnt have a socket yet
+      // therefore, we need to send a message from the server instead of the client socket.
+      let globalChannelId = await this.chatService.getGlobalChannelId();
+      if (!client && channelId == globalChannelId) {
+        this.server.to(`channel-${channelId}`).emit('user-added', {
+          channelId,
+          user,
+          message: `User ${userId} has been added to channel ${channelId}`,
+        });
+        return ;
+      }
+
 			if (!client) {
+        console.log("client not found");
 				// if socketId not found, client is not currently connected and doesnt need the websocket event
 				return;
 			}
@@ -75,6 +89,7 @@ export class ChatGateway implements OnGatewayConnection {
 				message: `User ${userId} has been added to channel ${channelId}`,
 			});
 		});
+    console.log("event for user-added has been set-up");
 
 		this.chatService.events.on('user-removed-from-channel', async ({ channelId, userId, user }) => {
 			const client: Socket = this.userIdToSocketMap.get(userId);

@@ -434,7 +434,7 @@ export class ChatService {
 		});
 
 		// Emit an event when a user is added to a new channel
-		this.events.emit('user-added-to-channel', { channelId, userId, user_db });
+		this.events.emit('user-added-to-channel', { channelId, userId, user: user_db });
 	}
 
 	async leaveChannel(channelId: number, user: any) {
@@ -999,4 +999,14 @@ export class ChatService {
 
 		return !!blockRecord;
 	}
+
+  async getGlobalChannelId(): Promise<number> {
+    const globalChannel = await this.prisma.channel.findFirst({
+      where: {
+        name: 'global',
+      },
+    });
+
+    return globalChannel.id;
+  }
 }
