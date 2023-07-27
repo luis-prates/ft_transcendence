@@ -58,6 +58,7 @@ model User {
 	messages				Message[]
 	channels				ChannelUser[]
 	ownedChannels			Channel[] @relation("ChannelOwner")
+	bannedFromChannels  Channel[] @relation("ChannelBan")
 
 	twoFASecret				String?
 	isTwoFAEnabled			Boolean @default(false)
@@ -110,13 +111,15 @@ model Message {
 model Channel {
 	id						Int @id @default(autoincrement())
 	name					String? @unique
-    avatar                  String?
+	avatar        String?
 	hash					String?
-	messages				Message[]
+	messages			Message[]
 	users					ChannelUser[]
-	ownerId					Int?
+	ownerId				Int?
 	owner					User? @relation("ChannelOwner", fields: [ownerId], references: [id])
 	type					ChannelType // Public, Private, Protected, DM
+	banList       User[] @relation("ChannelBan")
+
 	@@map("channels")
 }
 
@@ -158,7 +161,7 @@ model Game {
 	winnerId				Int?
 	winnerNickname			String?
 	winner					User? @relation("WonGames", fields: [winnerId, winnerNickname], references: [id, nickname])
-	
+
 	loserScore				Int @default(0)
 	loserId					Int?
 	loserNickname			String?
