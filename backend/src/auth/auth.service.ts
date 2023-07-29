@@ -34,11 +34,13 @@ export class AuthService {
 				this.logger.warn(`User ${userExists.id} already exists.`);
 				delete userExists.hash;
 				delete userExists.twoFASecret;
+
 				const signedUser = await this.signToken(userExists);
 				const sentUser = {
 					...signedUser,
 					firstTime: false,
 				};
+
 				return sentUser;
 			}
 
@@ -71,6 +73,7 @@ export class AuthService {
 
 			delete user.hash;
 			delete user.twoFASecret;
+
 			const signedUser = await this.signToken(user);
 			const sentUser = {
 				...signedUser,

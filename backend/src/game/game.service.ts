@@ -286,7 +286,6 @@ export class GameService {
 	}
 
 	async enterGame(player: Player, info: playerInfo): Promise<boolean> {
-		console.log('ENTER GAME!');
 		const game = this.games.find(g => g.data.objectId === info.objectId);
 		if (!game) {
 			throw new ForbiddenException('Game does not exist');
