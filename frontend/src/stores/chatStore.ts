@@ -113,7 +113,7 @@ export const chatStore = defineStore("chat", () => {
       try {
         if (channel.messagesLoaded == false) {
           channel.messagesLoaded = true;
-          const response = await axios.get(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/messages`, {
+          const response = await axios.get(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/messages`, {
             headers: { Authorization: `Bearer ${user.access_token_server}` },
           });
           const messages = response.data;
@@ -135,7 +135,7 @@ export const chatStore = defineStore("chat", () => {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
     try {
-      const response = await axios.get(env.BACKEND_PORT + "/chat/channels", options);
+      const response = await axios.get(env.BACKEND_SERVER_URL + "/chat/channels", options);
       const responseData = response.data;
       console.log("response: ", responseData);
 
@@ -178,7 +178,7 @@ export const chatStore = defineStore("chat", () => {
     };
       try {
         // Leave the channel
-        await axios.delete(`${env.BACKEND_PORT}/chat/channels/${channelId}/leave`, options);
+        await axios.delete(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/leave`, options);
   
         // Process the response if needed
         console.log("Left the channel successfully");
@@ -207,7 +207,7 @@ export const chatStore = defineStore("chat", () => {
       body: JSON.stringify(createChannelDto),
     };
     try {
-      const response = await fetch(`${env.BACKEND_PORT}/chat/channels`, options);
+      const response = await fetch(`${env.BACKEND_SERVER_URL}/chat/channels`, options);
       const data = await response.json();
       console.log("CREATE CHANNEL:", data);
 
@@ -242,7 +242,7 @@ export const chatStore = defineStore("chat", () => {
       body: JSON.stringify(joinChannelDto),
     };
     try {
-      const response = await fetch(`${env.BACKEND_PORT}/chat/channels/${channelId}/join`, options);
+      const response = await fetch(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/join`, options);
       //const data = await response.json();
       //console.log("JOINED CHANNEL:", data);
 
@@ -317,7 +317,7 @@ async function makeAdmin(channel: channel, userChat: ChatUser) {
   };
 
   await axios
-    .post(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/admin/${userChat.id}`, 
+    .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/admin/${userChat.id}`, 
       { channelId: channel.objectId, userId: userChat.id, }, options)
     .then(function (response: any) {
       console.log(`Make Adminstrator : ${response.data}`);
@@ -337,7 +337,7 @@ async function demoteAdmin(channel: channel, userChat: ChatUser) {
   };
 
   await axios
-  .post(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/users/${userChat.id}/demote`, 
+  .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/users/${userChat.id}/demote`, 
     { channelId: channel.objectId, userId: userChat.id, }, options)
   .then(function (response: any) {
     console.log(`Demote Adminstrator : ${response.data}`);
@@ -357,7 +357,7 @@ async function muteUser(channel: channel, userChat: ChatUser) {
   };
 
   await axios
-    .post(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/mute/${userChat.id}`, 
+    .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/mute/${userChat.id}`, 
       { channelId: channel.objectId, userId: userChat.id, }, options)
     .then(function (response: any) {
       console.log(`Mute: ${userChat.nickname}, ${response.data}`);
@@ -381,7 +381,7 @@ async function unmuteUser(channel: channel, userChat: ChatUser) {
   };
 
   await axios
-  .post(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/unmute/${userChat.id}`, 
+  .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/unmute/${userChat.id}`, 
     { channelId: channel.objectId, userId: userChat.id, }, options)
   .then(function (response: any) {
     console.log(`Unmute : ${userChat.nickname}, ${response.data}`);
@@ -405,7 +405,7 @@ async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
   console.log("ENVIO;", channel.objectId, ", ", userChat.id)
 
   await axios
-    .delete(`${env.BACKEND_PORT}/chat/channels/${channel.objectId}/users/${userChat.id}`, options)
+    .delete(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/users/${userChat.id}`, options)
     .then(function (response: any) {
       console.log(`KickUser : ${userChat.nickname}, ${response.data}`);
       userChat.isMuted = false;

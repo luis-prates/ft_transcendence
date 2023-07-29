@@ -44,7 +44,23 @@ export class ChatGateway implements OnGatewayConnection {
 		// event for a user being added to a channel
 		this.chatService.events.on('user-added-to-channel', async ({ channelId, userId, user }) => {
 			const client: Socket = this.userIdToSocketMap.get(userId);
+
+			// if a user was added to the global channel by the server, it means he doesnt have a socket yet
+			// therefore, we need to send a message from the server instead of the client socket.
+			const globalChannelId = await this.chatService.getGlobalChannelId();
+			if (!client && channelId == globalChannelId) {
+				delete user.hash;
+				this.server.to(`channel-${channelId}`).emit('user-added', {
+					channelId,
+					userId,
+					user,
+					message: `User ${userId} has been added to channel ${channelId}`,
+				});
+				return;
+			}
+
 			if (!client) {
+				console.log('client not found');
 				// if socketId not found, client is not currently connected and doesnt need the websocket event
 				return;
 			}
@@ -68,13 +84,16 @@ export class ChatGateway implements OnGatewayConnection {
 
 			// remove the hash field from the user object
 			delete user.hash;
+			delete user.twoFASecret;
 
 			client.broadcast.to(`channel-${channelId}`).emit('user-added', {
 				channelId,
+				userId,
 				user,
 				message: `User ${userId} has been added to channel ${channelId}`,
 			});
 		});
+		console.log('event for user-added has been set-up');
 
 		this.chatService.events.on('user-removed-from-channel', async ({ channelId, userId, user }) => {
 			const client: Socket = this.userIdToSocketMap.get(userId);
@@ -84,6 +103,7 @@ export class ChatGateway implements OnGatewayConnection {
 			}
 
 			delete user.hash;
+			delete user.twoFASecret;
 
 			client.leave(`channel-${channelId}`);
 			console.log(`User ${userId} left a room: channel-${channelId}`);
@@ -107,6 +127,7 @@ export class ChatGateway implements OnGatewayConnection {
 			// Send a message to all users in the channel that a user has been removed
 			client.broadcast.to(`channel-${channelId}`).emit('user-removed', {
 				channelId,
+				userId,
 				user,
 				message: `User ${userId} has left the channel ${channelId}`,
 			});

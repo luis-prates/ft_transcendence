@@ -7,12 +7,18 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
+import { ChatService } from '../chat/chat.service';
 
 @Injectable()
 export class AuthService {
 	private readonly logger = new Logger(AuthService.name);
 
-	constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService) {}
+	constructor(
+		private prisma: PrismaService,
+		private jwt: JwtService,
+		private config: ConfigService,
+		private chatService: ChatService,
+	) {}
 
 	async signin(dto: AuthDto) {
 		const hash = await argon.hash(dto.nickname);
@@ -28,7 +34,12 @@ export class AuthService {
 				this.logger.warn(`User ${userExists.id} already exists.`);
 				delete userExists.hash;
 				delete userExists.twoFASecret;
-				return this.signToken(userExists);
+				const signedUser = await this.signToken(userExists);
+				const sentUser = {
+					...signedUser,
+					firstTime: false,
+				};
+				return sentUser;
 			}
 
 			const user = await this.prisma.user.create({
@@ -55,13 +66,8 @@ export class AuthService {
 				throw new NotFoundException('Global channel not found');
 			}
 
-			// Add user to the global channel
-			await this.prisma.channelUser.create({
-				data: {
-					userId: user.id,
-					channelId: globalChannel.id,
-				},
-			});
+			// Add user to the global channel, emit event to socket etc
+			await this.chatService.joinChannel({ password: '' }, globalChannel.id, user);
 
 			////TODO (HENDRICK) Need to emit 'user-added'
 			//// emit event to all other users added to channel, when the user is 
@@ -85,8 +91,13 @@ export class AuthService {
 
 			delete user.hash;
 			delete user.twoFASecret;
+			const signedUser = await this.signToken(user);
+			const sentUser = {
+				...signedUser,
+				firstTime: true,
+			};
 
-			return this.signToken(user);
+			return sentUser;
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				if (error.code === 'P2002') {

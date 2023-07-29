@@ -34,5 +34,6 @@ import body from "@/assets/images/character/body/male/dark.png";
   /* width: 500px;
   height: 500px; */
   z-index: 1;
+  transform: translateZ(0);
 }
 </style>

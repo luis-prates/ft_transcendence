@@ -431,8 +431,12 @@ export class ChatService {
 			},
 		});
 
+		const user_db = await this.prisma.user.findUnique({
+			where: { id: userId },
+		});
+
 		// Emit an event when a user is added to a new channel
-		this.events.emit('user-added-to-channel', { channelId, userId, user });
+		this.events.emit('user-added-to-channel', { channelId, userId, user: user_db });
 	}
 
 	async leaveChannel(channelId: number, user: any) {
@@ -462,15 +466,15 @@ export class ChatService {
 					data: { ownerId: newOwner.userId },
 				});
 			} else {
-          // If the owner is the last member of the channel, delete it
-          if (channelUsers.length <= 1) {
-            // First, delete the owner channelUser
-            await this.prisma.channelUser.deleteMany({
-                where: {
-                    channelId: channelId,
-                },
-            });
-          }
+				// If the owner is the last member of the channel, delete it
+				if (channelUsers.length <= 1) {
+					// First, delete the owner channelUser
+					await this.prisma.channelUser.deleteMany({
+						where: {
+							channelId: channelId,
+						},
+					});
+				}
 				await this.prisma.channel.delete({ where: { id: channelId } });
 				return;
 			}
@@ -996,5 +1000,15 @@ export class ChatService {
 		});
 
 		return !!blockRecord;
+	}
+
+	async getGlobalChannelId(): Promise<number> {
+		const globalChannel = await this.prisma.channel.findFirst({
+			where: {
+				name: 'global',
+			},
+		});
+
+		return globalChannel.id;
 	}
 }

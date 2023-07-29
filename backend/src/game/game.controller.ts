@@ -9,12 +9,10 @@ import {
 	Patch,
 	Post,
 	Query,
-	Req,
 	UseGuards,
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
-import { GetUser } from '../auth/decorator';
 import { GameDto, GameEndDto } from './dto';
 import { playerInfo } from '../socket/SocketInterface';
 import { GameStatus } from '@prisma/client';

@@ -58,7 +58,7 @@ model User {
 	messages				Message[]
 	channels				ChannelUser[]
 	ownedChannels			Channel[] @relation("ChannelOwner")
-  bannedFromChannels  Channel[] @relation("ChannelBan")
+	bannedFromChannels  Channel[] @relation("ChannelBan")
 
 	twoFASecret				String?
 	isTwoFAEnabled			Boolean @default(false)
@@ -111,14 +111,14 @@ model Message {
 model Channel {
 	id						Int @id @default(autoincrement())
 	name					String? @unique
-  avatar        String?
+	avatar        String?
 	hash					String?
 	messages			Message[]
 	users					ChannelUser[]
 	ownerId				Int?
 	owner					User? @relation("ChannelOwner", fields: [ownerId], references: [id])
 	type					ChannelType // Public, Private, Protected, DM
-  banList       User[] @relation("ChannelBan")
+	banList       User[] @relation("ChannelBan")
 
 	@@map("channels")
 }

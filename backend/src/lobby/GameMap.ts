@@ -32,20 +32,19 @@ export class GameMap {
 		player.data.x = position?.x || this.map.start_position.x;
 		player.data.y = position?.y || this.map.start_position.y;
 		this.logger.debug('Emitting load_map event');
-		player.emitToLobby('load_map', {
-			map: this.map,
-			player: clientSocket ? clientSocket.data : player.data,
-			data: data,
-		});
-		//! why? is it needed?
 		if (clientSocket) {
 			clientSocket.setSocket(player.getSocket());
-			// console.log('re-connected socket: ', player.objectId);
+			clientSocket.data = player.data;
 		} else {
 			this.players.push(player);
 			this.playerService.addPlayer(player);
 			this.emitAll('new_gameobject', player.data, player, true);
 		}
+		player.emitToLobby('load_map', {
+			map: this.map,
+			player: clientSocket ? clientSocket.data : player.data,
+			data: data,
+		});
 		//! this emits the new player to existing players
 		//TODO: check alternatives
 		player.onLobby(
