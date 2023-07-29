@@ -182,7 +182,7 @@ export const userStore = defineStore("user", function () {
     let updateSuccess = false;
     try {
       await axios.patch(
-        env.BACKEND_PORT + "/users/update_profile",
+        env.BACKEND_SERVER_URL + "/users/update_profile",
         {
           nickname: user.nickname,
           image: user.image,
@@ -773,5 +773,7 @@ export const userStore = defineStore("user", function () {
     twoFAGenerate,
     twoFATurnOn,
     twoFATurnOff,
+
+	firstTimePrompt,
   };
 });
