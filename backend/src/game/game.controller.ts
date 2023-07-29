@@ -17,7 +17,6 @@ import { GameDto, GameEndDto } from './dto';
 import { playerInfo } from '../socket/SocketInterface';
 import { GameStatus } from '@prisma/client';
 
-//! deactivated for testing purposes
 @UseGuards(JwtGuard)
 @Controller('game')
 export class GameController {

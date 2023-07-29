@@ -27,9 +27,6 @@ export class GameService {
 	private readonly logger = new Logger(GameService.name);
 	private server: Server;
 
-	// TODO: to be added to Game service
-	// private isInLobby = false;
-
 	constructor(private prisma: PrismaService, private playerService: PlayerService, private userService: UserService) {
 		this.events = new EventEmitter();
 	}
@@ -43,11 +40,9 @@ export class GameService {
 	}
 
 	async createGame(body: GameDto) {
-		this.logger.debug(`createGame is called with body: ${JSON.stringify(body)}`);
 		const game = await this.prisma.game.create({
 			data: {
 				gameType: body.gameType,
-				//! used if players are added when game is created
 				players: {
 					connect: body.players.map(player => ({ id: player })),
 				},
@@ -56,11 +51,10 @@ export class GameService {
 				players: true,
 			},
 		});
-		this.logger.debug(`game created in database: ${JSON.stringify(game)}`);
 		const playerOne = this.playerService.getPlayer(body.players[0]);
-		// objectId same as game.id generated in database?
+
+		this.logger.debug(`createGame is called with body`);
 		body.gameRequest.objectId = game.id;
-		// new_game equivalent
 		this.games.push(
 			new GameClass(body.gameRequest, this, this.userService, () => {
 				// this.events.emit('gameEnded', game);
