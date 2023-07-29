@@ -175,10 +175,34 @@ export const userStore = defineStore("user", function () {
         user.isLogin = false;
       });
     // .finally(() => window.location.href = window.location.origin);
-    return user.isTwoFAEnabled;
+    return user;
+  }
+
+  async function firstTimePrompt() {
+    let updateSuccess = false;
+    try {
+      await axios.patch(
+        env.BACKEND_SERVER_URL + "/users/update_profile",
+        {
+          nickname: user.nickname,
+          image: user.image,
+        },
+        {
+          headers: {
+            Authorization: "Bearer " + user.access_token_server,
+          },
+        }
+      );
+      updateSuccess = true;
+    } catch (error) {
+      console.error(error);
+      updateSuccess = false;
+    }
+    return updateSuccess;
   }
 
   async function loginTest() {
+	let isFirstTime = false;
     // if (user.isLogin) return;
     await axios
       .post(env.BACKEND_SERVER_URL + "/auth/signin", user)
@@ -205,6 +229,7 @@ export const userStore = defineStore("user", function () {
         user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
         user.infoPong.skin.paddles = response.data.dto.paddleSkinsOwned;
         user.isTwoFAEnabled = response.data.dto.isTwoFAEnabled;
+		isFirstTime = response.data.firstTime;
         getFriends();
         getFriendRequests();
         getBlockedUsers();
@@ -217,7 +242,7 @@ export const userStore = defineStore("user", function () {
     user.isLogin = true;
     console.log("USER: ", user);
     // .finally(() => window.location.href = window.location.origin);
-    return user.isTwoFAEnabled;
+    return { firstTime: isFirstTime, isTwoFAEnabled: user.isTwoFAEnabled};
   }
 
   async function updateProfile() {
@@ -748,5 +773,7 @@ export const userStore = defineStore("user", function () {
     twoFAGenerate,
     twoFATurnOn,
     twoFATurnOff,
+
+	firstTimePrompt,
   };
 });

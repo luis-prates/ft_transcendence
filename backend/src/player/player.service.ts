@@ -153,9 +153,6 @@ export class PlayerService {
 		console.log('count', this.getPlayerCount());
 		// Then you can add the new player data associated with the new socket
 		const player = this.createPlayer(socket, payload);
-		// this.logger.debug('onSocketConnected');
-		// this.logger.debug('player: ' + JSON.stringify(player));
-		// this.logger.debug('socket: ' + JSON.stringify(socket));
 		console.log('count', this.getPlayerCount());
 		return player;
 	}

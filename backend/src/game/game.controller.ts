@@ -8,11 +8,11 @@ import {
 	ParseUUIDPipe,
 	Patch,
 	Post,
+	Query,
 	UseGuards,
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
-import { GetUser } from '../auth/decorator';
 import { GameDto, GameEndDto } from './dto';
 import { playerInfo } from '../socket/SocketInterface';
 import { GameStatus } from '@prisma/client';
@@ -30,7 +30,7 @@ export class GameController {
 	}
 
 	@Get('active')
-	getActiveGames(@Body('status') status: GameStatus[]) {
+	getActiveGames(@Query('status') status: GameStatus[]) {
 		return this.gameService.getActiveGames(status);
 	}
 
