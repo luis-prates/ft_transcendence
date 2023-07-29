@@ -30,17 +30,18 @@ export class Ball {
 		return (randomAngle * Math.PI) / 180;
 	}
 
-	createAngle(player: Player_Pong)
-	{
+	createAngle(player: Player_Pong) {
 		const relativeIntersectY = player.y + player.height / 2 - (this.y + this.height / 2);
 		const normalizedRelativeIntersectionY = relativeIntersectY / (player.height / 2);
 		let intersect = Math.max(-1, Math.min(1, normalizedRelativeIntersectionY));
 		const sinal = intersect <= 0 ? 1 : -1;
-		if (intersect < 0)
+		if (intersect < 0) {
 			intersect = -intersect;
-		this.angle = intersect * (45 * Math.PI / 180);
-		if (player.player_n != 1)
+		}
+		this.angle = intersect * ((45 * Math.PI) / 180);
+		if (player.player_n != 1) {
 			this.angle = Math.PI - this.angle;
+		}
 		this.angle *= sinal;
 	}
 
@@ -90,10 +91,12 @@ export class Ball {
 		// Verifica se a bola colidiu com as paredes superior ou inferior
 		if (this.y < 0 || this.y + this.height > this.game.height) {
 			//Para impedir que saia
-			if (this.y < 0)
+			if (this.y < 0) {
 				this.y = 0;
-			if (this.y + this.height > this.game.height)
+			}
+			if (this.y + this.height > this.game.height) {
 				this.y = this.y - this.height;
+			}
 			// Inverte a direção da bola
 			this.angle = -this.angle;
 			if (this.dir == 1) {
