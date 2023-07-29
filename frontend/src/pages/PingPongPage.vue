@@ -26,6 +26,11 @@ const status = ref(Status.Waiting);
 
 let socket = socketClass.getGameSocket();
 
+const frameRate = 60; // Set the desired frame rate
+let lastTime = performance.now();
+let accumulatedTime = 0;
+const frameTime = 1000 / frameRate;
+
 onMounted(function () {
   const canvas = document.getElementById("canvas1") as HTMLCanvasElement;
   const button = document.getElementById("buttonLeave") as HTMLButtonElement;;
@@ -270,11 +275,21 @@ onMounted(function () {
   });
 
   function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    tableBoard.draw(ctx);
-    game.update();
-    game.draw();
-    requestAnimationFrame(animate);
+	const currentTime = performance.now();
+	const deltaTime = currentTime - lastTime;
+	lastTime = currentTime;
+	accumulatedTime += deltaTime;
+
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	tableBoard.draw(ctx);
+
+	while (accumulatedTime > frameTime) {
+		game.update();
+		accumulatedTime -= frameTime;
+  	}
+
+  	game.draw();
+  	requestAnimationFrame(animate);
   }
   animate();
 });
@@ -295,7 +310,7 @@ onMounted(function () {
   position: absolute;
   top: 0%;
   left: 50%;
-  transform: translate(-50%, 5%);
+  transform: translate3d(-50%, 5%, 0);
   max-width: 100%;
   max-height: 100%;
 }
