@@ -34,7 +34,6 @@ model User {
 	paddleSkinEquipped		String @default("")
 	tableSkinsOwned			String[]
 	paddleSkinsOwned		String[]
-	// gameHistory			Games[]
 
 	status					UserStatus @default(OFFLINE) // Offline, In Game, Online
 
@@ -45,10 +44,9 @@ model User {
 	friendsOf				User[] @relation("Friends")
 
 	// Game
-	games					Game[] //@relation("WonGames")
+	games					Game[]
 	wonGames				Game[] @relation("WonGames")
 	lostGames				Game[] @relation("LostGames")
-	//lostGames				Game[] @relation("LostGames")
 
 	// Blocked Users
 	blockedUsers			Blocklist[] @relation("BlockingUsers")
@@ -58,7 +56,7 @@ model User {
 	messages				Message[]
 	channels				ChannelUser[]
 	ownedChannels			Channel[] @relation("ChannelOwner")
-	bannedFromChannels  Channel[] @relation("ChannelBan")
+	bannedFromChannels		Channel[] @relation("ChannelBan")
 
 	twoFASecret				String?
 	isTwoFAEnabled			Boolean @default(false)
@@ -111,14 +109,14 @@ model Message {
 model Channel {
 	id						Int @id @default(autoincrement())
 	name					String? @unique
-	avatar        String?
+	avatar					String?
 	hash					String?
-	messages			Message[]
+	messages				Message[]
 	users					ChannelUser[]
-	ownerId				Int?
+	ownerId					Int?
 	owner					User? @relation("ChannelOwner", fields: [ownerId], references: [id])
 	type					ChannelType // Public, Private, Protected, DM
-	banList       User[] @relation("ChannelBan")
+	banList					User[] @relation("ChannelBan")
 
 	@@map("channels")
 }
@@ -141,20 +139,13 @@ enum ChannelType {
 	DM
 }
 
-// model Game {
-// 	id Int @id @unique @default(autoincrement())
-// 	createdAt DateTime @default(now())
-// 	updatedAt DateTime @updatedAt
-
-
-// TODO: need to check how spectators will be handled
 model Game {
 	id						String @id @unique @default(uuid())
 	createdAt				DateTime @default(now())
 	updatedAt				DateTime @updatedAt
 
 	status					GameStatus @default(NOT_STARTED) // 0: not started, 1: started, 2: ended
-	players					User[] //@relation("WonGames", fields: [winnerId], references: [id])
+	players					User[] 
 
 
 	winnerScore				Int @default(0)
@@ -171,51 +162,6 @@ model Game {
 
 	@@map("games")
 }
-
-// model Chat {
-// 	id Int @id @unique @default(autoincrement())
-// 	createdAt DateTime @default(now())
-// 	updatedAt DateTime @updatedAt
-
-// 	//messages Message[]
-// 	users User[]
-
-// 	channelName String @unique
-// 	// channel mode may be in front end (public, private, protected by password)
-// 	password String? // if protected
-
-// 	channelOwnerId Int
-// 	channelOwner User[] @relation("channelOwner", fields: [channelOwnerId], references: [id])
-// 	channelAdminId Int
-// 	channelAdmin User[] @relation("channelAdmin", fields: [channelAdminId], references: [id])
-// 	channelMuteId Int
-// 	channelMute User[] @relation("channelMute", fields: [channelMuteId], references: [id])
-// 	channelBanId Int
-// 	channelBan User[] @relation("channelBan", fields: [channelBanId], references: [id])
-// }
-
-// name to be decided
-// TODO: work on it
-model Customization {
-	id						String @unique @default(uuid())
-	createdAt				DateTime @default(now())
-	updatedAt				DateTime @updatedAt
-
-	userId					Int
-	object					String
-
-	// avatar
-	category				String // avatar, background, paddle
-
-	name					String
-
-	type					String
-
-	description				String
-
-	price					Int
-}
-
 
 enum FriendReqStatus {
 	PENDING
