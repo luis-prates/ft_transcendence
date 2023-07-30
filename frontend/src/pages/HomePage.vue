@@ -4,8 +4,8 @@
   <input id="fileInput" type="file" style="display: none" accept="image/*" />
   <div class="box" href>
     <!-- <ProfileComponent class="profile" />     -->
-    <!-- <LobbyComponent /> -->
-    <MapEditComponent />
+    <LobbyComponent />
+    <!-- <MapEditComponent /> -->
     <!-- <ProfileComponent class="profile" /> -->
   </div>
   <input id="inputName" type="text" pattern="[A-Za-z0-9]+" value="" disabled="false" style="display: none; background-color: transparent; font-family: 'Press Start 2P'" @input="cleanInput" :maxlength="15" />

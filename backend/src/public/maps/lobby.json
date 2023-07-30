@@ -769,10 +769,16 @@
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		]
 	],
-	"layer_1": { "image": "http://localhost:5173/src/assets/images/lobby/layer_0.png", "opacity": 1 },
-	"layer_2": { "image": "http://localhost:5173/", "opacity": 1 },
+	"layer_1": {
+		"image": "src/assets/images/lobby/layer_0.png",
+		"opacity": 1
+	},
+	"layer_2": {
+		"image": "",
+		"opacity": 1
+	},
 	"layer_3": {
-		"image": "http://localhost:5173/src/assets/images/lobby/layer_3.png",
+		"image": "src/assets/images/lobby/layer_3.png",
 		"opacity": 0.5,
 		"objects": [
 			{ "x": 704, "y": 704, "w": 320, "h": 256 },
@@ -884,8 +890,8 @@
 			"sy": -32,
 			"frames": [
 				{ "x": 0, "y": 0 },
-				{ "x": 96, "y": 0 },
-				{ "x": 192, "y": 0 }
+				{ "x": 1, "y": 0 },
+				{ "x": 2, "y": 0 }
 			]
 		},
 		{
@@ -898,8 +904,8 @@
 			"sy": -32,
 			"frames": [
 				{ "x": 0, "y": 0 },
-				{ "x": 96, "y": 0 },
-				{ "x": 192, "y": 0 }
+				{ "x": 1, "y": 0 },
+				{ "x": 2, "y": 0 }
 			]
 		},
 		{
@@ -912,8 +918,8 @@
 			"sy": -32,
 			"frames": [
 				{ "x": 0, "y": 0 },
-				{ "x": 96, "y": 0 },
-				{ "x": 192, "y": 0 }
+				{ "x": 1, "y": 0 },
+				{ "x": 2, "y": 0 }
 			]
 		},
 		{
@@ -926,8 +932,8 @@
 			"sy": -32,
 			"frames": [
 				{ "x": 0, "y": 0 },
-				{ "x": 96, "y": 0 },
-				{ "x": 192, "y": 0 }
+				{ "x": 1, "y": 0 },
+				{ "x": 2, "y": 0 }
 			]
 		},
 		{
@@ -1047,7 +1053,8 @@
 				{ "x": 2, "y": 0 }
 			]
 		},
-		{ "className": "Door", "mapName": "school", "x": 896, "y": 448 }
+		{ "className": "Door", "mapName": "school", "x": 1792, "y": 480 },
+		{ "className": "Door", "mapName": "school", "x": 1824, "y": 480 }
 	],
 	"objectId": "lobby"
 }

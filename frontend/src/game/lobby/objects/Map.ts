@@ -97,10 +97,12 @@ export class Map implements GameObject {
     });
   }
 
-  keydown(key: string): void {}
+  keydown(key: string): void { }
 
   draw(contex: CanvasRenderingContext2D): void {
 
+    contex.strokeStyle = "rgb(30, 39, 210)";
+    contex.strokeRect(this.x, this.y, this.w, this.h);
     if (this.isLoaded) {
 
       // If the cached canvas doesn't exist or the layer's size has changed, create a new cached canvas
