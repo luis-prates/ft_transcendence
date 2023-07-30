@@ -789,6 +789,7 @@ export const userStore = defineStore("user", function () {
     updateTableDefault,
     getUsers,
     getUserProfile,
+    challengeUser,
 
     //Friends
     getFriends,
@@ -817,7 +818,7 @@ export const userStore = defineStore("user", function () {
     twoFAGenerate,
     twoFATurnOn,
     twoFATurnOff,
-
+  
 	firstTimePrompt,
   };
 });

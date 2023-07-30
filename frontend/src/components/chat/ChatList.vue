@@ -26,10 +26,7 @@
         </div>
         <ul class="contacts" @click="toggleStatus">
           <li v-for="channel in channelsFilters">
-            <ChatListChannels :channel="channel" @click="selectChannel(channel)" @contextmenu="handleContextMenu(channel)" />
-            <div class="menu-container" v-if="isMenuOpen">
-              <Menus @toggleMenu="toggleMenu" @openChannel="openChannel" :channel="channel" @update-channel-status="updateChannelStatus" @update-create-channel="updateCreateChannel" v-show="selected?.objectId == channel.objectId" />
-            </div>
+            <ChatListChannels :channel="channel" @click="selectChannel(channel)" @contextmenu="handleContextMenu($event, channel)" />
           </li>
         </ul>
       </div>
@@ -55,17 +52,11 @@
           <div v-if="showUsers">
             <li v-for="(user, id) in usersFilters" :key="id">
               <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser(user)" />
-              <div class="menu-container" v-if="isMenuOpen">
-                <Menus @toggleMenu="toggleMenu" :user="user" @kickUser="kickUser" @muteOrUnmute="muteOrUnmute" @makeOrDemoteAdmin="makeOrDemoteAdmin" @openPerfilUser="openPerfilUser" v-show="userSelect.id == user.id && userSelect.id != userStore().user.id" />/>
-              </div>
             </li>
           </div>
           <div v-else>
             <li v-for="(bannedUser, id) in bannedUsersFilters" :key="id">
               <ChatListUsers :user="bannedUser" @click="selectUser(bannedUser)" @contextmenu="handleContextMenuUser(bannedUser)" />
-              <div class="menu-container" v-if="isMenuOpen">
-                <Menus @toggleMenu="toggleMenu" :user="bannedUser" @kickUser="kickUser" @muteOrUnmute="muteOrUnmute" @makeOrDemoteAdmin="makeOrDemoteAdmin" @openPerfilUser="openPerfilUser" v-show="userSelect.id == bannedUser.id && userSelect.id != userStore().user.id" />/>
-              </div>
             </li>
           </div>
         </ul>
@@ -85,12 +76,12 @@ import "./App.css";
 import { ref, getCurrentInstance, type WebViewHTMLAttributes, reactive, onUnmounted } from "vue";
 import { onMounted, computed } from 'vue';
 import { storeToRefs } from "pinia";
-import Menus from './Menu.vue';
 import { Game, Lobby } from "@/game";
 import { Profile } from "@/game/Menu/Profile";
 import { userStore } from "@/stores/userStore";
 import { YourProfile } from "@/game/Menu/YourProfile";
-
+import ContextMenu from '@imengyu/vue3-context-menu'
+import { Menu } from "./Menu";
 
 
 
@@ -106,6 +97,7 @@ const usersFilters = ref([] as ChatUser[]);
 const bannedUsersFilters = ref([] as ChatUser[]);
 const searchUser = ref('');
 const isChatFilterType = ref("inside");
+const menu = new Menu();
 
 const imAdmin =  computed(() => {
   const user = userStore().user;
@@ -119,6 +111,7 @@ const imAdmin =  computed(() => {
   }
   return false;
 })
+
 
 
 const showUsers = ref(true);
@@ -202,13 +195,32 @@ const selectChannel = (channel: channel) => {
     toggleMenu();
 }
 
-const handleContextMenu = (channel: channel)  => {
-  //instance?.emit("update-create-channel", false);
-  if (selected.value != channel && isMenuOpen.value) {
-    toggleMenu();
-  }
+const handleContextMenu = (e: any, channel: channel)  => {
+  const isAdmin = false;
+  const items = [
+      { 
+        label: "Open", 
+        onClick: () => openChannel(channel)
+      },
+      { 
+        label: "admin", 
+        children: [
+          { label: "Item 1", onClick: () => {
+            
+          } },
+          { label: "Item 2" },
+          { label: "Item 3" },
+          { label: "Item 3" },
+          { label: "" },
+        ]
+      },
+    ]
+  ContextMenu.showContextMenu({
+    x: e.x,
+    y: e.y,
+    items: items.filter(e => (isAdmin && e.label == "admin") ||  e.label != "admin")
+  });
   store.selectChannel(channel);
-  toggleMenu();
 };
 
 
