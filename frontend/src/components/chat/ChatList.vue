@@ -44,16 +44,26 @@
         </div>
         <!-- Users inside the chat selected -->
         <ul class="contacts">
-          <div class="chat_filter">
-            <button>aa</button>
-            <button>aa</button>
+          <div v-if="imAdmin" class="chat_filter">
+            <button @click="setShowUsers(true)">Users</button>
+            <button @click="setShowUsers(false)">Blocked</button>
           </div>
-          <li v-for="(user, id) in usersFilters" :key="id">
-            <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser(user)" />
-            <div class="menu-container" v-if="isMenuOpen">
-              <Menus @toggleMenu="toggleMenu" :user="user" @kickUser="kickUser" @muteOrUnmute="muteOrUnmute" @makeOrDemoteAdmin="makeOrDemoteAdmin" @openPerfilUser="openPerfilUser" v-show="userSelect.id == user.id && userSelect.id != userStore().user.id" />/>
-            </div>
-          </li>
+          <div v-if="showUsers">
+            <li v-for="(user, id) in usersFilters" :key="id">
+              <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser(user)" />
+              <div class="menu-container" v-if="isMenuOpen">
+                <Menus @toggleMenu="toggleMenu" :user="user" @kickUser="kickUser" @muteOrUnmute="muteOrUnmute" @makeOrDemoteAdmin="makeOrDemoteAdmin" @openPerfilUser="openPerfilUser" v-show="userSelect.id == user.id && userSelect.id != userStore().user.id" />/>
+              </div>
+            </li>
+          </div>
+          <div v-else>
+            <li v-for="(bannedUser, id) in bannedUsersFilters" :key="id">
+              <ChatListUsers :user="bannedUser" @click="selectUser(bannedUser)" @contextmenu="handleContextMenuUser(bannedUser)" />
+              <div class="menu-container" v-if="isMenuOpen">
+                <Menus @toggleMenu="toggleMenu" :user="bannedUser" @kickUser="kickUser" @muteOrUnmute="muteOrUnmute" @makeOrDemoteAdmin="makeOrDemoteAdmin" @openPerfilUser="openPerfilUser" v-show="userSelect.id == bannedUser.id && userSelect.id != userStore().user.id" />/>
+              </div>
+            </li>
+          </div>
         </ul>
       </div>
     </div>
@@ -69,7 +79,7 @@ import ChatListUsers from "./ChatListUsers.vue";
 import { chatStore, type channel, type ChatUser } from "@/stores/chatStore";
 import "./App.css";
 import { ref, getCurrentInstance, type WebViewHTMLAttributes, reactive, onUnmounted } from "vue";
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import { storeToRefs } from "pinia";
 import Menus from './Menu.vue';
 import { Game, Lobby } from "@/game";
@@ -79,24 +89,46 @@ import { YourProfile } from "@/game/Menu/YourProfile";
 
 
 
-const store = chatStore();
 
+const store = chatStore();
 const userSelect = ref('' as any);
 const { selected } = storeToRefs(store);
 const isMenuOpen = ref(false);
 const channelsFilters = ref([] as channel[]);
 const searchTerm = ref('');
 const usersInChannelSelect = ref([] as ChatUser[]);
+const bannedUsersInChannelSelect = ref([] as ChatUser[]);
 const usersFilters = ref([] as ChatUser[]);
+const bannedUsersFilters = ref([] as ChatUser[]);
 const searchUser = ref('');
 const isChatFilterType = ref("inside");
+
+const imAdmin =  computed(() => {
+  const user = userStore().user;
+  const selectedChannel = selected;
+
+  if (!selectedChannel)
+    return false;
+
+    if (selectedChannel.value.users && selectedChannel.value.users.some((u: any)=> u.id === user.id && u.isAdmin)) {
+    return true;
+  }
+  return false;
+})
+
+
+const showUsers = ref(true);
+
+const setShowUsers = (value:boolean) => {
+  showUsers.value = value;
+}
 
 const handleSearch = () => {
   getFilteredChannels();
 };
 
 const handleSearchUser = () => {
-  if (!usersFilters.value)
+  if (!usersFilters.value || !bannedUsersFilters.value)
     return;
 
   const searchBar = document.getElementById('searchUser') as HTMLInputElement;
@@ -264,7 +296,9 @@ const openChannel = async function (channel: channel) {
     instance?.emit('update-create-channel', false);
     instance?.emit("update-channel-status", true);
     usersInChannelSelect.value = channel.users;
+    bannedUsersInChannelSelect.value = channel.banList;
     usersFilters.value = channel.users;
+    bannedUsersFilters.value = channel.banList;
   }
   else
   {

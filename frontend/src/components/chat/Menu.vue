@@ -65,7 +65,8 @@ const sendDM = async (user : ChatUser) => {
       password: "",
       messages: [], // initialize with an empty array of messages
       users: [] as any, // initialize with an empty array of users
-      type: "DM"
+      type: "DM",
+      banList: [] as any,
     };
     newChannel.users.push(user.id);
 

@@ -153,6 +153,7 @@ onMounted(() => {
       const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userId);
       if (curUser) {
         store.removeUserFromChannel(channelId, userId);
+        curChannel.banList.push(curUser);
       }
     }
   });

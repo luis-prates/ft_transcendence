@@ -32,6 +32,7 @@ export interface channel {
   type: string;
   ownerId?: number;
   messagesLoaded?: boolean;
+  banList: ChatUser[];
 }
 
 
@@ -52,6 +53,7 @@ export const chatStore = defineStore("chat", () => {
       type: newChannel.type,
       ownerId: newChannel.ownerId,
       messagesLoaded: false,
+      banList: newChannel.banList,
     };
     const channelSelected = channels.find((c) => {
       return c.objectId === channel.objectId;
@@ -169,6 +171,15 @@ export const chatStore = defineStore("chat", () => {
             isAdmin: user.isAdmin ?? false,
             isMuted: user.isMuted ?? false,
           })) ?? [];
+          const transformedBanUsers =
+          channelData.banList?.map((user: any) => ({
+            id: user.id ?? "",
+            image: user.image ?? "",
+            nickname: user.nickname ?? "",
+            status: user.status ?? "",
+            isAdmin: user.isAdmin ?? false,
+            isMuted: user.isMuted ?? false,
+          })) ?? [];
           return {
             objectId: channelData.id ?? "",
             name: channelData.name ?? "",
@@ -179,6 +190,7 @@ export const chatStore = defineStore("chat", () => {
             messages: channelData.messages ?? [],
             messagesLoaded: false, // Messages not Initialized
             ownerId: channelData.ownerId ?? "",
+            banList: transformedBanUsers,
         };
       });
 

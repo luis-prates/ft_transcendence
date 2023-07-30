@@ -32,6 +32,7 @@ export class ChatService {
 						isMuted: true,
 					},
 				},
+				banList: true,
 			},
 		});
 	}
