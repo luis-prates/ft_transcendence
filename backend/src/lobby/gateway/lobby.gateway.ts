@@ -59,7 +59,8 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		this.logger.log(`Clients Before: ${this.playerService.getPlayerCount()}`);
 
 		const userId = this.playerService.getUserIdBySocket(client);
-		this.playerService.removePlayer(this.playerService.getPlayer(userId));
+		const currentPlayer = this.playerService.getPlayer(userId);
+		this.playerService.removePlayer(currentPlayer);
 
 		this.userService.status(userId, UserStatus.OFFLINE);
 
@@ -112,7 +113,6 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 		const game = await this.gameService.challengeGame(challenged, challenger);
 
-		//		console.log(game);
 		this.server.to(player1.getSocket().id).emit('challenge_game', game);
 		this.server.to(player2.getSocket().id).emit('challenge_game', game);
 	}

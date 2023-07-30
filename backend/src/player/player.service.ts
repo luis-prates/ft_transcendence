@@ -9,6 +9,7 @@ export class PlayerService {
 	//! lobby only socket map
 	private sockets: Map<number, Socket> = new Map<number, Socket>();
 	private readonly logger = new Logger(Player.name);
+	private MARVIN = 6969;
 
 	constructor(private prismaService: PrismaService) {
 		this.logger.log('PlayerService initialized');
@@ -16,7 +17,7 @@ export class PlayerService {
 		this.prismaService.user
 			.findUnique({
 				where: {
-					id: 6969,
+					id: this.MARVIN,
 				},
 			})
 			.then(user => {
@@ -24,12 +25,11 @@ export class PlayerService {
 					this.prismaService.user
 						.create({
 							data: {
-								id: 6969,
+								id: this.MARVIN,
 								name: 'Marvin',
 								nickname: 'Marvin',
 								email: 'marvin@marvin.com',
 								image: 'src/assets/images/pingpong/marvin.jpg',
-								hash: 'asdgasdgasdg',
 							},
 						})
 						.then(user => {
@@ -37,8 +37,6 @@ export class PlayerService {
 						});
 				}
 			});
-
-		//! feed from database maybe?
 	}
 
 	//TODO: add namespace to keys maybe?
