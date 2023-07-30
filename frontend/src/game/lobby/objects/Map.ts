@@ -97,6 +97,8 @@ export class Map implements GameObject {
     });
   }
 
+  keydown(key: string): void {}
+
   draw(contex: CanvasRenderingContext2D): void {
 
     if (this.isLoaded) {
@@ -190,8 +192,9 @@ export class Map implements GameObject {
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = "desenho.json";
+    link.download = "map.json";
     link.click();
+
     console.log("Salvando mapa...\n");
   }
 }

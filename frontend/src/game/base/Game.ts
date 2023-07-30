@@ -90,6 +90,9 @@ export class Game {
     this.menusGlobal.forEach((menu) => {
       if (menu.KeyClose && menu.KeyClose == event.key) this.removeMenu(menu);
     });
+    this.menusLocal.forEach((menu) => {
+      if (menu.KeyClose && menu.KeyClose == event.key) this.removeMenu(menu);
+    });
   }
 
   public addMenu(menu: Menu) {
@@ -124,6 +127,7 @@ export class Game {
 
   draw() {
     this.camera.update();
+    this.bufferCanvas.getContext("2d")?.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
     this.camera.render(this.buffer, this.gameObjets);
     this.menusGlobal.forEach((menu) => menu.draw(this.buffer));
     this.context.drawImage(this.bufferCanvas, 0, 0);
@@ -159,6 +163,7 @@ export class Game {
   }
 
   addGameObjectData(data: any): GameObject {
+    console.log("Add: ", data);
     return this.addGameObject(new listClass[data.className](data));
   }
 
