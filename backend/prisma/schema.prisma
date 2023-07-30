@@ -16,7 +16,6 @@ model User {
 	updatedAt				DateTime @updatedAt
 
 	email					String @unique
-	hash					String
 
 	// UserProfile
 	name					String

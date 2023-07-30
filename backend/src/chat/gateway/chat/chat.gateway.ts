@@ -49,7 +49,6 @@ export class ChatGateway implements OnGatewayConnection {
 			// therefore, we need to send a message from the server instead of the client socket.
 			const globalChannelId = await this.chatService.getGlobalChannelId();
 			if (!client && channelId == globalChannelId) {
-				delete user.hash;
 				this.server.to(`channel-${channelId}`).emit('user-added', {
 					channelId,
 					userId,
@@ -82,8 +81,7 @@ export class ChatGateway implements OnGatewayConnection {
 				message: `You have been added to channel ${channelId}`,
 			});
 
-			// remove the hash field from the user object
-			delete user.hash;
+			// remove the twoFASecret field from the user object
 			delete user.twoFASecret;
 
 			client.broadcast.to(`channel-${channelId}`).emit('user-added', {
@@ -102,7 +100,6 @@ export class ChatGateway implements OnGatewayConnection {
 				return;
 			}
 
-			delete user.hash;
 			delete user.twoFASecret;
 
 			client.leave(`channel-${channelId}`);

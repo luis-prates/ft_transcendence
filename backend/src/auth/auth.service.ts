@@ -21,8 +21,6 @@ export class AuthService {
 	) {}
 
 	async signin(dto: AuthDto) {
-		const hash = await argon.hash(dto.nickname);
-
 		try {
 			// Check if user exists
 			const userExists = await this.prisma.user.findUnique({
@@ -32,7 +30,6 @@ export class AuthService {
 			});
 			if (userExists) {
 				this.logger.warn(`User ${userExists.id} already exists.`);
-				delete userExists.hash;
 				delete userExists.twoFASecret;
 
 				const signedUser = await this.signToken(userExists);
@@ -52,7 +49,6 @@ export class AuthService {
 					email: dto.email,
 					image: dto.image,
 					color: dto.color,
-					hash,
 				},
 			});
 			this.logger.log(`User ${user.id} created.`);
@@ -71,7 +67,6 @@ export class AuthService {
 			// Add user to the global channel, emit event to socket etc
 			await this.chatService.joinChannel({ password: '' }, globalChannel.id, user);
 
-			delete user.hash;
 			delete user.twoFASecret;
 
 			const signedUser = await this.signToken(user);
