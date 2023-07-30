@@ -139,7 +139,7 @@ onMounted(() => {
     {
       const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userId);
       if (curUser)
-        curChannel.users = curChannel.users.filter((userChannel: ChatUser) => userChannel.id != userId);
+        store.removeUserFromChannel(channelId, userId);
     }
   });
 
@@ -152,8 +152,7 @@ onMounted(() => {
     if(curChannel) {
       const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userId);
       if (curUser) {
-        curChannel.users = curChannel.users.filter((userChannel: ChatUser) => userChannel.id != userId);
-        chatListRef.value?.getFilteredChannels();
+        store.removeUserFromChannel(channelId, userId);
       }
     }
   });
