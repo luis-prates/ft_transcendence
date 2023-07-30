@@ -26,6 +26,7 @@ export class Game {
   public isRunning;
   public socket: Socket;
   private boundUpdate: any;
+  public static isDragover: boolean = false;
 
   constructor(map: Map, player: Player) {
     //For What?
@@ -50,7 +51,14 @@ export class Game {
     this.your_menu = new YourMenu();
     Game.instance.addMenu(this.your_menu.menu);
     // Adicione os event listeners para os eventos de drag e drop
-    this.canvas.addEventListener("dragover", (event) => event.preventDefault());
+    this.canvas.addEventListener("dragover", (event) => {
+      Game.isDragover = true;
+      event.preventDefault()
+    });
+    this.canvas.addEventListener("dragleave", (event) => {
+      Game.isDragover = false;
+      event.preventDefault()
+    });
     this.canvas.addEventListener("drop", (event) => {
       if (event.dataTransfer && event.dataTransfer.types.includes("text/uri-list")) {
         console.log("Drop");
@@ -65,8 +73,10 @@ export class Game {
           x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE,
           y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,
         };
-        Game.instance.addMenu(new CreateGame(data).menu);
+        if (this.player.isRectangleInsideTable({ x: data.x, y: data.y, w: data.x + Map.SIZE, h: data.y + (Map.SIZE * 2) }))
+          Game.instance.addMenu(new CreateGame(data).menu);
       }
+      Game.isDragover = false;
       event.preventDefault();
     });
     map.datas.forEach((data: any) => Game.instance.addGameObjectData(data));
@@ -109,6 +119,7 @@ export class Game {
       if (this.menusLocal[i].mouseClick(event.clientX, event.clientY, event.button)) return;
     }
     this.mouseEvents.forEach((action: any) => action(mouseX, mouseY, event.button));
+    Game.isDragover = false;
   }
 
   draw() {
