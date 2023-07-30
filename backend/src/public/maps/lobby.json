@@ -1053,8 +1053,8 @@
 				{ "x": 2, "y": 0 }
 			]
 		},
-		{ "className": "Door", "mapName": "school", "x": 1792, "y": 480 },
-		{ "className": "Door", "mapName": "school", "x": 1824, "y": 480 }
+		{ "className": "Door", "mapName": "school", "x": 1792, "y": 480, "mapPosition": { "x": 192, "y": 1088 } },
+		{ "className": "Door", "mapName": "school", "x": 1824, "y": 480, "mapPosition": { "x": 192, "y": 1088 } }
 	],
 	"objectId": "lobby"
 }

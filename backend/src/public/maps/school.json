@@ -785,7 +785,7 @@
 	"start_position": { "x": 100, "y": 100 },
 	"objectId": "school",
 	"datas": [
-		{ "className": "Door", "mapName": "lobby", "x": 192, "y": 1088 },
-		{ "className": "Door", "mapName": "lobby", "x": 224, "y": 1088 }
+		{ "className": "Door", "mapName": "lobby", "x": 192, "y": 1088, "mapPosition": { "x": 1792, "y": 480} },
+		{ "className": "Door", "mapName": "lobby", "x": 224, "y": 1088 , "mapPosition": { "x": 1792, "y": 480}}
 	]
 }
