@@ -73,7 +73,7 @@ export class Game {
           x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE,
           y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,
         };
-        if (this.player.isRectangleInsideTable({ x: data.x, y: data.y, w: data.x + Map.SIZE, h: data.y + (Map.SIZE * 2) }))
+        if (this.player.isRectangleInsideTable({ x: data.x, y: data.y, w: Map.SIZE, h: (Map.SIZE * 2) }))
           Game.instance.addMenu(new CreateGame(data).menu);
       }
       Game.isDragover = false;
@@ -201,6 +201,7 @@ export class Game {
   }
 
   public static isColision(gameObject1: GameObject, gameObjec2: GameObject): boolean {
+    if (gameObject1 instanceof Map && gameObject1.isCollision) return gameObject1.isCollision(gameObjec2);
     if (gameObject1.isCollision && gameObjec2.isCollision) return gameObject1.isCollision(gameObjec2) || gameObjec2.isCollision(gameObject1);
     if (gameObject1.isCollision) return gameObject1.isCollision(gameObjec2);
     if (gameObjec2.isCollision) return gameObjec2.isCollision(gameObject1);

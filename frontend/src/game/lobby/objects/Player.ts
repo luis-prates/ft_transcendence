@@ -99,9 +99,11 @@ export class Player extends Character {
 
   public isRectangleInsideTable(rect1: Rectangle): boolean {
     if (!this.isRectangleInside(rect1, this.getRetanguloTable())) return false;
-    Game.instance.gameObjets.forEach((gameObject) => {
-      if (this.isRectangleInside(rect1, { x: gameObject.x, y: gameObject.y, w: gameObject.w, h: gameObject.h })) return false;
-    });
+    for (let gameObject of Game.instance.gameObjets) {
+      if (Game.isColision(gameObject, rect1 as any)) {
+        return false
+      };
+    };
 
     return true;
   }

@@ -199,4 +199,21 @@ export class Map implements GameObject {
 
     console.log("Salvando mapa...\n");
   }
+
+  public isCollision(gameObject: GameObject): boolean {
+    const x = Math.floor(gameObject.x / Map.SIZE);
+    const y = Math.floor(gameObject.y / Map.SIZE);
+    const w = Math.floor(gameObject.w / Map.SIZE);
+    const h = Math.floor(gameObject.h / Map.SIZE);
+    console.log("map: isCollision: x: " + x + " y: " + y + " w: " + w + " h: " + h);
+    for (let j = y; j < y + h; j++) {
+      for (let i = x; i < x + w; i++) {
+        console.log("map: isCollision: i: " + i + " j: " + j, "grid: " + Game.grid[i][j]);
+        if (Game.grid[i][j] == 1) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }
