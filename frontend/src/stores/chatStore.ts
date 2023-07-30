@@ -129,6 +129,25 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
+  async function banUser(channelId:number, userId: number) {
+
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.access_token_server}`,
+      },
+    };
+
+    await axios
+      .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/ban/${userId}`, 
+        { channelId: channelId, userId: userId, }, options)
+      .then(function (response: any) {
+        console.log(`User:${userId} was banned : ${response.data}`);
+      })
+      .catch((err) => console.error(err));
+  }
+
   async function getChannels() {
     const options = {
       method: "GET",
@@ -433,5 +452,6 @@ async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
     muteUser,
     unmuteUser,
     kickUserFromChannel,
+    banUser,
   };
 });

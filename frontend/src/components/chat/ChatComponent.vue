@@ -143,6 +143,21 @@ onMounted(() => {
     }
   });
 
+  //ban
+  socket.on("user-banned-in-channel", (eventData) => {
+    const { channelId, userId, message } = eventData;
+    console.log(message);
+    
+    const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
+    if(curChannel) {
+      const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userId);
+      if (curUser) {
+        curChannel.users = curChannel.users.filter((userChannel: ChatUser) => userChannel.id != userId);
+        chatListRef.value?.getFilteredChannels();
+      }
+    }
+  });
+
   //You Prometed
   socket.on("user-promoted", (eventData) => {
     console.log("Promoted" , eventData);

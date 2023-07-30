@@ -44,6 +44,10 @@
         </div>
         <!-- Users inside the chat selected -->
         <ul class="contacts">
+          <div class="chat_filter">
+            <button>aa</button>
+            <button>aa</button>
+          </div>
           <li v-for="(user, id) in usersFilters" :key="id">
             <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser(user)" />
             <div class="menu-container" v-if="isMenuOpen">

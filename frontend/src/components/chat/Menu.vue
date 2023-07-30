@@ -131,7 +131,8 @@ const sendDM = async (user : ChatUser) => {
     }
     // Ban
     else if (item == 7){
-      //TODO
+      if (selected)
+        store.banUser(selected?.value.objectId, props.user.id);
     }
     //GIVE ADMINSTRATOR
     else if (item == 8){
@@ -152,6 +153,8 @@ const sendDM = async (user : ChatUser) => {
     if (!channel)
       return false;
     const myId = userStore().user.id;
+    if (myId == channel.ownerId)
+      return true;
     const userId = userChat?.id;
     const iAmInChannel = channel.users.find((userChat: ChatUser) => userChat.id == myId);
     if (iAmInChannel && iAmInChannel.isAdmin && userId != channel.ownerId)
