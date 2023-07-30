@@ -30,7 +30,6 @@ export class GameController {
 	}
 
 	@Get('active')
-	@UsePipes(new ValidationPipe({ transform: true }))
 	getActiveGames(@Query() data: GameStatusDto) {
 		return this.gameService.getActiveGames(data.status);
 	}
