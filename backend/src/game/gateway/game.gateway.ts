@@ -15,6 +15,7 @@ import { Logger } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
 import { UserService } from '../../user/user.service';
 import { UserStatus } from '@prisma/client';
+import { playerInfo } from '../../socket/SocketInterface';
 
 @WebSocketGateway({ namespace: 'game', cors: { origin: '*' } })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -66,7 +67,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			const isWatcher = this.socketService.gameIdToWatcherId.get(gameId)
 				? this.socketService.gameIdToWatcherId.get(gameId).includes(convertedUserId)
 				: false;
-			const game = await this.gameService.games.find(g => g.data.objectId == gameId);
+			const game = this.gameService.games.find(g => g.data.objectId == gameId);
 
 			if (isPlayer) {
 				if (game) {
@@ -97,7 +98,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	@SubscribeMessage('entry_game')
-	async handleEnterGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+	async handleEnterGame(@ConnectedSocket() client: Socket, @MessageBody() body: playerInfo) {
 		const gameId = body.objectId;
 		const userId = client.data.userId;
 
@@ -146,7 +147,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	@SubscribeMessage('match_making_game')
-	async handleMatchMakingGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+	async handleMatchMakingGame(@ConnectedSocket() client: Socket, @MessageBody() body: playerInfo) {
 		const userId = client.data.userId;
 		const player = this.playerService.getPlayer(userId);
 		const game = await this.gameService.matchMakingGame(player, body);

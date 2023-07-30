@@ -91,9 +91,7 @@ export class GameClass {
 	}
 
 	emitStartGame() {
-		this.gameService.updateGame(this.data.objectId, {
-			status: GameStatus.IN_PROGESS,
-		});
+		this.gameService.updateGameStatus(this.data.objectId, GameStatus.IN_PROGESS);
 		this.player1.socket.emitToGame('start_game', {
 			player: 1,
 			status: Status.Starting,
