@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserBuySkinDto, UserDto, UserUpdateSkinTableDto, UserUpdateStatsDto } from './dto';
-import { Prisma, UserStatus } from '@prisma/client';
+import { Prisma, User, UserStatus } from '@prisma/client';
 import { Server } from 'socket.io';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class UserService {
 		return this.server;
 	}
 
-	async editUser(userId: number, dto: UserDto) {
+	async editUser(userId: number, dto: UserDto): Promise<User> {
 		try {
 			let user = await this.prisma.user.findUnique({
 				where: {
@@ -73,7 +73,7 @@ export class UserService {
 		}
 	}
 
-	async status(userId: number, status: UserStatus) {
+	async status(userId: number, status: UserStatus): Promise<User> {
 		console.log('status: ', userId, status);
 		if (!userId || !status) {
 			return;
@@ -124,7 +124,7 @@ export class UserService {
 		}
 	}
 
-	async buySkin(userId: number, dto: UserBuySkinDto) {
+	async buySkin(userId: number, dto: UserBuySkinDto): Promise<User> {
 		try {
 			const user = await this.prisma.user.findUnique({
 				where: {
@@ -179,7 +179,7 @@ export class UserService {
 		}
 	}
 
-	async updateSkinTable(userId: number, dto: UserUpdateSkinTableDto) {
+	async updateSkinTable(userId: number, dto: UserUpdateSkinTableDto): Promise<User> {
 		try {
 			const user = await this.prisma.user.findUnique({
 				where: {
@@ -227,13 +227,13 @@ export class UserService {
 		}
 	}
 
-	async getUsers() {
+	async getUsers(): Promise<User[]> {
 		const users = this.prisma.user.findMany();
 
 		return users;
 	}
 
-	async getProfile(userId: number, personId: number) {
+	async getProfile(userId: number, personId: number): Promise<User> {
 		try {
 			const user = await this.prisma.user.findUnique({
 				where: {
@@ -258,7 +258,7 @@ export class UserService {
 		}
 	}
 
-	async updateStats(userId: number, dto: UserUpdateStatsDto) {
+	async updateStats(userId: number, dto: UserUpdateStatsDto): Promise<User> {
 		try {
 			const user = await this.prisma.user.findUnique({
 				where: {
