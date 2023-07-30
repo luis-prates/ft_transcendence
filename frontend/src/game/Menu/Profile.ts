@@ -17,6 +17,7 @@ import { ConfirmButton, STATUS_CONFIRM } from "./ConfirmButton";
 import Router from "@/router";
 import { socketClass } from "@/socket/SocketClass";
 import type { Socket } from "socket.io-client";
+import { chatStore, type channel } from "@/stores/chatStore";
 
 export class Profile {
 	private _menu = new Menu({ layer: "Global", isFocus: true });
@@ -300,9 +301,16 @@ export class Profile {
         		});
 			}
 			else if (type == "send_message") {
-				//TODO DATABASE 
-				//Send Private Message
-			  	//TODO send priv message
+				chatStore().createChannel({
+					objectId: 1,
+					name: this.user.nickname,
+					avatar: this.user.image,
+					password: undefined,
+					messages: [], // initialize with an empty array of messages
+					users: [this.user.id], // initialize with an empty array of users
+					type: "DM"
+				} as channel);
+				
 			}
 			else if (type == "block") {
 

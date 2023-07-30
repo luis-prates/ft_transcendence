@@ -26,6 +26,7 @@ import { userStore, type Block, type Friendship } from "@/stores/userStore";
 import ChatComponent from "@/components/chat/ChatComponent.vue";
 import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import Router from "@/router";
+import { chatStore } from "@/stores/chatStore";
 
 const store = userStore();
 const user = userStore().user;
@@ -132,6 +133,20 @@ onMounted(() => {
       user.friends = user.friends.filter((friend: Friendship) => friend.id != event.id);
       //console.log("Delete Friend!", event);
 		});
+
+
+    //Delete Friend
+    socket.on("updateStatus",  (event: any) => {
+      console.log("ENTROUUU", event)
+
+      chatStore().channels.forEach(channel => {
+        const userIndex = channel.users.findIndex(user => user.id == event.id);
+        if (userIndex !== -1) {
+          channel.users[userIndex].status = event.status;
+          console.log("new Status");
+        }
+      });
+    });
 });
 
 onUnmounted(() => {

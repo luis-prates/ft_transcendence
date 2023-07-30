@@ -212,7 +212,7 @@ describe('Game', () => {
 				.withHeaders({
 					Authorization: 'Bearer $S{userAt1}',
 				})
-				.withBody({
+				.withQueryParams({
 					status: [GameStatus.FINISHED],
 				})
 				.expectStatus(403)
@@ -226,7 +226,7 @@ describe('Game', () => {
 				.withHeaders({
 					Authorization: 'Bearer $S{userAt1}',
 				})
-				.withBody({
+				.withQueryParams({
 					status: [GameStatus.NOT_STARTED, GameStatus.FINISHED],
 				})
 				.expectStatus(403)
@@ -240,7 +240,7 @@ describe('Game', () => {
 				.withHeaders({
 					Authorization: 'Bearer $S{userAt1}',
 				})
-				.withBody({
+				.withQueryParams({
 					status: [GameStatus.NOT_STARTED],
 				})
 				.expectStatus(200)
@@ -254,7 +254,7 @@ describe('Game', () => {
 				.withHeaders({
 					Authorization: 'Bearer $S{userAt1}',
 				})
-				.withBody({
+				.withQueryParams({
 					status: [GameStatus.NOT_STARTED, GameStatus.IN_PROGESS],
 				})
 				.expectStatus(200)

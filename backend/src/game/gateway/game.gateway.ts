@@ -13,7 +13,6 @@ import { GameService } from '../game.service';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
-import { GameClass } from '../ping_pong/GamePong';
 import { UserService } from '../../user/user.service';
 import { UserStatus } from '@prisma/client';
 
@@ -58,15 +57,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		player.gameSocket = client;
 		client.data.userId = userId;
-		this.userService.status(userId, UserStatus.IN_GAME);
 	}
 
 	async handleDisconnect(@ConnectedSocket() client: Socket) {
 		console.log(client.data);
-		//const userId = this.playerService.getUserIdFromGameSocket(client);
 		const userId = client.data.userId;
 		this.logger.log(`Client disconnected on /game namespace: ${userId}`);
-		const player = this.playerService.getPlayer(userId);
 		//! needs to be changed to check if player is in game
 		//! perhaps add game id to player object?
 		if (client.data.gameId) {
@@ -122,6 +118,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const gameId = body.objectId;
 		const userId = client.data.userId;
 		client.data.gameId = gameId;
+		this.userService.status(userId, UserStatus.IN_GAME);
+
 		const isInTheGamePlayer = this.socketService.gameIdToPlayerId.get(gameId)
 			? this.socketService.gameIdToPlayerId.get(gameId).includes(userId)
 			: false;

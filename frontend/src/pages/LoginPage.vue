@@ -2,6 +2,7 @@
 	<!-- Modal -->
 	<CustomModal @closeModal="modalClosed" v-model:message="customMessage" :type="modalType" ref="customModalRef" />
 	<TwoFactorPrompt ref="twoFactorPromptRef" @submit="twoFactorSubmit" />
+	<FirstLoginPrompt ref="firstLoginPromptRef" v-model:type="firstLoginType" :prefilledCode="prefilledCode" :errorMessage="invalidPatch" @submit="firstLoginSubmit" />
 	<div class="loginElement" href>
 		<span class="borderLine"></span>
 		<form>
@@ -39,10 +40,12 @@ import type { Socket } from "socket.io-client";
 import CustomModal from '@/components/utils/CustomModal.vue'
 import axios from "axios";
 import TwoFactorPrompt from '@/components/login/TwoFactorPrompt.vue'
+import FirstLoginPrompt from "@/components/login/FirstLoginPrompt.vue";
 
 const props = defineProps({
 	token: String,
 	error: String,
+	firstTime: Boolean,
 });
 
 const objectId = ref("");
@@ -50,7 +53,11 @@ const objectId = ref("");
 const customMessage = ref('');
 const customModalRef = ref<InstanceType<typeof CustomModal> | null>(null);
 const twoFactorPromptRef = ref<InstanceType<typeof TwoFactorPrompt> | null>(null);
+const firstLoginPromptRef = ref<InstanceType<typeof FirstLoginPrompt> | null>(null);
 const modalType = ref('');
+const firstLoginType = ref('');
+const prefilledCode = ref('');
+const invalidPatch = ref('');
 const resolveCondition = ref(false);
 const modalClosed = () => {
 	if(resolveCondition.value) {
@@ -68,6 +75,28 @@ let twoFactorSubmit = async (code: string) => {
 	const isValid = await twoFactorPrompt(code.toString());
 	resolveTwoFactorPrompt(isValid);
 };
+
+let resolveFirstLoginPrompt: (value: string) => void;
+
+let resolveFirstLoginPromptImage: (value: string) => void;
+
+let firstLoginSubmit = async (data: any) => {
+	if (data.type === "nickname") {
+		resolveFirstLoginPrompt(data.content);
+	}
+	else if (data.type === "picture") {
+		resolveFirstLoginPromptImage(data.content);
+	}
+}
+
+function encodeImageToBase64(filePath: string) {
+  return fetch(filePath)
+    .then(response => response.arrayBuffer())
+    .then(buffer => {
+      const base64String = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      return `data:image/png;base64,${base64String}`;
+    });
+}
 
 let onModalClose: (value: boolean) => void;
 
@@ -96,6 +125,42 @@ async function handleTwoFA() {
 	return isTwoFASuccessful;
 }
 
+async function handleFirstLogin() {
+	try {
+		let updateSuccess = false;
+		while (!updateSuccess) {
+			let newNickname = await new Promise<string>((resolve) => {
+				resolveFirstLoginPrompt = resolve;
+				showFirstLoginModal(store.user.nickname, "nickname");
+			});
+			store.user.nickname = newNickname;
+			updateSuccess = await store.firstTimePrompt();
+			if (!updateSuccess) {
+				invalidPatch.value = "Nickname is already taken. Please try again.";
+				await sleep(1000);
+			}
+		}
+		invalidPatch.value = "";
+		await sleep(1000);
+		updateSuccess = false;
+		while (!updateSuccess) {
+			let newImage = await new Promise<string>((resolve) => {
+				resolveFirstLoginPromptImage = resolve;
+				showFirstLoginModal(store.user.image, "picture");
+			});
+			store.user.image = newImage;
+			updateSuccess = await store.firstTimePrompt();
+			if (!updateSuccess) {
+				invalidPatch.value = "Image failed to upload. Please try again.";
+				await sleep(1000);
+			}
+		}
+		invalidPatch.value = "";
+	} catch (error) {
+		console.log(error);
+	}
+}
+
 function tes(event: any) {
 	event.preventDefault();
 	console.log("objectId.value in nessage box 1: ", objectId.value);
@@ -104,14 +169,26 @@ function tes(event: any) {
 	store.user.nickname = "user_" + objectId.value;
 	store.user.money = 0;
 	store.user.email = "user_" + objectId.value + "@gmail.com";
+	encodeImageToBase64('images/pingpong/avatar_default.jpg')
+		.then(base64Image => {
+			store.user.image = base64Image;
+		})
+		.catch(error => {
+			console.error('Ocorreu um erro ao codificar a imagem:', error);
+	  	});
+
 	store
         .loginTest()
-        .then(async (isTwoFAEnabled) => {
-			if (isTwoFAEnabled) {
+        .then(async (response) => {
+			if (response.isTwoFAEnabled) {
 				const twoFASuccess = await handleTwoFA();
 				if (!twoFASuccess) {
 					return;
 				}
+			}
+			if (response.firstTime === true) {
+				await handleFirstLogin();
+				await sleep(1000);
 			}
 
 			showModal("Login Success", "success");
@@ -151,13 +228,17 @@ onMounted(() => {
 	if (props.token || store.user.isLogin)
 	{
 		store
-		.login(props.token)
-		.then(async (isTwoFAEnabled) => {
-			if (isTwoFAEnabled) {
+		.login(props.token).then(async (user) => {
+
+			if (user?.isTwoFAEnabled) {
 				const twoFASuccess = await handleTwoFA();
 				if (!twoFASuccess) {
 					return;
 				}
+			}
+			if (props.firstTime === true) {
+				await handleFirstLogin();
+				await sleep(1000);
 			}
 
 			showModal("Login Success", "success");
@@ -178,9 +259,6 @@ onMounted(() => {
 			Router.setRoute(Router.ROUTE_ALL);
 			Router.push("/");
 			console.log(store.user.isLogin);
-		})
-		.catch((err) => {
-			console.log(err);
 		});
 	}
 });
@@ -219,6 +297,13 @@ const showModal = (message: string, type: string) => {
 	customMessage.value = message;
 	modalType.value = type;
 	(customModalRef.value as typeof CustomModal | null)?.showModal();
+};
+
+const showFirstLoginModal = (code: string, type: string) => {
+	console.log(`code: ${code}, type: ${type}`);
+	prefilledCode.value = code;
+	firstLoginType.value = type;
+	(firstLoginPromptRef.value as typeof FirstLoginPrompt | null)?.showModal();
 };
 
 function hideModal() {

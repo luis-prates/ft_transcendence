@@ -6,9 +6,11 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 import { FortyTwoStrategy } from './strategy/42.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { SessionSerializer } from './serializer/session.serializer';
+import { ChatService } from '../chat/chat.service';
+import { ChatModule } from '../chat/chat.module';
 
 @Module({
-	imports: [JwtModule.register({}), PassportModule],
+	imports: [JwtModule.register({}), PassportModule, ChatModule],
 	controllers: [AuthController],
 	providers: [AuthService, JwtStrategy, FortyTwoStrategy, SessionSerializer],
 })

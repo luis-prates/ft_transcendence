@@ -11,5 +11,7 @@
 	margin: 0;
 	background-color: #42434e;
 	background: url('/src/assets/images/lobby/layer_0.png');
+	background-position-x: 41.5%;
+    background-position-y: 9.75%;
 	overflow: hidden;
 }

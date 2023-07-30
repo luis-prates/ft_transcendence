@@ -87,6 +87,7 @@ export interface User {
   friends: any;
   friendsRequests: Friendship[];
   block: Block[];
+  isTwoFAEnabled: boolean;
 }
 
 export const userStore = defineStore("user", function () {
@@ -136,6 +137,7 @@ export const userStore = defineStore("user", function () {
   async function login(authorizationCode: string | undefined) {
     if (user.isLogin || authorizationCode === undefined) return;
     user.access_token_server = authorizationCode;
+    user.isLogin = false;
 
     await axios
       .get(env.BACKEND_SERVER_URL + "/users/me", {
@@ -166,24 +168,43 @@ export const userStore = defineStore("user", function () {
         getBlockedUsers();
         getBlockedBy();
         getUserGames(user.id);
+		user.isLogin = true;
       })
       .catch(function (error) {
         console.error(error);
         user.isLogin = false;
       });
-    user.isLogin = true;
     // .finally(() => window.location.href = window.location.origin);
-    return user.isTwoFAEnabled;
+    return user;
+  }
+
+  async function firstTimePrompt() {
+    let updateSuccess = false;
+    try {
+      await axios.patch(
+        env.BACKEND_SERVER_URL + "/users/update_profile",
+        {
+          nickname: user.nickname,
+          image: user.image,
+        },
+        {
+          headers: {
+            Authorization: "Bearer " + user.access_token_server,
+          },
+        }
+      );
+      updateSuccess = true;
+    } catch (error) {
+      console.error(error);
+      updateSuccess = false;
+    }
+    return updateSuccess;
   }
 
   async function loginTest() {
-    console.log("env.BACKEND_SERVER_URL", env.BACKEND_SERVER_URL);
-    console.log("process.env.BACKEND_SERVER_URL", process.env.VUE_APP_BACKEND_SERVER_URL);
-	console.log(`GAME: ${env.GAME_SERVER_URL}`);
-	console.log(`import.meta.env.VITE_GAME_SERVER_URL: ${import.meta.env.VITE_GAME_SERVER_URL}`);
+	let isFirstTime = false;
     // if (user.isLogin) return;
-    user.isLogin = false;
-	await axios
+    await axios
       .post(env.BACKEND_SERVER_URL + "/auth/signin", user)
 
       // axios.request(options)
@@ -208,6 +229,7 @@ export const userStore = defineStore("user", function () {
         user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
         user.infoPong.skin.paddles = response.data.dto.paddleSkinsOwned;
         user.isTwoFAEnabled = response.data.dto.isTwoFAEnabled;
+		isFirstTime = response.data.firstTime;
         getFriends();
         getFriendRequests();
         getBlockedUsers();
@@ -221,7 +243,7 @@ export const userStore = defineStore("user", function () {
       });
     console.log("USER: ", user);
     // .finally(() => window.location.href = window.location.origin);
-    return user.isTwoFAEnabled;
+    return { firstTime: isFirstTime, isTwoFAEnabled: user.isTwoFAEnabled};
   }
 
   async function updateProfile() {
@@ -659,6 +681,59 @@ export const userStore = defineStore("user", function () {
       });
   }
 
+  async function twoFAGenerate(): Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .post(env.BACKEND_SERVER_URL + "/auth/2fa/generate", undefined, options)
+      .then(function (response: any) {
+        console.log(`2Fa: ${response.data}`);
+        return response.data.responseObj;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
+
+  async function twoFATurnOn(twoFactorCode: string): Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+    console.log("code:", twoFactorCode);
+    return await axios
+      .post(env.BACKEND_SERVER_URL + "/auth/2fa/turn-on", { twoFACode: twoFactorCode }, options)
+      .then(function (response: any) {
+        console.log(`2Fa ON: ${response.data}`);
+        user.isTwoFAEnabled = true;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
+
+  async function twoFATurnOff(twoFactorCode: string): Promise<string> {
+    const options = {
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+
+    return await axios
+      .post(env.BACKEND_SERVER_URL + "/auth/2fa/turn-off", { twoFACode: twoFactorCode }, options)
+      .then(function (response: any) {
+        console.log(`2Fa OFF: ${response.data}`);
+        user.isTwoFAEnabled = false;
+        return response.data;
+      })
+      .catch(function (error) {
+        console.error(error);
+        throw new Error(error);
+      });
+  }
+
   return {
     user,
     login,
@@ -694,5 +769,12 @@ export const userStore = defineStore("user", function () {
     getGames,
     getLeaderboard,
     createGame,
+
+    //TwoFactor
+    twoFAGenerate,
+    twoFATurnOn,
+    twoFATurnOff,
+
+	firstTimePrompt,
   };
 });

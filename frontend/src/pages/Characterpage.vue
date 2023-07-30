@@ -34,5 +34,6 @@ import { onMounted, ref } from "vue";
   /* width: 500px;
   height: 500px; */
   z-index: 1;
+  transform: translateZ(0);
 }
 </style>
