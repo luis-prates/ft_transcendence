@@ -35,7 +35,7 @@ export class GameClass {
 	watchers: Player[] = [];
 	data: gameRequest;
 	bot = false;
-	onRemove: Function = () => {};
+	onRemove: () => void;
 
 	private readonly FRAME_RATE: number = 60; // desired frame rate, e.g., 60 FPS
 	private readonly FRAME_DURATION: number = 1000 / this.FRAME_RATE; // duration of a frame in ms
@@ -46,7 +46,7 @@ export class GameClass {
 	private gameService: GameService;
 	private userService: UserService;
 
-	constructor(gameResquest: gameRequest, gameService: GameService, userService: UserService, onRemove: Function) {
+	constructor(gameResquest: gameRequest, gameService: GameService, userService: UserService, onRemove: () => void) {
 		this.data = gameResquest;
 		this.maxPoint = gameResquest.maxScore;
 		this.ball = new Ball(this);

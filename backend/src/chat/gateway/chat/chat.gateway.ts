@@ -239,7 +239,7 @@ export class ChatGateway implements OnGatewayConnection {
 	}
 
 	// Example of request: ws://localhost:3001/chat?userId=1
-	async handleConnection(client: Socket, ...args: any[]) {
+	async handleConnection(client: Socket) {
 		// Extract variables from the handshake
 		const { query } = client.handshake;
 

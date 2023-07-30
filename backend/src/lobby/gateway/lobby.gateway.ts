@@ -10,7 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { LobbyService } from '../lobby.service';
-import { Logger, UnauthorizedException } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { PlayerService } from '../../player/player.service';
 import { GameService } from '../../game/game.service';
 import { UserService } from '../../user/user.service';
@@ -30,26 +30,12 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		private userService: UserService,
 	) {}
 
-	afterInit(server: Server) {
+	afterInit() {
 		this.logger.log('LobbyGateway initialized');
-		server.use((socket: Socket, next) => {
-			const token = socket.handshake.query.token;
-			// TODO: check if token is valid
-			if (true) {
-				return next();
-			}
-
-			return next(new UnauthorizedException('Authentication error'));
-		});
 		this.userService.setServer(this.server);
 	}
 
-	isValidConnection(token: string): boolean {
-		// TODO: check if token is valid
-		return true;
-	}
-
-	async handleConnection(@ConnectedSocket() client: Socket, ...args: any[]) {
+	async handleConnection(@ConnectedSocket() client: Socket) {
 		this.logger.debug(`Client connected: ${client.id} to lobby namespace`);
 		//TODO: do the chat setup here?
 		//TODO: add to global chat room, etc.

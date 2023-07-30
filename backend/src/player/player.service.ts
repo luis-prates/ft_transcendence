@@ -104,7 +104,7 @@ export class PlayerService {
 
 	hasPlayerFromObjectId(objectId: number): boolean {
 		// find objectId in sockets map
-		for (const [key, value] of this.sockets.entries()) {
+		for (const [, value] of this.sockets.entries()) {
 			if (value.data.objectId == objectId) {
 				return true;
 			}
