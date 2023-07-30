@@ -105,3 +105,8 @@ export class GameEndDto {
 	@Type(() => GameStatsDto)
 	gameStats: GameStatsDto;
 }
+
+export class GameStatusDto {
+	@IsEnum(GameStatus)
+	status: GameStatus;
+}

@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { GameStatus, Prisma, UserStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { GameDto, GameEndDto } from './dto';
+import { GameDto, GameEndDto, GameStatusDto } from './dto';
 import { EventEmitter } from 'events';
 import { GameClass, Status, infoBot } from './ping_pong/GamePong';
 import { playerInfo } from '../socket/SocketInterface';
@@ -149,18 +149,16 @@ export class GameService {
 		}
 	}
 
-	async getActiveGames(status: GameStatus[]) {
+	async getActiveGames(status: GameStatus) {
 		if (!status) {
 			throw new ForbiddenException('Cannot get games without status.');
 		}
-		if (status.includes(GameStatus.FINISHED)) {
+		if (status == GameStatus.FINISHED) {
 			throw new ForbiddenException('Cannot get finished games.');
 		}
 		return this.prisma.game.findMany({
 			where: {
-				status: {
-					in: status,
-				},
+				status: status,
 			},
 			include: {
 				players: {

@@ -10,12 +10,13 @@ import {
 	Post,
 	Query,
 	UseGuards,
+	UsePipes,
+	ValidationPipe,
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
-import { GameDto, GameEndDto } from './dto';
+import { GameDto, GameEndDto, GameStatusDto } from './dto';
 import { playerInfo } from '../socket/SocketInterface';
-import { GameStatus } from '@prisma/client';
 
 @UseGuards(JwtGuard)
 @Controller('game')
@@ -29,8 +30,9 @@ export class GameController {
 	}
 
 	@Get('active')
-	getActiveGames(@Query('status') status: GameStatus[]) {
-		return this.gameService.getActiveGames(status);
+	@UsePipes(new ValidationPipe({ transform: true }))
+	getActiveGames(@Query() data: GameStatusDto) {
+		return this.gameService.getActiveGames(data.status);
 	}
 
 	@Get('leaderboard')
