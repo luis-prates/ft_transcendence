@@ -10,13 +10,10 @@ import {
 	Post,
 	Query,
 	UseGuards,
-	UsePipes,
-	ValidationPipe,
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
-import { GameDto, GameEndDto, GameStatusDto } from './dto';
-import { playerInfo } from '../socket/SocketInterface';
+import { GameDto, GameEndDto, GameIdDto, GameStatusDto } from './dto';
 
 @UseGuards(JwtGuard)
 @Controller('game')
@@ -41,7 +38,7 @@ export class GameController {
 
 	@HttpCode(200)
 	@Patch('add/:gameId')
-	addGameUser(@Param('gameId', new ParseUUIDPipe()) gameId: string, @Body() body: playerInfo) {
+	addGameUser(@Param('gameId', new ParseUUIDPipe()) gameId: string, @Body() body: GameIdDto) {
 		return this.gameService.addGameUser(gameId, body);
 	}
 

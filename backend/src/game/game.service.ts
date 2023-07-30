@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { GameStatus, Prisma, UserStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { GameDto, GameEndDto, GameStatusDto } from './dto';
+import { GameDto, GameEndDto, GameIdDto } from './dto';
 import { EventEmitter } from 'events';
 import { GameClass, Status, infoBot } from './ping_pong/GamePong';
 import { playerInfo } from '../socket/SocketInterface';
@@ -322,7 +322,7 @@ export class GameService {
 	// will enable the start game button
 	// when the client clicks the start game button, it will send a request
 	// to the backend to call the start game function, which could be an event
-	async addGameUser(gameId: string, body: playerInfo) {
+	async addGameUser(gameId: string, body: GameIdDto) {
 		try {
 			const game = await this.prisma.game.update({
 				where: {
