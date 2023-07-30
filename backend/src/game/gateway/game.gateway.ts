@@ -115,7 +115,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			return;
 		}
 		const player = this.playerService.getPlayer(userId);
-		const isPlayer = await this.gameService.enterGame(player, body);
+		let isPlayer;
+		try {
+			isPlayer = await this.gameService.enterGame(player, body);
+		} catch (error) {
+			client.emit('error', error.message);
+		}
 
 		//TODO Associar o player a um jogo
 		//this.socketService.playerIdToGameId.set(userId, gameId);

@@ -45,6 +45,12 @@ onMounted(function () {
 		}
 	});
 	socket = socketClass.getGameSocket();
+	socket.on("error", (errorMessage: string) => {
+		if (errorMessage.includes("Game does not exist")) {
+			Router.push(`/`);
+			socket.disconnect();
+		}
+	})
   socket.emit("entry_game", {
     objectId: props.objectId,
 	  userId: user.id, 
@@ -270,6 +276,7 @@ onMounted(function () {
     socket.off("game_sound");
     socket.off("game_view");
     socket.off("end_game");
+	socket.disconnect();
     window.removeEventListener('resize', updateButtonSizeAndPosition);
     button.removeEventListener('click', leaveTheGame);
   });
