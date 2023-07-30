@@ -5,8 +5,8 @@ import { Player, Map, Game } from "@/game";
 export class Camera {
   x = 0;
   y = 0;
-  private _width = undefined;
-  private _height = undefined;
+  private _width: number | undefined = undefined;
+  private _height: number | undefined = undefined;
   private map: Map;
   private player: GameObject;
 
@@ -58,7 +58,7 @@ export class Camera {
     for (let gameObjec of gameObjecs) {
       gameObjec.draw(context);
     }
-	this.map.drawLayer_3(context);
+    this.map.drawLayer_3(context);
     Game.instance.drawMenuLocal(context);
     context.restore();
   }
