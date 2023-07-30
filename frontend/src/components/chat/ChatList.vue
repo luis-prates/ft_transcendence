@@ -45,8 +45,12 @@
         <!-- Users inside the chat selected -->
         <ul class="contacts">
           <div v-if="imAdmin" class="chat_filter">
-            <button @click="setShowUsers(true)">Users</button>
-            <button @click="setShowUsers(false)">Blocked</button>
+            <button @click="setShowUsers(true)"  class="chat_filter_button">
+              <img class="chat_filter_img" src="src/assets/chat/userslist.png" title="Users" />
+            </button>
+            <button @click="setShowUsers(false)"  class="chat_filter_button">
+              <img class="chat_filter_img" src="src/assets/chat/blacklist.png" title="Users Banned" />
+            </button>
           </div>
           <div v-if="showUsers">
             <li v-for="(user, id) in usersFilters" :key="id">
