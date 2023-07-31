@@ -218,7 +218,8 @@ const handleContextMenu = (e: any, channel: channel)  => {
   ContextMenu.showContextMenu({
     x: e.x,
     y: e.y,
-    items: items.filter(e => (isAdmin && e.label == "admin") ||  e.label != "admin")
+    items: items.filter(e => (isAdmin && e.label == "admin") ||  e.label != "admin"),
+    customClass: "custom-context-menu",
   });
   store.selectChannel(channel);
 };
@@ -350,24 +351,6 @@ const updateCreateChannel = (newStatus: boolean) => {
   instance?.emit("update-create-channel", newStatus);
 };
 
-//Testing the number of cahnnels created//Remover depois do backend devolver o objectId do channel em questao
-// let maxObjectId = 0;
-
-// //Buttom + addChannel
-// function addChannel() {
-//   maxObjectId++;
-//   const newChannel: channel = {
-//     objectId: maxObjectId,
-//     name: "New Channel",
-//     avatar: "",
-//     password: "",
-//     messages: [], // initialize with an empty array of messages
-//     users: [] // initialize with an empty array of users
-//   };
-
-//   store.addChannel(newChannel);
-// }
-
 // Props declaration
 const props = defineProps({
   channelStatus: Boolean,
@@ -450,7 +433,7 @@ defineExpose({
 
 .contacts_card {
   flex: 1;
-  max-height: 100%; /* Set the desired maximum height for the contacts card */
+  max-height: 100%;
   overflow-y: auto;
 }
 
@@ -461,4 +444,16 @@ defineExpose({
     width: 128%;
     top: calc(0px - var(--scrollY, 0px));
 }
+
+.custom-context-menu {
+  background-color: #000000;
+  color: #ffffff;
+  cursor: pointer; 
+}
+
+.custom-context-menu .label {
+  color: #FFFFFF;
+}
+.custom-context-menu :hover {
+background-color: rgb(57, 57, 57);}
 </style>
