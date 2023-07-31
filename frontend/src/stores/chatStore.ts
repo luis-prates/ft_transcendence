@@ -55,7 +55,7 @@ export const chatStore = defineStore("chat", () => {
       messagesLoaded: false,
       banList: newChannel.banList,
     };
-    const channelSelected = channels.find((c) => {
+    const channelSelected = channels.find((c: channel) => {
       return c.objectId === channel.objectId;
     });
     if (!channelSelected) {

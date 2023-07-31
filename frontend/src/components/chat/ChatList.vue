@@ -156,7 +156,16 @@ function getFilteredChannels()
 {
   if (isChatFilterType.value == "dm")
   {
-    channelsFilters.value = store.channels.filter((channel: channel) => channel.type == "DM" && channel.users.some((user) => user.id === userStore().user.id));    
+    channelsFilters.value = store.channels.filter((channel: channel) => channel.type == "DM" && channel.users.some((user) => user.id === userStore().user.id));
+    channelsFilters.value.forEach((channel) => {
+      // Verifica se o canal tem algum usuário com o nickname igual ao do usuário atual
+      const userInChannel = channel.users.find((user) => user.id != userStore().user.id);
+      if (userInChannel)
+      {
+        channel.name = userInChannel.nickname;      
+        channel.avatar = userInChannel.image;
+      }
+    });
   }
   else if (isChatFilterType.value == "inside") //need verific i'm inside
   {
