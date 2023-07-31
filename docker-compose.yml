@@ -5,6 +5,12 @@ services:
     build: ./frontend # path to dockerfile
     ports: # Port binding to host from docker container
       - "80:80" # Bind port 80 of host to 80 of container
+    environment:
+      - BACKEND_SERVER_URL
+      - LOBBY_SERVER_URL
+      - GAME_SERVER_URL
+      - CHAT_SERVER_URL
+      - REDIRECT_URI_42_API
     container_name: frontend-docker
     restart: always # What to do if container crashes
     depends_on:
@@ -31,11 +37,11 @@ services:
     container_name: backend-docker
     restart: always
     depends_on:
-      - dev-db
+      - db
     networks:
       - transcendence
   # Create database container
-  dev-db:
+  db:
     image: postgres:alpine
     container_name: ${POSTGRES_CONTAINER_NAME}
     expose:
