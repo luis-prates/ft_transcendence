@@ -6,7 +6,7 @@
       </div>
       <div class="user_info">
         <span>{{ props.channel.name }}</span>
-        <p>{{ props.channel.users.length + " Users"}}</p>
+        <p >{{ getSubLabel() }}</p>
       </div>
     </div>
 </template>
@@ -19,6 +19,14 @@ const user = userStore();
 
 const props = defineProps<{ channel: channel }>();
 const defaultAvatar = "src/assets/chat/chat_avatar.png";
+
+function getSubLabel() : string {
+
+  if (props.channel.type !== 'DM')
+    return (props.channel.users.length + " Users");
+  else
+    return props.channel.messages.length > 0 ? props.channel.messages.length + " Messages" : "";
+}
 
 function getImage() {
   return props.channel.avatar !== '' ? props.channel.avatar : defaultAvatar;
