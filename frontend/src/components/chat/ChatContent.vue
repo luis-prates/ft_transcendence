@@ -95,6 +95,7 @@ import { userStore } from "@/stores/userStore";
 import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
 import { onMounted, onUnmounted, ref } from "vue";
+import chatDefaultAvatar from "@/assets/chat/chat_avatar.png";
 
 const store = chatStore();
 const user = userStore();
@@ -104,7 +105,7 @@ socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
 console.log("Socket criado na instancia do componente: ", chatSocket);
 
-let defaultAvatar = ref("src/assets/chat/chat_avatar.png");
+let defaultAvatar = ref(chatDefaultAvatar);
 
 //Check if the user is the owner of channel
 const imOwner = () => {
@@ -161,7 +162,7 @@ function editChannel() {
   if (selected.value?.avatar != "")
     defaultAvatar.value = selected.value?.avatar as any;
   else
-    defaultAvatar.value = "src/assets/chat/chat_avatar.png";
+    defaultAvatar.value = chatDefaultAvatar;
 }
 
 // Emit event from the child component
@@ -171,7 +172,7 @@ const toggleStatus = () => {
   channelName.value = '';
   channelPassword.value = '';
   channelType.value = 'PUBLIC';
-  defaultAvatar.value = "src/assets/chat/chat_avatar.png";
+  defaultAvatar.value = chatDefaultAvatar;
 };
 
 const text = ref();

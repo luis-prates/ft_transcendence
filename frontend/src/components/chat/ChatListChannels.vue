@@ -16,11 +16,13 @@
 <script setup lang="ts">
 import { type channel } from "@/stores/chatStore";
 import { userStore } from "@/stores/userStore";
+import defaultAvatar from "@/assets/chat/chat_avatar.png";
+
 
 const user = userStore();
 
 const props = defineProps<{ channel: channel }>();
-const defaultAvatar = "src/assets/chat/chat_avatar.png";
+// const defaultAvatar = "src/assets/chat/chat_avatar.png";
 
 const isBlocked = () => {
   const foundUser = props.channel.users.find((users) => users.id === user.user.id);

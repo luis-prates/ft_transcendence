@@ -41,6 +41,7 @@ import CustomModal from '@/components/utils/CustomModal.vue'
 import axios from "axios";
 import TwoFactorPrompt from '@/components/login/TwoFactorPrompt.vue'
 import FirstLoginPrompt from "@/components/login/FirstLoginPrompt.vue";
+import userDefaultAvatar from '@/assets/images/pingpong/avatar_default.jpg'
 
 const props = defineProps({
 	token: String,
@@ -169,7 +170,7 @@ function tes(event: any) {
 	store.user.nickname = "user_" + objectId.value;
 	store.user.money = 0;
 	store.user.email = "user_" + objectId.value + "@gmail.com";
-	encodeImageToBase64('images/pingpong/avatar_default.jpg')
+	encodeImageToBase64(userDefaultAvatar)
 		.then(base64Image => {
 			store.user.image = base64Image;
 		})

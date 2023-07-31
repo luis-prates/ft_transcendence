@@ -33,8 +33,9 @@ import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
 import { ref } from "vue";
 import { userStore } from "@/stores/userStore";
+import userDefaultAvatar from "@/assets/chat/avatar.png";
 
-const defaultAvatar = "src/assets/chat/avatar.png";
+const defaultAvatar = userDefaultAvatar;
 
 function getImage() {
   return props.message.user.image ? props.message.user.image : defaultAvatar;
