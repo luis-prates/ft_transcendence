@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Player } from './Player';
 import { PrismaService } from '../prisma/prisma.service';
+import * as fs from 'fs';
 
 @Injectable()
 export class PlayerService {
@@ -28,7 +29,7 @@ export class PlayerService {
 								name: 'Marvin',
 								nickname: 'Marvin',
 								email: 'marvin@marvin.com',
-								image: 'src/assets/images/pingpong/marvin.jpg',
+								image: this.convertFileToBase64('./images/marvin.jpg'),
 								hash: 'asdgasdgasdg',
 							},
 						})
@@ -175,5 +176,10 @@ export class PlayerService {
 		// this.logger.debug('player: ' + JSON.stringify(player));
 		// this.logger.debug('socket: ' + JSON.stringify(socket));
 		return player;
+	}
+
+	private convertFileToBase64(file: string): string {
+		const fileContent = fs.readFileSync(file, { encoding: 'base64' });
+		return fileContent;
 	}
 }
