@@ -196,29 +196,34 @@ const selectChannel = (channel: channel) => {
 }
 
 const handleContextMenu = (e: any, channel: channel)  => {
-  const isAdmin = false;
+  const isAdmin = (channel.users && channel.users.some((u: any)=> u.id === userStore().user.id && u.isAdmin));
+  store.selected = channel;
   const items = [
       { 
-        label: "Open", 
+        label: store.isUserInSelectedChannel(userStore().user.id) ? "Open" : "Join", 
         onClick: () => openChannel(channel)
       },
-      { 
-        label: "admin", 
-        children: [
-          { label: "Item 1", onClick: () => {
-            
-          } },
-          { label: "Item 2" },
-          { label: "Item 3" },
-          { label: "Item 3" },
-          { label: "" },
+      ...(store.isUserInSelectedChannel(userStore().user.id) && (channel.ownerId != userStore().user.id)
+      ? [
+          {
+            label: "Leave",
+            onClick: () => store.leaveChannel(channel.objectId),
+          },
         ]
-      },
+      : []),
+      ...((channel.ownerId == userStore().user.id) 
+      ? [
+          {
+            label: "Delete", 
+            onClick: () => console.log("Vai deletar channel!"),
+          }
+        ]
+      : [])
     ]
   ContextMenu.showContextMenu({
     x: e.x,
     y: e.y,
-    items: items.filter(e => (isAdmin && e.label == "admin") ||  e.label != "admin"),
+    items: items,
     customClass: "custom-context-menu",
   });
   store.selectChannel(channel);
@@ -454,6 +459,6 @@ defineExpose({
 .custom-context-menu .label {
   color: #FFFFFF;
 }
-.custom-context-menu :hover {
+.mx-context-menu-item-wrapper :hover {
 background-color: rgb(57, 57, 57);}
 </style>
