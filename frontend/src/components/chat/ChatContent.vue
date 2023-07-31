@@ -19,7 +19,7 @@
     </div>
     <div class="card-body msg_card_body">
       <!-- corpo do formulario -->
-      <form @submit.prevent="createNewChannel">
+      <form @submit.prevent="createOrUpdate">
         <div class="form-group">
           <label for="channelName">*Channel Name</label>
           <input type="text" id="channelName" class="form-control" v-model="channelName" required>
@@ -289,6 +289,15 @@ const convertFileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+//TODO EDUARDO
+function createOrUpdate()
+{
+  if (getButtomOp() == "Create Channel")
+    createNewChannel();
+  else
+    console.log("UPDATE CHANNEL");
+}
+
 // Create new channel function
 const createNewChannel = async () => {
   try {
@@ -308,7 +317,8 @@ const createNewChannel = async () => {
       password: password,
       messages: [], // initialize with an empty array of messages
       users: [], // initialize with an empty array of users
-      type: type
+      type: type,
+      banList: []
     };
 
     const response = await store.createChannel(newChannel);
