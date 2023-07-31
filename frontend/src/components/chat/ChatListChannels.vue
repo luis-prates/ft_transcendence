@@ -19,6 +19,7 @@ const user = userStore();
 
 const props = defineProps<{ channel: channel }>();
 const defaultAvatar = "src/assets/chat/chat_avatar.png";
+const defaultUser = "src/assets/chat/avatar.png";
 
 function getSubLabel() : string {
 
@@ -29,7 +30,7 @@ function getSubLabel() : string {
 }
 
 function getImage() {
-  return props.channel.avatar !== '' ? props.channel.avatar : defaultAvatar;
+  return props.channel.avatar !== '' ? props.channel.avatar : (props.channel.type !== 'DM' ? defaultAvatar : defaultUser);
 }
 
 const isBlocked = () => {
