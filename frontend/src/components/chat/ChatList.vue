@@ -112,8 +112,6 @@ const imAdmin =  computed(() => {
   return false;
 })
 
-
-
 const showUsers = ref(true);
 
 const setShowUsers = (value:boolean) => {
@@ -158,7 +156,6 @@ function getFilteredChannels()
   {
     channelsFilters.value = store.channels.filter((channel: channel) => channel.type == "DM" && channel.users.some((user) => user.id === userStore().user.id));
     channelsFilters.value.forEach((channel) => {
-      // Verifica se o canal tem algum usuário com o nickname igual ao do usuário atual
       const userInChannel = channel.users.find((user) => user.id != userStore().user.id);
       if (userInChannel)
       {

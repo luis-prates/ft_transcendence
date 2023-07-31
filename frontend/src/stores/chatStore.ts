@@ -75,14 +75,14 @@ export const chatStore = defineStore("chat", () => {
   }
 
   function addMessage(message: ChatMessage) {
-    const channelSelected = channels.find((c) => c.objectId === message.channelId);
+    const channelSelected = channels.find((c: channel) => c.objectId === message.channelId);
     console.log("channelSelected: ", channelSelected);
     console.log("ObjectId: ", message.channelId);
     if (channelSelected && message) {
       message.createdAt = new Date().toString();
 
     // Search for the user in channel.users
-    const userChat = channelSelected.users.find((user) => user.id === message.userId);
+    const userChat = channelSelected.users.find((user: ChatUser) => user.id === message.userId);
     if (userChat) {
       message.user = userChat;
     }
@@ -220,6 +220,24 @@ export const chatStore = defineStore("chat", () => {
   }
 
   async function createChannel(channel: channel) {
+
+    if (channel.type == "DM")
+    {
+      console.log("USERS: ", channel.users[0]);
+      const userID = channel.users[0];
+      const channelExist = channels.find((channelStore: channel) => channelStore.type == "DM" 
+      && channelStore.users.some((userChannel: ChatUser) => userChannel.id == userStore().user.id)
+      && channelStore.users.some((userChannel: ChatUser) => userChannel.id == userID));
+         
+      if (channelExist)
+      {
+        console.log("This DM is already exist!", channelExist);
+        //selected.value = channelExist;
+        //TODO ABRIR O CHANNEL DM
+        return ;
+      }
+    }
+
     const createChannelDto = {
       name: channel.name,
       usersToAdd: channel.users,
@@ -293,10 +311,10 @@ export const chatStore = defineStore("chat", () => {
 
   // Function to remove a user from a specific channel
   function removeUserFromChannel(channelId: any, userId:any) {
-    const channel = channels.find((channel) => channel.objectId === channelId);
+    const channel = channels.find((channel: channel) => channel.objectId === channelId);
 
     if (channel) {
-      const userIndex = channel.users.findIndex((user) => user.id === userId);
+      const userIndex = channel.users.findIndex((user: ChatUser) => user.id === userId);
 
       if (userIndex !== -1) {
         channel.users.splice(userIndex, 1);
@@ -312,13 +330,13 @@ export const chatStore = defineStore("chat", () => {
 
   // Function to add a user to a specific channel
 function addUserToChannel(channelId: any, user: ChatUser) {
-  const channel = channels.find((channel) => channel.objectId === channelId);
+  const channel = channels.find((channel: channel) => channel.objectId === channelId);
 
   if (channel) {
     if (!Array.isArray(channel.users)) {
       channel.users = [];
     }
-    const userExists = Array.isArray(channel.users) && channel.users.some((existingUser) => existingUser.id === user.id);
+    const userExists = Array.isArray(channel.users) && channel.users.some((existingUser: ChatUser) => existingUser.id === user.id);
 
     if (!userExists) {
       channel.users.push(user);

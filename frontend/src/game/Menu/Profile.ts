@@ -273,8 +273,8 @@ export class Profile {
 			else if (type == "send_message") {
 				chatStore().createChannel({
 					objectId: 1,
-					name: this.user.nickname,
-					avatar: this.user.image,
+					name: undefined,
+					avatar: undefined,
 					password: undefined,
 					messages: [], // initialize with an empty array of messages
 					users: [this.user.id], // initialize with an empty array of users

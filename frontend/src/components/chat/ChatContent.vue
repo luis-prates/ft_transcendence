@@ -112,6 +112,8 @@ socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
 console.log("Socket criado na instancia do componente: ", chatSocket);
 
+//const defaultAvatar = "src/assets/chat/chat_avatar.png";
+const defaultUser = "src/assets/chat/avatar.png";
 let defaultAvatar = ref("src/assets/chat/chat_avatar.png");
 
 //Check if the user is the owner of channel
@@ -136,7 +138,7 @@ const getButtomOp = () => {
 
 function getChatAvatar() {
   if (selected.value?.avatar == "" || !selected.value?.avatar){
-    return defaultAvatar.value;
+    return selected.value?.avatar !== '' ? selected.value?.avatar : (selected.value?.type !== 'DM' ? defaultAvatar.value : defaultUser);
   }
   return selected.value?.avatar;
   }
