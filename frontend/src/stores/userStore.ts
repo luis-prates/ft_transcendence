@@ -249,7 +249,6 @@ export const userStore = defineStore("user", function () {
 
   async function updateProfile() {
     let body = {} as any;
-    body.nickname = user.nickname;
     body.avatar = user.avatar;
     body.image = user.image;
     body.color = user.infoPong.color;
@@ -264,6 +263,38 @@ export const userStore = defineStore("user", function () {
       .then(async (response) => console.log(await response.json()))
       .catch((err) => console.error(err));
   }
+
+  
+  async function updateNickname(newNickname: string) : Promise<boolean> {
+    let body = {} as any;
+    body.nickname = newNickname;
+
+    const options = {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+      body: new URLSearchParams(body),
+    };
+    return await fetch(env.BACKEND_SERVER_URL + "/users/update_profile", options)
+      .then(function (response: any) {
+        if (response.ok)
+        {
+          user.nickname = newNickname;
+          user.infoPong.historic.forEach(function (game: GAME)
+          {
+            if (game.loserId == user.id)
+              game.loserNickname = newNickname;
+            else
+              game.winnerNickname = newNickname;         
+          })
+        }
+        return response.ok;
+      })
+      .catch(function (err: any) {
+        console.error("COMIDAAA", err);
+        return false;
+      });
+  }
+
 
   async function buy_skin(skin: string, type: TypeSkin, price: number) {
     let body = {} as any;
@@ -765,7 +796,7 @@ export const userStore = defineStore("user", function () {
         });
 
         lobbySocket.on("invite_confirm_game", (message: string) => {
-          const confirmButton = new ConfirmButton(message, STATUS_CONFIRM.ERROR, 5000);
+          const confirmButton = new ConfirmButton(message, STATUS_CONFIRM.NOTIFICATION, 5000);
           Game.instance.addMenu(confirmButton.menu);
           lobbySocket.off("invite_confirm_game");
         });
@@ -785,6 +816,7 @@ export const userStore = defineStore("user", function () {
     //User Information
     update,
     updateProfile,
+    updateNickname,
     buy_skin,
     updateTableDefault,
     getUsers,

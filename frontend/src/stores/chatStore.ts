@@ -119,6 +119,10 @@ export const chatStore = defineStore("chat", () => {
             headers: { Authorization: `Bearer ${user.access_token_server}` },
           });
           const messages = response.data;
+
+          //TODO
+          // userStore().user.block
+
           // Process the messages as needed
           selected.value.messages = messages;
           console.log("RESPOSTA DO SERVER: ", messages);

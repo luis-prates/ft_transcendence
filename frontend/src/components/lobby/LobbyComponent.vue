@@ -22,7 +22,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
-import { userStore, type Block, type Friendship } from "@/stores/userStore";
+import { userStore, type Block, type Friendship, type GAME } from "@/stores/userStore";
 import ChatComponent from "@/components/chat/ChatComponent.vue";
 import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import Router from "@/router";
@@ -148,6 +148,33 @@ onMounted(() => {
         if (userFriend !== -1) {
           userStore().user.friends[userFriend].status = event.status;
         }
+    });
+
+    //Update Nickname
+    socket.on("updateNickname",  (event: any) => {
+      chatStore().channels.forEach(channel => {
+        const userIndex = channel.users.findIndex(user => user.id == event.id);
+        if (userIndex !== -1) {
+          channel.users[userIndex].nickname = event.nickname;
+        }
+      });
+      userStore().user.friends.forEach(function (user)
+      {
+        if (user.id == event.id)
+          user.nickname = event.nickname;
+      });
+      userStore().user.block.forEach(function (user: Block)
+      {
+        if (user.blocker.id == event.id)
+          user.blocker.nickname = event.nickname;
+      });
+      userStore().user.infoPong.historic.forEach(function (game: GAME)
+      {
+        if (game.winnerId == event.id)
+          game.winnerNickname = event.nickname;
+        else
+          game.loserNickname = event.nickname;
+      });
     });
 });
 
