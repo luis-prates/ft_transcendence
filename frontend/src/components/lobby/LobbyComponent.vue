@@ -82,16 +82,7 @@ onMounted(() => {
       const existingEvent = user.block.find((block: any) => block.blockerId === event.blockerId);
       
       if (!existingEvent)
-      {
         user.block.push(event);
-        let channels = chatStore().channels;
-        const blockList = user.block.filter((block: Block) => block.blockedId !== user.id);
-        blockList.forEach(function (block: Block) {
-          channels.forEach(function (channel: channel) {
-            channel.messages = channel.messages.filter((message: ChatMessage) => block.blockedId !== message.userId); 
-          });
-        })
-      }
       // console.log("Block!", event, "Block List:", user.block);
 		});
 

@@ -7,6 +7,7 @@ import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
 import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import { Game } from "@/game/base/Game";
+import { chatStore, type ChatMessage } from "./chatStore";
 
 export enum GameStatus {
   NOT_STARTED = "NOT_STARTED",
@@ -570,27 +571,40 @@ export const userStore = defineStore("user", function () {
     await fetch(env.BACKEND_SERVER_URL + "/blocklist/block/" + userId, options)
       .then(async function (response: any) {
         //Add in Store
-        const existingEvent = user.block.find((block: any) => block.blockedId === userId);
-        if (!existingEvent) {
-          user.block.push({
-            blocked: {
-              id: userId,
-              nickname: userNickname,
-              image: userImage,
-            },
-            blockedId: userId,
+        if (response.ok)
+        {
+          const existingEvent = user.block.find((block: any) => block.blockedId === userId);
+          if (!existingEvent) {
+            user.block.push({
+              blocked: {
+                id: userId,
+                nickname: userNickname,
+                image: userImage,
+              },
+              blockedId: userId,
+              blockerId: user.id,
+            });
+          }
+          console.log("Block User:", userNickname, user.block);
+
+          //Block Messages from this User Block
+          let channels = chatStore().channels;
+          const blockList = user.block.filter((block: Block) => block.blockedId !== user.id);
+          blockList.forEach(function (block: Block) {
+            channels.forEach(function (channel: any) {
+              channel.messages = channel.messages.filter((message: ChatMessage) => block.blockedId !== message.userId); 
+            });
+          })
+            
+          //Emit
+          const lobbySocket: Socket = socketClass.getLobbySocket();
+          lobbySocket.emit("block_user", {
             blockerId: user.id,
+            blockerNickname: user.nickname,
+            blockId: userId,
           });
         }
-        console.log("Block User:", userNickname, user.block);
 
-        //Emit
-        const lobbySocket: Socket = socketClass.getLobbySocket();
-        lobbySocket.emit("block_user", {
-          blockerId: user.id,
-          blockerNickname: user.nickname,
-          blockId: userId,
-        });
       })
       .catch((err) => console.error(err));
   }
