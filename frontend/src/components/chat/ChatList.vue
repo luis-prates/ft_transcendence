@@ -51,12 +51,12 @@
           </div>
           <div v-if="showUsers">
             <li v-for="(user, id) in usersFilters" :key="id">
-              <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser(user)" />
+              <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser($event, user)" />
             </li>
           </div>
           <div v-else>
             <li v-for="(bannedUser, id) in bannedUsersFilters" :key="id">
-              <ChatListUsers :user="bannedUser" @click="selectUser(bannedUser)" @contextmenu="handleContextMenuUser(bannedUser)" />
+              <ChatListUsers :user="bannedUser" @click="selectUser(bannedUser)" @contextmenu="handleContextMenuUser($event, bannedUser)" />
             </li>
           </div>
         </ul>
@@ -198,10 +198,11 @@ const selectChannel = (channel: channel) => {
   store.selectChannel(channel);
   openChannel(store.selected);
   if (isMenuOpen.value)
-    toggleMenu();
+  toggleMenu();
 }
 
 const handleContextMenu = (e: any, channel: channel)  => {
+  store.selectChannel(channel);
   const isAdmin = (channel.users && channel.users.some((u: any)=> u.id === userStore().user.id && u.isAdmin));
   store.selected = channel;
   const items = [
@@ -232,18 +233,53 @@ const handleContextMenu = (e: any, channel: channel)  => {
     items: items,
     customClass: "custom-context-menu",
   });
-  store.selectChannel(channel);
 };
 
 
-const handleContextMenuUser = (user: ChatUser)  => {
-  //instance?.emit("update-create-channel", false);
-  console.log("click direito:", user.nickname)
-  if (selected.value != user && isMenuOpen.value) {
-    toggleMenu();
-  }
-  userSelect.value = user;
-  toggleMenu();
+const handleContextMenuUser = (e: any, user: ChatUser)  => {
+  const items = [
+      { 
+        label: "Open Profile", 
+        onClick: () => console.log("Vai abrir o profile: " + user.id)
+      },
+      //para users != my own user (storeUser.user.id != user.id)
+      { 
+        label: "Send DM", 
+        onClick: () => console.log("Vai enviar DM")
+      },
+      { 
+        label: "Friend Request ou remove friend", 
+        onClick: () => console.log("Remover ou adicionar amigo")
+      },
+      { 
+        label: "Challenge", 
+        onClick: () => console.log("Remover ou adicionar amigo")
+      },
+      //para admins do channel
+      { 
+        label: "Mute", 
+        onClick: () => console.log("Mutar users comuns")
+      },
+      { 
+        label: "Kick", 
+        onClick: () => console.log("Kickar utilizadores comuns")
+      },
+      { 
+        label: "Ban", 
+        onClick: () => console.log("Banir users comuns")
+      },
+      //para owners
+      { 
+        label: "Give administrator", 
+        onClick: () => console.log("Dar administração")
+      },
+    ]
+  ContextMenu.showContextMenu({
+    x: e.x,
+    y: e.y,
+    items: items,
+    customClass: "custom-context-menu",
+  });
 };
   
 let isProfileOpen: boolean = false;
@@ -333,6 +369,8 @@ const openChannel = async function (channel: channel) {
     if (channel.type == "PUBLIC"){
       await store.joinChannel(channel.objectId);
       store.getMessages(channel);
+      instance?.emit('update-create-channel', false);
+      instance?.emit("update-channel-status", true);
     }
     else{
       console.log("I will try to put the password!");
