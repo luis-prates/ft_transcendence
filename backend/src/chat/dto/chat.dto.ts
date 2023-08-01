@@ -60,3 +60,9 @@ export class EditChannelDto {
 	})
 	password?: string;
 }
+
+export class MuteUserDto {
+  @IsNotEmpty()
+  @IsNumber()
+  muteDuration: number;
+}
