@@ -2,10 +2,6 @@
   <div>
     <div ref="game" class="game"></div>
 
-    <div ref="menu" class="menu">
-      <button style="left: 10px">Test</button>
-      <button style="right: 0px">Test</button>
-    </div>
     <div class="table">
       <img src="@/assets/images/lobby/table_2aaa15.png" />
       <img src="@/assets/images/lobby/table_efc120.png" />
@@ -14,43 +10,40 @@
     </div>
 
     <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoad" />
-    </div>
-    <div class="button-container" v-if="isLoad">
-      <div class="retro-button" @click="onMessagesClick">
-        <img src="@/assets/images/lobby/menu/message.png" alt="Messages Icon"/>
-        <div class="button-text">
-          <span>Messages</span>
-        </div>
-      </div>
-      <div class="retro-button" @click="onBattlesClick">
-        <img src="@/assets/images/lobby/menu/battle_.png" alt="Battles Icon"/>
-        <div class="button-text">
-          <span>Battles</span>
-        </div>
-      </div>
-      <div class="retro-button" @click="onLeaderboardClick">
-        <img src="@/assets/images/lobby/menu/trofeo.png" alt="Leaderboard Icon"/>
-        <div class="button-text">
-          <span>Leaderboard</span>
-        </div>
+  </div>
+  <div class="button-container" v-if="isLoad">
+    <div class="retro-button" @click="onMessagesClick">
+      <img src="@/assets/images/lobby/menu/message.png" alt="Messages Icon"/>
+      <div class="button-text">
+        <span>Messages</span>
       </div>
     </div>
+    <div class="retro-button" @click="onBattlesClick">
+      <img src="@/assets/images/lobby/menu/battle_.png" alt="Battles Icon"/>
+      <div class="button-text">
+        <span>Battles</span>
+      </div>
+    </div>
+    <div class="retro-button" @click="onLeaderboardClick">
+      <img src="@/assets/images/lobby/menu/trofeo.png" alt="Leaderboard Icon"/>
+      <div class="button-text">
+        <span>Leaderboard</span>
+      </div>
+    </div>
+  </div>
   <ChatComponent class="chat_component"/>
 </template>
 
 <script setup lang="ts">
+
 import { ref, onMounted, onUnmounted } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
-import { userStore, type Block, type Friendship } from "@/stores/userStore";
+import { userStore } from "@/stores/userStore";
 import ChatComponent from "@/components/chat/ChatComponent.vue";
-import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
-import Router from "@/router";
-import { chatStore } from "@/stores/chatStore";
 import { MyLobbyButtons } from "@/composables/MyLobbyButtons";
 
 const store = userStore();
-const user = userStore().user;
 const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 let lobby: Lobby | null = null;
@@ -68,6 +61,7 @@ onMounted(() => {
       map.setData(data.map).then(() => {
         lobby = new Lobby(map, new Player(menu, data.player));
         if (game.value !== undefined) {
+			console.log("game.value : ", game.value);
           game.value.appendChild(lobby.canvas);
           data.data.forEach((d: any) => {
             lobby?.addGameObjectData(d);
@@ -79,97 +73,6 @@ onMounted(() => {
       });
     }, 1000);
   });
-  socket.on("invite_request_game", (e: any) => {
-      const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
-      Game.instance.addMenu(confirmButton.menu);
-			confirmButton.show((value) => {
-          if (value == "CONFIRM") {
-            socket.emit("challenge_game", {
-              challenged: store.user.id, 
-              challenger: e.playerId,
-            });
-          }
-		  });
-    });
-    socket.on("challenge_game", (gameId: string) => {
-      console.log("Challenge begin!")
-			socket.off("invite_confirm_game");
-			Router.push(`/game?objectId=${gameId}`);
-		});
-
-    //Block
-    socket.on("block_user",  (event: Block) => {
-      const existingEvent = user.block.find((block: any) => block.blockerId === event.blockerId);
-      
-      if (!existingEvent) user.block.push(event);
-
-      console.log("Block!", event, "Block List:", user.block);
-		});
-
-    //Unblock
-    socket.on("unblock_user", (event: Block) => {
-      user.block = user.block.filter((block: Block) => block.blockerId !== event.blockerId);
-
-      console.log("Unblock!", event, "Block List:", user.block);
-		});
-
-    //Send Friend Request
-    socket.on("sendFriendRequest",  (event: Friendship) => {
-      const existingEvent = user.friendsRequests.find((friend: Friendship) => friend.requestorId === event.requestorId);
-      
-      if (!existingEvent)
-        user.friendsRequests.push(event);
-      //console.log("Send Friend!", event, "Friend Request:", user.friendsRequests);
-      Game.updateNotifications();
-    });
-
-    //Cancel Friend Request
-    socket.on("cancelFriendRequest",  (event: Friendship) => {
-      user.friendsRequests = user.friendsRequests.filter((friend: Friendship) => friend.requestorId != event.requestorId);
-
-      //console.log("Cancel Friend!", event, "Friend Request:", user.friendsRequests);
-      Game.updateNotifications();
-    });
-
-    //Accept Friend Request
-    socket.on("acceptFriendRequest",  (event: Friendship) => {
-      user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.id);
-      const existingEvent = user.friends.find((friend: Friendship) => friend.requesteeId === event.id);
-      
-      if (!existingEvent)
-        user.friends.push(event);
-      //console.log("Accept Friend!", event);
-      Game.updateNotifications();
-		});
-    
-    //Reject Friend Request
-    socket.on("rejectFriendRequest",  (event: Friendship) => {
-      user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.requesteeId);
-      //console.log("Reject Friend Request!", event);
-      Game.updateNotifications();
-		});
-
-    //Delete Friend
-    socket.on("deleteFriend",  (event: Friendship) => {
-      user.friends = user.friends.filter((friend: Friendship) => friend.id != event.id);
-      //console.log("Delete Friend!", event);
-		});
-
-
-    //Update Status
-    socket.on("updateStatus",  (event: any) => {
-      chatStore().channels.forEach(channel => {
-        const userIndex = channel.users.findIndex(user => user.id == event.id);
-        if (userIndex !== -1) {
-          channel.users[userIndex].status = event.status;
-        }
-      });
-      //TODO
-      const userFriend = userStore().user.friends.findIndex(user => user.id == event.id);
-        if (userFriend !== -1) {
-          userStore().user.friends[userFriend].status = event.status;
-        }
-    });
 });
 
 const {
@@ -206,6 +109,7 @@ function test() {
   width: 100%; /* 100% da largura da janela */
   height: 100%;
   position: fixed;
+  z-index: 10;
   margin: 0;
   padding: 0;
 }
@@ -226,17 +130,16 @@ function test() {
 
 .menu {
   /* left: 0px; */
-  top: 70px;
-  /* z-index: -1; */
+  top: 140px;
+  // z-index: 2;
   position: absolute;
   width: 200px;
   height: 50px;
-  background-color: rgb(179, 103, 95);
+  background-color: rgb(95, 179, 129);
   border: 2px solid red;
   padding: 5px;
   border-radius: 15px;
   box-shadow: 0px 0px 10px 0px rgba(59, 217, 15, 0.75);
-  display: none;
   button {
     width: 40%;
     height: 100%;
@@ -285,6 +188,8 @@ function test() {
   transform: translateX(50%);
   z-index: 20;
   gap: 10px;
+  min-height: 80px;
+  min-width: 300px;
 }
 
 .retro-button {
@@ -305,6 +210,8 @@ function test() {
   cursor: pointer;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   transition: all 0.3s ease-in-out;
+  min-height: 80px;
+  min-width: 80px;
 }
 
 .retro-button:hover {
