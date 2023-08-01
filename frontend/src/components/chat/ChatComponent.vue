@@ -61,6 +61,7 @@ onMounted(() => {
 
   socket.on('channel-created', (eventData: { newChannel: any, message: any }) => {
     const { newChannel, message } = eventData;
+    newChannel.users = [];
     store.addChannel(newChannel, message);
   });
 
