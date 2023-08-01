@@ -217,6 +217,9 @@ export class ChatService {
 							],
 						},
 					},
+          include: {
+            users: true,
+          }
 				});
 			}
 			// emit event to everyone that a new channel was just created
