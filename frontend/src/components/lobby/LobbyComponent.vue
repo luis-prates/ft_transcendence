@@ -27,6 +27,7 @@ import ChatComponent from "@/components/chat/ChatComponent.vue";
 import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import Router from "@/router";
 import { chatStore } from "@/stores/chatStore";
+import type { ChatMessage, channel } from "@/stores/chatStore";
 
 const store = userStore();
 const user = userStore().user;
@@ -80,9 +81,18 @@ onMounted(() => {
     socket.on("block_user",  (event: Block) => {
       const existingEvent = user.block.find((block: any) => block.blockerId === event.blockerId);
       
-      if (!existingEvent) user.block.push(event);
-
-      console.log("Block!", event, "Block List:", user.block);
+      if (!existingEvent)
+      {
+        user.block.push(event);
+        let channels = chatStore().channels;
+        const blockList = user.block.filter((block: Block) => block.blockedId !== user.id);
+        blockList.forEach(function (block: Block) {
+          channels.forEach(function (channel: channel) {
+            channel.messages = channel.messages.filter((message: ChatMessage) => block.blockedId !== message.userId); 
+          });
+        })
+      }
+      // console.log("Block!", event, "Block List:", user.block);
 		});
 
     //Unblock

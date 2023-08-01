@@ -1,6 +1,6 @@
 import { reactive, ref } from "vue";
 import { defineStore } from "pinia";
-import { userStore, type User } from "./userStore";
+import { userStore, type User, type Block } from "./userStore";
 import { env } from "@/env";
 import axios from "axios";
 
@@ -118,10 +118,9 @@ export const chatStore = defineStore("chat", () => {
           const response = await axios.get(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/messages`, {
             headers: { Authorization: `Bearer ${user.access_token_server}` },
           });
-          const messages = response.data;
-
-          //TODO
-          // userStore().user.block
+          let messages = response.data;
+          const blockList = user.block.filter((block: Block) => block.blockedId !== user.id);
+          blockList.forEach(function (block: Block) { messages = messages.filter((message: ChatMessage) => block.blockedId !== message.userId); })
 
           // Process the messages as needed
           selected.value.messages = messages;
