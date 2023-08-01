@@ -217,9 +217,9 @@ export class ChatService {
 							],
 						},
 					},
-          include: {
-            users: true,
-          }
+					include: {
+						users: true,
+					},
 				});
 			}
 			// emit event to everyone that a new channel was just created
@@ -524,15 +524,15 @@ export class ChatService {
 			throw new BadRequestException('User is already muted');
 		}
 
-    // if user is owner or admin, throw error
-    if (channelUser.isAdmin) {
-      throw new ForbiddenException('Cannot mute an admin');
-    }
+		// if user is owner or admin, throw error
+		if (channelUser.isAdmin) {
+			throw new ForbiddenException('Cannot mute an admin');
+		}
 
-    // If mute timer is over 1 day, throw error
-    if (muteDuration > 1440) {
-      throw new BadRequestException('Mute timer cannot be over 1 day (1440 minutes)');
-    }
+		// If mute timer is over 1 day, throw error
+		if (muteDuration > 1440) {
+			throw new BadRequestException('Mute timer cannot be over 1 day (1440 minutes)');
+		}
 
 		// Mute the user
 		await this.prisma.channelUser.update({
@@ -547,10 +547,10 @@ export class ChatService {
 			},
 		});
 
-    // Set the timeout to unmute the user
-    setTimeout(async () => {
-      await this.unmuteUser(Number(channelId), Number(userId));
-    }, muteDuration * 60 * 1000); // Convert minutes to milliseconds
+		// Set the timeout to unmute the user
+		setTimeout(async () => {
+			await this.unmuteUser(Number(channelId), Number(userId));
+		}, muteDuration * 60 * 1000); // Convert minutes to milliseconds
 
 		// emit event that user was muted
 		this.events.emit('user-muted-in-channel', { channelId, userId });

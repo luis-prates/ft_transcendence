@@ -84,7 +84,7 @@ export class ChatGateway implements OnGatewayConnection {
 
 			// remove the hash field from the user object
 			delete user.hash;
-      delete user.twoFASecret;
+			delete user.twoFASecret;
 
 			client.broadcast.to(`channel-${channelId}`).emit('user-added', {
 				channelId,
@@ -103,7 +103,7 @@ export class ChatGateway implements OnGatewayConnection {
 			}
 
 			delete user.hash;
-      delete user.twoFASecret;
+			delete user.twoFASecret;
 
 			client.leave(`channel-${channelId}`);
 			console.log(`User ${userId} left a room: channel-${channelId}`);

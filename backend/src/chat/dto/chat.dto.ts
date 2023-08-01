@@ -62,7 +62,7 @@ export class EditChannelDto {
 }
 
 export class MuteUserDto {
-  @IsNotEmpty()
-  @IsNumber()
-  muteDuration: number;
+	@IsNotEmpty()
+	@IsNumber()
+	muteDuration: number;
 }

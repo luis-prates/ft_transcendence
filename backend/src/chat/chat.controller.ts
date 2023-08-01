@@ -105,10 +105,10 @@ export class ChatController {
 	@UseGuards(RolesGuard)
 	@Roles('admin', 'owner')
 	async muteUser(
-    @Param('channelId') channelId: string,
-    @Param('userId') userId: string,
-    @Body() muteUserDto: MuteUserDto
-  ) {
+		@Param('channelId') channelId: string,
+		@Param('userId') userId: string,
+		@Body() muteUserDto: MuteUserDto,
+	) {
 		return this.chatService.muteUser(Number(channelId), Number(userId), muteUserDto.muteDuration);
 	}
 
