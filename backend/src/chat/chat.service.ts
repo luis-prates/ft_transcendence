@@ -99,7 +99,7 @@ export class ChatService {
 			// Logic for public and private channels
 			if (createChannelDto.channelType == 'PUBLIC' || createChannelDto.channelType == 'PRIVATE') {
 				// Note: channel name has to be unique for open channels
-				const createdChannel = await this.prisma.channel.create({
+				newChannel = await this.prisma.channel.create({
 					data: {
 						name: createChannelDto.name,
 						type: createChannelDto.channelType,
@@ -125,10 +125,7 @@ export class ChatService {
 						},
 						...(createChannelDto.avatar && { avatar: createChannelDto.avatar }),
 					},
-				});
-        newChannel = await this.prisma.channel.findUnique({
-          where: { id: createdChannel.id },
-          include: {
+          include : {
             users: {
               select: {
                 isAdmin: true,
@@ -143,8 +140,8 @@ export class ChatService {
                 },
               },
             },
-          },
-        });
+          }
+				});
 			}
 
 			// Logic for protected channels
@@ -154,7 +151,7 @@ export class ChatService {
 				const saltRounds = 10;
 				const hashedPassword = await bcrypt.hash(createChannelDto.password, saltRounds);
 
-				const createdChannel = await this.prisma.channel.create({
+				newChannel = await this.prisma.channel.create({
 					data: {
 						name: createChannelDto.name,
 						type: createChannelDto.channelType,
@@ -179,12 +176,8 @@ export class ChatService {
 								})),
 							],
 						},
-					}
-				});
-
-        newChannel = await this.prisma.channel.findUnique({
-          where: { id: createdChannel.id },
-          include: {
+					},
+          include : {
             users: {
               select: {
                 isAdmin: true,
@@ -200,7 +193,7 @@ export class ChatService {
               },
             },
           },
-        });
+				});
 			}
 
 			// Logic for DM
@@ -230,7 +223,7 @@ export class ChatService {
 				}
 
         // Note: no need to set channel name when creating a DM
-        const createdChannel = await this.prisma.channel.create({
+        newChannel = await this.prisma.channel.create({
           data: {
             type: createChannelDto.channelType,
             users: {
@@ -251,12 +244,7 @@ export class ChatService {
                 })),
               ],
             },
-          }
-        });
-
-        // Fetch the channel with the selected fields
-        newChannel = await this.prisma.channel.findUnique({
-          where: { id: createdChannel.id },
+          },
           include: {
             users: {
               select: {
@@ -265,14 +253,14 @@ export class ChatService {
                 user: {
                   select: {
                     id: true,
-                    image: true,
                     nickname: true,
                     status: true,
-                  },
-                },
-              },
-            },
-          },
+                    image: true,
+                  }
+                }
+              }
+            }
+          }
         });
       }
 
