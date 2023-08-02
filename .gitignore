@@ -55,4 +55,5 @@ coverage
 backend/prisma/migrations/
 
 # Frontend env.ts
-frontend/src/env.ts
+# can be pushed to git as it no longer has env vars
+# frontend/src/env.ts
