@@ -6,7 +6,7 @@ import { UserService } from './user.service';
 import { UserDto, UserBuySkinDto, UserUpdateSkinTableDto, UserUpdateStatsDto } from './dto';
 
 @UseGuards(JwtGuard)
-@Controller('users')
+@Controller('api/users')
 export class UserController {
 	constructor(private userService: UserService) {}
 

@@ -20,7 +20,7 @@ import { GetUser } from './decorator';
 import { Response } from 'express';
 import { OAuthExceptionFilter } from './filters/oauth-exception.filter';
 
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
 	private readonly logger = new Logger('AuthController');
 

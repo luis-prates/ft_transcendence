@@ -19,7 +19,7 @@ import { GameStatus } from '@prisma/client';
 
 //! deactivated for testing purposes
 @UseGuards(JwtGuard)
-@Controller('game')
+@Controller('api/game')
 export class GameController {
 	constructor(private gameService: GameService) {}
 

@@ -5,7 +5,7 @@ import { User } from '@prisma/client';
 import { JwtGuard } from '../auth/guard';
 
 @UseGuards(JwtGuard)
-@Controller('friendship')
+@Controller('api/friendship')
 export class FriendshipController {
 	constructor(private friendshipService: FriendshipService) {}
 

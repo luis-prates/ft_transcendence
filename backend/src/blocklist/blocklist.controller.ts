@@ -5,7 +5,7 @@ import { JwtGuard } from '../auth/guard';
 import { BlocklistService } from './blocklist.service';
 
 @UseGuards(JwtGuard)
-@Controller('blocklist')
+@Controller('api/blocklist')
 export class BlocklistController {
 	constructor(private blocklistService: BlocklistService) {}
 

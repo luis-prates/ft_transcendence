@@ -6,7 +6,7 @@ import { Roles } from './decorator';
 import { CreateChannelDto, JoinChannelDto, EditChannelDto } from './dto';
 
 @UseGuards(JwtGuard)
-@Controller('chat/channels')
+@Controller('api/chat/channels')
 export class ChatController {
 	constructor(private readonly chatService: ChatService) {}
 
