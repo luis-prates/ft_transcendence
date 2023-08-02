@@ -56,7 +56,7 @@
           </div>
           <div v-else>
             <li v-for="(bannedUser, id) in bannedUsersFilters" :key="id">
-              <ChatListUsers :user="bannedUser" @click="selectUser(bannedUser)" @contextmenu="handleContextMenuUser($event, bannedUser)" />
+              <ChatListUsers :user="bannedUser" @click="selectUser(bannedUser)" @contextmenu="handleContextMenuBanUser($event, bannedUser)" />
             </li>
           </div>
         </ul>
@@ -226,6 +226,21 @@ const handleContextMenu = (e: any, channel: channel)  => {
           }
         ]
       : [])
+    ]
+  ContextMenu.showContextMenu({
+    x: e.x,
+    y: e.y,
+    items: items,
+    customClass: "custom-context-menu",
+  });
+};
+
+const handleContextMenuBanUser = (e: any, user: ChatUser)  => {
+  const items = [
+      { 
+        label: "UnBan", 
+        onClick: () => console.log("Vai fazer unBan")
+      }
     ]
   ContextMenu.showContextMenu({
     x: e.x,
