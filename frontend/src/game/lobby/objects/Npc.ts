@@ -55,13 +55,32 @@ export class Npc extends Character {
   public interaction(gameObject: Character): void {
     this.setLookAt(gameObject);
 
+    if (this.nickname == "Amelia")
+    {
+      Game.instance.addMenu(new Shop().menu);
+      return ;
+    }
+    
     const m = new Menu({ KeyClose: "A" });
-    const e: ElementUI = {
-      type: "button",
-      rectangle: SpeechBubble.rectangleDimesion(" OI ", this.x, this.y),
-      draw: (c) => SpeechBubble.draw(c, e.rectangle, " OI "),
-    };
-    m.add(e);
+    
+    if (this.nickname == "Mafalda")
+    {
+      const e: ElementUI = {
+        type: "button",
+        rectangle: SpeechBubble.rectangleDimesion("Hi! I'm Mafalda, the Headmaster for 42 Lisboa!", this.x, this.y),
+        draw: (c) => SpeechBubble.draw(c, e.rectangle, "Hi! I'm Mafalda, the Headmaster for 42 Lisboa!"),
+      };
+      m.add(e);
+    }
+    else if (this.nickname == "Lili")
+    {
+      const e: ElementUI = {
+        type: "button",
+        rectangle: SpeechBubble.rectangleDimesion("Hi! I'm Lili, the Security Guard for 42 Lisboa! Welcome!", this.x, this.y),
+        draw: (c) => SpeechBubble.draw(c, e.rectangle, "Hi! I'm Lili, the Security Guard for 42 Lisboa! Welcome!"),
+      };
+      m.add(e);
+    }
     Game.addMenu(m);
   }
 }
