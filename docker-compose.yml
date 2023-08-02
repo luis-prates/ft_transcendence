@@ -4,7 +4,8 @@ services:
   frontend: # Name of our service
     build: ./frontend # path to dockerfile
     ports: # Port binding to host from docker container
-      - ${FRONTEND_PORT}:80 # Bind port 80 of host to 80 of container
+      - ${FRONTEND_PORT}:443 # Bind port from browser of host to 443 of container for ssl
+      #- 80:80 # bind to port 80 for http
     environment:
       - BACKEND_SERVER_URL
       - LOBBY_SERVER_URL
@@ -19,6 +20,8 @@ services:
       - transcendence
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx-selfsigned.crt:/etc/ssl/nginx-selfsigned.crt
+      - ./nginx-selfsigned.key:/etc/ssl/nginx-selfsigned.key
   # Create backend container
   backend:
     # Create backend container  
@@ -36,12 +39,16 @@ services:
       - FORTYTWO_CLIENT_SECRET
       - FORTYTWO_CALLBACK_URL
       - FRONTEND_REDIRECT_URL
+      - NODE_TLS_REJECT_UNAUTHORIZED
     container_name: backend-docker
     restart: always
     depends_on:
       - db
     networks:
       - transcendence
+    volumes:
+      - ./nginx-selfsigned.crt:/etc/ssl/nginx-selfsigned.crt
+      - ./nginx-selfsigned.key:/etc/ssl/nginx-selfsigned.key
   # Create database container
   db:
     image: postgres:alpine

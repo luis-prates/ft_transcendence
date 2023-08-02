@@ -21,6 +21,8 @@ RUN npm run build
 # --- Release ----
 FROM node:alpine AS release
 
+RUN npm install pm2 -g
+
 WORKDIR /app
 
 # Copy script and make it executable
@@ -39,4 +41,6 @@ COPY --from=build /app/prisma ./prisma
 
 COPY package*.json ./
 
-CMD [ "npm", "run", "start:prod" ]
+# CMD [ "npm", "run", "start:prod" ]
+
+CMD [ "pm2-runtime", "start", "dist/main.js" ]

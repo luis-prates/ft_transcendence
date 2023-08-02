@@ -3,11 +3,18 @@ import { AppModule } from './app.module';
 import passport from 'passport';
 import session from 'express-session';
 import * as bodyParser from 'body-parser';
+import * as fs from 'fs';
+import * as https from 'https';
 
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule);
+	const httpsOptions = {
+        key: fs.readFileSync('/etc/ssl/nginx-selfsigned.key'),
+        cert: fs.readFileSync('/etc/ssl/nginx-selfsigned.crt'),
+    };
+
+	const app = await NestFactory.create(AppModule, { httpsOptions });
 	app.enableCors(); // This is a security feature that allows the frontend to access the backend.
 	app.useGlobalPipes(
 		new ValidationPipe({
