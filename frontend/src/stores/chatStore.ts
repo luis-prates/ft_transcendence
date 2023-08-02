@@ -49,7 +49,7 @@ export const chatStore = defineStore("chat", () => {
       avatar: newChannel.avatar ? newChannel : "",
       password: "",
       messages: [],
-      users: newChannel.users,
+      users: newChannel.users.map((user: any) => ({ id: user.userId, ...user })),
       type: newChannel.type,
       ownerId: newChannel.ownerId,
       messagesLoaded: false,
@@ -60,6 +60,7 @@ export const chatStore = defineStore("chat", () => {
     });
     if (!channelSelected) {
       channels.push(channel);
+      console.log("O channel foi adicionado: " , channel);
     }
     else {
       console.log("Channel already exists!");
@@ -223,23 +224,6 @@ export const chatStore = defineStore("chat", () => {
   }
 
   async function createChannel(channel: channel) {
-
-    if (channel.type == "DM")
-    {
-      console.log("USERS: ", channel.users[0]);
-      const userID = channel.users[0];
-      const channelExist = channels.find((channelStore: channel) => channelStore.type == "DM" 
-      && channelStore.users.some((userChannel: ChatUser) => userChannel.id == userStore().user.id)
-      && channelStore.users.some((userChannel: ChatUser) => userChannel.id == userID));
-         
-      if (channelExist)
-      {
-        console.log("This DM is already exist!", channelExist);
-        //selected.value = channelExist;
-        //TODO ABRIR O CHANNEL DM
-        return ;
-      }
-    }
 
     const createChannelDto = {
       name: channel.name,

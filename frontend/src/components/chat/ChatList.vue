@@ -235,44 +235,76 @@ const handleContextMenu = (e: any, channel: channel)  => {
   });
 };
 
-
 const handleContextMenuUser = (e: any, user: ChatUser)  => {
   const items = [
-      { 
-        label: "Open Profile", 
-        onClick: () => console.log("Vai abrir o profile: " + user.id)
+    { 
+      label: "Open Profile", 
+      onClick: () => console.log("Vai abrir o profile: " + user.id)
       },
-      //para users != my own user (storeUser.user.id != user.id)
+      //TODO //para users != my own user (storeUser.user.id != user.id)
       { 
         label: "Send DM", 
-        onClick: () => console.log("Vai enviar DM")
+        onClick: async () => {
+        const isDMSent = await menu.sendDM(user);
+        if (isDMSent) {
+          openChannel(isDMSent);
+        }
+        },
       },
       { 
-        label: "Friend Request ou remove friend", 
-        onClick: () => console.log("Remover ou adicionar amigo")
+        label: menu.getFriend(user), 
+        onClick: () => {
+          const label = menu.getFriend(user);
+
+          if (label === "Add Friend") {
+            userStore().sendFriendRequest(user.id, user.nickname);
+          } else if (label === "Cancel Request") {
+            userStore().cancelFriendRequest(user.id);
+          } else if (label === "You have a Request") {
+            // Do nothing or show a message, as needed
+            return;
+          } else if (label === "Remove Friend") {
+            userStore().deleteFriend(user.id);
+          } else {
+            // Handle other cases or default action, if needed
+          }
+        },
+      },
+      { 
+        label: menu.getBlock(user), 
+        onClick: () => {
+          const label = menu.getBlock(user);
+          if (label == "Block")
+            userStore().blockUser(user.id, user.nickname, user.image);
+          else if (label == "UnBlock")
+            userStore().unblockUser(user.id);
+        }
       },
       { 
         label: "Challenge", 
-        onClick: () => console.log("Remover ou adicionar amigo")
+        onClick: () => menu.getChallenge(user),
       },
       //para admins do channel
+      ...(menu.isAdmin(user) ? [
       { 
-        label: "Mute", 
-        onClick: () => console.log("Mutar users comuns")
+        label: menu.getMute(user), 
+        onClick: () => muteOrUnmute(user),
       },
       { 
         label: "Kick", 
-        onClick: () => console.log("Kickar utilizadores comuns")
+        onClick: () => kickUser(user),
       },
       { 
         label: "Ban", 
-        onClick: () => console.log("Banir users comuns")
+        onClick: () => store.banUser(selected?.value.objectId, user.id),
       },
+      ] : []),
       //para owners
+      ...(chatStore().selected.ownerId == userStore().user.id ? [
       { 
-        label: "Give administrator", 
-        onClick: () => console.log("Dar administração")
-      },
+        label: menu.getAdmistrator(user) + " Adminstrator", 
+        onClick: () => makeOrDemoteAdmin(user),
+      }] : [])
     ]
   ContextMenu.showContextMenu({
     x: e.x,
