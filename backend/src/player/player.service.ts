@@ -3,6 +3,7 @@ import { Socket } from 'socket.io';
 import { Player } from './Player';
 import { PrismaService } from '../prisma/prisma.service';
 import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class PlayerService {
@@ -22,6 +23,7 @@ export class PlayerService {
 			})
 			.then(user => {
 				if (!user) {
+					const marvinImagePath = path.resolve(__dirname, '..', 'public', 'images', 'marvin.jpg');
 					this.prismaService.user
 						.create({
 							data: {
@@ -29,7 +31,7 @@ export class PlayerService {
 								name: 'Marvin',
 								nickname: 'Marvin',
 								email: 'marvin@marvin.com',
-								image: this.convertFileToBase64('./images/marvin.jpg'),
+								image: this.convertFileToBase64(marvinImagePath),
 								hash: 'asdgasdgasdg',
 							},
 						})
