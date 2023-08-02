@@ -87,7 +87,7 @@ export interface User {
   friends: any;
   friendsRequests: Friendship[];
   block: Block[];
-  twofagenerate: boolean;
+  isTwoFAEnabled: boolean;
 }
 
 export const userStore = defineStore("user", function () {
@@ -131,15 +131,16 @@ export const userStore = defineStore("user", function () {
     friends: Array(),
     friendsRequests: Array(),
     block: Array(),
-	  isTwoFAEnabled: false,
+    isTwoFAEnabled: false,
   });
 
   async function login(authorizationCode: string | undefined) {
     if (user.isLogin || authorizationCode === undefined) return;
     user.access_token_server = authorizationCode;
+    user.isLogin = false;
 
     await axios
-      .get(env.BACKEND_PORT + "/users/me", {
+      .get(env.BACKEND_SERVER_URL + "/users/me", {
         headers: {
           Authorization: "Bearer " + authorizationCode,
         },
@@ -161,26 +162,50 @@ export const userStore = defineStore("user", function () {
         user.infoPong.skin.default.paddle = response.data.paddleSkinEquipped;
         user.infoPong.skin.tables = response.data.tableSkinsOwned;
         user.infoPong.skin.paddles = response.data.paddleSkinsOwned;
-		    user.isTwoFAEnabled = response.data.isTwoFAEnabled;
+        user.isTwoFAEnabled = response.data.isTwoFAEnabled;
         getFriends();
         getFriendRequests();
         getBlockedUsers();
         getBlockedBy();
         getUserGames(user.id);
+		user.isLogin = true;
       })
       .catch(function (error) {
         console.error(error);
         user.isLogin = false;
       });
-    user.isLogin = true;
     // .finally(() => window.location.href = window.location.origin);
-	return (user.isTwoFAEnabled);
+    return user;
+  }
+
+  async function firstTimePrompt() {
+    let updateSuccess = false;
+    try {
+      await axios.patch(
+        env.BACKEND_SERVER_URL + "/users/update_profile",
+        {
+          nickname: user.nickname,
+          image: user.image,
+        },
+        {
+          headers: {
+            Authorization: "Bearer " + user.access_token_server,
+          },
+        }
+      );
+      updateSuccess = true;
+    } catch (error) {
+      console.error(error);
+      updateSuccess = false;
+    }
+    return updateSuccess;
   }
 
   async function loginTest() {
+	let isFirstTime = false;
     // if (user.isLogin) return;
     await axios
-      .post(env.BACKEND_PORT + "/auth/signin", user)
+      .post(env.BACKEND_SERVER_URL + "/auth/signin", user)
 
       // axios.request(options)
       .then(function (response: any) {
@@ -203,7 +228,8 @@ export const userStore = defineStore("user", function () {
         user.infoPong.skin.default.paddle = response.data.dto.paddleSkinEquipped;
         user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
         user.infoPong.skin.paddles = response.data.dto.paddleSkinsOwned;
-		    user.isTwoFAEnabled = response.data.dto.isTwoFAEnabled;
+        user.isTwoFAEnabled = response.data.dto.isTwoFAEnabled;
+		isFirstTime = response.data.firstTime;
         getFriends();
         getFriendRequests();
         getBlockedUsers();
@@ -216,7 +242,7 @@ export const userStore = defineStore("user", function () {
     user.isLogin = true;
     console.log("USER: ", user);
     // .finally(() => window.location.href = window.location.origin);
-	return (user.isTwoFAEnabled);
+    return { firstTime: isFirstTime, isTwoFAEnabled: user.isTwoFAEnabled};
   }
 
   async function updateProfile() {
@@ -232,7 +258,7 @@ export const userStore = defineStore("user", function () {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
       body: new URLSearchParams(body),
     };
-    await fetch(env.BACKEND_PORT + "/users/update_profile", options)
+    await fetch(env.BACKEND_SERVER_URL + "/users/update_profile", options)
       .then(async (response) => console.log(await response.json()))
       .catch((err) => console.error(err));
   }
@@ -249,7 +275,7 @@ export const userStore = defineStore("user", function () {
       body: new URLSearchParams(body),
     };
 
-    await fetch(env.BACKEND_PORT + "/users/buy_skin", options)
+    await fetch(env.BACKEND_SERVER_URL + "/users/buy_skin", options)
       .then(async (response) => console.log("buy_shop:", await response.json()))
       .catch((err) => console.error(err));
   }
@@ -264,7 +290,7 @@ export const userStore = defineStore("user", function () {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
       body: new URLSearchParams(body),
     };
-    await fetch(env.BACKEND_PORT + "/users/update_table_skin", options)
+    await fetch(env.BACKEND_SERVER_URL + "/users/update_table_skin", options)
       .then(async (response) => console.log(await response.json()))
       .catch((err) => console.error(err));
   }
@@ -276,7 +302,7 @@ export const userStore = defineStore("user", function () {
     };
 
     return await axios
-      .get(env.BACKEND_PORT + "/users/users", options)
+      .get(env.BACKEND_SERVER_URL + "/users/users", options)
 
       // axios.request(options)
       .then(function (response: any) {
@@ -295,7 +321,7 @@ export const userStore = defineStore("user", function () {
     };
 
     return await axios
-      .get(env.BACKEND_PORT + "/users/get_profile/" + userId, options)
+      .get(env.BACKEND_SERVER_URL + "/users/get_profile/" + userId, options)
 
       // axios.request(options)
       .then(function (response: any) {
@@ -320,7 +346,7 @@ export const userStore = defineStore("user", function () {
       body: new URLSearchParams(body),
     };
 
-    await fetch(env.BACKEND_PORT + "/users", options)
+    await fetch(env.BACKEND_SERVER_URL + "/users", options)
       .then(async (response) => console.log(await response.json()))
       .catch((err) => console.error(err));
   }
@@ -332,7 +358,7 @@ export const userStore = defineStore("user", function () {
     };
 
     return await axios
-      .get(env.BACKEND_PORT + "/friendship/friends/", options)
+      .get(env.BACKEND_SERVER_URL + "/friendship/friends/", options)
 
       // axios.request(options)
       .then(function (response: any) {
@@ -352,7 +378,7 @@ export const userStore = defineStore("user", function () {
     };
 
     return await axios
-      .get(env.BACKEND_PORT + "/friendship/requests/", options)
+      .get(env.BACKEND_SERVER_URL + "/friendship/requests/", options)
       .then(function (response: any) {
         console.log("FriendsRequests: ", response.data);
         user.friendsRequests = response.data;
@@ -369,7 +395,7 @@ export const userStore = defineStore("user", function () {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
 
-    await fetch(env.BACKEND_PORT + "/friendship/send/" + userId, options)
+    await fetch(env.BACKEND_SERVER_URL + "/friendship/send/" + userId, options)
       .then(async function (response: any) {
         //Add Store()
         console.log(response);
@@ -396,7 +422,7 @@ export const userStore = defineStore("user", function () {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
 
-    await fetch(env.BACKEND_PORT + "/friendship/cancel/" + userId, options)
+    await fetch(env.BACKEND_SERVER_URL + "/friendship/cancel/" + userId, options)
       .then(async function (response: any) {
         //Add Store()
         const index = user.friendsRequests.findIndex((friendship) => friendship.requesteeId === userId);
@@ -419,7 +445,7 @@ export const userStore = defineStore("user", function () {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
 
-    await fetch(env.BACKEND_PORT + "/friendship/accept/" + userId, options)
+    await fetch(env.BACKEND_SERVER_URL + "/friendship/accept/" + userId, options)
       .then(async function (response: any) {
         user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requestorId != userId);
         user.friends.push({
@@ -445,7 +471,7 @@ export const userStore = defineStore("user", function () {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
 
-    await fetch(env.BACKEND_PORT + "/friendship/reject/" + userId, options)
+    await fetch(env.BACKEND_SERVER_URL + "/friendship/reject/" + userId, options)
       .then(async function (response: any) {
         const index = user.friendsRequests.findIndex((friendship) => friendship.requestorId == userId);
         if (index !== -1) user.friendsRequests.splice(index, 1);
@@ -468,7 +494,7 @@ export const userStore = defineStore("user", function () {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
 
-    await fetch(env.BACKEND_PORT + "/friendship/unfriend/" + userId, options)
+    await fetch(env.BACKEND_SERVER_URL + "/friendship/unfriend/" + userId, options)
       .then(async function (response: any) {
         const index = user.friends.findIndex((friendship) => friendship.id === userId);
         if (index !== -1) user.friends.splice(index, 1);
@@ -491,7 +517,7 @@ export const userStore = defineStore("user", function () {
     };
 
     return await axios
-      .get(env.BACKEND_PORT + "/blocklist/", options)
+      .get(env.BACKEND_SERVER_URL + "/blocklist/", options)
       .then(function (response: any) {
         user.block.push(...response.data);
         console.log("Block: ", response.data);
@@ -508,7 +534,7 @@ export const userStore = defineStore("user", function () {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
 
-    await fetch(env.BACKEND_PORT + "/blocklist/block/" + userId, options)
+    await fetch(env.BACKEND_SERVER_URL + "/blocklist/block/" + userId, options)
       .then(async function (response: any) {
         //Add in Store
         const existingEvent = user.block.find((block: any) => block.blockedId === userId);
@@ -542,7 +568,7 @@ export const userStore = defineStore("user", function () {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
 
-    await fetch(env.BACKEND_PORT + "/blocklist/block/" + userId, options)
+    await fetch(env.BACKEND_SERVER_URL + "/blocklist/block/" + userId, options)
       .then(async function (response: any) {
         //Add in Store
         user.block = user.block.filter((block: any) => block.blockedId == userId);
@@ -566,7 +592,7 @@ export const userStore = defineStore("user", function () {
     };
 
     return await axios
-      .get(env.BACKEND_PORT + "/blocklist/blockedBy", options)
+      .get(env.BACKEND_SERVER_URL + "/blocklist/blockedBy", options)
       .then(function (response: any) {
         user.block.push(...response.data);
         console.log("Who Blocked Me: ", response.data);
@@ -585,7 +611,7 @@ export const userStore = defineStore("user", function () {
     };
 
     return await axios
-      .get(env.BACKEND_PORT + "/game/user/" + userId, options)
+      .get(env.BACKEND_SERVER_URL + "/game/user/" + userId, options)
       .then(function (response: any) {
         console.log("Games: ", response.data);
         if (user.id == userId) user.infoPong.historic = response.data;
@@ -604,7 +630,7 @@ export const userStore = defineStore("user", function () {
     };
 
     return await axios
-      .get(env.BACKEND_PORT + "/game/active", options)
+      .get(env.BACKEND_SERVER_URL + "/game/active", options)
 
       // axios.request(options)
       .then(function (response: any) {
@@ -623,7 +649,7 @@ export const userStore = defineStore("user", function () {
     };
 
     return await axios
-      .get(env.BACKEND_PORT + "/game/leaderboard", options)
+      .get(env.BACKEND_SERVER_URL + "/game/leaderboard", options)
       .then(function (response: any) {
         console.log("LeaderBoard: ", response.data);
         return response.data;
@@ -644,7 +670,7 @@ export const userStore = defineStore("user", function () {
     };
 
     return await axios
-      .post(env.BACKEND_PORT + "/game/create", body, options)
+      .post(env.BACKEND_SERVER_URL + "/game/create", body, options)
       .then(function (response: any) {
         console.log(`GAME: ${response.data}`);
         return response.data;
@@ -653,14 +679,14 @@ export const userStore = defineStore("user", function () {
         console.error(error);
       });
   }
-  
-  async function twofagenerate() : Promise<string> {
+
+  async function twoFAGenerate(): Promise<string> {
     const options = {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
 
     return await axios
-      .post(env.BACKEND_PORT + "/auth/2fa/generate", undefined, options)
+      .post(env.BACKEND_SERVER_URL + "/auth/2fa/generate", undefined, options)
       .then(function (response: any) {
         console.log(`2Fa: ${response.data}`);
         return response.data.responseObj;
@@ -671,13 +697,13 @@ export const userStore = defineStore("user", function () {
       });
   }
 
-  async function twofaTurnOn(twoFactorCode: string) : Promise<string> {
+  async function twoFATurnOn(twoFactorCode: string): Promise<string> {
     const options = {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
-    console.log("code:", twoFactorCode)
+    console.log("code:", twoFactorCode);
     return await axios
-      .post(env.BACKEND_PORT + "/auth/2fa/turn-on", { twoFACode: twoFactorCode }, options)
+      .post(env.BACKEND_SERVER_URL + "/auth/2fa/turn-on", { twoFACode: twoFactorCode }, options)
       .then(function (response: any) {
         console.log(`2Fa ON: ${response.data}`);
         user.isTwoFAEnabled = true;
@@ -688,14 +714,14 @@ export const userStore = defineStore("user", function () {
         throw new Error(error);
       });
   }
-  
-  async function twofaTurnOff(twoFactorCode: string) : Promise<string> {
+
+  async function twoFATurnOff(twoFactorCode: string): Promise<string> {
     const options = {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
 
     return await axios
-      .post(env.BACKEND_PORT + "/auth/2fa/turn-off", { twoFACode: twoFactorCode }, options)
+      .post(env.BACKEND_SERVER_URL + "/auth/2fa/turn-off", { twoFACode: twoFactorCode }, options)
       .then(function (response: any) {
         console.log(`2Fa OFF: ${response.data}`);
         user.isTwoFAEnabled = false;
@@ -744,8 +770,10 @@ export const userStore = defineStore("user", function () {
     createGame,
 
     //TwoFactor
-    twofagenerate,
-    twofaTurnOn,
-    twofaTurnOff,
+    twoFAGenerate,
+    twoFATurnOn,
+    twoFATurnOff,
+
+	firstTimePrompt,
   };
 });

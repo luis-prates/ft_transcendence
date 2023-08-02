@@ -7,7 +7,6 @@ import { UserService } from '../../user/user.service';
 import { Server } from 'socket.io';
 import { GameStatus } from '@prisma/client';
 import { Player } from '../../player/Player';
-import { stat } from 'fs';
 
 export enum Status {
 	Waiting,
