@@ -4,7 +4,7 @@ services:
   frontend: # Name of our service
     build: ./frontend # path to dockerfile
     ports: # Port binding to host from docker container
-      - 80:80 # Bind port 80 of host to 80 of container
+      - ${FRONTEND_PORT}:80 # Bind port 80 of host to 80 of container
     environment:
       - BACKEND_SERVER_URL
       - LOBBY_SERVER_URL
