@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
 	SubscribeMessage,
 	WebSocketGateway,
@@ -24,11 +25,50 @@ export class ChatGateway implements OnGatewayConnection {
 		// event for a new channel being created
 		this.chatService.events.on('channel-created', async newChannel => {
 			const channelId = newChannel.id;
-			// Send a message to all users in the channel that a new channel has been added and give the whole newChannelobject
-			this.server.emit('channel-created', {
-				newChannel,
-				message: `Channel ${channelId} has been created`,
-			});
+
+      console.log(newChannel.users);
+      // Send an event only to the users in the DM if it is a DM
+      if (newChannel.type == 'DM') {
+        console.log("test1:", newChannel.users[0].user.id);
+        console.log("test2:", newChannel.users[1].user.id);
+        const client1: Socket = this.userIdToSocketMap.get(newChannel.users[0].user.id);
+        const client2: Socket = this.userIdToSocketMap.get(newChannel.users[1].user.id);
+
+        if (client1) {
+          client1.join(`channel-${channelId}`);
+          let userIdsInChannel = this.channelIdToUserIds.get(channelId);
+          if (!userIdsInChannel) {
+            userIdsInChannel = new Set();
+            this.channelIdToUserIds.set(channelId, userIdsInChannel);
+          }
+          userIdsInChannel.add(newChannel.users[0].userId);
+          client1.emit('channel-created', {
+            newChannel,
+            message: `Channel (DM) ${channelId} has been created`,
+          });
+        }
+
+        if (client2) {
+          client2.join(`channel-${channelId}`);
+          let userIdsInChannel = this.channelIdToUserIds.get(channelId);
+          if (!userIdsInChannel) {
+            userIdsInChannel = new Set();
+            this.channelIdToUserIds.set(channelId, userIdsInChannel);
+          }
+          userIdsInChannel.add(newChannel.users[1].userId);
+          client2.emit('channel-created', {
+            newChannel,
+            message: `Channel (DM) ${channelId} has been created`,
+          });
+        }
+      }
+      else {
+        // Send a message to all users that a new channel has been created
+        this.server.emit('channel-created', {
+          newChannel,
+          message: `Channel ${channelId} has been created`,
+        });
+      }
 		});
 
 		// event for a channel being deleted

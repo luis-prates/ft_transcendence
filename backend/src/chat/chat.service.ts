@@ -1,6 +1,7 @@
+/* eslint-disable prettier/prettier */
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateChannelDto, EditChannelDto, JoinChannelDto, MuteUserDto } from './dto';
+import { CreateChannelDto, EditChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
 import { Channel } from '@prisma/client';
 import { ChannelType } from '@prisma/client';
@@ -98,7 +99,7 @@ export class ChatService {
 			// Logic for public and private channels
 			if (createChannelDto.channelType == 'PUBLIC' || createChannelDto.channelType == 'PRIVATE') {
 				// Note: channel name has to be unique for open channels
-				newChannel = await this.prisma.channel.create({
+				const createdChannel = await this.prisma.channel.create({
 					data: {
 						name: createChannelDto.name,
 						type: createChannelDto.channelType,
@@ -124,10 +125,26 @@ export class ChatService {
 						},
 						...(createChannelDto.avatar && { avatar: createChannelDto.avatar }),
 					},
-					include: {
-						users: true,
-					},
 				});
+        newChannel = await this.prisma.channel.findUnique({
+          where: { id: createdChannel.id },
+          include: {
+            users: {
+              select: {
+                isAdmin: true,
+                isMuted: true,
+                user: {
+                  select: {
+                    id: true,
+                    image: true,
+                    nickname: true,
+                    status: true,
+                  },
+                },
+              },
+            },
+          },
+        });
 			}
 
 			// Logic for protected channels
@@ -137,7 +154,7 @@ export class ChatService {
 				const saltRounds = 10;
 				const hashedPassword = await bcrypt.hash(createChannelDto.password, saltRounds);
 
-				newChannel = await this.prisma.channel.create({
+				const createdChannel = await this.prisma.channel.create({
 					data: {
 						name: createChannelDto.name,
 						type: createChannelDto.channelType,
@@ -162,11 +179,28 @@ export class ChatService {
 								})),
 							],
 						},
-					},
-					include: {
-						users: true,
-					},
+					}
 				});
+
+        newChannel = await this.prisma.channel.findUnique({
+          where: { id: createdChannel.id },
+          include: {
+            users: {
+              select: {
+                isAdmin: true,
+                isMuted: true,
+                user: {
+                  select: {
+                    id: true,
+                    image: true,
+                    nickname: true,
+                    status: true,
+                  },
+                },
+              },
+            },
+          },
+        });
 			}
 
 			// Logic for DM
@@ -194,56 +228,77 @@ export class ChatService {
 				if (existingDM) {
 					throw new ConflictException('DM between these users already exists');
 				}
-				// Note: no need to set channel name when creating a DM
-				newChannel = await this.prisma.channel.create({
-					data: {
-						type: createChannelDto.channelType,
-						users: {
-							create: [
-								{
-									user: {
-										connect: {
-											id: user.id,
-										},
-									},
-								},
-								...createChannelDto.usersToAdd.map(id => ({
-									user: {
-										connect: {
-											id: id,
-										},
-									},
-								})),
-							],
-						},
-					},
-					include: {
-						users: true,
-					},
-				});
-			}
+
+        // Note: no need to set channel name when creating a DM
+        const createdChannel = await this.prisma.channel.create({
+          data: {
+            type: createChannelDto.channelType,
+            users: {
+              create: [
+                {
+                  user: {
+                    connect: {
+                      id: user.id,
+                    },
+                  },
+                },
+                ...createChannelDto.usersToAdd.map(id => ({
+                  user: {
+                    connect: {
+                      id: id,
+                    },
+                  },
+                })),
+              ],
+            },
+          }
+        });
+
+        // Fetch the channel with the selected fields
+        newChannel = await this.prisma.channel.findUnique({
+          where: { id: createdChannel.id },
+          include: {
+            users: {
+              select: {
+                isAdmin: true,
+                isMuted: true,
+                user: {
+                  select: {
+                    id: true,
+                    image: true,
+                    nickname: true,
+                    status: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
 			// emit event to everyone that a new channel was just created
 			this.events.emit('channel-created', newChannel);
 
 			// emit event to creator for new channel
-			const user_db = await this.prisma.user.findUnique({
-				where: { id: user.id },
-			});
+			// const user_db = await this.prisma.user.findUnique({
+			// 	where: { id: user.id },
+			// });
 
-			this.events.emit('user-added-to-channel', {
-				channelId: newChannel.id,
-				userId: user.id,
-				user: user_db,
-			});
+			// temporary disabled
+			// this.events.emit('user-added-to-channel', {
+			// 	channelId: newChannel.id,
+			// 	userId: user.id,
+			// 	user: user_db,
+			// });
 
-			// emit event to all other users added to channel
-			for (user of createChannelDto.usersToAdd) {
-				this.events.emit('user-added-to-channel', {
-					channelId: newChannel.id,
-					userId: user,
-					user: user_db,
-				});
-			}
+			// // emit event to all other users added to channel
+			// for (user of createChannelDto.usersToAdd) {
+			// 	this.events.emit('user-added-to-channel', {
+			// 		channelId: newChannel.id,
+			// 		userId: user,
+			// 		user: user_db,
+			// 	});
+			// }
 		} catch (error) {
 			if (error.code === 'P2002') {
 				throw new ConflictException('Channel already exists');
