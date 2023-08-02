@@ -182,6 +182,6 @@ export class PlayerService {
 
 	private convertFileToBase64(file: string): string {
 		const fileContent = fs.readFileSync(file, { encoding: 'base64' });
-		return fileContent;
+		return 'data:image/jpg;base64,' + fileContent;
 	}
 }
