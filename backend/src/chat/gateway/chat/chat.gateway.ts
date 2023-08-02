@@ -29,8 +29,6 @@ export class ChatGateway implements OnGatewayConnection {
       console.log(newChannel.users);
       // Send an event only to the users in the DM if it is a DM
       if (newChannel.type == 'DM') {
-        console.log("test1:", newChannel.users[0].user.id);
-        console.log("test2:", newChannel.users[1].user.id);
         const client1: Socket = this.userIdToSocketMap.get(newChannel.users[0].user.id);
         const client2: Socket = this.userIdToSocketMap.get(newChannel.users[1].user.id);
 
