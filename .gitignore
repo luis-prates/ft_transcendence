@@ -57,3 +57,7 @@ backend/prisma/migrations/
 # Frontend env.ts
 # can be pushed to git as it no longer has env vars
 # frontend/src/env.ts
+
+# certificates
+nginx-selfsigned.crt
+nginx-selfsigned.key
