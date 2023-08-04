@@ -294,8 +294,10 @@ function createOrUpdate()
 {
   if (getButtomOp() == "Create Channel")
     createNewChannel();
-  else
+  else {
     console.log("UPDATE CHANNEL");
+    updateChannel();
+  }
 }
 
 // Create new channel function
@@ -342,6 +344,40 @@ const createNewChannel = async () => {
   } catch (error) {
     console.error(error);
     // Handle any other errors that occurred during channel creation
+  }
+};
+
+const updateChannel = async () => {
+  try {
+    const name = (channelName.value == store.selected.name) ? null : channelName.value;
+    const type = (channelType.value == store.selected.type) ? null : channelType;
+    const password = channelPassword.value ? channelPassword.value : null;
+    const avatar = avatarBase64.value ? avatarBase64.value : null;
+
+    const editChannelDto = {
+      name: name,
+      password: password,
+      channelType: type,
+      avatar: avatar,
+    };
+
+    const response = await store.editChannel(store.selected.objectId, editChannelDto);
+
+    if (response === "404") {
+      errorMessage.value = "Channel not found. Please try again.";
+    } else if (!response) {
+      channelName.value = '';
+      channelPassword.value = '';
+      channelType.value = 'PUBLIC';
+      channelAvatar.value = null;
+      errorMessage.value = '';
+      instance?.emit("update-create-channel", false);
+    } else {
+      console.log("Error response: ", response);
+      errorMessage.value = 'Failed to edit channel. Please try again.';
+    }
+  } catch (error) {
+    console.error(error);
   }
 };
 </script>

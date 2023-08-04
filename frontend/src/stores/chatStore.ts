@@ -223,6 +223,34 @@ export const chatStore = defineStore("chat", () => {
       }
   }
 
+  async function editChannel(channelId: any, editChannelDto: any) {
+    const options = {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.access_token_server}`,
+      },
+      body: JSON.stringify(editChannelDto),
+    };
+  
+    try {
+      console.log("Vai editar o channel: ", channelId);
+      const response = await fetch(`${env.BACKEND_SERVER_URL}/chat/channels/edit/${channelId}`, options);
+  
+      if (response.ok) {
+        const updatedChannel = await response.json();
+        return updatedChannel;
+      } else if (response.status === 404) {
+        return "CHANNEL_NOT_FOUND";
+      } else {
+        return "GENERIC_ERROR";
+      }
+    } catch (error) {
+      console.error(error);
+      return "NETWORK_ERROR";
+    }
+  }
+
   async function createChannel(channel: channel) {
 
     const createChannelDto = {
@@ -456,6 +484,7 @@ async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
     getMessages,
     addMessage,
     getChannels,
+    editChannel,
     createChannel,
     activateMessage,
     selectChannel,
