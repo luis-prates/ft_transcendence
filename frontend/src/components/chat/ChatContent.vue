@@ -108,7 +108,7 @@ const store = chatStore();
 const user = userStore();
 const { selected } = storeToRefs(store);
 
-socketClass.setChatSocket({ query: { userId: user.user.id } });
+// socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
 console.log("Socket criado na instancia do componente: ", chatSocket);
 

@@ -24,7 +24,8 @@ const showTesss = ref(false);
 const showbuttom = ref(false);
 const chatListRef = ref<InstanceType<typeof ChatList> | null>(null);
 
-let socket: Socket = socketClass.getChatSocket();
+socketClass.setChatSocket({ query: { userId: user.user.id } });
+const socket: Socket = socketClass.getChatSocket();
 
 function toggleTesss() {
   showTesss.value = !showTesss.value;
@@ -32,11 +33,11 @@ function toggleTesss() {
 }
 
 onMounted(() => {
-  if (!socket)
-  {
-    socketClass.setChatSocket({ query: { userId: user.user.id } });
-  }
-  socket = socketClass.getChatSocket();  
+  // if (!socket)
+  // {
+  //   socketClass.setChatSocket({ query: { userId: user.user.id } });
+  // }
+  // socket = socketClass.getChatSocket();  
   store.getChannels();
   
   /* socket.on("join_chat", (data: channel) => {
