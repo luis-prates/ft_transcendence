@@ -277,6 +277,7 @@ onMounted(function () {
     socket.off("game_view");
     socket.off("end_game");
 	socket?.disconnect();
+	game?.audio("music_stop");
     window.removeEventListener('resize', updateButtonSizeAndPosition);
     button.removeEventListener('click', leaveTheGame);
   });
