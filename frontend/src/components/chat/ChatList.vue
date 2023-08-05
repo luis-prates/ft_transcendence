@@ -405,6 +405,7 @@ const openChannel = async function (channel: channel) {
   {
     store.getMessages(channel);
     instance?.emit('update-create-channel', false);
+    instance?.emit('protected-channel', false);
     instance?.emit("update-channel-status", true);
     usersInChannelSelect.value = channel.users;
     bannedUsersInChannelSelect.value = channel.banList;
@@ -417,10 +418,13 @@ const openChannel = async function (channel: channel) {
       await store.joinChannel(channel.objectId);
       store.getMessages(channel);
       instance?.emit('update-create-channel', false);
+      instance?.emit('protected-channel', false);
       instance?.emit("update-channel-status", true);
     }
     else{
       console.log("I will try to put the password!");
+      instance?.emit("protected-channel", true);
+      // store.joinChannel(channel.objectId, "privado")
     }
   }
 }

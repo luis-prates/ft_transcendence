@@ -291,10 +291,15 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  async function joinChannel(channelId: string) {
-    const joinChannelDto = {
+  async function joinChannel(channelId: string, password?: string) {
+    const joinChannelDto: { channelId: string; password?: string } = {
       channelId: channelId,
     };
+  
+    // Add the password to joinChannelDto if it is provided
+    if (password) {
+      joinChannelDto.password = password;
+    }
     console.log("joinChannelDto:", joinChannelDto);
 
     const options = {
@@ -313,14 +318,16 @@ export const chatStore = defineStore("chat", () => {
       // Check if the response indicates a successful operation
       if (response.ok) {
         // Return any relevant data here if needed
-        //store.getChannels();
+        // In this case, we don't need to return any data; just indicate success
         return false;
+      } else if (response.status === 400) {
+        return { success: false, error: 'INCORRECT_PASSWORD' };
       } else {
-        return "GENERIC_ERROR";
+        return { success: false, error: 'GENERIC_ERROR' };
       }
     } catch (error) {
       console.error(error);
-      return false;
+      return { success: false, error: 'GENERIC_ERROR' };
     }
   }
 

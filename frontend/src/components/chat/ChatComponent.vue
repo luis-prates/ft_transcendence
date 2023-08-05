@@ -1,7 +1,7 @@
 <template>
   <div class="chat">
-    <ChatContent  @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_mensagen" />
-    <ChatList ref="chatListRef" @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_list"/>
+    <ChatContent @protected-channel="protectedChannel" :protectedStatus="protectedchannel" @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_mensagen" />
+    <ChatList ref="chatListRef" @protected-channel="protectedChannel" @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_list"/>
   </div>
 </template>
 
@@ -216,14 +216,18 @@ onUnmounted(() => {
 // Data initialization
 const channel = ref(false);
 const createChannel = ref(false);
+const protectedchannel = ref(false);
 
 // Provide the channel status to chld components
 provide('channelValue', channel);
 // Method to update channelStatus when emitted from child component
 const updateChannelStatus = (newStatus: boolean) => {
-  console.log("chamou a funcao!");
   channel.value = newStatus;
 };
+//testing for emits protected channel
+const protectedChannel = (newStatus: boolean) => {
+  protectedchannel.value = newStatus;
+}
 
 // Method to update createChannel var when emitted from child component
 const updateCreateChannel = (newStatus: boolean) => {

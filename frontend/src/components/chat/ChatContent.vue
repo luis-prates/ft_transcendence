@@ -10,7 +10,6 @@
           <span>{{ channelName }}</span>
         </div>
         <div class="video_cam">
-          <!-- <button class="config_chat">⚙</button> -->
           <button @click="toggleStatus" class="close_chat">
             <img class="close_chat_img" src="src/assets/chat/close_channel.png" alt="Close" />
           </button>
@@ -44,9 +43,37 @@
       <p v-if="errorMessage" class="text-danger">{{ errorMessage }}</p>
       </form>
     </div>
-
-    
   </div>
+  <div v-else-if="protectedStatus" class="card">
+  <!-- Form for joining a protected channel -->
+  <div class="card-header msg_head">
+      <div class="d-flex bd-highlight">
+        <!-- cabeca do formulario -->
+        <div class="img_cont">
+          <img :src=defaultAvatar class="user_img" />
+        </div>
+        <div class="user_info">
+          <span>{{ getChannelName() }}</span>
+        </div>
+        <div class="video_cam">
+          <button @click="toggleStatus" class="close_chat">
+            <img class="close_chat_img" src="src/assets/chat/close_channel.png" alt="Close" />
+          </button>
+        </div>
+      </div>
+    </div>
+  <div class="card-body msg_card_body">
+    <form @submit.prevent="joinProtected">
+      <div class="form-group">
+        <label for="channelPassword">Channel Password</label>
+        <input type="password" id="channelPassword" class="form-control" v-model="channelPassword" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Join Channel</button>
+      <!-- Display error message if joining channel failed -->
+      <p v-if="errorMessage" class="text-danger">{{ errorMessage }}</p>
+    </form>
+  </div>
+</div>
   <div v-else-if="channelStatus" class="card">
     <!-- Channel Messages here: -->
     <div class="card-header msg_head">
@@ -147,6 +174,7 @@ function getChatAvatar() {
   const props = defineProps({
     createChannel: Boolean,
     channelStatus: Boolean,
+    protectedStatus: Boolean,
   });
   
   // Define reactive variables
@@ -178,6 +206,7 @@ function editChannel() {
 const toggleStatus = () => {
   instance?.emit("update-channel-status", false);
   instance?.emit("update-create-channel", false);
+  instance?.emit("protected-channel", false);
   channelName.value = '';
   channelPassword.value = '';
   channelType.value = 'PUBLIC';
@@ -297,6 +326,36 @@ function createOrUpdate()
   else {
     console.log("UPDATE CHANNEL");
     updateChannel();
+  }
+}
+
+//protectedchannel
+const joinProtected  = async () => {
+  try{
+    const channelId = selected.value?.objectId;
+    const password = channelPassword.value;
+    const response = await store.joinChannel(channelId, password);
+
+    if (!response) {
+        // Reset form inputs
+        channelPassword.value = '';
+        errorMessage.value = '';
+        instance?.emit("protected-channel", false);
+        instance?.emit("update-channel-status", true);
+        store.getMessages(store.selected);
+      } else if (response.error == "INCORRECT_PASSWORD"){
+        // Handle channel creation failure here
+        errorMessage.value = 'Incorrect password. Please try again.';
+        channelPassword.value = '';
+        // Display error message in the form or take any other action
+      } else {
+        console.log("Error response: " + response);
+        channelPassword.value = '';
+        errorMessage.value = 'Failed to join a channel. Please try later.';
+      }
+  } catch (error) {
+    console.error(error);
+    // Handle any other errors that occurred during channel creation
   }
 }
 
