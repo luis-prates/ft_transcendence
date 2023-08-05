@@ -26,7 +26,6 @@ export class ChatGateway implements OnGatewayConnection {
 		this.chatService.events.on('channel-created', async newChannel => {
 			const channelId = newChannel.id;
 
-      console.log(newChannel.users);
       // Send an event only to the users in the DM if it is a DM
       if (newChannel.type == 'DM') {
         const client1: Socket = this.userIdToSocketMap.get(newChannel.users[0].user.id);
@@ -39,11 +38,13 @@ export class ChatGateway implements OnGatewayConnection {
             userIdsInChannel = new Set();
             this.channelIdToUserIds.set(channelId, userIdsInChannel);
           }
-          userIdsInChannel.add(newChannel.users[0].userId);
+          userIdsInChannel.add(newChannel.users[0].user.id);
           client1.emit('channel-created', {
             newChannel,
-            message: `Channel (DM) ${channelId} has been created`,
+            message: `DM ${channelId} between you and user ${newChannel.users[0].userId} has been created}`,
           });
+          client1.join(`channel-${channelId}`);
+          console.log(`User ${newChannel.users[0].user.id} joined a room: channel-${channelId}`);
         }
 
         if (client2) {
@@ -53,11 +54,13 @@ export class ChatGateway implements OnGatewayConnection {
             userIdsInChannel = new Set();
             this.channelIdToUserIds.set(channelId, userIdsInChannel);
           }
-          userIdsInChannel.add(newChannel.users[1].userId);
+          userIdsInChannel.add(newChannel.users[1].user.id);
           client2.emit('channel-created', {
             newChannel,
-            message: `Channel (DM) ${channelId} has been created`,
+            message: `DM ${channelId} between you and user ${newChannel.users[0].userId} has been created}`,
           });
+          client2.join(`channel-${channelId}`);
+          console.log(`User ${newChannel.users[1].user.id} joined a room: channel-${channelId}`);
         }
       }
       else {
@@ -66,8 +69,38 @@ export class ChatGateway implements OnGatewayConnection {
           newChannel,
           message: `Channel ${channelId} has been created`,
         });
+        // loop over all users in the channel and join them to the channel
+        for (const user of newChannel.users) {
+          const client: Socket = this.userIdToSocketMap.get(user.user.id);
+          if (!client) {
+            // if socketId not found, client is not currently connected and doesnt need the websocket event
+            continue;
+          }
+          client.join(`channel-${channelId}`);
+          console.log(`User ${user.user.id} joined a room: channel-${channelId}`);
+
+          // New for blocklist: maintain the users to channels mapping
+          // Update the channelIdToUserIds map
+          let userIdsInChannel = this.channelIdToUserIds.get(channelId);
+          if (!userIdsInChannel) {
+            userIdsInChannel = new Set();
+            this.channelIdToUserIds.set(channelId, userIdsInChannel);
+          }
+          userIdsInChannel.add(user.user.id);
+        }
       }
 		});
+
+    // event for a channel being edited
+    this.chatService.events.on('channel-edited', async editedChannel => {
+      // Send a message to all users in the channel that a new channel has been added
+      console.log('edited channel', editedChannel);
+      const channelId = editedChannel.id;
+      this.server.emit('channel-edited', {
+        editedChannel,
+        message: `Channel ${channelId} has been edited`,
+      });
+    });
 
 		// event for a channel being deleted
 		this.chatService.events.on('channel-deleted', async deletedChannel => {
@@ -131,7 +164,6 @@ export class ChatGateway implements OnGatewayConnection {
 				message: `User ${userId} has been added to channel ${channelId}`,
 			});
 		});
-		console.log('event for user-added has been set-up');
 
 		this.chatService.events.on('user-removed-from-channel', async ({ channelId, userId, user }) => {
 			const client: Socket = this.userIdToSocketMap.get(userId);
@@ -303,12 +335,6 @@ export class ChatGateway implements OnGatewayConnection {
 		// Enter the user in the channels he belongs in
 		const userChannels = await this.chatService.getUserChannels(Number(query.userId));
 
-		// TODO: review if below code is still needed
-		// for (const channelId of userChannels) {
-		// 	client.join(`channel-${channelId}`);
-		// 	console.log(`Client joined channel-${channelId}`);
-		// }
-
 		// New for blocklist: maintain the users to channels mapping
 		for (const channelId of userChannels) {
 			client.join(`channel-${channelId}`);
@@ -353,7 +379,6 @@ export class ChatGateway implements OnGatewayConnection {
 		// First check if the payload is valid
 		try {
 			// in case the request was sent as raw string, we need to parse it
-			console.log(`User ${client.data.userId} received message from user ${senderId}: ${payload.message}`);
 			if (typeof payload == 'string') {
 				payload = JSON.parse(payload);
 			}
@@ -393,18 +418,18 @@ export class ChatGateway implements OnGatewayConnection {
 			// who have not blocked the sender
 			// Speed here could probably be improved
 			const userIdsInChannel = this.channelIdToUserIds.get(channelId);
-			console.log('userIdsInChannel: ', userIdsInChannel);
 			if (userIdsInChannel) {
-				userIdsInChannel.forEach(async userId => {
-					if (!(await this.chatService.isUserBlocked(senderId, userId))) {
-						console.log('Unblocked message triggered for userId: ' + userId);
-						const socket = this.userIdToSocketMap.get(userId);
-						socket.emit('message', {
-							channelId: channelId,
-							senderId: senderId,
-							message: message,
-						});
-					} else {
+        for (const userId of userIdsInChannel) {
+          if (!(await this.chatService.isUserBlocked(senderId, userId))) {
+            console.log('UserId: ' + userId + 'received a message: ' + message);
+            const socket = this.userIdToSocketMap.get(userId);
+            socket.emit('message', {
+              channelId: channelId,
+              senderId: senderId,
+              message: message,
+            });
+        }
+					else {
 						console.log(
 							'userId: ' +
 								userId +
@@ -413,7 +438,7 @@ export class ChatGateway implements OnGatewayConnection {
 								' and does not receive the message',
 						);
 					}
-				});
+        };
 			}
 		} catch (error) {
 			console.error('Failed to store the message.', error);
