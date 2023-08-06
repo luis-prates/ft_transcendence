@@ -76,6 +76,7 @@ export class ChatGateway implements OnGatewayConnection {
 						continue;
 					}
 					client.join(`channel-${channelId}`);
+					client.data.rooms.add(`channel-${channelId}`);
 					console.log(`User ${user.user.id} joined a room: channel-${channelId}`);
 
 					// New for blocklist: maintain the users to channels mapping
@@ -135,6 +136,7 @@ export class ChatGateway implements OnGatewayConnection {
 			}
 
 			client.join(`channel-${channelId}`);
+			client.data.rooms.add(`channel-${channelId}`);
 			console.log(`User ${userId} joined a room: channel-${channelId}`);
 
 			// New for blocklist: maintain the users to channels mapping
@@ -312,9 +314,9 @@ export class ChatGateway implements OnGatewayConnection {
 		// TODO: check if the user exists. If not, disconnect the socket.
 
 		console.log(`Client connected on /chat namespace with:
-            socketId: ${client.id}
-            userId: ${query.userId}
-        `);
+			socketId: ${client.id}
+			userId: ${query.userId}
+		`);
 
 		// For channel-added updates, we need to keep track of the socket
 		this.userIdToSocketMap.set(Number(query.userId), client);
@@ -322,11 +324,15 @@ export class ChatGateway implements OnGatewayConnection {
 		// associate the socketId with the userId
 		const userId = Number(query.userId);
 		client.data.userId = userId;
+
+		// track the rooms the user is in
+		client.data.rooms = new Set();
 		// this.userIdToSocketId.set(userId, client.id);
 
 		// Add the user to his own room for personal notifications and channel-added updates
-		client.join(`user-${client.data.userId}`);
-		console.log(`User ${userId} joined a room: user-${client.data.userId}`);
+		// client.join(`user-${client.data.userId}`);
+		// client.data.rooms.add(`user-${client.data.userId}`);
+		// console.log(`User ${userId} joined a room: user-${client.data.userId}`);
 
 		// Enter the user in the channels he belongs in
 		const userChannels = await this.chatService.getUserChannels(Number(query.userId));
@@ -334,6 +340,7 @@ export class ChatGateway implements OnGatewayConnection {
 		// New for blocklist: maintain the users to channels mapping
 		for (const channelId of userChannels) {
 			client.join(`channel-${channelId}`);
+			client.data.rooms.add(`channel-${channelId}`);
 			console.log(`Client joined channel-${channelId}`);
 
 			// Update the channelIdToUserIds map
@@ -344,26 +351,29 @@ export class ChatGateway implements OnGatewayConnection {
 			}
 			userIdsInChannel.add(userId);
 		}
+		console.log('rooms: ', client.rooms);
 	}
 
 	async handleDisconnect(client: Socket) {
 		const userId: number = client.data.userId;
 		this.userIdToSocketMap.delete(userId);
-		this.logger.log(`Client disconnected : ${client.id}`);
-		const connectedRooms = Object.keys(client.rooms);
+		const connectedRooms = [...client.data.rooms];
 		// connectedRooms.forEach(room => client.leave(room));
 		// Update the channelIdToUserIds map
 		connectedRooms.forEach(room => {
 			client.leave(room);
 			const channelId = Number(room.split('-')[1]); // Assuming room names are in the format 'channel-{channelId}'
 			const userIdsInChannel = this.channelIdToUserIds.get(channelId);
+			// remove the disconnecting user from the userIdsInChannel set
 			if (userIdsInChannel) {
 				userIdsInChannel.delete(userId);
 				if (userIdsInChannel.size === 0) {
 					this.channelIdToUserIds.delete(channelId);
 				}
 			}
+			console.log('userIdsInChannel test2', userIdsInChannel);
 		});
+		this.logger.log(`Client disconnected : ${client.id}`);
 	}
 
 	@SubscribeMessage('message')
@@ -419,7 +429,7 @@ export class ChatGateway implements OnGatewayConnection {
 					if (!(await this.chatService.isUserBlocked(senderId, userId))) {
 						console.log('UserId: ' + userId + 'received a message: ' + message);
 						const socket = this.userIdToSocketMap.get(userId);
-						socket.emit('message', {
+						socket?.emit('message', {
 							channelId: channelId,
 							senderId: senderId,
 							message: message,
