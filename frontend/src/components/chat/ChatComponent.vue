@@ -80,14 +80,14 @@ onMounted(() => {
   });
   socket.on("channel-added", (eventData) => {
     const { channelId } = eventData;
-    store.addUserToChannel(channelId, user.user);
+    store.userToChannel(channelId, user.user);
       chatListRef.value?.getFilteredChannels();
   });
   //TODO, user-added acionado 3x
   socket.on("user-added", (eventData) => {
     console.log("Acionou o evento: eventData" , eventData);
     const { channelId, user } = eventData;
-    store.addUserToChannel(channelId, user);
+    store.userToChannel(channelId, user);
   });
 
   //Mute

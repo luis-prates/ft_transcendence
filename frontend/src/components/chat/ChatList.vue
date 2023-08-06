@@ -287,7 +287,7 @@ const handleContextMenuFriendUser = (e: any, user: ChatUser)  => {
     },
     { 
       label: "Add User", 
-      onClick: () => console.log("Vai adicionar User ao channel")
+      onClick: () => chatStore().addUserToChannel(chatStore().selected.objectId, user.id)
     }
   ]
   ContextMenu.showContextMenu({

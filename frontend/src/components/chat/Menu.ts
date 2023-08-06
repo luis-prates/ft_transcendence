@@ -125,7 +125,7 @@ sendDM = async (user : ChatUser) => {
     // Ban
     else if (item == 7){
       if (this.selected)
-      this.store.banUser(this.selected?.value.objectId, user.id);
+      this.store.banUser(this.selected?.value.objectId, user.id, "ban");
     }
     //GIVE ADMINSTRATOR
     else if (item == 8){

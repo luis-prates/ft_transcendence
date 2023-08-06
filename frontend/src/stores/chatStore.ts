@@ -331,6 +331,8 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
+  
+
   // Function to remove a user from a specific channel
   function removeUserFromChannel(channelId: any, userId:any) {
     const channel = channels.find((channel: channel) => channel.objectId === channelId);
@@ -350,8 +352,31 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
+  async function addUserToChannel(channelId: string, userId: string) {
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.access_token_server}`,
+      },
+    };
+  
+    try {
+      const response = await fetch(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/users/${userId}`, options);
+  
+      if (response.ok) {
+        return { success: true };
+      } else {
+        return { success: false, error: 'GENERIC_ERROR' };
+      }
+    } catch (error) {
+      console.error(error);
+      return { success: false, error: 'GENERIC_ERROR' };
+    }
+  }
+
   // Function to add a user to a specific channel
-function addUserToChannel(channelId: any, user: ChatUser) {
+function userToChannel(channelId: any, user: ChatUser) {
   const channel = channels.find((channel: channel) => channel.objectId === channelId);
 
   if (channel) {
@@ -500,6 +525,7 @@ async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
     joinChannel, 
     removeUserFromChannel,
     addUserToChannel,
+    userToChannel,
     makeAdmin,
     demoteAdmin,
     muteUser,
