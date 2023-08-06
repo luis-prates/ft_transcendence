@@ -135,7 +135,7 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  async function banUser(channelId:number, userId: number) {
+  async function banUser(channelId:number, userId: number, command:String) {
 
     const options = {
       method: "POST",
@@ -146,10 +146,10 @@ export const chatStore = defineStore("chat", () => {
     };
 
     await axios
-      .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/ban/${userId}`, 
+      .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/${command}/${userId}`, 
         { channelId: channelId, userId: userId, }, options)
       .then(function (response: any) {
-        console.log(`User:${userId} was banned : ${response.data}`);
+        console.log(`User:${userId} was ${command} : ${response.data}`);
       })
       .catch((err) => console.error(err));
   }

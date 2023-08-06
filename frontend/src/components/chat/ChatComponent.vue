@@ -159,6 +159,22 @@ onMounted(() => {
     }
   });
 
+  //unban
+  socket.on("user-unbanned-in-channel", (eventData) => {
+    const { channelId, userId, message } = eventData;
+    console.log(message);
+
+    const curChannel = chatStore().channels.find((channel: channel) => channel.objectId === channelId);
+    if (curChannel) {
+      const curUserIndex = curChannel.banList.findIndex((userChannel: ChatUser) => userChannel.id === userId);
+      if (curUserIndex !== -1) {
+        const curUser = curChannel.banList[curUserIndex];
+        curChannel.banList.splice(curUserIndex, 1);
+        curChannel.users.push(curUser);
+      }
+    }
+  });
+
   //You Prometed
   socket.on("user-promoted", (eventData) => {
     console.log("Promoted" , eventData);

@@ -268,7 +268,7 @@ const handleContextMenuBanUser = (e: any, user: ChatUser)  => {
     },
     { 
       label: "UnBan", 
-      onClick: () => console.log("Vai fazer unBan")
+      onClick: () => store.banUser(selected?.value.objectId, user.id, "unban"),
     }
   ]
   ContextMenu.showContextMenu({
@@ -359,7 +359,7 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
       },
       { 
         label: "Ban", 
-        onClick: () => store.banUser(selected?.value.objectId, user.id),
+        onClick: () => store.banUser(selected?.value.objectId, user.id, "ban"),
       },
       ] : []),
       //para owners
@@ -367,6 +367,11 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
       { 
         label: menu.getAdmistrator(user) + " Adminstrator", 
         onClick: () => makeOrDemoteAdmin(user),
+      }] : []),
+      ...((chatStore().selected.ownerId == userStore().user.id) && user.isAdmin == true ? [
+      { 
+        label: "Give Owner", 
+        onClick: () => console.log("Vai alterar o owner do channel"),
       }] : [])
     ]
   ContextMenu.showContextMenu({
