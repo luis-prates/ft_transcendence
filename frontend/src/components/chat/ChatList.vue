@@ -42,11 +42,14 @@
         <!-- Users inside the chat selected -->
         <ul class="contacts">
           <div v-if="imAdmin" class="chat_filter">
-            <button @click="setShowUsers(true)"  class="chat_filter_button">
+            <button @click="setShowUsers(1)"  class="chat_filter_button">
               <img class="chat_filter_img" src="src/assets/chat/userslist.png" title="Users" />
             </button>
-            <button @click="setShowUsers(false)"  class="chat_filter_button">
+            <button @click="setShowUsers(2)"  class="chat_filter_button">
               <img class="chat_filter_img" src="src/assets/chat/blacklist.png" title="Users Banned" />
+            </button>
+            <button @click="setShowUsers(3)"  class="chat_filter_button">
+              <img class="chat_filter_img" src="src/assets/chat/add_user.png" title="Add User" />
             </button>
           </div>
           <div v-if="showUsers">
@@ -54,9 +57,14 @@
               <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser($event, user)" />
             </li>
           </div>
-          <div v-else>
+          <div v-else-if="showBanUsers">
             <li v-for="(bannedUser, id) in bannedUsersFilters" :key="id">
               <ChatListUsers :user="bannedUser" @click="selectUser(bannedUser)" @contextmenu="handleContextMenuBanUser($event, bannedUser)" />
+            </li>
+          </div>
+          <div v-else-if="showAddUsers">
+            <li v-for="(friendUser, id) in friendListFilter" :key="id">
+              <ChatListUsers :user="friendUser" @click="selectUser(friendUser)" @contextmenu="handleContextMenuFriendUser($event, friendUser)" />
             </li>
           </div>
         </ul>
@@ -95,6 +103,7 @@ const usersInChannelSelect = ref([] as ChatUser[]);
 const bannedUsersInChannelSelect = ref([] as ChatUser[]);
 const usersFilters = ref([] as ChatUser[]);
 const bannedUsersFilters = ref([] as ChatUser[]);
+const friendListFilter = ref([] as ChatUser[]);
 const searchUser = ref('');
 const isChatFilterType = ref("inside");
 const menu = new Menu();
@@ -113,9 +122,25 @@ const imAdmin =  computed(() => {
 })
 
 const showUsers = ref(true);
+const showBanUsers = ref(false);
+const showAddUsers = ref(false);
 
-const setShowUsers = (value:boolean) => {
-  showUsers.value = value;
+const setShowUsers = (value:any) => {
+  if (value == 1) {
+    showUsers.value = true;
+    showBanUsers.value = false;
+    showAddUsers.value = false;
+  }
+  else if (value == 2) {
+    showUsers.value = false;
+    showBanUsers.value = true;
+    showAddUsers.value = false;
+  }
+  else if (value == 3) {
+    showUsers.value = false;
+    showBanUsers.value = false;
+    showAddUsers.value = true;
+  }
 }
 
 const handleSearch = () => {
@@ -240,6 +265,21 @@ const handleContextMenuBanUser = (e: any, user: ChatUser)  => {
       { 
         label: "UnBan", 
         onClick: () => console.log("Vai fazer unBan")
+      }
+    ]
+  ContextMenu.showContextMenu({
+    x: e.x,
+    y: e.y,
+    items: items,
+    customClass: "custom-context-menu",
+  });
+};
+
+const handleContextMenuFriendUser = (e: any, user: ChatUser)  => {
+  const items = [
+      { 
+        label: "Add User", 
+        onClick: () => console.log("Vai adicionar User ao channel")
       }
     ]
   ContextMenu.showContextMenu({
@@ -411,6 +451,11 @@ const openChannel = async function (channel: channel) {
     bannedUsersInChannelSelect.value = channel.banList;
     usersFilters.value = channel.users;
     bannedUsersFilters.value = channel.banList;
+    friendListFilter.value = userStore().user.friends.filter((friend) => {
+      const isNotInSelectedUsers = !store.selected.users.some((selectedUser:any) => selectedUser.id === friend.id);
+      const isNotInBanList = !store.selected.banList.some((bannedUser:any) => bannedUser.id === friend.id);
+      return isNotInSelectedUsers && isNotInBanList;
+    });
   }
   else
   {
