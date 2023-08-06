@@ -92,7 +92,7 @@ export class GameClass {
 
 	emitStartGame() {
 		this.gameService.updateGameStatus(this.data.objectId, GameStatus.IN_PROGESS);
-		this.player1.socket.emitToGame('start_game', {
+		this.player1.socket?.emitToGame('start_game', {
 			player: 1,
 			status: Status.Starting,
 			data: this.data,
@@ -112,7 +112,7 @@ export class GameClass {
 			},
 		});
 		if (this.bot == false) {
-			this.player2.socket.emitToGame('start_game', {
+			this.player2.socket?.emitToGame('start_game', {
 				player: 2,
 				status: Status.Starting,
 				data: this.data,
@@ -343,11 +343,11 @@ export class GameClass {
 
 	//Emit for Players
 	emitPlayers(event: string, data: any): void {
-		this.gameServer.to(`game-${this.data.objectId}-player`).emit(event, data);
+		this.gameServer?.to(`game-${this.data.objectId}-player`).emit(event, data);
 	}
 	//Emit for Watchers
 	emitWatchers(event: string, data: any): void {
-		this.gameServer.to(`game-${this.data.objectId}-watcher`).emit(event, data);
+		this.gameServer?.to(`game-${this.data.objectId}-watcher`).emit(event, data);
 	}
 	//Emit for Players and Watchers
 	emitAll(event: string, data: any): void {

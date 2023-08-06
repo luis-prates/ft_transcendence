@@ -81,7 +81,7 @@ export class PlayerService {
 	getUserIdFromGameSocket(socket: Socket): number {
 		// find id in sockets map
 		for (const [key, value] of this.players.entries()) {
-			if (value.getGameSocket() && value.getGameSocket().id == socket.id) {
+			if (value.getGameSocket() && value.getGameSocket().id == socket?.id) {
 				return key;
 			}
 		}
@@ -131,7 +131,7 @@ export class PlayerService {
 
 	updatePlayerSocket(socket: Socket): void {
 		this.logger.debug('updatePlayerSocket');
-		const playerSocket = this.sockets.get(Number(socket.id));
+		const playerSocket = this.sockets.get(Number(socket?.id));
 		if (!playerSocket) {
 			return;
 		}

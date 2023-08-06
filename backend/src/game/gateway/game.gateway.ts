@@ -70,9 +70,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			const game = this.gameService.games.find(g => g.data.objectId == gameId);
 
 			if (isPlayer) {
-				if (game) {
-					game.disconnect(game.player1.userId == userId ? 1 : 2);
-				}
+				game?.disconnect(game.player1.userId == userId ? 1 : 2);
 
 				this.socketService.gameIdToPlayerId.set(
 					gameId,
@@ -83,7 +81,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 					`Current players in game ${gameId}: ${this.socketService.gameIdToPlayerId.get(gameId)}`,
 				);
 				// Leave the room for the game
-				client.leave(`game-${gameId}-player`);
+				client?.leave(`game-${gameId}-player`);
 				this.userService.status(userId, UserStatus.ONLINE);
 			} else if (isWatcher) {
 				this.socketService.gameIdToWatcherId.set(
@@ -91,7 +89,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 					this.socketService.gameIdToWatcherId.get(gameId).filter(watcherId => watcherId !== userId),
 				);
 				this.logger.log(`Removed watcher ${userId} from game ${gameId}`);
-				client.leave(`game-${gameId}-watcher`);
+				client?.leave(`game-${gameId}-watcher`);
 				game?.emitAll('game_view', game.watchers.length);
 			}
 		}
@@ -120,7 +118,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		try {
 			isPlayer = await this.gameService.enterGame(player, body);
 		} catch (error) {
-			client.emit('error', error.message);
+			client?.emit('error', error.message);
 		}
 
 		//TODO Associar o player a um jogo
@@ -132,7 +130,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				userId,
 			]);
 			// Join the room for the game
-			client.join(`game-${gameId}-player`);
+			client?.join(`game-${gameId}-player`);
 			this.logger.debug(`Client ${client.id} Joining game-${gameId}-player`);
 		}
 		// else, add userId to gameIdToWatcherId map
@@ -142,7 +140,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				userId,
 			]);
 			this.logger.log(`Added watcher ${userId} to game ${gameId}`);
-			client.join(`game-${gameId}-watcher`);
+			client?.join(`game-${gameId}-watcher`);
 		}
 	}
 
@@ -154,7 +152,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 		this.logger.debug(`Match Making game received`);
 		if (game) {
-			this.server.emit('match_making_game', game);
+			this.server?.emit('match_making_game', game);
 		}
 	}
 }
