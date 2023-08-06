@@ -247,7 +247,7 @@ const handleContextMenu = (e: any, channel: channel)  => {
       ? [
           {
             label: "Delete", 
-            onClick: () => console.log("Vai deletar channel!"),
+            onClick: () => chatStore().deleteChannel(channel.objectId),
           }
         ]
       : [])

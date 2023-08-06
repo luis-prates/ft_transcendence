@@ -62,7 +62,7 @@ export const chatStore = defineStore("chat", () => {
       type: newChannel.type,
       ownerId: newChannel.ownerId,
       messagesLoaded: false,
-      banList: newChannel.banList,
+      banList: [],
     };
     const channelSelected = channels.find((c: channel) => {
       return c.objectId === channel.objectId;
@@ -230,6 +230,22 @@ export const chatStore = defineStore("chat", () => {
       } catch (error) {
         console.error(error);
       }
+  }
+
+  async function deleteChannel(channelId: string) {
+    const options = {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+  
+    try {
+      await axios.delete(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}`, options);
+        console.log("Channel deleted successfully");
+      // You can update your local state or perform any other actions after successful deletion.
+    } catch (error) {
+      console.error("Error deleting channel:", error);
+      // Handle the error, show an error message, or perform other error-handling actions.
+    }
   }
 
   async function editChannel(channelId: any, editChannelDto: any) {
@@ -531,6 +547,7 @@ async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
     selectChannel,
     isUserInSelectedChannel,
     leaveChannel,
+    deleteChannel,
     joinChannel, 
     removeUserFromChannel,
     addUserToChannel,
