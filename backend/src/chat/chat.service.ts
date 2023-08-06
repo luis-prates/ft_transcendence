@@ -125,22 +125,22 @@ export class ChatService {
 						},
 						...(createChannelDto.avatar && { avatar: createChannelDto.avatar }),
 					},
-          include : {
-            users: {
-              select: {
-                isAdmin: true,
-                isMuted: true,
-                user: {
-                  select: {
-                    id: true,
-                    image: true,
-                    nickname: true,
-                    status: true,
-                  },
-                },
-              },
-            },
-          }
+					include: {
+						users: {
+							select: {
+								isAdmin: true,
+								isMuted: true,
+								user: {
+									select: {
+										id: true,
+										image: true,
+										nickname: true,
+										status: true,
+									},
+								},
+							},
+						},
+					},
 				});
 			}
 
@@ -177,22 +177,22 @@ export class ChatService {
 							],
 						},
 					},
-          include : {
-            users: {
-              select: {
-                isAdmin: true,
-                isMuted: true,
-                user: {
-                  select: {
-                    id: true,
-                    image: true,
-                    nickname: true,
-                    status: true,
-                  },
-                },
-              },
-            },
-          },
+					include: {
+						users: {
+							select: {
+								isAdmin: true,
+								isMuted: true,
+								user: {
+									select: {
+										id: true,
+										image: true,
+										nickname: true,
+										status: true,
+									},
+								},
+							},
+						},
+					},
 				});
 			}
 
@@ -222,47 +222,47 @@ export class ChatService {
 					throw new ConflictException('DM between these users already exists');
 				}
 
-        // Note: no need to set channel name when creating a DM
-        newChannel = await this.prisma.channel.create({
-          data: {
-            type: createChannelDto.channelType,
-            users: {
-              create: [
-                {
-                  user: {
-                    connect: {
-                      id: user.id,
-                    },
-                  },
-                },
-                ...createChannelDto.usersToAdd.map(id => ({
-                  user: {
-                    connect: {
-                      id: id,
-                    },
-                  },
-                })),
-              ],
-            },
-          },
-          include: {
-            users: {
-              select: {
-                isAdmin: true,
-                isMuted: true,
-                user: {
-                  select: {
-                    id: true,
-                    nickname: true,
-                    status: true,
-                    image: true,
-                  }
-                }
-              }
-            }
-          }
-        });
-      }
+				// Note: no need to set channel name when creating a DM
+				newChannel = await this.prisma.channel.create({
+					data: {
+						type: createChannelDto.channelType,
+						users: {
+							create: [
+								{
+									user: {
+										connect: {
+											id: user.id,
+										},
+									},
+								},
+								...createChannelDto.usersToAdd.map(id => ({
+									user: {
+										connect: {
+											id: id,
+										},
+									},
+								})),
+							],
+						},
+					},
+					include: {
+						users: {
+							select: {
+								isAdmin: true,
+								isMuted: true,
+								user: {
+									select: {
+										id: true,
+										nickname: true,
+										status: true,
+										image: true,
+									},
+								},
+							},
+						},
+					},
+				});
+			}
 
 			// emit event to everyone that a new channel was just created
 			this.events.emit('channel-created', newChannel);
@@ -592,25 +592,25 @@ export class ChatService {
 
 		// Set the timeout to unmute the user
 		setTimeout(async () => {
-      // check if userId is still muted
-      const channelUser = await this.prisma.channelUser.findUnique({
-        where: {
-          userId_channelId: {
-            channelId: channelId,
-            userId: userId,
-          },
-        },
-      });
+			// check if userId is still muted
+			const channelUser = await this.prisma.channelUser.findUnique({
+				where: {
+					userId_channelId: {
+						channelId: channelId,
+						userId: userId,
+					},
+				},
+			});
 
-      if (!channelUser) {
-        throw new NotFoundException('User is not part of this channel');
-      }
+			if (!channelUser) {
+				throw new NotFoundException('User is not part of this channel');
+			}
 
-      // if user is already unmuted, throw error
-      if (!channelUser.isMuted) {
-        // no need to do anything if already unmuted
-        return;
-      }
+			// if user is already unmuted, throw error
+			if (!channelUser.isMuted) {
+				// no need to do anything if already unmuted
+				return;
+			}
 
 			await this.unmuteUser(Number(channelId), Number(userId));
 		}, muteDuration * 60 * 1000); // Convert minutes to milliseconds
@@ -803,28 +803,28 @@ export class ChatService {
 				...(hashedPassword ? { hash: hashedPassword } : {}),
 				...(channelType ? { type: channelType } : {}),
 			},
-      include: {
-        users: {
-          select: {
-            isAdmin: true,
-            isMuted: true,
-            user: {
-              select: {
-                id: true,
-                image: true,
-                nickname: true,
-                status: true,
-              },
-            },
-          },
-        },
-      }
+			include: {
+				users: {
+					select: {
+						isAdmin: true,
+						isMuted: true,
+						user: {
+							select: {
+								id: true,
+								image: true,
+								nickname: true,
+								status: true,
+							},
+						},
+					},
+				},
+			},
 		});
 
-    // emit an event that a channel was edited
-    this.events.emit('channel-edited', editedChannel);
+		// emit an event that a channel was edited
+		this.events.emit('channel-edited', editedChannel);
 
-    return editedChannel;
+		return editedChannel;
 	}
 
 	// Owner can delete a channel

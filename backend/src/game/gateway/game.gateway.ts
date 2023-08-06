@@ -59,7 +59,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		client.data.userId = userId;
 	}
 
-	async handleDisconnect(@ConnectedSocket() client: Socket) {
+	handleDisconnect(@ConnectedSocket() client: Socket) {
 		console.log(client.data);
 		const userId = client.data.userId;
 		this.logger.log(`Client disconnected on /game namespace: ${userId}`);
@@ -75,7 +75,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				? this.socketService.gameIdToWatcherId.get(gameId).includes(Number(userId))
 				: false;
 			console.log(isPlayer, isWatcher);
-			const game = await this.gameService.games.find(g => g.data.objectId == gameId);
+			const game = this.gameService.games.find(g => g.data.objectId == gameId);
 			if (isPlayer) {
 				if (game) {
 					console.log('IS IN OTHER GAME!');
@@ -92,6 +92,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				);
 				// Leave the room for the game
 				client.leave(`game-${gameId}-player`);
+				//! This may cause issues due to sync
+				//! If the client disconnects during a game
+				//! because this sets the status to Online
+				//! and lobby disconnect sets it to Offline which is the correct value
 				this.userService.status(userId, UserStatus.ONLINE);
 			} else if (isWatcher) {
 				this.socketService.gameIdToWatcherId.set(
@@ -114,11 +118,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	@SubscribeMessage('entry_game')
 	async handleEnterGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		this.logger.debug(`Enter game received: ${JSON.stringify(body)}`);
 		const gameId = body.objectId;
 		const userId = client.data.userId;
 		client.data.gameId = gameId;
-		this.userService.status(userId, UserStatus.IN_GAME);
+		await this.userService.status(userId, UserStatus.IN_GAME);
 
 		const isInTheGamePlayer = this.socketService.gameIdToPlayerId.get(gameId)
 			? this.socketService.gameIdToPlayerId.get(gameId).includes(userId)

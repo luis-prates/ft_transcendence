@@ -82,8 +82,6 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 	@SubscribeMessage('invite_game')
 	async handleInviteGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		this.logger.debug(`Invite game received: ${JSON.stringify(body)}`);
-
 		//Desafiador
 		const challengerId = body.challengerId;
 		const challengerNickname = body.challengerNickname;

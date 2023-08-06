@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, Logger, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthDto } from './dto/auth.dto';
 import * as argon from 'argon2';
@@ -32,6 +32,9 @@ export class AuthService {
 			});
 			if (userExists) {
 				this.logger.warn(`User ${userExists.id} already exists.`);
+				if (userExists.status != 'OFFLINE') {
+					throw new UnauthorizedException('User already logged in');
+				}
 				delete userExists.hash;
 				delete userExists.twoFASecret;
 				const signedUser = await this.signToken(userExists);

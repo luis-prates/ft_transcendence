@@ -43,7 +43,6 @@ export class GameService {
 	}
 
 	async createGame(body: GameDto) {
-		this.logger.debug(`createGame is called with body: ${JSON.stringify(body)}`);
 		const game = await this.prisma.game.create({
 			data: {
 				gameType: body.gameType,
@@ -56,7 +55,6 @@ export class GameService {
 				players: true,
 			},
 		});
-		this.logger.debug(`game created in database: ${JSON.stringify(game)}`);
 		const playerOne = this.playerService.getPlayer(body.players[0]);
 		// objectId same as game.id generated in database?
 		body.gameRequest.objectId = game.id;
@@ -301,7 +299,6 @@ export class GameService {
 
 	async updateGame(gameId: string, body?: any) {
 		try {
-			this.logger.debug(`updateGame for game ${gameId} is called with body: ${JSON.stringify(body)}`);
 			const game = await this.prisma.game.update({
 				where: {
 					id: gameId,

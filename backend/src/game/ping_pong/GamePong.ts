@@ -305,13 +305,10 @@ export class GameClass {
 	}
 
 	async updateGameStats(body: any) {
-		this.logger.debug(`Updating gameStats with ${body}`);
 		await this.gameService.endGame(this.data.objectId, body);
 	}
 
 	async updatePlayerStats(player_id: number, body: any) {
-		this.logger.debug(`Updating ${player_id} Status with ${JSON.stringify(body)}`);
-
 		await this.userService.updateStats(player_id, body);
 	}
 

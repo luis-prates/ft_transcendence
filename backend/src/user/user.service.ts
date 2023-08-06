@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserBuySkinDto, UserDto, UserUpdateSkinTableDto, UserUpdateStatsDto } from './dto';
 import { Prisma, UserStatus } from '@prisma/client';
@@ -7,6 +7,7 @@ import { Server } from 'socket.io';
 @Injectable()
 export class UserService {
 	private server: Server;
+	private readonly logger = new Logger(UserService.name);
 
 	constructor(private prisma: PrismaService) {}
 
@@ -74,7 +75,6 @@ export class UserService {
 	}
 
 	async status(userId: number, status: UserStatus) {
-		console.log('status: ', userId, status);
 		if (!userId || !status) {
 			return;
 		}
@@ -92,6 +92,7 @@ export class UserService {
 				console.log('Status already updated!');
 				return;
 			}
+			this.logger.debug(`Current user status: ${user.status}`);
 
 			user = await this.prisma.user.update({
 				where: {
@@ -103,7 +104,7 @@ export class UserService {
 			});
 			delete user.twoFASecret;
 			delete user.hash;
-			console.log('user: ', userId, ' new status: ', status);
+			this.logger.debug(`Updated user status: ${user.status}`);
 
 			this.server.emit('updateStatus', {
 				id: userId,
@@ -116,6 +117,31 @@ export class UserService {
 				if (error.code === 'P2002') {
 					throw new ForbiddenException(
 						`Defined field value already exists. Error: ${error.message.substring(
+							error.message.indexOf('Unique constraint'),
+						)}`,
+					);
+				}
+			}
+			throw error;
+		}
+	}
+
+	async getUserStatus(userId: number) {
+		try {
+			const user = await this.prisma.user.findUnique({
+				where: {
+					id: userId,
+				},
+			});
+			if (!user) {
+				throw new ForbiddenException('User not found');
+			}
+			return user.status;
+		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === 'P2002') {
+					throw new ForbiddenException(
+						`The User don't Exist. Error: ${error.message.substring(
 							error.message.indexOf('Unique constraint'),
 						)}`,
 					);
