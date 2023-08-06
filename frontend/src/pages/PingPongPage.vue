@@ -32,6 +32,11 @@ let accumulatedTime = 0;
 const frameTime = 1000 / frameRate;
 
 onMounted(function () {
+	if (socket == undefined) {
+		console.log("socket is undefined");
+		Router.push('/');
+		return;
+	}
   const canvas = document.getElementById("canvas1") as HTMLCanvasElement;
   const button = document.getElementById("buttonLeave") as HTMLButtonElement;;
   const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -104,7 +109,7 @@ onMounted(function () {
     }
     else
     {
-      Router.push(`/`);
+      Router.push(`/lobby`);
       socket.disconnect();
     }
   }

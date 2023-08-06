@@ -13,9 +13,9 @@
       <button @click="test">Test</button>
     </div>
 
-    <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoad" />
+    <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoaded" />
   </div>
-  <ChatComponent class="chat_component"/>
+  <ChatComponent v-if="isLoaded" class="chat_component"/>
 </template>
 
 <script setup lang="ts">
@@ -33,11 +33,16 @@ const user = userStore().user;
 const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 let lobby: Lobby | null = null;
-const isLoad = ref(false);
+const isLoaded = ref(false);
 const socket = socketClass.getLobbySocket();
 
 onMounted(() => {
-  isLoad.value = false;
+  isLoaded.value = false;
+  if (socket == undefined) {
+	console.log("socket is undefined");
+	Router.push('/');
+	return;
+  }
   socket.emit("join_map", { userId: store.user.id, objectId: store.user.id, map: { name: "lobby" } });
   socket.on("load_map", (data: any) => {
     console.log("load_map", data.data);
@@ -51,10 +56,10 @@ onMounted(() => {
           data.data.forEach((d: any) => {
             lobby?.addGameObjectData(d);
           });
-          isLoad.value = true;
+          isLoaded.value = true;
           lobby.update();
         }
-        console.log("isConcted.value : ", isLoad.value);
+        console.log("isConcted.value : ", isLoaded.value);
       });
     }, 1000);
   });
@@ -151,8 +156,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   console.log("unmounted");
-  socket.off("load_map");
-  if (lobby) lobby.destructor();
+  socket?.off("load_map");
+  lobby?.destructor();
 });
 
 function salvarDesenhoComoImagem() {
