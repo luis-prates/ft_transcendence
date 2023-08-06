@@ -49,7 +49,16 @@ export const chatStore = defineStore("chat", () => {
       avatar: newChannel.avatar ? newChannel : "",
       password: "",
       messages: [],
-      users: newChannel.users.map((user: any) => ({ id: user.userId, ...user })),
+      users: newChannel.users.map((userData: any) => {
+        return {
+          id: userData.user.id,
+          image: userData.user.image,
+          nickname: userData.user.nickname,
+          status: userData.user.status,
+          isAdmin: userData.isAdmin || false,
+          isMuted: userData.isMuted || false,
+        };
+      }),
       type: newChannel.type,
       ownerId: newChannel.ownerId,
       messagesLoaded: false,
@@ -279,7 +288,7 @@ export const chatStore = defineStore("chat", () => {
       if (response.ok) {
         // Return any relevant data here if needed
         //store.getChannels();
-        return false;
+        return response;
       } else if (response.status == 409) {
         return "409"; //409 == Conflit error (same name || same id?)
       } else {

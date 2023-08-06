@@ -391,15 +391,13 @@ const createNewChannel = async () => {
       channelType.value = 'PUBLIC';
       channelAvatar.value = null;
       errorMessage.value = '';
-      instance?.emit("update-create-channel", false);
     } else if (response == "409"){
       // Handle channel creation failure here
       errorMessage.value = 'Failed to create channel. Channel name is already taken';
       // Display error message in the form or take any other action
-    } else {
-      console.log("Error response: " + response);
-      errorMessage.value = 'Failed to create channel. Please try again.';
+      return ;
     }
+    instance?.emit("update-create-channel", false);
   } catch (error) {
     console.error(error);
     // Handle any other errors that occurred during channel creation

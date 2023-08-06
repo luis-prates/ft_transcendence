@@ -310,7 +310,17 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
         onClick: async () => {
         const isDMSent = await menu.sendDM(user);
         if (isDMSent) {
-          openChannel(isDMSent);
+          
+          const currentUserId = userStore().user.id;
+          const otherUserId = user.id;
+          const dmChannel = chatStore().channels.find(channel =>
+            channel.type === "DM" &&
+            channel.users.some(user => user.id === currentUserId) &&
+            channel.users.some(user => user.id === otherUserId)
+          );
+
+          if (dmChannel)
+            openChannel(dmChannel);
         }
         },
       },

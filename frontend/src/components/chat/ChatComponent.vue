@@ -63,6 +63,7 @@ onMounted(() => {
   socket.on('channel-created', (eventData: { newChannel: any, message: any }) => {
     const { newChannel, message } = eventData;
     store.addChannel(newChannel, message);
+    chatListRef.value?.getFilteredChannels();
   });
 
   socket.on('user-removed', (eventData: { channelId: any, message: any, user: any }) => {

@@ -66,10 +66,12 @@ sendDM = async (user : ChatUser) => {
       
       if (!response) {
         console.log("Erro inesperado!");
+        return response;
       } else if (response == "409"){
         console.log('Failed to create DM. DM already exists');
+        return false;
     }
-    return false;
+    return response;
   } catch (error) {
     console.error(error);
   }
