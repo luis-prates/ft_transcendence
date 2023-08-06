@@ -262,11 +262,15 @@ const handleContextMenu = (e: any, channel: channel)  => {
 
 const handleContextMenuBanUser = (e: any, user: ChatUser)  => {
   const items = [
-      { 
-        label: "UnBan", 
-        onClick: () => console.log("Vai fazer unBan")
-      }
-    ]
+  { 
+    label: "Open Profile", 
+    onClick: () => openPerfilUser(user)
+    },
+    { 
+      label: "UnBan", 
+      onClick: () => console.log("Vai fazer unBan")
+    }
+  ]
   ContextMenu.showContextMenu({
     x: e.x,
     y: e.y,
@@ -277,11 +281,15 @@ const handleContextMenuBanUser = (e: any, user: ChatUser)  => {
 
 const handleContextMenuFriendUser = (e: any, user: ChatUser)  => {
   const items = [
-      { 
-        label: "Add User", 
-        onClick: () => console.log("Vai adicionar User ao channel")
-      }
-    ]
+  { 
+    label: "Open Profile", 
+    onClick: () => openPerfilUser(user)
+    },
+    { 
+      label: "Add User", 
+      onClick: () => console.log("Vai adicionar User ao channel")
+    }
+  ]
   ContextMenu.showContextMenu({
     x: e.x,
     y: e.y,
@@ -294,7 +302,7 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
   const items = [
     { 
       label: "Open Profile", 
-      onClick: () => console.log("Vai abrir o profile: " + user.id)
+      onClick: () => openPerfilUser(user)
       },
       //TODO //para users != my own user (storeUser.user.id != user.id)
       { 
