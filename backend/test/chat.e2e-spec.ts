@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { AppModule } from '../src/app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -368,17 +369,12 @@ describe('Chat', () => {
 		it('should send a message to the public channel', async () => {
 			// get publicChannelId as a string
 			const dataStore: IDataStore = pactum.stash.getDataStore();
-			console.log(dataStore);
 			const publicChannelId: string = dataStore['publicChannelId'];
-			console.log('publicChannelId is: ', publicChannelId);
-			// emit the message event as user1
-			// clients[0].emit('message', { "channelId": publicChannelId, "message": "Hello World!" });
 			// expect the message to be received by user2 and user3
 			const messagePromises = clients.slice(1, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						const handler = ({ channelId, message }: HandlerArg) => {
-							console.log('channelId is: ', channelId, 'message is: ', message);
 							expect(channelId).toBe(publicChannelId);
 							expect(message).toBe('Hello from Public!');
 							resolve(undefined);
@@ -387,7 +383,7 @@ describe('Chat', () => {
 						listeners.push({ client, handler });
 					}),
 			);
-			// Note: removed setImmediate here
+			// Emit the message as user1
 			clients[0].emit('message', {
 				channelId: publicChannelId,
 				message: 'Hello from Public!',
@@ -396,12 +392,11 @@ describe('Chat', () => {
 		});
 		it('should send a message to the private channel', async () => {
 			const dataStore: IDataStore = pactum.stash.getDataStore();
-			console.log(dataStore);
 			const privateChannelId: string = dataStore['privateChannelId'];
 			// We'll make an array of promises for every client that needs to receive the message
 			const messagePromises = clients.slice(1, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						// We'll make a handler for each client that will resolve the promise when the message is received
 						const handler = ({ channelId, message }: HandlerArg) => {
 							expect(channelId).toBe(privateChannelId);
@@ -430,7 +425,7 @@ describe('Chat', () => {
 			// We'll make an array of promises for every client that needs to receive the message
 			const messagePromises = clients.slice(1, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						// We'll make a handler for each client that will resolve the promise when the message is received
 						const handler = ({ channelId, message }: HandlerArg) => {
 							expect(channelId).toBe(protectedChannelId);
@@ -458,7 +453,7 @@ describe('Chat', () => {
 			const dataStore: IDataStore = pactum.stash.getDataStore();
 			const DMChannelId = dataStore['DMChannelId'];
 			// We'll make an array of promises for every client that needs to receive the message
-			const messagePromise = new Promise(resolve => {
+			const messagePromise = new Promise((resolve, reject) => {
 				// We'll make a handler for each client that will resolve the promise when the message is received
 				const handler = ({ channelId, message }: HandlerArg) => {
 					expect(channelId).toBe(DMChannelId);
@@ -525,9 +520,8 @@ describe('Chat', () => {
 			const channelId: string = dataStore['protectedChannelId'];
 
 			// promise that will resolve if a message is received from user4 to user1
-			const messagePromise = new Promise(resolve => {
+			const messagePromise = new Promise((resolve, reject) => {
 				const handler = ({ channelId, message }: HandlerArg) => {
-					console.log('calling handler');
 					expect(channelId).toBe(channelId);
 					expect(message).toBe('Hello from Unblocked User!');
 					resolve(undefined);
@@ -594,7 +588,7 @@ describe('Chat', () => {
 			// start listening to 'user-added' event for users 1 to 3 before sending the request
 			const userAddedPromises = clients.slice(0, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						const handler = ({ channelId, userId }: HandlerArg) => {
 							expect(channelId).toBe(publicChannelId);
 							expect(userId).toBe(user4Id);
@@ -625,7 +619,7 @@ describe('Chat', () => {
 			// start listening to 'user-removed' event for users 1 to 3 before sending the request
 			const userRemovedPromises = clients.slice(0, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						const handler = ({ channelId, userId }: HandlerArg) => {
 							expect(channelId).toBe(publicChannelId);
 							expect(userId).toBe(user4Id);
@@ -649,7 +643,7 @@ describe('Chat', () => {
 			// start listening to 'user-added' event for users 1 to 3 before sending the request
 			const userAddedPromises = clients.slice(0, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						const handler = ({ channelId, userId }: HandlerArg) => {
 							expect(channelId).toBe(privateChannelId);
 							expect(userId).toBe(user4Id);
@@ -672,7 +666,7 @@ describe('Chat', () => {
 			// We'll make an array of promises for every client that needs to receive the message
 			const messagePromises = clients.slice(0, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						// We'll make a handler for each client that will resolve the promise when the message is received
 						const handler = ({ channelId, message }: HandlerArg) => {
 							expect(channelId).toBe(privateChannelId);
@@ -702,7 +696,7 @@ describe('Chat', () => {
 			// start listening to 'user-removed' event for users 1 to 3 before sending the request
 			const userRemovedPromises = clients.slice(0, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						const handler = ({ channelId, userId }: HandlerArg) => {
 							expect(channelId).toBe(privateChannelId);
 							expect(userId).toBe(user4Id);
@@ -726,7 +720,7 @@ describe('Chat', () => {
 			// start listening to 'user-added' event for users 1 to 3 before sending the request
 			const userAddedPromises = clients.slice(0, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						const handler = ({ channelId, userId }: HandlerArg) => {
 							expect(channelId).toBe(protectedChannelId);
 							expect(userId).toBe(user4Id);
@@ -752,7 +746,7 @@ describe('Chat', () => {
 
 			const userMutedPromises = clients.slice(0, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						const handler = ({ channelId, userId }: HandlerArg) => {
 							expect(channelId).toBe(protectedChannelId);
 							expect(userId).toBe(user4Id);
@@ -766,6 +760,7 @@ describe('Chat', () => {
 				.spec()
 				.post('/chat/channels/$S{protectedChannelId}/mute/$S{user4Id}')
 				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+				.withBody({ muteDuration: 0.2 }) // mute duration is in minutes
 				.expectStatus(201);
 			await Promise.all(userMutedPromises);
 		});
@@ -775,7 +770,7 @@ describe('Chat', () => {
 			const user4Id = dataStore['user4Id'];
 
 			// This promise is for checking if an event with 'You are muted' was sent back to sender
-			const userErrorPromise = new Promise(resolve => {
+			const userErrorPromise = new Promise((resolve, reject) => {
 				const handler = (message: string) => {
 					expect(message).toBe('You are muted in this channel.');
 					resolve(undefined);
@@ -789,7 +784,7 @@ describe('Chat', () => {
 				client =>
 					new Promise((resolve, reject) => {
 						// We'll make a handler for each client that will resolve the promise when the message is received
-						const handler = ({ channelId: receivedChannelId }: HandlerArg) => {
+						const handler = ({ channelId: receivedChannelId, message }: HandlerArg) => {
 							// If any of these clients receives a message from user4, reject the promise
 							if (receivedChannelId === channelId) {
 								reject(new Error(`User ${user4Id} is muted but their message was received.`));
@@ -820,7 +815,7 @@ describe('Chat', () => {
 
 			const userUnmutedPromises = clients.slice(0, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						const handler = ({ channelId, userId }: HandlerArg) => {
 							expect(channelId).toBe(protectedChannelId);
 							expect(userId).toBe(user4Id);
@@ -844,7 +839,7 @@ describe('Chat', () => {
 
 			const userPromotedPromises = clients.slice(0, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						const handler = ({ channelId, userId, message }: HandlerArg) => {
 							expect(channelId).toBe(protectedChannelId);
 							expect(userId).toBe(user4Id);
@@ -869,7 +864,7 @@ describe('Chat', () => {
 
 			const userDemotedPromises = clients.slice(0, 3).map(
 				client =>
-					new Promise(resolve => {
+					new Promise((resolve, reject) => {
 						const handler = ({ channelId, userId, message }: HandlerArg) => {
 							expect(channelId).toBe(protectedChannelId);
 							expect(userId).toBe(user4Id);
