@@ -6,7 +6,6 @@ import { LeaderBoard } from "../../src/game/Menu/LeaderBoard";
 import { FriendsMenu } from "../../src/game/Menu/FriendsMenu";
 import { Messages } from "../../src/game/Menu/Messages";
 import { BattleMenu } from "../../src/game/Menu/BattleMenu";
-import { User, userStore } from "../stores/userStore";
 
 export function MyLobbyButtons() {
 
