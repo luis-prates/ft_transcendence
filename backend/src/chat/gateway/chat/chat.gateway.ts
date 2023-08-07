@@ -292,6 +292,27 @@ export class ChatGateway implements OnGatewayConnection {
 			});
 		});
 
+    // Listener for a user being promoted to owner
+    this.chatService.events.on('user-promoted-to-owner-in-channel', async ({ channelId, userId }) => {
+      const client: Socket = this.userIdToSocketMap.get(userId);
+      if (!client) {
+        // if socketId not found, client is not currently connected and doesnt need the websocket event
+        return;
+      }
+
+      client.emit('user-promoted-to-owner', {
+        channelId,
+        message: `You have been promoted to owner in channel ${channelId}`,
+      });
+
+      // Send a message to all users in the channel that a user has been promoted to owner
+      client.broadcast.to(`channel-${channelId}`).emit('user-promoted-to-owner', {
+        channelId,
+        userId,
+        message: `User ${userId} has been promoted to owner in channel ${channelId}`,
+      });
+    });
+
 		// Listener for a user being banned from a channel
 		this.chatService.events.on('user-banned-in-channel', async data => {
 			const { channelId, userId } = data;
