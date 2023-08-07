@@ -23,31 +23,33 @@
           <span>Leave</span>
         </div>
       </div>
-      <div v-if="true" class="retro-button" @click="onMessagesClick">
+      <div class="retro-button" @click="onMessagesClick(clearNotification)">
         <img src="@/assets/images/lobby/menu/message.png" alt="Messages Icon"/>
         <div class="button-text">
           <span>Messages</span>
         </div>
+        <div class="notification-badge" v-if="notification > 0">
+          {{ notification > 99 ? 99 : notification }}
+        </div>
       </div>
-      <div v-if="true" class="retro-button" @click="onFriendsClick">
+      <div class="retro-button" @click="onFriendsClick">
         <img src="@/assets/images/lobby/menu/your_friend.png" alt="Friends Icon"/>
         <div class="button-text">
           <span>Friends</span>
         </div>
       </div>
-      <div v-if="true" class="retro-button" @click="onBattlesClick">
+      <div class="retro-button" @click="onBattlesClick">
         <img src="@/assets/images/lobby/menu/battle_.png" alt="Battles Icon"/>
         <div class="button-text">
           <span>Battles</span>
         </div>
       </div>
-      <div v-if="true" class="retro-button" @click="onLeaderboardClick">
+      <div class="retro-button" @click="onLeaderboardClick">
         <img src="@/assets/images/lobby/menu/trofeo.png" alt="Leaderboard Icon"/>
         <div class="button-text">
           <span>Leaderboard</span>
         </div>
       </div>
-      
     </div>
   <ChatComponent class="chat_component"/>
 </template>
@@ -68,10 +70,25 @@ const user = userStore().user;
 const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 let lobby: Lobby | null = null;
+let notification = ref(0);
 const isLoad = ref(false);
 const socket = socketClass.getLobbySocket();
 
+const {
+  onLeaveClick,
+  onMessagesClick,
+  onFriendsClick,
+  onBattlesClick,
+  onLeaderboardClick,
+} = MyLobbyButtons();
+
+function clearNotification () {
+  notification.value = 0;
+}
+
 onMounted(() => {
+
+  notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;
   isLoad.value = false;
   socket.emit("join_map", { userId: store.user.id, objectId: store.user.id, map: { name: "lobby" } });
   socket.on("load_map", (data: any) => {
@@ -134,7 +151,8 @@ onMounted(() => {
       if (!existingEvent)
         user.friendsRequests.push(event);
       //console.log("Send Friend!", event, "Friend Request:", user.friendsRequests);
-      Game.updateNotifications();
+      notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;;
+      //      Game.updateNotifications();
     });
 
     //Cancel Friend Request
@@ -142,7 +160,8 @@ onMounted(() => {
       user.friendsRequests = user.friendsRequests.filter((friend: Friendship) => friend.requestorId != event.requestorId);
 
       //console.log("Cancel Friend!", event, "Friend Request:", user.friendsRequests);
-      Game.updateNotifications();
+      notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;;
+      //      Game.updateNotifications();
     });
 
     //Accept Friend Request
@@ -153,14 +172,16 @@ onMounted(() => {
       if (!existingEvent)
         user.friends.push(event);
       //console.log("Accept Friend!", event);
-      Game.updateNotifications();
+      notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;;
+      //      Game.updateNotifications();
 		});
     
     //Reject Friend Request
     socket.on("rejectFriendRequest",  (event: Friendship) => {
       user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.requesteeId);
       //console.log("Reject Friend Request!", event);
-      Game.updateNotifications();
+      notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;;
+      //      Game.updateNotifications();
 		});
 
     //Delete Friend
@@ -185,15 +206,6 @@ onMounted(() => {
         }
     });
 });
-
-const {
-  onLeaveClick,
-  onMessagesClick,
-  onFriendsClick,
-  onBattlesClick,
-  onLeaderboardClick,
-  menuIsActive,
-} = MyLobbyButtons();
 
 onUnmounted(() => {
   console.log("unmounted");
@@ -355,6 +367,22 @@ function test() {
 
 .retro-button:hover .button-text {
   visibility: visible;
+}
+
+.notification-badge {
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  width: 2vw;
+  height: 2vw;
+  font-size: 1.5vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  bottom: -0.5vw;
+  left: 2.5vw;
+  z-index: 3;
 }
 
 </style>

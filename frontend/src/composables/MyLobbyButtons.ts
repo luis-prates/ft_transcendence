@@ -6,6 +6,7 @@ import { LeaderBoard } from "../../src/game/Menu/LeaderBoard";
 import { FriendsMenu } from "../../src/game/Menu/FriendsMenu";
 import { Messages } from "../../src/game/Menu/Messages";
 import { BattleMenu } from "../../src/game/Menu/BattleMenu";
+import { User, userStore } from "../stores/userStore";
 
 export function MyLobbyButtons() {
 
@@ -24,13 +25,11 @@ export function MyLobbyButtons() {
     socket.disconnect();
   }
 
-  const onMessagesClick = () => {
-    // Handle Messages click
-    console.log("onMessagesClick");
-
+  // Handle Messages click
+  function onMessagesClick(clearNotification: any) {
     if (menuIsActive())
       return ;
-    //notification = ""; //TODO
+    clearNotification();
     messagesMenu = true;
     const confirmButton = new Messages();
     confirmButton.show((value) => {
@@ -40,10 +39,8 @@ export function MyLobbyButtons() {
     });
   }
 
+  // Handle Friends click
   const onFriendsClick = () => {
-    // Handle Friends click
-    console.log("onFriendsClick");
-
     if (menuIsActive())
       return ;
     friendsMenu = true;
@@ -55,10 +52,8 @@ export function MyLobbyButtons() {
     });
   }
 
+  // Handle Battles click
   const onBattlesClick = () => {
-    // Handle Battles click
-    console.log("onBattlesClick");
-
     if (menuIsActive())
       return ;
     battleMenu = true;
@@ -70,10 +65,8 @@ export function MyLobbyButtons() {
     });
   }
 
+  // Handle Leaderboard click
   const onLeaderboardClick = () => {
-    // Handle Leaderboard click
-    console.log("onLeaderboardClick");
-
     if (menuIsActive())
       return ;
     leaderBoardMenu = true;
@@ -92,7 +85,6 @@ export function MyLobbyButtons() {
   }
 
   return {
-    menuIsActive,
     onLeaveClick,
     onMessagesClick,
     onFriendsClick,
