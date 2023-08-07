@@ -1017,7 +1017,7 @@ export class ChatService {
 			throw new NotFoundException('User not found');
 		}
 
-		// Check if user is not already banned
+		// Check if user is already unbanned
 		const isBanned = await this.prisma.channel.findFirst({
 			where: {
 				id: channelId,
@@ -1030,7 +1030,7 @@ export class ChatService {
 		});
 
 		if (!isBanned) {
-			throw new BadRequestException('User is not banned');
+			throw new BadRequestException('User is not banned from this channel');
 		}
 
 		// Unban the user
