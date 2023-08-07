@@ -841,22 +841,6 @@ export class ChatService {
 				...(hashedPassword ? { hash: hashedPassword } : {}),
 				...(channelType ? { type: channelType } : {}),
 			},
-      include: {
-        users: {
-          select: {
-            isAdmin: true,
-            isMuted: true,
-            user: {
-              select: {
-                id: true,
-                image: true,
-                nickname: true,
-                status: true,
-              },
-            },
-          },
-        },
-      }
 		});
 
     // emit an event that a channel was edited
