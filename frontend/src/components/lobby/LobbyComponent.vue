@@ -16,24 +16,38 @@
     <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoad" />
     </div>
     <div class="button-container" v-if="isLoad">
-      <div class="retro-button" @click="onMessagesClick">
+      
+      <div class="retro-button" @click="onLeaveClick">
+        <img src="@/assets/images/lobby/menu/leave.png" alt="Leave Icon"/>
+        <div class="button-text">
+          <span>Leave</span>
+        </div>
+      </div>
+      <div v-if="true" class="retro-button" @click="onMessagesClick">
         <img src="@/assets/images/lobby/menu/message.png" alt="Messages Icon"/>
         <div class="button-text">
           <span>Messages</span>
         </div>
       </div>
-      <div class="retro-button" @click="onBattlesClick">
+      <div v-if="true" class="retro-button" @click="onFriendsClick">
+        <img src="@/assets/images/lobby/menu/your_friend.png" alt="Friends Icon"/>
+        <div class="button-text">
+          <span>Friends</span>
+        </div>
+      </div>
+      <div v-if="true" class="retro-button" @click="onBattlesClick">
         <img src="@/assets/images/lobby/menu/battle_.png" alt="Battles Icon"/>
         <div class="button-text">
           <span>Battles</span>
         </div>
       </div>
-      <div class="retro-button" @click="onLeaderboardClick">
+      <div v-if="true" class="retro-button" @click="onLeaderboardClick">
         <img src="@/assets/images/lobby/menu/trofeo.png" alt="Leaderboard Icon"/>
         <div class="button-text">
           <span>Leaderboard</span>
         </div>
       </div>
+      
     </div>
   <ChatComponent class="chat_component"/>
 </template>
@@ -173,9 +187,12 @@ onMounted(() => {
 });
 
 const {
+  onLeaveClick,
   onMessagesClick,
+  onFriendsClick,
   onBattlesClick,
   onLeaderboardClick,
+  menuIsActive,
 } = MyLobbyButtons();
 
 onUnmounted(() => {

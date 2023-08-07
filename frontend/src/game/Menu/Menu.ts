@@ -55,7 +55,8 @@ export class Menu implements GameObject {
   draw(contex: CanvasRenderingContext2D): void {
     if (!this.visible) return;
     this.elements.forEach((element) => {
-      if (element.visible)
+      if (element.visible) element.draw(contex);
+    /*  if (element.visible)
       {
         if (element.parent)
         {
@@ -67,7 +68,7 @@ export class Menu implements GameObject {
         }
         else
           element.draw(contex);
-      }
+      }*/
     });
   }
 
@@ -189,14 +190,14 @@ export class Menu implements GameObject {
     if (typeof element.resizing.w == "string" && element.resizing.w.includes("%")) element.rectangle.w = (parseFloat(element.resizing.w) * width) / 100;
     if (typeof element.resizing.h == "string" && element.resizing.h.includes("%")) element.rectangle.h = (parseFloat(element.resizing.h) * height) / 100;
     
-    if (!element.parent)
+   /* if (!element.parent)
     {
       //TODO se for menor que a tela
       //Problema no click tambem
       /*if (window.innerWidth < element.rectangle.w)
-        element.rectangle.w = window.innerWidth;*/
+        element.rectangle.w = window.innerWidth;
       element.rectangle.x = (window.innerWidth - element.rectangle.w) / 2;
-    }
+    }*/
     // if (element.parent) {
     //   element.rectangle.x += element.parent.rectangle.x;
     //   element.rectangle.y += element.parent.rectangle.y;
