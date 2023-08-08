@@ -407,8 +407,8 @@ const createNewChannel = async () => {
 const updateChannel = async () => {
   try {
     const name = (channelName.value == store.selected.name) ? null : channelName.value;
-    const type = (channelType.value == store.selected.type) ? null : channelType;
-    const password = channelPassword.value ? channelPassword.value : null;
+    const password = channelType.value == "PUBLIC" ? channelPassword.value : undefined;
+    const type = password ? "PROTECTED" : channelType.value;
     const avatar = avatarBase64.value ? avatarBase64.value : null;
 
     const editChannelDto = {
@@ -420,9 +420,9 @@ const updateChannel = async () => {
 
     const response = await store.editChannel(store.selected.objectId, editChannelDto);
 
-    if (response === "404") {
+    if (response == 404) {
       errorMessage.value = "Channel not found. Please try again.";
-    } else if (!response) {
+    } else if (response == "ok") {
       channelName.value = '';
       channelPassword.value = '';
       channelType.value = 'PUBLIC';

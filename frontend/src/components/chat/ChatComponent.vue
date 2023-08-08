@@ -1,6 +1,6 @@
 <template>
   <div class="chat">
-    <ChatContent @protected-channel="protectedChannel" :protectedStatus="protectedchannel" @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_mensagen" />
+    <ChatContent @protected-channel="protectedChannel" :protectedStatus="protectedChannelStatus" @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_mensagen" />
     <ChatList ref="chatListRef" @protected-channel="protectedChannel" @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_list"/>
   </div>
 </template>
@@ -79,6 +79,19 @@ onMounted(() => {
     store.removeUserFromChannel(channelId, user.user.id);
     chatListRef.value?.getFilteredChannels();
   });
+  socket.on("channel-deleted", (eventData) => {
+    const { channelId } = eventData;
+    if (store.selected &&  store.selected.objectId == channelId){
+      updateChannelStatus(false);
+    }
+    const curChannelIndex = chatStore().channels.findIndex(
+    (channel) => channel.objectId === channelId
+  );
+  if (curChannelIndex !== -1) {
+    store.channels.splice(curChannelIndex, 1);
+    chatListRef.value?.getFilteredChannels();
+  }
+  });
   socket.on("channel-added", (eventData) => {
     const { channelId } = eventData;
     store.userToChannel(channelId, user.user);
@@ -114,7 +127,7 @@ onMounted(() => {
   //Make Admin
   socket.on("user-promoted-in-channel", (eventData) => {
     console.log("Admin" , eventData);
-    const { channelId, userId, user } = eventData;
+    const { channelId, userId } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
     if (curUser)
@@ -129,6 +142,36 @@ onMounted(() => {
     const curUser = getUserInChannel(channelId, userId);
     if (curUser)
       curUser.isAdmin = false;
+  });
+
+  //new Owner
+  socket.on("user-promoted-to-owner", (eventData) => {
+    const { channelId, userId, message } = eventData;
+
+    const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
+    if (curChannel)
+    {
+      if (message == "You have been promoted to owner in channel 25")
+      {
+        curChannel.ownerId = userStore().user.id;
+      }
+      else {
+        curChannel.ownerId = userId;
+      }
+    }
+  });
+
+  //Edit Channel channel-edited
+  socket.on("channel-edited", (eventData) => {
+    const { editedChannel } = eventData;
+
+    const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == editedChannel.id);
+    if (curChannel)
+    {
+      curChannel.avatar = editedChannel.avatar ? editedChannel.avatar : "";
+      curChannel.name = editedChannel.name;
+      curChannel.type = editedChannel.type;
+    }
   });
 
   //Kick
@@ -171,7 +214,6 @@ onMounted(() => {
       if (curUserIndex !== -1) {
         const curUser = curChannel.banList[curUserIndex];
         curChannel.banList.splice(curUserIndex, 1);
-        curChannel.users.push(curUser);
       }
     }
   });
@@ -233,7 +275,7 @@ onUnmounted(() => {
 // Data initialization
 const channel = ref(false);
 const createChannel = ref(false);
-const protectedchannel = ref(false);
+const protectedChannelStatus = ref(false);
 
 // Provide the channel status to chld components
 provide('channelValue', channel);
@@ -243,7 +285,7 @@ const updateChannelStatus = (newStatus: boolean) => {
 };
 //testing for emits protected channel
 const protectedChannel = (newStatus: boolean) => {
-  protectedchannel.value = newStatus;
+  protectedChannelStatus.value = newStatus;
 }
 
 // Method to update createChannel var when emitted from child component

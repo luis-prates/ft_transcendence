@@ -264,11 +264,9 @@ export const chatStore = defineStore("chat", () => {
   
       if (response.ok) {
         const updatedChannel = await response.json();
-        return updatedChannel;
-      } else if (response.status === 404) {
-        return "CHANNEL_NOT_FOUND";
+        return "ok";
       } else {
-        return "GENERIC_ERROR";
+        return response.status;
       }
     } catch (error) {
       console.error(error);
@@ -467,6 +465,32 @@ async function demoteAdmin(channel: channel, userChat: ChatUser) {
   .catch((err) => console.error(err));
 }
 
+async function makeOwner(channelId:string, userId:string) {
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${user.access_token_server}`,
+    },
+  };
+
+  const requestBody = {
+    channelId: channelId,
+    userId: userId,
+  };
+
+  try {
+    const response = await axios.post(
+      `${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/owner/${userId}`,
+      requestBody,
+      options
+    );
+
+    console.log(`Made user ${userId} the owner of channel ${channelId}`);
+  } catch (error) {
+    console.error("Error making user owner:", error);
+  }
+}
 
 async function muteUser(channel: channel, userChat: ChatUser) {
   const options = {
@@ -544,6 +568,7 @@ async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
     editChannel,
     createChannel,
     activateMessage,
+    makeOwner,
     selectChannel,
     isUserInSelectedChannel,
     leaveChannel,

@@ -381,7 +381,7 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
       ...((chatStore().selected.ownerId == userStore().user.id) && user.isAdmin == true ? [
       { 
         label: "Give Owner", 
-        onClick: () => console.log("Vai alterar o owner do channel"),
+        onClick: () => chatStore().makeOwner(chatStore().selected.objectId, user.id),
       }] : [])
     ]
   ContextMenu.showContextMenu({
