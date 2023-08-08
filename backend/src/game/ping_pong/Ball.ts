@@ -1,4 +1,5 @@
 import { GameClass } from './GamePong';
+import { Player_Pong } from './PlayerPong';
 
 export class Ball {
 	//Macros
@@ -29,6 +30,21 @@ export class Ball {
 		return (randomAngle * Math.PI) / 180;
 	}
 
+	createAngle(player: Player_Pong) {
+		const relativeIntersectY = player.y + player.height / 2 - (this.y + this.height / 2);
+		const normalizedRelativeIntersectionY = relativeIntersectY / (player.height / 2);
+		let intersect = Math.max(-1, Math.min(1, normalizedRelativeIntersectionY));
+		const sinal = intersect <= 0 ? 1 : -1;
+		if (intersect < 0) {
+			intersect = -intersect;
+		}
+		this.angle = intersect * ((45 * Math.PI) / 180);
+		if (player.player_n != 1) {
+			this.angle = Math.PI - this.angle;
+		}
+		this.angle *= sinal;
+	}
+
 	ballColide() {
 		const random = this.generateRandomAngle(-1, 1);
 		// Verifica se a bola colidiu com a raquete do jogador 1
@@ -41,15 +57,7 @@ export class Ball {
 				this.y + this.height >= this.game.player1.y &&
 				this.y + this.height <= this.game.player1.y + this.game.player1.height;
 			if (isBallHorizontallyWithinPlayer1 && (isBallVerticallyWithinPlayer1 || isBallBottomWithinPlayer1)) {
-				// Inverte a direção da bola
-				this.angle = Math.PI - this.angle;
-
-				// Ajusta o ângulo com base no ponto de contato na raquete
-				const relativeIntersectY =
-					this.game.player1.y + this.game.player1.height / 2 - (this.y + this.height / 2);
-				const normalizedRelativeIntersectionY = relativeIntersectY / (this.game.player1.height / 2);
-				this.angle -= normalizedRelativeIntersectionY * (Math.PI / 4);
-
+				this.createAngle(this.game.player1);
 				this.angle += random;
 
 				this.dir = 2;
@@ -70,15 +78,7 @@ export class Ball {
 				this.y + this.height <= this.game.player2.y + this.game.player2.height;
 
 			if (isBallHorizontallyWithinPlayer2 && (isBallVerticallyWithinPlayer2 || isBallBottomWithinPlayer2)) {
-				// Inverte a direção da bola
-				this.angle = Math.PI - this.angle;
-
-				// Ajusta o ângulo com base no ponto de contato na raquete
-				const relativeIntersectY =
-					this.game.player2.y + this.game.player2.height / 2 - (this.y + this.height / 2);
-				const normalizedRelativeIntersectionY = relativeIntersectY / (this.game.player2.height / 2);
-				this.angle = normalizedRelativeIntersectionY * (Math.PI / 4) + Math.PI;
-
+				this.createAngle(this.game.player2);
 				this.angle += random;
 
 				this.dir = 1;
@@ -90,6 +90,13 @@ export class Ball {
 
 		// Verifica se a bola colidiu com as paredes superior ou inferior
 		if (this.y < 0 || this.y + this.height > this.game.height) {
+			//Para impedir que saia
+			if (this.y < 0) {
+				this.y = 0;
+			}
+			if (this.y + this.height > this.game.height) {
+				this.y = this.y - this.height;
+			}
 			// Inverte a direção da bola
 			this.angle = -this.angle;
 			if (this.dir == 1) {

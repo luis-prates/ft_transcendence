@@ -26,6 +26,12 @@ export class ChatGateway implements OnGatewayConnection {
 		this.chatService.events.on('channel-created', async newChannel => {
 			const channelId = newChannel.id;
 
+			// delete the hash and twoFASecret fields from the user objects
+			for (const user of newChannel.users) {
+				delete user.hash;
+				delete user.twoFASecret;
+			}
+
 			// Send an event only to the users in the DM if it is a DM
 			if (newChannel.type == 'DM') {
 				const client1: Socket = this.userIdToSocketMap.get(newChannel.users[0].user.id);
@@ -120,6 +126,8 @@ export class ChatGateway implements OnGatewayConnection {
 			// therefore, we need to send a message from the server instead of the client socket.
 			const globalChannelId = await this.chatService.getGlobalChannelId();
 			if (!client && channelId == globalChannelId) {
+				delete user.hash;
+				delete user.twoFASecret;
 				this.server.to(`channel-${channelId}`).emit('user-added', {
 					channelId,
 					userId,
@@ -281,6 +289,27 @@ export class ChatGateway implements OnGatewayConnection {
 			});
 		});
 
+		// Listener for a user being promoted to owner
+		this.chatService.events.on('user-promoted-to-owner-in-channel', async ({ channelId, userId }) => {
+			const client: Socket = this.userIdToSocketMap.get(userId);
+			if (!client) {
+				// if socketId not found, client is not currently connected and doesnt need the websocket event
+				return;
+			}
+
+			client.emit('user-promoted-to-owner', {
+				channelId,
+				message: `You have been promoted to owner in channel ${channelId}`,
+			});
+
+			// Send a message to all users in the channel that a user has been promoted to owner
+			client.broadcast.to(`channel-${channelId}`).emit('user-promoted-to-owner', {
+				channelId,
+				userId,
+				message: `User ${userId} has been promoted to owner in channel ${channelId}`,
+			});
+		});
+
 		// Listener for a user being banned from a channel
 		this.chatService.events.on('user-banned-in-channel', async data => {
 			const { channelId, userId } = data;
@@ -289,6 +318,39 @@ export class ChatGateway implements OnGatewayConnection {
 				channelId,
 				userId,
 				message: `User ${userId} has been banned from channel ${channelId}`,
+			});
+
+			// Remove the user from the channel
+			const client: Socket = this.userIdToSocketMap.get(userId);
+			if (!client) {
+				// if socketId not found, client is not currently connected and doesnt need the websocket event
+				return;
+			}
+
+			client.leave(`channel-${channelId}`);
+			console.log(`User ${userId} left a room: channel-${channelId}`);
+
+			// Update channelIdToUserIds map: remove user from channel
+			const userIdsInChannel = this.channelIdToUserIds.get(channelId);
+			if (userIdsInChannel) {
+				userIdsInChannel.delete(userId);
+
+				// If no more users in the channel, we can also delete the channel entry
+				if (userIdsInChannel.size === 0) {
+					this.channelIdToUserIds.delete(channelId);
+				}
+			}
+
+			client.emit('channel-banned', {
+				channelId,
+				message: `You have been banned and removed from channel ${channelId}`,
+			});
+
+			// Send a message to all users in the channel that a user has been removed
+			client.broadcast.to(`channel-${channelId}`).emit('user-banned', {
+				channelId,
+				userId,
+				message: `User ${userId} has been banned and removed from channel ${channelId}`,
 			});
 		});
 
