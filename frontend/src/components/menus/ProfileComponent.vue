@@ -30,6 +30,17 @@
 
         <div class="paddle profile_components"></div>
         <div class="matches profile_components">Matches</div>
+        <transition name="fade" mode="out-in">
+            <div class="grid-container" :key="currentPage">
+            <div v-for="(match, index) in currentPageMatches()" :key="index" class="grid-item">
+              <MatchComponent :user="user" :match="match" />
+            </div>
+          </div>
+        </transition>
+        <div class="pagination-buttons">
+            <i class="arrow-icon left" @click="changePage(-1)"></i>
+            <i class="arrow-icon right" @click="changePage(1)"></i>
+        </div>
     </div>
 </template>
 
@@ -37,13 +48,18 @@
 import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import { userStore, type Block, type Friendship, type GAME } from "@/stores/userStore";
 import { skin, TypeSkin } from "@/game/ping_pong/Skin";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { TwoFactor } from "@/game/Menu/TwoFactor";
+import MatchComponent from "./MatchComponent.vue"
+
 const defaultAvatar = "../../src/assets/chat/avatar.png";
 
 const user = userStore().user;
 const editing = ref(false);
 const isDiferent = ref(false);
+const user_matches = userStore().user.infoPong.historic; 
+const currentPage = ref(0);
+const matchesPerPage = 4;
 
 function getWins() {
     return user.infoPong.historic.filter((history: GAME) => history.winnerId == user.id).length;
@@ -89,7 +105,6 @@ function clickQrCode() {
     twoFactorMenu.show((value) => {});
 }
 
-
 function toggleInput() {
     if (editing.value == true)
         return;
@@ -116,6 +131,21 @@ function cancelEdit() {
     inputName.value = user.nickname;
     inputName.style.display = "none";
     inputName.disabled = true;
+}
+
+function currentPageMatches() {
+    const startIndex = currentPage.value * matchesPerPage;
+    const endIndex = startIndex + matchesPerPage;
+    const matches = user.infoPong.historic;
+    return matches.slice(startIndex, endIndex);
+}
+
+function changePage(step: number) {
+    if (currentPage.value + step >= 0 && currentPage.value + step < Math.ceil(user_matches.length / matchesPerPage))
+    {
+        currentPage.value += step;
+        currentPageMatches();
+    }
 }
 
 async function handleFileChange(event: any) {
@@ -206,8 +236,9 @@ async function updateNickname() {
 // const props = defineProps<{ user: User }>();
 
 
-// onMounted(() => {
-// });
+onMounted(() => {
+    currentPageMatches();
+});
 
 // onUnmounted(() => {
 // });
@@ -281,16 +312,13 @@ async function updateNickname() {
   color: rgb(73, 73, 73);
 }
 
-.user-nickname-input {
-    display: none; 
+.user-nickname-input { 
+    display: block;
     background-color: transparent;
     font-family: 'Press Start 2P';
     top: 20px;
     left: 155px;
     width: 200px;
-    background-color: transparent;
-    font-family: "Press Start 2P";
-    display: block;
 }
 
 .clear-icon {
@@ -394,6 +422,78 @@ async function updateNickname() {
     color: white;
     -webkit-text-stroke-width: 1.25px;
     -webkit-text-stroke-color: black;
+}
+
+.match_row {
+    position: absolute;
+    left: 4%;
+    top: 330px;
+    width: 92.5%;
+    height: 54%;
+    background-color: rgba(255, 255, 255, 0.199);
+    border: 2px solid black;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.grid-container {
+    position: absolute;
+    left: 4%;
+    top: 330px;
+    width: 92.5%;
+    height: 54%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1%;
+}
+
+.grid-item {
+    left: 4%;
+    top: 15%;
+    width: 92%;
+    height: 80%;
+    background-color: rgba(230, 233, 22, 0.6);
+    border: 2px solid black;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.5s;
+}
+
+.fade-enter, .fade-leave-to {
+    opacity: 0;
+}
+
+.arrow-icon {
+  position: absolute;
+  top: 280px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  cursor: pointer;
+  border-width: 16px 20px 16px 20px;
+}
+
+.arrow-icon.left {
+  left: 15%;
+  border-color: transparent black transparent transparent;
+  transition: border-color 0.3s ease;;
+}
+
+.arrow-icon.left:hover {
+  border-color: transparent grey transparent transparent;
+}
+
+.arrow-icon.right {
+  right: 15%;
+  border-color: transparent transparent transparent black;
+  transition: border-color 0.3s ease;;
+}
+
+.arrow-icon.right:hover {
+  border-color: transparent transparent transparent grey;
 }
 
 </style>
