@@ -224,6 +224,7 @@ async function updateNickname() {
     background-color: rgba(210, 180, 140, 0.6);
     border: 2px solid black;
     border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .profile_components {
@@ -237,6 +238,7 @@ async function updateNickname() {
     height: 25px;
     width: 25px;
     border: 3px solid #000000;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 }
 
 .user_image {
@@ -248,6 +250,7 @@ async function updateNickname() {
     top: 30px;
     border-radius: 10px;
     transition: opacity 0.3s ease; /* Adiciona uma transição suave */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .user_image:hover {
@@ -330,6 +333,7 @@ async function updateNickname() {
     top: 30px;
     background-color: red; //TODO
     border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .user_paddle_image {
@@ -355,6 +359,7 @@ async function updateNickname() {
     font-size: 12px;
     background-color: white;
     transition: background-color 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .qr-button:hover {
@@ -374,6 +379,7 @@ async function updateNickname() {
 .save-button::not(:disabled) {
     background-color: green;
     transition: background-color 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .save-button::not(:disabled):hover {
