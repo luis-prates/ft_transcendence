@@ -3,6 +3,10 @@ import { LeaderBoard } from "./LeaderBoard";
 import { userStore } from "@/stores/userStore";
 import { Messages } from "./Messages";
 import { BattleMenu } from "./BattleMenu";
+import Router from "@/router";
+import { socketClass } from "@/socket/SocketClass";
+import type { Socket } from "socket.io-client";
+import { FriendsMenu } from "./FriendsMenu";
 
 //Sound
 import sound_close_tab from "@/assets/audio/close.mp3";
@@ -11,6 +15,8 @@ import sound_close_tab from "@/assets/audio/close.mp3";
 import battleImage from "@/assets/images/lobby/menu/battle_.png";
 import leaderBoardImage from "@/assets/images/lobby/menu/trofeo.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
+import leaveImage from "@/assets/images/lobby/menu/leave.png";
+import friendImage from "@/assets/images/lobby/menu/your_friend.png";
 
 export class YourMenu {
   private _menu = new Menu({ layer: "Global", isFocus: false });
@@ -19,11 +25,15 @@ export class YourMenu {
   private battleMenu: boolean = false;
   private leaderBoardMenu: boolean = false;
   private messagesMenu: boolean = false;
+  private friendsMenu: boolean = false;
 
   private img_battle = new Image();
   private img_leaderBoard = new Image();
   private img_message = new Image();
+  private img_leaveImage = new Image();
+  private img_friendImage = new Image();
   public notification: string = "";
+  private socket: Socket;
 
   private user = userStore().user;
 
@@ -33,16 +43,22 @@ export class YourMenu {
     this.img_battle.src = battleImage;
     this.img_leaderBoard.src = leaderBoardImage;
     this.img_message.src = messageImage;
+    this.img_leaveImage.src = leaveImage;
+    this.img_friendImage.src = friendImage;
 
-    this.menu.add(this.background, this.createButton("message", 42.5 + 0.5, 0.5, "Messages", 9));
-    this.menu.add(this.background, this.createButton("battle", 42.5 + 5.5, 0.5, "Battles", 9));
-    this.menu.add(this.background, this.createButton("leaderboard", 42.5 + 10.5, 0.5, "LeaderBoard", 9));
+    this.socket = socketClass.getLobbySocket();
+
+    this.menu.add(this.background, this.createButton("leave", 37.5 + 0.5, 0.5, "Leave", 9));
+    this.menu.add(this.background, this.createButton("message", 37.5 + 5.5, 0.5, "Messages", 9));
+    this.menu.add(this.background, this.createButton("friends", 37.5 + 10.5, 0.5, "Friends", 9));
+    this.menu.add(this.background, this.createButton("battle", 37.5 + 15.5, 0.5, "Battles", 9));
+    this.menu.add(this.background, this.createButton("leaderboard", 37.5 + 20.5, 0.5, "LeaderBoard", 9));
   }
 
   private createBackground(): ElementUI {
     const background: ElementUI = {
       type: "image",
-      rectangle: { x: "42.5%", y: "0%", w: "15%", h: "8%" },
+      rectangle: { x: "37.5%", y: "0%", w: "25%", h: "8%" },
       draw: (ctx: any) => {
         /*const backgroundColor = "rgba(210, 180, 140, 0.6)"; // Cor de fundo castanho
         const borderColor = "#8B4513"; // Cor de contorno mais escuro
@@ -66,10 +82,14 @@ export class YourMenu {
     let img: HTMLImageElement;
     if (type == "message")
       img = this.img_message;
+    else if (type == "friends")
+      img = this.img_friendImage;
     else if (type == "battle")
       img = this.img_battle;
     else if (type == "leaderboard")
       img = this.img_leaderBoard;
+    else if (type == "leave")
+      img = this.img_leaveImage;
 
     const numberOfFriendRequest = this.user.friendsRequests.filter((friendship) => friendship.requesteeId === this.user.id).length;
     this.notification = numberOfFriendRequest == 0 ? "" : (numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99" );
@@ -119,7 +139,7 @@ export class YourMenu {
 			onClick: () => {
         if (type == "message")
         {
-          if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
+          if (this.menuIsActive())
             return ;
           this.notification = "";
           this.messagesMenu = true;
@@ -130,11 +150,21 @@ export class YourMenu {
             }
           });
         }
+        else if (type == "friends")
+        {
+          if (this.menuIsActive())
+            return ;
+          this.friendsMenu = true;
+          const friendsBoard = new FriendsMenu();
+          friendsBoard.show((value) => {
+            if (value == "EXIT") {
+              this.friendsMenu = false;
+            }
+          });
+        }
         else if (type == "battle")
         {
-          if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
-            return ;
-          if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
+          if (this.menuIsActive())
             return ;
           this.battleMenu = true;
           const battleBoard = new BattleMenu();
@@ -146,7 +176,7 @@ export class YourMenu {
         }
         else if (type == "leaderboard")
         {
-          if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu)
+          if (this.menuIsActive())
             return ;
           this.leaderBoardMenu = true;
           const leaderBoard = new LeaderBoard();
@@ -156,10 +186,24 @@ export class YourMenu {
             }
           });
         }
+        else if (type == "leave")
+        {
+          //TODO IR PARA LOGIN
+          Router.setRoute(Router.ROUTE_LOGIN)
+          Router.push(`/`);
+          this.socket.disconnect();
+        }
 		  },
 	  };
 	  return button;
 	}
+
+  menuIsActive() : boolean
+  {
+    if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu || this.friendsMenu)
+      return true;
+    return false;
+  }
 
   roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
     const r = x + width;

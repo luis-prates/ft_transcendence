@@ -47,6 +47,11 @@ export class UserService {
 				if (user) {
 					throw new ForbiddenException('Nickname already taken');
 				}
+
+				this.server.emit('updateNickname', {
+					id: userId,
+					nickname: dto.nickname,
+				});
 			}
 			user = await this.prisma.user.update({
 				where: {

@@ -10,14 +10,15 @@
           <span>{{ channelName }}</span>
         </div>
         <div class="video_cam">
-          <!-- <button class="config_chat">⚙</button> -->
-          <button @click="toggleStatus" class="close_chat">✖</button>
+          <button @click="toggleStatus" class="close_chat">
+            <img class="close_chat_img" src="src/assets/chat/close_channel.png" alt="Close" />
+          </button>
         </div>
       </div>
     </div>
     <div class="card-body msg_card_body">
       <!-- corpo do formulario -->
-      <form @submit.prevent="createNewChannel">
+      <form @submit.prevent="createOrUpdate">
         <div class="form-group">
           <label for="channelName">*Channel Name</label>
           <input type="text" id="channelName" class="form-control" v-model="channelName" required>
@@ -42,9 +43,37 @@
       <p v-if="errorMessage" class="text-danger">{{ errorMessage }}</p>
       </form>
     </div>
-
-    
   </div>
+  <div v-else-if="protectedStatus" class="card">
+  <!-- Form for joining a protected channel -->
+  <div class="card-header msg_head">
+      <div class="d-flex bd-highlight">
+        <!-- cabeca do formulario -->
+        <div class="img_cont">
+          <img :src=defaultAvatar class="user_img" />
+        </div>
+        <div class="user_info">
+          <span>{{ getChannelName() }}</span>
+        </div>
+        <div class="video_cam">
+          <button @click="toggleStatus" class="close_chat">
+            <img class="close_chat_img" src="src/assets/chat/close_channel.png" alt="Close" />
+          </button>
+        </div>
+      </div>
+    </div>
+  <div class="card-body msg_card_body">
+    <form @submit.prevent="joinProtected">
+      <div class="form-group">
+        <label for="channelPassword">Channel Password</label>
+        <input type="password" id="channelPassword" class="form-control" v-model="channelPassword" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Join Channel</button>
+      <!-- Display error message if joining channel failed -->
+      <p v-if="errorMessage" class="text-danger">{{ errorMessage }}</p>
+    </form>
+  </div>
+</div>
   <div v-else-if="channelStatus" class="card">
     <!-- Channel Messages here: -->
     <div class="card-header msg_head">
@@ -57,8 +86,12 @@
           <p>{{selected?.messages?.length + " Messages"}}</p>
         </div>
         <div class="video_cam">
-          <button v-if=imOwner() @click="editChannel" class="config_chat">⚙</button>
-          <button @click="toggleStatus" class="close_chat">✖</button>
+          <button v-if=imOwner() @click="editChannel" class="config_chat">
+            <img class="config_chat_img" src="src/assets/chat/edit_channel.png" alt="Edit" />
+          </button>
+          <button @click="toggleStatus" class="close_chat">
+            <img class="close_chat_img" src="src/assets/chat/close_channel.png" alt="Close" />
+          </button>
         </div>
       </div>
     </div>
@@ -75,7 +108,9 @@
       <div class="input-group">
         <textarea v-model="text" name="" @keyup.enter="send" class="form-control type_msg" placeholder="Type your message..." style="resize: none"></textarea>
         <div class="input-group-append">
-          <span class="input-group-text send_btn" @click="send"><i class="fas fa-location-arrow"></i>➤</span>
+          <span class="input-group-text send_btn" @click="send"><i class="fas fa-location-arrow"></i>
+            <img class="send_img" src="src/assets/chat/send.png" alt="Send" />
+          </span>
         </div>
       </div>
     </div>
@@ -95,16 +130,21 @@ import { userStore } from "@/stores/userStore";
 import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
 import { onMounted, onUnmounted, ref } from "vue";
+import defaultUser from "@/assets/chat/avatar.png";
+import chat_avatar from "@/assets/chat/chat_avatar.png";
+
 
 const store = chatStore();
 const user = userStore();
 const { selected } = storeToRefs(store);
 
-socketClass.setChatSocket({ query: { userId: user.user.id } });
+// socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
 console.log("Socket criado na instancia do componente: ", chatSocket);
 
-let defaultAvatar = ref("src/assets/chat/chat_avatar.png");
+//const defaultAvatar = "src/assets/chat/chat_avatar.png";
+//const defaultUser = "src/assets/chat/avatar.png";
+let defaultAvatar = ref(chat_avatar);
 
 //Check if the user is the owner of channel
 const imOwner = () => {
@@ -128,7 +168,7 @@ const getButtomOp = () => {
 
 function getChatAvatar() {
   if (selected.value?.avatar == "" || !selected.value?.avatar){
-    return defaultAvatar.value;
+    return selected.value?.avatar !== '' ? selected.value?.avatar : (selected.value?.type !== 'DM' ? defaultAvatar.value : defaultUser);
   }
   return selected.value?.avatar;
   }
@@ -137,6 +177,7 @@ function getChatAvatar() {
   const props = defineProps({
     createChannel: Boolean,
     channelStatus: Boolean,
+    protectedStatus: Boolean,
   });
   
   // Define reactive variables
@@ -161,17 +202,18 @@ function editChannel() {
   if (selected.value?.avatar != "")
     defaultAvatar.value = selected.value?.avatar as any;
   else
-    defaultAvatar.value = "src/assets/chat/chat_avatar.png";
+    defaultAvatar.value = chat_avatar;
 }
 
 // Emit event from the child component
 const toggleStatus = () => {
   instance?.emit("update-channel-status", false);
   instance?.emit("update-create-channel", false);
+  instance?.emit("protected-channel", false);
   channelName.value = '';
   channelPassword.value = '';
   channelType.value = 'PUBLIC';
-  defaultAvatar.value = "src/assets/chat/chat_avatar.png";
+  defaultAvatar.value = chat_avatar;
 };
 
 const text = ref();
@@ -279,6 +321,47 @@ const convertFileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+//TODO EDUARDO
+function createOrUpdate()
+{
+  if (getButtomOp() == "Create Channel")
+    createNewChannel();
+  else {
+    console.log("UPDATE CHANNEL");
+    updateChannel();
+  }
+}
+
+//protectedchannel
+const joinProtected  = async () => {
+  try{
+    const channelId = selected.value?.objectId;
+    const password = channelPassword.value;
+    const response = await store.joinChannel(channelId, password);
+
+    if (!response) {
+        // Reset form inputs
+        channelPassword.value = '';
+        errorMessage.value = '';
+        instance?.emit("protected-channel", false);
+        instance?.emit("update-channel-status", true);
+        store.getMessages(store.selected);
+      } else if (response.error == "INCORRECT_PASSWORD"){
+        // Handle channel creation failure here
+        errorMessage.value = 'Incorrect password. Please try again.';
+        channelPassword.value = '';
+        // Display error message in the form or take any other action
+      } else {
+        console.log("Error response: " + response);
+        channelPassword.value = '';
+        errorMessage.value = 'Failed to join a channel. Please try later.';
+      }
+  } catch (error) {
+    console.error(error);
+    // Handle any other errors that occurred during channel creation
+  }
+}
+
 // Create new channel function
 const createNewChannel = async () => {
   try {
@@ -298,7 +381,8 @@ const createNewChannel = async () => {
       password: password,
       messages: [], // initialize with an empty array of messages
       users: [], // initialize with an empty array of users
-      type: type
+      type: type,
+      banList: []
     };
 
     const response = await store.createChannel(newChannel);
@@ -310,18 +394,50 @@ const createNewChannel = async () => {
       channelType.value = 'PUBLIC';
       channelAvatar.value = null;
       errorMessage.value = '';
-      instance?.emit("update-create-channel", false);
     } else if (response == "409"){
       // Handle channel creation failure here
       errorMessage.value = 'Failed to create channel. Channel name is already taken';
       // Display error message in the form or take any other action
-    } else {
-      console.log("Error response: " + response);
-      errorMessage.value = 'Failed to create channel. Please try again.';
+      return ;
     }
+    instance?.emit("update-create-channel", false);
   } catch (error) {
     console.error(error);
     // Handle any other errors that occurred during channel creation
+  }
+};
+
+const updateChannel = async () => {
+  try {
+    const name = (channelName.value == store.selected.name) ? null : channelName.value;
+    const password = channelType.value != "PROTECTED" ? undefined : channelPassword.value;
+    const type = password ? "PROTECTED" : channelType.value;
+    const avatar = avatarBase64.value ? avatarBase64.value : null;
+
+    const editChannelDto = {
+      name: name,
+      password: password,
+      channelType: type,
+      avatar: avatar,
+    };
+
+    const response = await store.editChannel(store.selected.objectId, editChannelDto);
+
+    if (response == 404) {
+      errorMessage.value = "Channel not found. Please try again.";
+    } else if (response == "ok") {
+      channelName.value = '';
+      channelPassword.value = '';
+      channelType.value = 'PUBLIC';
+      channelAvatar.value = null;
+      errorMessage.value = '';
+      instance?.emit("update-create-channel", false);
+    } else {
+      console.log("Error response: ", response);
+      errorMessage.value = 'Failed to edit channel. Please try again.';
+    }
+  } catch (error) {
+    console.error(error);
   }
 };
 </script>

@@ -193,7 +193,7 @@ function tes(event: any) {
 
 			showModal("Login Success", "success");
 			resolveCondition.value = true;
-			await Promise.race([sleep(3000), modalClosePromise]);
+			await Promise.race([sleep(1500), modalClosePromise]);
 			resolveCondition.value = false;
 			hideModal();
 

@@ -213,21 +213,7 @@ describe('Game', () => {
 					Authorization: 'Bearer $S{userAt1}',
 				})
 				.withQueryParams({
-					status: [GameStatus.FINISHED],
-				})
-				.expectStatus(403)
-				.expectBodyContains('Cannot get finished games.');
-		});
-
-		it('should forbidden exception on get active games - finished and not started', () => {
-			return pactum
-				.spec()
-				.get('/game/active')
-				.withHeaders({
-					Authorization: 'Bearer $S{userAt1}',
-				})
-				.withQueryParams({
-					status: [GameStatus.NOT_STARTED, GameStatus.FINISHED],
+					status: GameStatus.FINISHED,
 				})
 				.expectStatus(403)
 				.expectBodyContains('Cannot get finished games.');
@@ -241,13 +227,13 @@ describe('Game', () => {
 					Authorization: 'Bearer $S{userAt1}',
 				})
 				.withQueryParams({
-					status: [GameStatus.NOT_STARTED],
+					status: GameStatus.NOT_STARTED,
 				})
 				.expectStatus(200)
 				.expectJsonLength(2);
 		});
 
-		it('should get active games - not started and in progress', () => {
+		it('should get active games - in progress', () => {
 			return pactum
 				.spec()
 				.get('/game/active')
@@ -255,10 +241,10 @@ describe('Game', () => {
 					Authorization: 'Bearer $S{userAt1}',
 				})
 				.withQueryParams({
-					status: [GameStatus.NOT_STARTED, GameStatus.IN_PROGESS],
+					status: GameStatus.IN_PROGESS,
 				})
 				.expectStatus(200)
-				.expectJsonLength(2);
+				.expectJsonLength(0);
 		});
 
 		it('should get user games', () => {
