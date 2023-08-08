@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateChannelDto, EditChannelDto, JoinChannelDto, MuteUserDto } from './dto';
+import { CreateChannelDto, EditChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
 import { Channel, ChannelUser, Message, User } from '@prisma/client';
 import { ChannelType } from '@prisma/client';
@@ -506,18 +506,18 @@ export class ChatService {
 		// if the user is the owner and last member of the channel
 		if (channel.ownerId === user.id) {
 			if (channelUsers.length <= 1) {
-        await this.prisma.channelUser.deleteMany({
-          where: {
-            channelId: channelId,
-          },
-        });
-        await this.prisma.channel.delete({ where: { id: channelId } });
-        return;
-      }
-      else { // if the owner is not the last member
-        throw new ForbiddenException('Owner can not leave a channel. Promote someone else to owner first.');
-      }
-    }
+				await this.prisma.channelUser.deleteMany({
+					where: {
+						channelId: channelId,
+					},
+				});
+				await this.prisma.channel.delete({ where: { id: channelId } });
+				return;
+			} else {
+				// if the owner is not the last member
+				throw new ForbiddenException('Owner can not leave a channel. Promote someone else to owner first.');
+			}
+		}
 
 		// Remove user from channel
 		await this.prisma.channelUser.delete({
@@ -727,51 +727,51 @@ export class ChatService {
 		});
 	}
 
-  async makeOwner(channelId: number, userId: number) {
-    const channel = await this.prisma.channel.findUnique({
-      where: { id: channelId },
-    });
+	async makeOwner(channelId: number, userId: number) {
+		const channel = await this.prisma.channel.findUnique({
+			where: { id: channelId },
+		});
 
-    if (!channel) {
-      throw new NotFoundException('Channel not found');
-    }
+		if (!channel) {
+			throw new NotFoundException('Channel not found');
+		}
 
-    // check if user is in the channel
-    const channelUser = await this.prisma.channelUser.findUnique({
-      where: {
-        userId_channelId: {
-          channelId: channelId,
-          userId: userId,
-        },
-      },
-    });
+		// check if user is in the channel
+		const channelUser = await this.prisma.channelUser.findUnique({
+			where: {
+				userId_channelId: {
+					channelId: channelId,
+					userId: userId,
+				},
+			},
+		});
 
-    if (!channelUser) {
-      throw new NotFoundException('User is not part of this channel');
-    }
+		if (!channelUser) {
+			throw new NotFoundException('User is not part of this channel');
+		}
 
-    // Make the channel owned by user
-    await this.prisma.channel.update({
-      where: { id: channelId },
-      data: { ownerId: userId },
-    });
+		// Make the channel owned by user
+		await this.prisma.channel.update({
+			where: { id: channelId },
+			data: { ownerId: userId },
+		});
 
-    // Make the user an admin
-    await this.prisma.channelUser.update({
-      where: {
-        userId_channelId: {
-          channelId: channelId,
-          userId: userId,
-        },
-      },
-      data: {
-        isAdmin: true,
-      },
-    });
+		// Make the user an admin
+		await this.prisma.channelUser.update({
+			where: {
+				userId_channelId: {
+					channelId: channelId,
+					userId: userId,
+				},
+			},
+			data: {
+				isAdmin: true,
+			},
+		});
 
-    // emit an event someone was promoted to owner
-    this.events.emit('user-promoted-to-owner-in-channel', { channelId, userId });
-  }
+		// emit an event someone was promoted to owner
+		this.events.emit('user-promoted-to-owner-in-channel', { channelId, userId });
+	}
 
 	// Owner can edit a channel
 	async editChannel(channelId: number, editChannelDto: EditChannelDto): Promise<Channel> {
@@ -882,12 +882,12 @@ export class ChatService {
 			},
 		});
 
-    // Delete all messages associated with the channel
-    await this.prisma.message.deleteMany({
-      where: {
-        channelId: channelId,
-      },
-    });
+		// Delete all messages associated with the channel
+		await this.prisma.message.deleteMany({
+			where: {
+				channelId: channelId,
+			},
+		});
 
 		await this.prisma.channel.delete({
 			where: {
