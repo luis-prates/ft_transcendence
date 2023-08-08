@@ -1,6 +1,7 @@
+/* eslint-disable prettier/prettier */
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateChannelDto, EditChannelDto, JoinChannelDto } from './dto';
+import { CreateChannelDto, EditChannelDto, JoinChannelDto, MuteUserDto } from './dto';
 import { ConflictException } from '@nestjs/common';
 import { Channel } from '@prisma/client';
 import { ChannelType } from '@prisma/client';
@@ -127,9 +128,22 @@ export class ChatService {
 						},
 						...(createChannelDto.avatar && { avatar: createChannelDto.avatar }),
 					},
-					include: {
-						users: true,
-					},
+          include : {
+            users: {
+              select: {
+                isAdmin: true,
+                isMuted: true,
+                user: {
+                  select: {
+                    id: true,
+                    image: true,
+                    nickname: true,
+                    status: true,
+                  },
+                },
+              },
+            },
+          }
 				});
 			}
 
@@ -166,9 +180,22 @@ export class ChatService {
 							],
 						},
 					},
-					include: {
-						users: true,
-					},
+          include : {
+            users: {
+              select: {
+                isAdmin: true,
+                isMuted: true,
+                user: {
+                  select: {
+                    id: true,
+                    image: true,
+                    nickname: true,
+                    status: true,
+                  },
+                },
+              },
+            },
+          },
 				});
 			}
 
@@ -197,53 +224,72 @@ export class ChatService {
 				if (existingDM) {
 					throw new ConflictException('DM between these users already exists');
 				}
-				// Note: no need to set channel name when creating a DM
-				newChannel = await this.prisma.channel.create({
-					data: {
-						type: createChannelDto.channelType,
-						users: {
-							create: [
-								{
-									user: {
-										connect: {
-											id: user.id,
-										},
-									},
-								},
-								...createChannelDto.usersToAdd.map(id => ({
-									user: {
-										connect: {
-											id: id,
-										},
-									},
-								})),
-							],
-						},
-					},
-				});
-			}
+
+        // Note: no need to set channel name when creating a DM
+        newChannel = await this.prisma.channel.create({
+          data: {
+            type: createChannelDto.channelType,
+            users: {
+              create: [
+                {
+                  user: {
+                    connect: {
+                      id: user.id,
+                    },
+                  },
+                },
+                ...createChannelDto.usersToAdd.map(id => ({
+                  user: {
+                    connect: {
+                      id: id,
+                    },
+                  },
+                })),
+              ],
+            },
+          },
+          include: {
+            users: {
+              select: {
+                isAdmin: true,
+                isMuted: true,
+                user: {
+                  select: {
+                    id: true,
+                    nickname: true,
+                    status: true,
+                    image: true,
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
 			// emit event to everyone that a new channel was just created
 			this.events.emit('channel-created', newChannel);
 
 			// emit event to creator for new channel
-			const user_db = await this.prisma.user.findUnique({
-				where: { id: user.id },
-			});
+			// const user_db = await this.prisma.user.findUnique({
+			// 	where: { id: user.id },
+			// });
 
-			this.events.emit('user-added-to-channel', {
-				channelId: newChannel.id,
-				userId: user.id,
-				user: user_db,
-			});
+			// temporary disabled
+			// this.events.emit('user-added-to-channel', {
+			// 	channelId: newChannel.id,
+			// 	userId: user.id,
+			// 	user: user_db,
+			// });
 
-			// emit event to all other users added to channel
-			for (user of createChannelDto.usersToAdd) {
-				this.events.emit('user-added-to-channel', {
-					channelId: newChannel.id,
-					userId: user,
-					user: user_db,
-				});
-			}
+			// // emit event to all other users added to channel
+			// for (user of createChannelDto.usersToAdd) {
+			// 	this.events.emit('user-added-to-channel', {
+			// 		channelId: newChannel.id,
+			// 		userId: user,
+			// 		user: user_db,
+			// 	});
+			// }
 		} catch (error) {
 			if (error.code === 'P2002') {
 				throw new ConflictException('Channel already exists');
@@ -457,29 +503,21 @@ export class ChatService {
 			where: { channelId: channelId },
 		});
 
-		// if the user is the owner
+		// if the user is the owner and last member of the channel
 		if (channel.ownerId === user.id) {
-			if (channelUsers.length > 1) {
-				// Assign new owner
-				const newOwner = channelUsers.find(u => u.userId !== user.id);
-				await this.prisma.channel.update({
-					where: { id: channelId },
-					data: { ownerId: newOwner.userId },
-				});
-			} else {
-				// If the owner is the last member of the channel, delete it
-				if (channelUsers.length <= 1) {
-					// First, delete the owner channelUser
-					await this.prisma.channelUser.deleteMany({
-						where: {
-							channelId: channelId,
-						},
-					});
-				}
-				await this.prisma.channel.delete({ where: { id: channelId } });
-				return;
-			}
-		}
+			if (channelUsers.length <= 1) {
+        await this.prisma.channelUser.deleteMany({
+          where: {
+            channelId: channelId,
+          },
+        });
+        await this.prisma.channel.delete({ where: { id: channelId } });
+        return;
+      }
+      else { // if the owner is not the last member
+        throw new ForbiddenException('Owner can not leave a channel. Promote someone else to owner first.');
+      }
+    }
 
 		// Remove user from channel
 		await this.prisma.channelUser.delete({
@@ -505,7 +543,7 @@ export class ChatService {
 		});
 	}
 
-	async muteUser(channelId: number, userId: number) {
+	async muteUser(channelId: number, userId: number, muteDuration: number) {
 		const channelUser = await this.prisma.channelUser.findUnique({
 			where: {
 				userId_channelId: {
@@ -519,9 +557,19 @@ export class ChatService {
 			throw new NotFoundException('User is not part of this channel');
 		}
 
-		// if muser is already muted, throw error
+		// if user is already muted, throw error
 		if (channelUser.isMuted) {
 			throw new BadRequestException('User is already muted');
+		}
+
+		// if user is owner or admin, throw error
+		if (channelUser.isAdmin) {
+			throw new ForbiddenException('Cannot mute an admin');
+		}
+
+		// If mute timer is over 1 day, throw error
+		if (muteDuration > 1440) {
+			throw new BadRequestException('Mute timer cannot be over 1 day (1440 minutes)');
 		}
 
 		// Mute the user
@@ -536,6 +584,32 @@ export class ChatService {
 				isMuted: true,
 			},
 		});
+
+		// Set the timeout to unmute the user
+		setTimeout(async () => {
+      // check if userId is still muted
+      const channelUser = await this.prisma.channelUser.findUnique({
+        where: {
+          userId_channelId: {
+            channelId: channelId,
+            userId: userId,
+          },
+        },
+      });
+
+      if (!channelUser) {
+        throw new NotFoundException('User is not part of this channel');
+      }
+
+      // if user is already unmuted, throw error
+      if (!channelUser.isMuted) {
+        // no need to do anything if already unmuted
+        return;
+      }
+
+			await this.unmuteUser(Number(channelId), Number(userId));
+		}, muteDuration * 60 * 1000); // Convert minutes to milliseconds
+
 		// emit event that user was muted
 		this.events.emit('user-muted-in-channel', { channelId, userId });
 	}
@@ -653,6 +727,52 @@ export class ChatService {
 		});
 	}
 
+  async makeOwner(channelId: number, userId: number) {
+    const channel = await this.prisma.channel.findUnique({
+      where: { id: channelId },
+    });
+
+    if (!channel) {
+      throw new NotFoundException('Channel not found');
+    }
+
+    // check if user is in the channel
+    const channelUser = await this.prisma.channelUser.findUnique({
+      where: {
+        userId_channelId: {
+          channelId: channelId,
+          userId: userId,
+        },
+      },
+    });
+
+    if (!channelUser) {
+      throw new NotFoundException('User is not part of this channel');
+    }
+
+    // Make the channel owned by user
+    await this.prisma.channel.update({
+      where: { id: channelId },
+      data: { ownerId: userId },
+    });
+
+    // Make the user an admin
+    await this.prisma.channelUser.update({
+      where: {
+        userId_channelId: {
+          channelId: channelId,
+          userId: userId,
+        },
+      },
+      data: {
+        isAdmin: true,
+      },
+    });
+
+    // emit an event someone was promoted to owner
+    this.events.emit('user-promoted-to-owner-in-channel', { channelId, userId });
+  }
+
 	// Owner can edit a channel
 	async editChannel(channelId: number, editChannelDto: EditChannelDto): Promise<Channel> {
 		let channelType = editChannelDto.channelType;
@@ -714,7 +834,7 @@ export class ChatService {
 			hashedPassword = await bcrypt.hash(password, saltRounds);
 		}
 
-		return await this.prisma.channel.update({
+		const editedChannel = await this.prisma.channel.update({
 			where: {
 				id: channelId,
 			},
@@ -725,6 +845,11 @@ export class ChatService {
 				...(channelType ? { type: channelType } : {}),
 			},
 		});
+
+    // emit an event that a channel was edited
+    this.events.emit('channel-edited', editedChannel);
+
+    return editedChannel;
 	}
 
 	// Owner can delete a channel
@@ -756,6 +881,13 @@ export class ChatService {
 				channelId: channelId,
 			},
 		});
+
+    // Delete all messages associated with the channel
+    await this.prisma.message.deleteMany({
+      where: {
+        channelId: channelId,
+      },
+    });
 
 		await this.prisma.channel.delete({
 			where: {
@@ -917,7 +1049,7 @@ export class ChatService {
 			throw new NotFoundException('User not found');
 		}
 
-		// Check if user is not already banned
+		// Check if user is already unbanned
 		const isBanned = await this.prisma.channel.findFirst({
 			where: {
 				id: channelId,
@@ -930,7 +1062,7 @@ export class ChatService {
 		});
 
 		if (!isBanned) {
-			throw new BadRequestException('User is not banned');
+			throw new BadRequestException('User is not banned from this channel');
 		}
 
 		// Unban the user

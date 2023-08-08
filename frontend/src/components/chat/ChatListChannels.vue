@@ -14,12 +14,12 @@
 <script setup lang="ts">
 import { type channel } from "@/stores/chatStore";
 import { userStore } from "@/stores/userStore";
+import defaultAvatar from "@/assets/chat/chat_avatar.png";
+import defaultUser from "@/assets/chat/avatar.png";
 
 const user = userStore();
 
 const props = defineProps<{ channel: channel }>();
-const defaultAvatar = "src/assets/chat/chat_avatar.png";
-const defaultUser = "src/assets/chat/avatar.png";
 
 function getSubLabel() : string {
 

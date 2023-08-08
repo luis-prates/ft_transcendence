@@ -210,7 +210,7 @@ function tes(event: any) {
 				avatar: store.user.avatar
 			});
 
-			await sleep(500);
+			await sleep(1500);
 			Router.setRoute(Router.ROUTE_ALL);
 			Router.push("/");
 			console.log(store.user.isLogin);

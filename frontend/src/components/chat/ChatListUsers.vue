@@ -18,7 +18,7 @@ import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
 import { type ChatUser } from "@/stores/chatStore";
 
-const defaultAvatar = "src/assets/chat/avatar.png";
+import defaultAvatar from "@/assets/chat/avatar.png";
 
 function getImage() {
   return props.user.image ? props.user.image : defaultAvatar;

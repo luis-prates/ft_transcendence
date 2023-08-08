@@ -1,7 +1,7 @@
 <template>
   <div class="chat">
-    <ChatContent  @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_mensagen" />
-    <ChatList ref="chatListRef" @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_list"/>
+    <ChatContent @protected-channel="protectedChannel" :protectedStatus="protectedChannelStatus" @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_mensagen" />
+    <ChatList ref="chatListRef" @protected-channel="protectedChannel" @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_list"/>
   </div>
 </template>
 
@@ -24,7 +24,8 @@ const showTesss = ref(false);
 const showbuttom = ref(false);
 const chatListRef = ref<InstanceType<typeof ChatList> | null>(null);
 
-let socket: Socket = socketClass.getChatSocket();
+socketClass.setChatSocket({ query: { userId: user.user.id } });
+const socket: Socket = socketClass.getChatSocket();
 
 function toggleTesss() {
   showTesss.value = !showTesss.value;
@@ -32,11 +33,11 @@ function toggleTesss() {
 }
 
 onMounted(() => {
-  if (!socket)
-  {
-    socketClass.setChatSocket({ query: { userId: user.user.id } });
-  }
-  socket = socketClass.getChatSocket();  
+  // if (!socket)
+  // {
+  //   socketClass.setChatSocket({ query: { userId: user.user.id } });
+  // }
+  // socket = socketClass.getChatSocket();  
   store.getChannels();
   
   /* socket.on("join_chat", (data: channel) => {
@@ -62,6 +63,7 @@ onMounted(() => {
   socket.on('channel-created', (eventData: { newChannel: any, message: any }) => {
     const { newChannel, message } = eventData;
     store.addChannel(newChannel, message);
+    chatListRef.value?.getFilteredChannels();
   });
 
   socket.on('user-removed', (eventData: { channelId: any, message: any, user: any }) => {
@@ -77,16 +79,29 @@ onMounted(() => {
     store.removeUserFromChannel(channelId, user.user.id);
     chatListRef.value?.getFilteredChannels();
   });
+  socket.on("channel-deleted", (eventData) => {
+    const { channelId } = eventData;
+    if (store.selected &&  store.selected.objectId == channelId){
+      updateChannelStatus(false);
+    }
+    const curChannelIndex = chatStore().channels.findIndex(
+    (channel) => channel.objectId === channelId
+  );
+  if (curChannelIndex !== -1) {
+    store.channels.splice(curChannelIndex, 1);
+    chatListRef.value?.getFilteredChannels();
+  }
+  });
   socket.on("channel-added", (eventData) => {
     const { channelId } = eventData;
-    store.addUserToChannel(channelId, user.user);
+    store.userToChannel(channelId, user.user);
       chatListRef.value?.getFilteredChannels();
   });
   //TODO, user-added acionado 3x
   socket.on("user-added", (eventData) => {
     console.log("Acionou o evento: eventData" , eventData);
     const { channelId, user } = eventData;
-    store.addUserToChannel(channelId, user);
+    store.userToChannel(channelId, user);
   });
 
   //Mute
@@ -112,7 +127,7 @@ onMounted(() => {
   //Make Admin
   socket.on("user-promoted-in-channel", (eventData) => {
     console.log("Admin" , eventData);
-    const { channelId, userId, user } = eventData;
+    const { channelId, userId } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
     if (curUser)
@@ -127,6 +142,36 @@ onMounted(() => {
     const curUser = getUserInChannel(channelId, userId);
     if (curUser)
       curUser.isAdmin = false;
+  });
+
+  //new Owner
+  socket.on("user-promoted-to-owner", (eventData) => {
+    const { channelId, userId, message } = eventData;
+
+    const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
+    if (curChannel)
+    {
+      if (message == "You have been promoted to owner in channel 25")
+      {
+        curChannel.ownerId = userStore().user.id;
+      }
+      else {
+        curChannel.ownerId = userId;
+      }
+    }
+  });
+
+  //Edit Channel channel-edited
+  socket.on("channel-edited", (eventData) => {
+    const { editedChannel } = eventData;
+
+    const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == editedChannel.id);
+    if (curChannel)
+    {
+      curChannel.avatar = editedChannel.avatar ? editedChannel.avatar : "";
+      curChannel.name = editedChannel.name;
+      curChannel.type = editedChannel.type;
+    }
   });
 
   //Kick
@@ -154,6 +199,21 @@ onMounted(() => {
       if (curUser) {
         store.removeUserFromChannel(channelId, userId);
         curChannel.banList.push(curUser);
+      }
+    }
+  });
+
+  //unban
+  socket.on("user-unbanned-in-channel", (eventData) => {
+    const { channelId, userId, message } = eventData;
+    console.log(message);
+
+    const curChannel = chatStore().channels.find((channel: channel) => channel.objectId === channelId);
+    if (curChannel) {
+      const curUserIndex = curChannel.banList.findIndex((userChannel: ChatUser) => userChannel.id === userId);
+      if (curUserIndex !== -1) {
+        const curUser = curChannel.banList[curUserIndex];
+        curChannel.banList.splice(curUserIndex, 1);
       }
     }
   });
@@ -215,14 +275,18 @@ onUnmounted(() => {
 // Data initialization
 const channel = ref(false);
 const createChannel = ref(false);
+const protectedChannelStatus = ref(false);
 
 // Provide the channel status to chld components
 provide('channelValue', channel);
 // Method to update channelStatus when emitted from child component
 const updateChannelStatus = (newStatus: boolean) => {
-  console.log("chamou a funcao!");
   channel.value = newStatus;
 };
+//testing for emits protected channel
+const protectedChannel = (newStatus: boolean) => {
+  protectedChannelStatus.value = newStatus;
+}
 
 // Method to update createChannel var when emitted from child component
 const updateCreateChannel = (newStatus: boolean) => {

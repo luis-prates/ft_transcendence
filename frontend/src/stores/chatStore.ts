@@ -1,6 +1,6 @@
 import { reactive, ref } from "vue";
 import { defineStore } from "pinia";
-import { userStore, type User } from "./userStore";
+import { userStore, type User, type Block } from "./userStore";
 import { env } from "@/env";
 import axios from "axios";
 
@@ -49,17 +49,27 @@ export const chatStore = defineStore("chat", () => {
       avatar: newChannel.avatar ? newChannel : "",
       password: "",
       messages: [],
-      users: newChannel.users,
+      users: newChannel.users.map((userData: any) => {
+        return {
+          id: userData.user.id,
+          image: userData.user.image,
+          nickname: userData.user.nickname,
+          status: userData.user.status,
+          isAdmin: userData.isAdmin || false,
+          isMuted: userData.isMuted || false,
+        };
+      }),
       type: newChannel.type,
       ownerId: newChannel.ownerId,
       messagesLoaded: false,
-      banList: newChannel.banList,
+      banList: [],
     };
     const channelSelected = channels.find((c: channel) => {
       return c.objectId === channel.objectId;
     });
     if (!channelSelected) {
       channels.push(channel);
+      console.log("O channel foi adicionado: " , channel);
     }
     else {
       console.log("Channel already exists!");
@@ -118,7 +128,10 @@ export const chatStore = defineStore("chat", () => {
           const response = await axios.get(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/messages`, {
             headers: { Authorization: `Bearer ${user.access_token_server}` },
           });
-          const messages = response.data;
+          let messages = response.data;
+          const blockList = user.block.filter((block: Block) => block.blockedId !== user.id);
+          blockList.forEach(function (block: Block) { messages = messages.filter((message: ChatMessage) => block.blockedId !== message.userId); })
+
           // Process the messages as needed
           selected.value.messages = messages;
           console.log("RESPOSTA DO SERVER: ", messages);
@@ -131,7 +144,7 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  async function banUser(channelId:number, userId: number) {
+  async function banUser(channelId:number, userId: number, command:String) {
 
     const options = {
       method: "POST",
@@ -142,10 +155,10 @@ export const chatStore = defineStore("chat", () => {
     };
 
     await axios
-      .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/ban/${userId}`, 
+      .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/${command}/${userId}`, 
         { channelId: channelId, userId: userId, }, options)
       .then(function (response: any) {
-        console.log(`User:${userId} was banned : ${response.data}`);
+        console.log(`User:${userId} was ${command} : ${response.data}`);
       })
       .catch((err) => console.error(err));
   }
@@ -219,24 +232,51 @@ export const chatStore = defineStore("chat", () => {
       }
   }
 
-  async function createChannel(channel: channel) {
-
-    if (channel.type == "DM")
-    {
-      console.log("USERS: ", channel.users[0]);
-      const userID = channel.users[0];
-      const channelExist = channels.find((channelStore: channel) => channelStore.type == "DM" 
-      && channelStore.users.some((userChannel: ChatUser) => userChannel.id == userStore().user.id)
-      && channelStore.users.some((userChannel: ChatUser) => userChannel.id == userID));
-         
-      if (channelExist)
-      {
-        console.log("This DM is already exist!", channelExist);
-        //selected.value = channelExist;
-        //TODO ABRIR O CHANNEL DM
-        return ;
-      }
+  async function deleteChannel(channelId: string) {
+    const options = {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+    };
+  
+    try {
+      await axios.delete(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}`, options);
+        console.log("Channel deleted successfully");
+      // You can update your local state or perform any other actions after successful deletion.
+    } catch (error) {
+      console.error("Error deleting channel:", error);
+      // Handle the error, show an error message, or perform other error-handling actions.
     }
+  }
+
+  async function editChannel(channelId: any, editChannelDto: any) {
+    const options = {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.access_token_server}`,
+      },
+      body: JSON.stringify(editChannelDto),
+    };
+  
+    try {
+      console.log("Vai editar o channel: ", channelId);
+      const response = await fetch(`${env.BACKEND_SERVER_URL}/chat/channels/edit/${channelId}`, options);
+  
+      if (response.ok) {
+        const updatedChannel = await response.json();
+        return "ok";
+      } else if (response.status === 404) {
+        return 404;
+      } else {
+        return "GENERIC_ERROR";
+      }
+    } catch (error) {
+      console.error(error);
+      return "NETWORK_ERROR";
+    }
+  }
+
+  async function createChannel(channel: channel) {
 
     const createChannelDto = {
       name: channel.name,
@@ -260,11 +300,8 @@ export const chatStore = defineStore("chat", () => {
       const data = await response.json();
       console.log("CREATE CHANNEL:", data);
 
-      // Check if the response indicates a successful operation
       if (response.ok) {
-        // Return any relevant data here if needed
-        //store.getChannels();
-        return false;
+        return response;
       } else if (response.status == 409) {
         return "409"; //409 == Conflit error (same name || same id?)
       } else {
@@ -276,10 +313,15 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
-  async function joinChannel(channelId: string) {
-    const joinChannelDto = {
+  async function joinChannel(channelId: string, password?: string) {
+    const joinChannelDto: { channelId: string; password?: string } = {
       channelId: channelId,
     };
+  
+    // Add the password to joinChannelDto if it is provided
+    if (password) {
+      joinChannelDto.password = password;
+    }
     console.log("joinChannelDto:", joinChannelDto);
 
     const options = {
@@ -298,16 +340,20 @@ export const chatStore = defineStore("chat", () => {
       // Check if the response indicates a successful operation
       if (response.ok) {
         // Return any relevant data here if needed
-        //store.getChannels();
+        // In this case, we don't need to return any data; just indicate success
         return false;
+      } else if (response.status === 400) {
+        return { success: false, error: 'INCORRECT_PASSWORD' };
       } else {
-        return "GENERIC_ERROR";
+        return { success: false, error: 'GENERIC_ERROR' };
       }
     } catch (error) {
       console.error(error);
-      return false;
+      return { success: false, error: 'GENERIC_ERROR' };
     }
   }
+
+  
 
   // Function to remove a user from a specific channel
   function removeUserFromChannel(channelId: any, userId:any) {
@@ -328,8 +374,31 @@ export const chatStore = defineStore("chat", () => {
     }
   }
 
+  async function addUserToChannel(channelId: string, userId: string) {
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.access_token_server}`,
+      },
+    };
+  
+    try {
+      const response = await fetch(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/users/${userId}`, options);
+  
+      if (response.ok) {
+        return { success: true };
+      } else {
+        return { success: false, error: 'GENERIC_ERROR' };
+      }
+    } catch (error) {
+      console.error(error);
+      return { success: false, error: 'GENERIC_ERROR' };
+    }
+  }
+
   // Function to add a user to a specific channel
-function addUserToChannel(channelId: any, user: ChatUser) {
+function userToChannel(channelId: any, user: ChatUser) {
   const channel = channels.find((channel: channel) => channel.objectId === channelId);
 
   if (channel) {
@@ -395,6 +464,32 @@ async function demoteAdmin(channel: channel, userChat: ChatUser) {
   .catch((err) => console.error(err));
 }
 
+async function makeOwner(channelId:string, userId:string) {
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${user.access_token_server}`,
+    },
+  };
+
+  const requestBody = {
+    channelId: channelId,
+    userId: userId,
+  };
+
+  try {
+    const response = await axios.post(
+      `${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/owner/${userId}`,
+      requestBody,
+      options
+    );
+
+    console.log(`Made user ${userId} the owner of channel ${channelId}`);
+  } catch (error) {
+    console.error("Error making user owner:", error);
+  }
+}
 
 async function muteUser(channel: channel, userChat: ChatUser) {
   const options = {
@@ -469,14 +564,18 @@ async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
     getMessages,
     addMessage,
     getChannels,
+    editChannel,
     createChannel,
     activateMessage,
+    makeOwner,
     selectChannel,
     isUserInSelectedChannel,
     leaveChannel,
+    deleteChannel,
     joinChannel, 
     removeUserFromChannel,
     addUserToChannel,
+    userToChannel,
     makeAdmin,
     demoteAdmin,
     muteUser,

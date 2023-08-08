@@ -42,21 +42,29 @@
         <!-- Users inside the chat selected -->
         <ul class="contacts">
           <div v-if="imAdmin" class="chat_filter">
-            <button @click="setShowUsers(true)"  class="chat_filter_button">
+            <button @click="setShowUsers(1)"  class="chat_filter_button">
               <img class="chat_filter_img" src="src/assets/chat/userslist.png" title="Users" />
             </button>
-            <button @click="setShowUsers(false)"  class="chat_filter_button">
+            <button @click="setShowUsers(2)"  class="chat_filter_button">
               <img class="chat_filter_img" src="src/assets/chat/blacklist.png" title="Users Banned" />
+            </button>
+            <button @click="setShowUsers(3)"  class="chat_filter_button">
+              <img class="chat_filter_img" src="src/assets/chat/add_user.png" title="Add User" />
             </button>
           </div>
           <div v-if="showUsers">
             <li v-for="(user, id) in usersFilters" :key="id">
-              <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser(user)" />
+              <ChatListUsers :user="user" @click="selectUser(user)" @contextmenu="handleContextMenuUser($event, user)" />
             </li>
           </div>
-          <div v-else>
+          <div v-else-if="showBanUsers">
             <li v-for="(bannedUser, id) in bannedUsersFilters" :key="id">
-              <ChatListUsers :user="bannedUser" @click="selectUser(bannedUser)" @contextmenu="handleContextMenuUser(bannedUser)" />
+              <ChatListUsers :user="bannedUser" @click="selectUser(bannedUser)" @contextmenu="handleContextMenuBanUser($event, bannedUser)" />
+            </li>
+          </div>
+          <div v-else-if="showAddUsers">
+            <li v-for="(friendUser, id) in friendListFilter" :key="id">
+              <ChatListUsers :user="friendUser" @click="selectUser(friendUser)" @contextmenu="handleContextMenuFriendUser($event, friendUser)" />
             </li>
           </div>
         </ul>
@@ -95,6 +103,7 @@ const usersInChannelSelect = ref([] as ChatUser[]);
 const bannedUsersInChannelSelect = ref([] as ChatUser[]);
 const usersFilters = ref([] as ChatUser[]);
 const bannedUsersFilters = ref([] as ChatUser[]);
+const friendListFilter = ref([] as ChatUser[]);
 const searchUser = ref('');
 const isChatFilterType = ref("inside");
 const menu = new Menu();
@@ -113,9 +122,25 @@ const imAdmin =  computed(() => {
 })
 
 const showUsers = ref(true);
+const showBanUsers = ref(false);
+const showAddUsers = ref(false);
 
-const setShowUsers = (value:boolean) => {
-  showUsers.value = value;
+const setShowUsers = (value:any) => {
+  if (value == 1) {
+    showUsers.value = true;
+    showBanUsers.value = false;
+    showAddUsers.value = false;
+  }
+  else if (value == 2) {
+    showUsers.value = false;
+    showBanUsers.value = true;
+    showAddUsers.value = false;
+  }
+  else if (value == 3) {
+    showUsers.value = false;
+    showBanUsers.value = false;
+    showAddUsers.value = true;
+  }
 }
 
 const handleSearch = () => {
@@ -198,10 +223,11 @@ const selectChannel = (channel: channel) => {
   store.selectChannel(channel);
   openChannel(store.selected);
   if (isMenuOpen.value)
-    toggleMenu();
+  toggleMenu();
 }
 
 const handleContextMenu = (e: any, channel: channel)  => {
+  store.selectChannel(channel);
   const isAdmin = (channel.users && channel.users.some((u: any)=> u.id === userStore().user.id && u.isAdmin));
   store.selected = channel;
   const items = [
@@ -221,7 +247,7 @@ const handleContextMenu = (e: any, channel: channel)  => {
       ? [
           {
             label: "Delete", 
-            onClick: () => console.log("Vai deletar channel!"),
+            onClick: () => chatStore().deleteChannel(channel.objectId),
           }
         ]
       : [])
@@ -232,18 +258,138 @@ const handleContextMenu = (e: any, channel: channel)  => {
     items: items,
     customClass: "custom-context-menu",
   });
-  store.selectChannel(channel);
 };
 
+const handleContextMenuBanUser = (e: any, user: ChatUser)  => {
+  const items = [
+  { 
+    label: "Open Profile", 
+    onClick: () => openPerfilUser(user)
+    },
+    { 
+      label: "UnBan", 
+      onClick: () => store.banUser(selected?.value.objectId, user.id, "unban"),
+    }
+  ]
+  ContextMenu.showContextMenu({
+    x: e.x,
+    y: e.y,
+    items: items,
+    customClass: "custom-context-menu",
+  });
+};
 
-const handleContextMenuUser = (user: ChatUser)  => {
-  //instance?.emit("update-create-channel", false);
-  console.log("click direito:", user.nickname)
-  if (selected.value != user && isMenuOpen.value) {
-    toggleMenu();
-  }
-  userSelect.value = user;
-  toggleMenu();
+const handleContextMenuFriendUser = (e: any, user: ChatUser)  => {
+  const items = [
+  { 
+    label: "Open Profile", 
+    onClick: () => openPerfilUser(user)
+    },
+    { 
+      label: "Add User", 
+      onClick: () => chatStore().addUserToChannel(chatStore().selected.objectId, user.id)
+    }
+  ]
+  ContextMenu.showContextMenu({
+    x: e.x,
+    y: e.y,
+    items: items,
+    customClass: "custom-context-menu",
+  });
+};
+
+const handleContextMenuUser = (e: any, user: ChatUser)  => {
+  const items = [
+    { 
+      label: "Open Profile", 
+      onClick: () => openPerfilUser(user)
+      },
+      //TODO //para users != my own user (storeUser.user.id != user.id)
+      { 
+        label: "Send DM", 
+        onClick: async () => {
+        const isDMSent = await menu.sendDM(user);
+        if (isDMSent) {
+          
+          const currentUserId = userStore().user.id;
+          const otherUserId = user.id;
+          const dmChannel = chatStore().channels.find(channel =>
+            channel.type === "DM" &&
+            channel.users.some(user => user.id === currentUserId) &&
+            channel.users.some(user => user.id === otherUserId)
+          );
+
+          if (dmChannel)
+            openChannel(dmChannel);
+        }
+        },
+      },
+      { 
+        label: menu.getFriend(user), 
+        onClick: () => {
+          const label = menu.getFriend(user);
+
+          if (label === "Add Friend") {
+            userStore().sendFriendRequest(user.id, user.nickname);
+          } else if (label === "Cancel Request") {
+            userStore().cancelFriendRequest(user.id);
+          } else if (label === "You have a Request") {
+            // Do nothing or show a message, as needed
+            return;
+          } else if (label === "Remove Friend") {
+            userStore().deleteFriend(user.id);
+          } else {
+            // Handle other cases or default action, if needed
+          }
+        },
+      },
+      { 
+        label: menu.getBlock(user), 
+        onClick: () => {
+          const label = menu.getBlock(user);
+          if (label == "Block")
+            userStore().blockUser(user.id, user.nickname, user.image);
+          else if (label == "UnBlock")
+            userStore().unblockUser(user.id);
+        }
+      },
+      { 
+        label: "Challenge", 
+        onClick: () => menu.getChallenge(user),
+      },
+      //para admins do channel
+      ...(menu.isAdmin(user) ? [
+      { 
+        label: menu.getMute(user), 
+        onClick: () => muteOrUnmute(user),
+      },
+      { 
+        label: "Kick", 
+        onClick: () => kickUser(user),
+      },
+      { 
+        label: "Ban", 
+        onClick: () => store.banUser(selected?.value.objectId, user.id, "ban"),
+      },
+      ] : []),
+      //para owners
+      ...(chatStore().selected.ownerId == userStore().user.id ? [
+      { 
+        label: menu.getAdmistrator(user) + " Adminstrator", 
+        onClick: () => makeOrDemoteAdmin(user),
+      }] : []),
+      ...((chatStore().selected.ownerId == userStore().user.id) && user.isAdmin == true ? [
+      { 
+        label: "Give Owner", 
+        onClick: () => chatStore().makeOwner(chatStore().selected.objectId, user.id),
+      }] : [])
+    ]
+  ContextMenu.showContextMenu({
+    x: e.x,
+    y: e.y,
+    items: items,
+    customClass: "custom-context-menu",
+  });
 };
   
 let isProfileOpen: boolean = false;
@@ -322,20 +468,31 @@ const openChannel = async function (channel: channel) {
   {
     store.getMessages(channel);
     instance?.emit('update-create-channel', false);
+    instance?.emit('protected-channel', false);
     instance?.emit("update-channel-status", true);
     usersInChannelSelect.value = channel.users;
     bannedUsersInChannelSelect.value = channel.banList;
     usersFilters.value = channel.users;
     bannedUsersFilters.value = channel.banList;
+    friendListFilter.value = userStore().user.friends.filter((friend) => {
+      const isNotInSelectedUsers = !store.selected.users.some((selectedUser:any) => selectedUser.id === friend.id);
+      const isNotInBanList = !store.selected.banList.some((bannedUser:any) => bannedUser.id === friend.id);
+      return isNotInSelectedUsers && isNotInBanList;
+    });
   }
   else
   {
     if (channel.type == "PUBLIC"){
       await store.joinChannel(channel.objectId);
       store.getMessages(channel);
+      instance?.emit('update-create-channel', false);
+      instance?.emit('protected-channel', false);
+      instance?.emit("update-channel-status", true);
     }
     else{
       console.log("I will try to put the password!");
+      instance?.emit("protected-channel", true);
+      // store.joinChannel(channel.objectId, "privado")
     }
   }
 }

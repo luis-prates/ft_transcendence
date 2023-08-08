@@ -34,32 +34,49 @@
 // });
 
 sendDM = async (user : ChatUser) => {
-  try {
-    const newChannel = {
-      objectId: 1,
-      name: "DM",
-      avatar: "",
-      password: "",
-      messages: [], // initialize with an empty array of messages
-      users: [] as any, // initialize with an empty array of users
-      type: "DM",
-      banList: [] as any,
-    };
-    newChannel.users.push(user.id);
-
-    const response = await this.store.createChannel(newChannel);
-
-    if (!response) {
-      console.log("Erro inesperado!");
-    } else if (response == "409"){
-      // Handle channel creation failure here
-      console.log('Failed to create DM. DM already exists');
-      // Display error message in the form or take any other action
+  const userID = user.id;
+  console.log("Tamanho dos channels: ", this.store.channels.length);
+  console.log("Os channels: ", this.store.channels);
+  const channelExist = this.store.channels.find((channelStore: channel) => channelStore.type == "DM" 
+  && channelStore.users.some((userChannel: ChatUser) => userChannel.id == userStore().user.id)
+  && channelStore.users.some((userChannel: ChatUser) => userChannel.id == userID));
+      
+  if (channelExist)
+  {
+    console.log("This DM is already exist!");
+    return channelExist;
+  }
+  else
+  {
+    console.log(" DM NÃO exite por isso vai criar uma!");
+    try {
+      const newChannel = {
+        objectId: 1,
+        name: "DM",
+        avatar: "",
+        password: "",
+        messages: [],
+        users: [] as any,
+        type: "DM",
+        banList: [] as any,
+      };
+      newChannel.users.push(user.id);
+      
+      const response = await this.store.createChannel(newChannel);
+      
+      if (!response) {
+        console.log("Erro inesperado!");
+        return response;
+      } else if (response == "409"){
+        console.log('Failed to create DM. DM already exists');
+        return false;
     }
+    return response;
   } catch (error) {
     console.error(error);
-    // Handle any other errors that occurred during channel creation
   }
+  return false;
+}
 };
 
   handleMenuItemUserClick = (item: number, user: ChatUser) => {
@@ -110,7 +127,7 @@ sendDM = async (user : ChatUser) => {
     // Ban
     else if (item == 7){
       if (this.selected)
-      this.store.banUser(this.selected?.value.objectId, user.id);
+      this.store.banUser(this.selected?.value.objectId, user.id, "ban");
     }
     //GIVE ADMINSTRATOR
     else if (item == 8){
