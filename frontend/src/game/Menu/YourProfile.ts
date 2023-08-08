@@ -19,7 +19,7 @@ import type { Socket } from "socket.io-client";
 import { TwoFactor } from "./TwoFactor";
 
 export class YourProfile {
-  private _menu = new Menu({ layer: "Global", isFocus: true });
+  public _menu = new Menu({ layer: "Global", isFocus: true });
   public socket: Socket = socketClass.getLobbySocket();
 
   private background: ElementUI = this.createBackground();
@@ -281,8 +281,7 @@ export class YourProfile {
         this.player.animation.sy !== ((this.avatar_pagination.page - 4 >= 0 ? 1 : 0) * 320) ||
         this.user.infoPong.color !== this.colorChoose ||
         this.user.infoPong.skin.default.paddle !== this.skinPadle ||
-        this.user.image !== this.avatarImage.src ||
-        this.user.nickname !== this.new_nickname))
+        this.user.image !== this.avatarImage.src))
         {
           ctx.fillStyle = "green";
         }
@@ -298,7 +297,6 @@ export class YourProfile {
       },
       onClick: () => {
         if (type == "save") {
-            this.user.nickname = this.new_nickname;
             this.user.avatar = this.avatar_pagination.page;
             this.player.animation.sx = (this.avatar_pagination.page - 4 >= 0 ? this.avatar_pagination.page - 4 : this.avatar_pagination.page) * 144;
             this.player.animation.sy =  (this.avatar_pagination.page - 4 >= 0 ? 1 : 0) * 320;
@@ -767,22 +765,43 @@ export class YourProfile {
         this.roundRect(ctx, button.parent?.rectangle.x + button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
 
       },
-      onClick: () => {
+      onClick: async () => {
         if (edit)
         {
-          //TODO DATABASE 
-          //POST_User_update_nickname(user: User, nickname: string) //if exist return false or 201
-          /*se ja existir:
-            inputName.style.borderColor = "red";
-          */
-
-
-          pencilImage.src = pencil;
-          edit = false;
-          inputName.disabled = true;
-          inputName.style.display = "none";
           this.new_nickname = inputName.value;
-          inputName.style.borderColor = "black";
+
+          if (this.new_nickname != userStore().user.nickname)
+          {
+            if (await userStore().updateNickname(this.new_nickname))
+            {
+              pencilImage.src = pencil;
+              edit = false;
+              inputName.disabled = true;
+              inputName.style.display = "none";
+              inputName.style.borderColor = "black";
+
+              this.socket.emit("update_gameobject", {
+                className: "Character",
+                objectId: this.player.objectId,
+                name: this.player.name,
+                x: this.player.x,
+                y: this.player.y,
+                avatar: this.user.avatar,
+                nickname: this.user.nickname,
+                animation: { name: this.player.animation.name, isStop: false },
+              });
+            }
+            else
+              inputName.style.borderColor = "red";
+          }
+          else
+          {
+            pencilImage.src = pencil;
+            edit = false;
+            inputName.disabled = true;
+            inputName.style.display = "none";
+            inputName.style.borderColor = "black";
+          }
         }
         else
         {
@@ -791,7 +810,6 @@ export class YourProfile {
           inputName.disabled = false;
           inputName.style.display = "block";
         }
-
       },
     };
     return button;

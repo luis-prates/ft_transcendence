@@ -136,6 +136,14 @@ export class ChatController {
 		return this.chatService.demoteAdmin(Number(req.user.id), Number(channelId), Number(userId));
 	}
 
+	// Make someone owner if you are the owner
+	@Post(':channelId/owner/:userId')
+	@UseGuards(RolesGuard)
+	@Roles('owner')
+	async makeOwner(@Param('channelId') channelId: string, @Param('userId') userId: string) {
+		return this.chatService.makeOwner(Number(channelId), Number(userId));
+	}
+
 	// Change channel password
 	@Post(':channelId/password')
 	@UseGuards(RolesGuard)

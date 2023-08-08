@@ -48,6 +48,7 @@ export class RolesGuard implements CanActivate {
 			if (channel.ownerId === Number(userId)) {
 				return true;
 			}
+			throw new UnauthorizedException('You are not the owner of this channel!');
 		}
 
 		// If the user is none of the above

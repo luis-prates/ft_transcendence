@@ -193,7 +193,7 @@ function tes(event: any) {
 
 			showModal("Login Success", "success");
 			resolveCondition.value = true;
-			await Promise.race([sleep(3000), modalClosePromise]);
+			await Promise.race([sleep(1500), modalClosePromise]);
 			resolveCondition.value = false;
 			hideModal();
 
@@ -210,7 +210,7 @@ function tes(event: any) {
 				avatar: store.user.avatar
 			});
 
-			await sleep(2000);
+			await sleep(1500);
 			Router.setRoute(Router.ROUTE_ALL);
 			Router.push("/");
 			console.log(store.user.isLogin);
@@ -225,7 +225,7 @@ onMounted(() => {
 	if (props.error) {
 		showModal(props.error, "error");
 	}
-	if (props.token || store.user.isLogin)
+	if (props.token)
 	{
 		store
 		.login(props.token).then(async (user) => {
