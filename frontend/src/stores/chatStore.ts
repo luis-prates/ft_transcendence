@@ -265,8 +265,10 @@ export const chatStore = defineStore("chat", () => {
       if (response.ok) {
         const updatedChannel = await response.json();
         return "ok";
+      } else if (response.status === 404) {
+        return 404;
       } else {
-        return response.status;
+        return "GENERIC_ERROR";
       }
     } catch (error) {
       console.error(error);
