@@ -300,10 +300,7 @@ export const chatStore = defineStore("chat", () => {
       const data = await response.json();
       console.log("CREATE CHANNEL:", data);
 
-      // Check if the response indicates a successful operation
       if (response.ok) {
-        // Return any relevant data here if needed
-        //store.getChannels();
         return response;
       } else if (response.status == 409) {
         return "409"; //409 == Conflit error (same name || same id?)
