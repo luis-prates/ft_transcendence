@@ -136,7 +136,7 @@ function getResult()
 }
 
 .lost {
-  color: silver;
+  color: whitesmoke;
 }
 
 

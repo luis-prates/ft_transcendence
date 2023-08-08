@@ -41,6 +41,19 @@
             <i class="arrow-icon left" @click="changePage(-1)"></i>
             <i class="arrow-icon right" @click="changePage(1)"></i>
         </div>
+        <div>
+            <button class="expand-button button1" :class="{ expanded: expanded[0] }" @click="toggleExpand(0)">
+            <div class="expanded-content" v-if="expanded[0]">
+                <img :src=avatares alt="Expanded Image">
+                <div class="positioned-element">Element 1</div>
+                <div class="positioned-element">Element 2</div>
+                <!-- Adicione mais elementos posicionados conforme necessário -->
+            </div>
+            </button>
+            <button class="expand-button button2" :class="{ expanded: expanded[1] }" @click="toggleExpand(1)">
+            
+            </button>
+        </div>
     </div>
 </template>
 
@@ -51,8 +64,10 @@ import { skin, TypeSkin } from "@/game/ping_pong/Skin";
 import { onMounted, ref } from "vue";
 import { TwoFactor } from "@/game/Menu/TwoFactor";
 import MatchComponent from "./MatchComponent.vue"
+import avataresImages from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
 
 const defaultAvatar = "../../src/assets/chat/avatar.png";
+const avatares = avataresImages;
 
 const user = userStore().user;
 const editing = ref(false);
@@ -230,8 +245,15 @@ async function updateNickname() {
       inputName.style.borderColor = "black";
     }*/
     }
+
+
 }
 
+const expanded = ref([false, false]);
+
+function toggleExpand(index: number) {
+    expanded.value[index] = !expanded.value[index];
+}
 
 // const props = defineProps<{ user: User }>();
 
@@ -452,7 +474,7 @@ onMounted(() => {
     top: 15%;
     width: 92%;
     height: 80%;
-    background-color: rgba(230, 233, 22, 0.6);
+    background-color: rgba(145, 144, 144, 0.612);
     border: 2px solid black;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
@@ -494,6 +516,31 @@ onMounted(() => {
 
 .arrow-icon.right:hover {
   border-color: transparent transparent transparent grey;
+}
+
+.expand-button {
+    position: absolute;
+    color: white;
+    border: 3px solid black;
+    border-radius: 5px;
+    transition: all 0.3s cubic-bezier(0.25, 0.1, 0, 1.19);
+    left: 100%;
+    width: 10px;
+    cursor: pointer;
+}
+
+.button1 {
+    height: 350px;
+}
+
+.button2 {
+    top: 350px;
+    height: 400px;
+}
+
+.expanded {
+  width: 250px;
+  background-color: rgba(255, 255, 255, 0.463);
 }
 
 </style>
