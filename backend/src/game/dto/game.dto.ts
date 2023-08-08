@@ -105,3 +105,14 @@ export class GameEndDto {
 	@Type(() => GameStatsDto)
 	gameStats: GameStatsDto;
 }
+
+export class GameStatusDto {
+	@IsEnum(GameStatus)
+	status: GameStatus;
+}
+
+export class GameIdDto {
+	@Transform(({ value }) => parseInt(value))
+	@IsInt()
+	userId: number;
+}

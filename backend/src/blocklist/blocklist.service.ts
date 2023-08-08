@@ -1,11 +1,12 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Blocklist, User } from '@prisma/client';
 
 @Injectable()
 export class BlocklistService {
 	constructor(private prisma: PrismaService) {}
 
-	async blockUser(user: any, blockedId: number): Promise<any> {
+	async blockUser(user: User, blockedId: number): Promise<Blocklist> {
 		if (user.id === blockedId) {
 			throw new BadRequestException('Cannot block self');
 		}
@@ -56,7 +57,7 @@ export class BlocklistService {
 			throw error;
 		}
 	}
-	async unblockUser(user: any, blockedId: number): Promise<any> {
+	async unblockUser(user: User, blockedId: number): Promise<Blocklist> {
 		if (user.id === blockedId) {
 			throw new BadRequestException('Cannot unblock self');
 		}
@@ -114,7 +115,7 @@ export class BlocklistService {
 		}
 	}
 
-	async getBlockedUsers(user: any): Promise<any> {
+	async getBlockedUsers(user: User): Promise<Blocklist[]> {
 		const blockedUsers = await this.prisma.blocklist.findMany({
 			where: {
 				blockerId: user.id,
@@ -133,7 +134,7 @@ export class BlocklistService {
 		return blockedUsers;
 	}
 
-	async getBlockedBy(user: any): Promise<any> {
+	async getBlockedBy(user: User): Promise<Blocklist[]> {
 		const blockedBy = await this.prisma.blocklist.findMany({
 			where: {
 				blockedId: user.id,
