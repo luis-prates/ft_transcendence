@@ -7,7 +7,7 @@
         <div class="card-header">
           <div class="input-group">
             <input id="searchChannel" type="text" placeholder="Search..." name="" class="form-control search" v-model="searchTerm" @input="handleSearch"/>
-            <div class="input-group-prepend">
+            <div class="input-group-prepend" title="Create Channel">
               <span class="input-group-text search_btn" @click="createChannel">+<i class="fas fa-search"></i></span>
             </div>
           </div>
@@ -15,13 +15,13 @@
         <!-- Add chat list items here -->
         <div class="chat_filter">
           <button id="dmButton" class="chat_filter_button" @click="changeFilter('dm')">
-            <img class="chat_filter_img" src="src/assets/chat/dm_messages.png" alt="DMs" />
+            <img class="chat_filter_img" src="src/assets/chat/dm_messages.png" title="Direct Messages" />
           </button>
           <button id="insideButton" class="chat_filter_button" @click="changeFilter('inside')">
-            <img class="chat_filter_img" src="src/assets/chat/my_channels.png" alt="My Channels" />
+            <img class="chat_filter_img" src="src/assets/chat/my_channels.png" title="My Channels" />
           </button>
           <button id="allButton" class="chat_filter_button" @click="changeFilter('all')">
-            <img class="chat_filter_img" src="src/assets/chat/all_channels.png" alt="All Channels" />
+            <img class="chat_filter_img" src="src/assets/chat/all_channels.png" title="Other Channels" />
           </button>
         </div>
         <ul class="contacts" @click="toggleStatus">
@@ -34,9 +34,6 @@
         <div class="card-header">
           <div class="input-group">
             <input id="searchUser" type="text" placeholder="Search..." name="" class="form-control search" v-model="searchUser" @input="handleSearchUser"/>
-            <div class="input-group-prepend">
-              <span class="input-group-text search_btn" @click="createChannel">+<i class="fas fa-search"></i></span>
-            </div>
           </div>
         </div>
         <!-- Users inside the chat selected -->
