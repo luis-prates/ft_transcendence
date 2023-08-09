@@ -10,7 +10,6 @@
             <input id="inputName" type="text" pattern="[A-Za-z0-9]+" value="" :disabled=!editing class="profile_components user-nickname-input" @input="cleanInput" :maxlength="15" v-show="editing">
             <span class="clear-icon" v-show="isDiferent && editing" @click="updateNickname()">✓</span>
             <span class="clear-icon false-red"  v-show="!isDiferent && editing" @click="cancelEdit()">X</span>
-
         </div>
         <div class="user-label profile_components level">Level: {{ user.infoPong.level }}</div>
         <div class="user-label profile_components money">Money: {{ user.money }}₳</div>
@@ -22,7 +21,7 @@
             </button>
         </div>
 
-        <div class="user_paddle profile_components">
+        <div class="user_paddle profile_components" :style="{ 'background-color': selectedColor }">
             <img v-if="isDefaultPaddle()" id="paddleImage" :src="getPaddle()" class="user_paddle_image">
         </div>
 
@@ -42,18 +41,32 @@
             <i class="arrow-icon right" @click="changePage(1)"></i>
         </div>
         <div>
-            <button class="expand-button button1" :class="{ expanded: expanded[0] }" @click="toggleExpand(0)">
-            <div class="expanded-content" v-if="expanded[0]">
-                <div id="imageContainer"></div>
-                <div class="pagination-buttons">
-                    <i class="arrow-icon costume-avatar left" @click="changeAvatarPage(-1)"></i>
-                    <i class="arrow-icon costume-avatar right" @click="changeAvatarPage(1)"></i>
+            <button id="buttonAvatar" class="expand-button button1" :class="{ expanded: expanded[0] }" @click="toggleExpand(0)">
+                <div class="expanded-content" v-if="expanded[0]">
+                    <div id="imageContainer"></div>
+                    <div class="pagination-buttons">
+                        <i class="arrow-icon costume-avatar left" @click="changeAvatarPage(-1)"></i>
+                        <i class="arrow-icon costume-avatar right" @click="changeAvatarPage(1)"></i>
+                    </div>
+                    <div class="close-button" @click="closeButton(0)"></div>
                 </div>
-                <div class="close-button" @click="closeButton(0)"></div>
-            </div>
             </button>
-            <button class="expand-button button2" :class="{ expanded: expanded[1] }" @click="toggleExpand(1)">
-            
+            <button id="buttonPaddle" class="expand-button button2" :class="{ expanded: expanded[1] }" @click="toggleExpand(1)">
+                <div class="expanded-content" v-if="expanded[1]">
+                    <div class="close-button" @click="closeButton(1)"></div>
+                    <input type="color" id="colorPicker" v-model="selectedColor">
+                    <transition name="fade" mode="out-in">
+                        <div class="gridpaddle-container" :key="currentPage">
+                            <div v-for="(paddle, index) in currentPaddles()" :key="index" class="gridpaddle-item">
+                                <SkinComponent :paddle="paddle"/>
+                            </div>
+                        </div>
+                    </transition>
+                    <div class="pagination-buttons">
+                        <i class="arrow-icon costume-paddle left" @click="changePaddlePage(-1)"></i>
+                        <i class="arrow-icon costume-paddle right" @click="changePaddlePage(1)"></i>
+                    </div>
+                </div>
             </button>
         </div>
     </div>
@@ -66,6 +79,7 @@ import { skin, TypeSkin } from "@/game/ping_pong/Skin";
 import { nextTick, onMounted, ref } from "vue";
 import { TwoFactor } from "@/game/Menu/TwoFactor";
 import MatchComponent from "./MatchComponent.vue"
+import SkinComponent from "./SkinComponent.vue"
 import avataresImages from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
 
 const defaultAvatar = "../../src/assets/chat/avatar.png";
@@ -224,27 +238,32 @@ async function updateNickname() {
 
 const expanded = ref([false, false]);
 const current_avatar = ref(user.avatar);
+const selectedColor = ref(user.infoPong.color);
 
 function toggleExpand(index: number) {
 
     if (expanded.value[index])
         return;
     
-    expanded.value[index] = !expanded.value[index];
-
-    if (index == 0 && expanded.value[index])
+    if (index == 0)
     {
+        const button_avatar = document.getElementById("buttonAvatar") as HTMLButtonElement;
+        expanded.value[index] = !expanded.value[index];
+        button_avatar.disabled = true;
         current_avatar.value = user.avatar;
         nextTick(() => {
             changeAvatarPage(0);
         });
     }
-    
-    console.log( index, ": ", expanded.value[index] )
+    else
+    {
+        const button_paddle = document.getElementById("buttonPaddle") as HTMLButtonElement;
+        expanded.value[index] = !expanded.value[index];
+        button_paddle.disabled = true;
+    }
 }
 
 function changeAvatarPage(index: number) {
-
     if (current_avatar.value + index < 0 || current_avatar.value + index > 7)
         return;
 
@@ -256,21 +275,52 @@ function changeAvatarPage(index: number) {
 
 function closeButton(index: number) {
     expanded.value[index] = false;
-    console.log( index, ": ", expanded.value[index] )
+    if (index == 0)
+    {
+        const button_avatar = document.getElementById("buttonAvatar") as HTMLButtonElement;
+        setTimeout(() => {
+            button_avatar.disabled = false;
+        }, 200);
+    }
+    else
+    {
+        const button_paddle = document.getElementById("buttonPaddle") as HTMLButtonElement;
+        setTimeout(() => {
+            button_paddle.disabled = false;
+        }, 200);
+    }
+}
+
+const currentPagePaddle = ref(0);
+const paddlePerPage = 1;
+
+function changePaddlePage(index: number)
+{
+    if (currentPagePaddle.value + index < -1 || currentPagePaddle.value + index == user.infoPong.skin.paddles.length)
+        return;
+
+    currentPagePaddle.value += index;
+}
+
+function currentPaddles() {
+    const startIndex = currentPagePaddle.value * paddlePerPage;
+    const endIndex = startIndex + paddlePerPage;
+    const paddles = user.infoPong.skin.paddles;
+    return paddles.slice(startIndex, endIndex);
 }
 
 function asSomeChange() 
 {
     //TODO image, color, paddle
-    return !(current_avatar.value != user.avatar)
+    return !(current_avatar.value != user.avatar || selectedColor.value != user.infoPong.color)
 }
 
 function updateProfile()
 {
     if (current_avatar.value != user.avatar) user.avatar = current_avatar.value;
-   /* if (image) user.image = image;
-    if (color) user.infoPong.color = color;
-    if (paddle) user.infoPong.skin.default.paddle = paddle;*/
+    //if (image) user.image = image;
+    if (selectedColor.value != user.infoPong.color) user.infoPong.color = selectedColor.value;
+    //if (paddle) user.infoPong.skin.default.paddle = paddle;
     userStore().updateProfile();
 }
 
@@ -279,6 +329,11 @@ function updateProfile()
 
 onMounted(() => {
     currentPageMatches();
+    const paddle_color = document.getElementById("paddleImage") as HTMLImageElement;
+    nextTick(() => {
+
+        paddle_color.style.backgroundColor = selectedColor.value;
+    });
 });
 
 // onUnmounted(() => {
@@ -404,7 +459,6 @@ onMounted(() => {
     border: 3px solid #000000;
     left: 370px;
     top: 30px;
-    background-color: red; //TODO
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
@@ -555,7 +609,7 @@ onMounted(() => {
 }
 
 .expanded.button2 {
-  width: 300px;
+  width: 200px;
   background-color: rgba(255, 255, 255, 0.463);
 }
 
@@ -598,6 +652,22 @@ onMounted(() => {
     right: 1%;
 }
 
+
+.costume-paddle {
+    position: absolute;
+    top: 280px;
+}
+
+.costume-paddle.arrow-icon.left {
+    position: absolute;
+    left: 1%;
+}
+
+.costume-paddle.arrow-icon.arrow-icon.right {
+    position: absolute;
+    right: 1%;
+}
+
 #imageContainer {
     position: absolute;
     width: 106px;
@@ -618,10 +688,10 @@ onMounted(() => {
     border: 2px solid black;
     color: black;
     font-size: 16px;
-    width: 10%;
-    height: 7%;
+    width: 17.5px;
+    height: 17.5px;
     top: 2%;
-    left: 3%;
+    left: 1px;
     cursor: pointer;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -629,6 +699,50 @@ onMounted(() => {
 .close-button:hover {
     background-color: darkred;
     color: white;
+}
+
+
+input[type="color"] {
+    position: absolute;
+    border: none;
+    padding: 0;
+    appearance: none;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    vertical-align: middle;
+    border-radius: 10px;
+    border: 2px solid black;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.gridpaddle-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    position: absolute;
+    top: 60%;
+    width: 100%;
+}
+
+.gridpaddle-item {
+    flex: 1 1 calc(25% - 1px); /* 25% para 4 elementos, 5px de espaçamento */
+    margin: 0 0.1px;
+    margin-bottom: 20px;
+    box-sizing: border-box; /* Mantém o espaçamento dentro da largura do item */
 }
 
 </style>

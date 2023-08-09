@@ -1,0 +1,114 @@
+<template>
+    <img v-if="props.paddle" id="paddleImage" :src="getPaddle()" class="user_paddle_image">
+</template>
+
+<script setup lang="ts">
+import { TypeSkin, skin } from '@/game/ping_pong/Skin';
+import type { GAME, User } from '@/stores/userStore';
+
+const props = defineProps<{ paddle: string }>();
+
+//IMAGES
+const vs_image = "src/assets/images/lobby/menu/vs.png";
+const defaultAvatar = "../../src/assets/chat/avatar.png";
+
+function getPaddle() {
+    console.log("skin: ", props.paddle);
+
+    const skinPadle = props.paddle ? props.paddle : "";
+
+    return skin.get_skin_src(TypeSkin.Paddle + "_" + skinPadle);
+}
+
+// onMounted(() => {
+// });
+
+// onUnmounted(() => {
+// });
+
+</script>
+
+<style scoped lang="scss">
+
+
+.match_player1 {
+    position: absolute;
+    top: 20%;
+    height: 70%;
+    width: 40%;
+    left: 2%;
+}
+.match_player2 {
+    position: absolute;
+    top: 20%;
+    height: 70%;
+    width: 40%;
+    right: 2%;
+}
+
+.match_nickname {
+    font-family: "Press Start 2P";
+    top: 65%;
+    font-size: 12px;
+    left: 50%;
+    color: black;
+    transition: color 0.3s ease;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transform: translate(-50%, 0);
+}
+
+.match_image {
+    position: absolute;
+    height: 55px;
+    width: 55px;
+    border: 3px solid #000000;
+    left: 50%;
+    top: 5%;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transform: translateX(-50%);
+}
+
+.match_image_vs {
+    position: absolute;
+    height: 17.5%;
+    width: 25%;
+    left: 50%;
+    top: 42.5%;
+    transform: translate(-50%, -50%);
+}
+
+.match_score {
+    position: absolute;
+    font-family: "Press Start 2P";
+    top: 80%;
+    font-size: 20px;
+    left: 50%;
+    color: black;
+    transform: translate(-50%, 0);
+}
+
+.match_result {
+    position: absolute;
+    font-family: "Press Start 2P";
+    top: 0%;
+    font-size: 20px;
+    left: 50%;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black;
+    transform: translate(-50%, 0);
+}
+
+.win {
+  color: gold;
+}
+
+.lost {
+  color: whitesmoke;
+}
+
+
+</style>
