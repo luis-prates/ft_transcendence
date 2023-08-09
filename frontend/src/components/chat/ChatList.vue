@@ -214,6 +214,8 @@ const toggleMenu = () => {
 
 const selectChannel = (channel: channel) => {
   //instance?.emit("update-create-channel", false);
+  if (channel.banList.find((banList) => banList.id === userStore().user.id))
+    return;
   if (selected.value != channel && isMenuOpen.value) {
     toggleMenu();
   }
@@ -228,10 +230,10 @@ const handleContextMenu = (e: any, channel: channel)  => {
   const isAdmin = (channel.users && channel.users.some((u: any)=> u.id === userStore().user.id && u.isAdmin));
   store.selected = channel;
   const items = [
-      { 
+      ...(!channel.banList.find((banList) => banList.id === userStore().user.id)? [{ 
         label: store.isUserInSelectedChannel(userStore().user.id) ? "Open" : "Join", 
         onClick: () => openChannel(channel)
-      },
+      }] : [{label: "🚫"}]),
       ...(store.isUserInSelectedChannel(userStore().user.id) && (channel.ownerId != userStore().user.id) && (channel.type != "DM")
       ? [
           {

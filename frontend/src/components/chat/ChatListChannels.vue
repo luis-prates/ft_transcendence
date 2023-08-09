@@ -2,7 +2,8 @@
     <div class="d-flex item-box">
       <div class="img_cont">
         <img :src="getImage()" class="user_img" />
-        <span v-if="isBlocked()" style="right: 10%; top: 30%;">🔒</span>
+        <span v-if="isBanned()" style="right: 10%; top: 30%;">🚫</span>
+        <span v-else-if="isBlocked()" style="right: 10%; top: 30%;">🔒</span>
       </div>
       <div class="user_info">
         <span>{{ props.channel.name }}</span>
@@ -31,6 +32,14 @@ function getSubLabel() : string {
 
 function getImage() {
   return props.channel.avatar !== '' ? props.channel.avatar : (props.channel.type !== 'DM' ? defaultAvatar : defaultUser);
+}
+
+const isBanned = () => {
+  const foundUser = props.channel.banList.find((banList) => banList.id === user.user.id);
+  if (foundUser) {
+    return true;
+  }
+  return false;
 }
 
 const isBlocked = () => {
