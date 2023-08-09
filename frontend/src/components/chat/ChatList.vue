@@ -581,6 +581,7 @@ const toggleChat = () => {
   buttonString.value = isChatHidden ? "⇑" : "⇓";
   isChatHidden = !isChatHidden;//
   instance?.emit('update-create-channel', false);
+  instance?.emit("protected-channel", false);
 
 };
 
