@@ -80,15 +80,16 @@ onMounted(() => {
     chatListRef.value?.getFilteredChannels();
   });
   socket.on("channel-deleted", (eventData) => {
-    const { channelId } = eventData;
-    if (store.selected &&  store.selected.objectId == channelId){
+    const { deletedChannel } = eventData;
+    if (store.selected &&  store.selected.objectId == deletedChannel.id){
       updateChannelStatus(false);
     }
     const curChannelIndex = chatStore().channels.findIndex(
-    (channel) => channel.objectId === channelId
+    (channel) => channel.objectId === deletedChannel.id
   );
   if (curChannelIndex !== -1) {
     store.channels.splice(curChannelIndex, 1);
+    console.log("A lista depois de apagar o channel:", store.channels)
     chatListRef.value?.getFilteredChannels();
   }
   });
