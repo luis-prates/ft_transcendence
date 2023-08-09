@@ -301,7 +301,8 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
       label: "Open Profile", 
       onClick: () => openPerfilUser(user)
       },
-      //TODO //para users != my own user (storeUser.user.id != user.id)
+      ...((user.id != userStore().user.id) ?
+      [
       { 
         label: "Send DM", 
         onClick: async () => {
@@ -353,9 +354,9 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
       { 
         label: "Challenge", 
         onClick: () => menu.getChallenge(user),
-      },
+      }] : []),
       //para admins do channel
-      ...(menu.isAdmin(user) ? [
+      ...(menu.isAdmin(user) && (user.isAdmin == false) && (user.id != userStore().user.id) ? [
       { 
         label: menu.getMute(user), 
         onClick: () => muteOrUnmute(user),
@@ -370,12 +371,12 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
       },
       ] : []),
       //para owners
-      ...(chatStore().selected.ownerId == userStore().user.id ? [
+      ...(chatStore().selected.ownerId == userStore().user.id && (user.id != userStore().user.id) ? [
       { 
         label: menu.getAdmistrator(user) + " Adminstrator", 
         onClick: () => makeOrDemoteAdmin(user),
       }] : []),
-      ...((chatStore().selected.ownerId == userStore().user.id) && user.isAdmin == true ? [
+      ...((chatStore().selected.ownerId == userStore().user.id) && (user.isAdmin == true) && (user.id != userStore().user.id)? [
       { 
         label: "Give Owner", 
         onClick: () => chatStore().makeOwner(chatStore().selected.objectId, user.id),
