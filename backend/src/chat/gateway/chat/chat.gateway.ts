@@ -28,7 +28,6 @@ export class ChatGateway implements OnGatewayConnection {
 
 			// delete the hash and twoFASecret fields from the user objects
 			for (const user of newChannel.users) {
-				delete user.hash;
 				delete user.twoFASecret;
 			}
 
@@ -126,7 +125,6 @@ export class ChatGateway implements OnGatewayConnection {
 			// therefore, we need to send a message from the server instead of the client socket.
 			const globalChannelId = await this.chatService.getGlobalChannelId();
 			if (!client && channelId == globalChannelId) {
-				delete user.hash;
 				delete user.twoFASecret;
 				this.server.to(`channel-${channelId}`).emit('user-added', {
 					channelId,

@@ -32,7 +32,6 @@ export class AuthService {
 				if (userExists.status != 'OFFLINE') {
 					throw new UnauthorizedException('User already logged in');
 				}
-				delete userExists.hash;
 				delete userExists.twoFASecret;
 
 				const signedUser = await this.signToken(userExists);
