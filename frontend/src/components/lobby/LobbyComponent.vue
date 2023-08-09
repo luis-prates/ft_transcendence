@@ -52,7 +52,7 @@
       </div>
     </div>
   <ChatComponent class="chat_component"/>
-  <ProfileComponent class="profile_component"/>
+  <ProfileComponent :user="userStore().user" class="profile_component"/>
 </template>
 
 <script setup lang="ts">

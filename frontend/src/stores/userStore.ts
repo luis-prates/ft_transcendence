@@ -81,6 +81,7 @@ export interface User {
   refreshToken: string;
   isLogin: boolean;
   id: number;
+  status: UserStatus;
   email: string;
   name: string;
   nickname: string; //nickName in the Game
