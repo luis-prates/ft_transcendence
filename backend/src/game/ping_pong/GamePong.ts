@@ -35,7 +35,7 @@ export class GameClass {
 	watchers: Player[] = [];
 	data: gameRequest;
 	bot = false;
-	onRemove: Function = () => {};
+	onRemove: () => void;
 
 	private readonly FRAME_RATE: number = 60; // desired frame rate, e.g., 60 FPS
 	private readonly FRAME_DURATION: number = 1000 / this.FRAME_RATE; // duration of a frame in ms
@@ -46,7 +46,7 @@ export class GameClass {
 	private gameService: GameService;
 	private userService: UserService;
 
-	constructor(gameResquest: gameRequest, gameService: GameService, userService: UserService, onRemove: Function) {
+	constructor(gameResquest: gameRequest, gameService: GameService, userService: UserService, onRemove: () => void) {
 		this.data = gameResquest;
 		this.maxPoint = gameResquest.maxScore;
 		this.ball = new Ball(this);
@@ -91,10 +91,8 @@ export class GameClass {
 	}
 
 	emitStartGame() {
-		this.gameService.updateGame(this.data.objectId, {
-			status: GameStatus.IN_PROGESS,
-		});
-		this.player1.socket.emitToGame('start_game', {
+		this.gameService.updateGameStatus(this.data.objectId, GameStatus.IN_PROGESS);
+		this.player1.socket?.emitToGame('start_game', {
 			player: 1,
 			status: Status.Starting,
 			data: this.data,
@@ -114,7 +112,7 @@ export class GameClass {
 			},
 		});
 		if (this.bot == false) {
-			this.player2.socket.emitToGame('start_game', {
+			this.player2.socket?.emitToGame('start_game', {
 				player: 2,
 				status: Status.Starting,
 				data: this.data,
@@ -342,11 +340,11 @@ export class GameClass {
 
 	//Emit for Players
 	emitPlayers(event: string, data: any): void {
-		this.gameServer.to(`game-${this.data.objectId}-player`).emit(event, data);
+		this.gameServer?.to(`game-${this.data.objectId}-player`).emit(event, data);
 	}
 	//Emit for Watchers
 	emitWatchers(event: string, data: any): void {
-		this.gameServer.to(`game-${this.data.objectId}-watcher`).emit(event, data);
+		this.gameServer?.to(`game-${this.data.objectId}-watcher`).emit(event, data);
 	}
 	//Emit for Players and Watchers
 	emitAll(event: string, data: any): void {

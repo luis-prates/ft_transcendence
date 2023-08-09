@@ -3,7 +3,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateChannelDto, EditChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
-import { Channel } from '@prisma/client';
+import { Channel, ChannelUser, Message, User } from '@prisma/client';
 import { ChannelType } from '@prisma/client';
 import { EventEmitter } from 'events';
 import * as bcrypt from 'bcrypt';
@@ -38,7 +38,7 @@ export class ChatService {
 		});
 	}
 
-	async getChannelsByUser(user: any) {
+	async getChannelsByUser(user: User): Promise<Channel[]> {
 		return this.prisma.channel.findMany({
 			where: {
 				users: {
@@ -50,7 +50,7 @@ export class ChatService {
 		});
 	}
 
-	async getMessagesByChannel(channelId: number) {
+	async getMessagesByChannel(channelId: number): Promise<Message[]> {
 		return this.prisma.message.findMany({
 			where: {
 				channelId: channelId,
@@ -64,7 +64,7 @@ export class ChatService {
 		});
 	}
 
-	async getMessagesByUser(user: any) {
+	async getMessagesByUser(user: User): Promise<Message[]> {
 		const userChannels = await this.prisma.channelUser.findMany({
 			where: { userId: user.id },
 			select: { channelId: true },
@@ -82,7 +82,7 @@ export class ChatService {
 		});
 	}
 
-	async createChannel(createChannelDto: CreateChannelDto, user: any) {
+	async createChannel(createChannelDto: CreateChannelDto, user: User): Promise<Channel> {
 		let newChannel;
 
 		if (
@@ -306,7 +306,7 @@ export class ChatService {
 		return newChannel;
 	}
 
-	async addUserToChannel(channelId: number, userId: number) {
+	async addUserToChannel(channelId: number, userId: number): Promise<ChannelUser> {
 		const channel = await this.prisma.channel.findUnique({
 			where: { id: channelId },
 		});
@@ -418,7 +418,7 @@ export class ChatService {
 		});
 	}
 
-	async joinChannel(joinChannelDto: JoinChannelDto, channelId: number, user: any) {
+	async joinChannel(joinChannelDto: JoinChannelDto, channelId: number, user: User) {
 		const { password } = joinChannelDto;
 		const userId = user.id;
 		const channel = await this.prisma.channel.findUnique({
@@ -486,7 +486,7 @@ export class ChatService {
 		this.events.emit('user-added-to-channel', { channelId, userId, user: user_db });
 	}
 
-	async leaveChannel(channelId: number, user: any) {
+	async leaveChannel(channelId: number, user: User) {
 		const channel = await this.prisma.channel.findUnique({
 			where: { id: channelId },
 		});
@@ -853,7 +853,7 @@ export class ChatService {
 	}
 
 	// Owner can delete a channel
-	async deleteChannel(channelId: number, user: any) {
+	async deleteChannel(channelId: number, user: User) {
 		const toBeDeletedChannel = await this.prisma.channel.findUnique({
 			where: {
 				id: channelId,
@@ -1098,7 +1098,7 @@ export class ChatService {
 		return channelIds;
 	}
 
-	async createMessage(senderId: number, message: string, channelId: number) {
+	async createMessage(senderId: number, message: string, channelId: number): Promise<Message> {
 		return await this.prisma.message.create({
 			data: {
 				content: message,
@@ -1108,7 +1108,7 @@ export class ChatService {
 		});
 	}
 
-	async isUserMutedInChannel(userId: number, channelId: number) {
+	async isUserMutedInChannel(userId: number, channelId: number): Promise<boolean> {
 		const channelUser = await this.prisma.channelUser.findUnique({
 			where: {
 				userId_channelId: {

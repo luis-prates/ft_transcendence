@@ -201,8 +201,7 @@ describe('Game', () => {
 				.withHeaders({
 					Authorization: 'Bearer $S{userAt1}',
 				})
-				.expectStatus(403)
-				.expectBodyContains('Cannot get games without status.');
+				.expectStatus(400);
 		});
 
 		it('should forbidden exception on get active games - finished', () => {

@@ -1,7 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException, Logger, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthDto } from './dto/auth.dto';
-import * as argon from 'argon2';
 import { Prisma, User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -21,8 +20,6 @@ export class AuthService {
 	) {}
 
 	async signin(dto: AuthDto) {
-		const hash = await argon.hash(dto.nickname);
-
 		try {
 			// Check if user exists
 			const userExists = await this.prisma.user.findUnique({
@@ -37,11 +34,13 @@ export class AuthService {
 				}
 				delete userExists.hash;
 				delete userExists.twoFASecret;
+
 				const signedUser = await this.signToken(userExists);
 				const sentUser = {
 					...signedUser,
 					firstTime: false,
 				};
+
 				return sentUser;
 			}
 
@@ -53,7 +52,6 @@ export class AuthService {
 					email: dto.email,
 					image: dto.image,
 					color: dto.color,
-					hash,
 				},
 			});
 			this.logger.log(`User ${user.id} created.`);
@@ -72,8 +70,8 @@ export class AuthService {
 			// Add user to the global channel, emit event to socket etc
 			await this.chatService.joinChannel({ password: '' }, globalChannel.id, user);
 
-			delete user.hash;
 			delete user.twoFASecret;
+
 			const signedUser = await this.signToken(user);
 			const sentUser = {
 				...signedUser,

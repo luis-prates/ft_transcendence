@@ -50,6 +50,12 @@ onMounted(function () {
 		}
 	});
 	socket = socketClass.getGameSocket();
+	socket.on("error", (errorMessage: string) => {
+		if (errorMessage.includes("Game does not exist")) {
+			Router.push(`/`);
+			socket.disconnect();
+		}
+	})
   socket.emit("entry_game", {
     objectId: props.objectId,
 	  userId: user.id, 

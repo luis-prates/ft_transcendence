@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserBuySkinDto, UserDto, UserUpdateSkinTableDto, UserUpdateStatsDto } from './dto';
-import { Prisma, UserStatus } from '@prisma/client';
+import { Prisma, User, UserStatus } from '@prisma/client';
 import { Server } from 'socket.io';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class UserService {
 		return this.server;
 	}
 
-	async editUser(userId: number, dto: UserDto) {
+	async editUser(userId: number, dto: UserDto): Promise<User> {
 		try {
 			let user = await this.prisma.user.findUnique({
 				where: {
@@ -62,7 +62,7 @@ export class UserService {
 				},
 			});
 
-			delete user.hash;
+			delete user.twoFASecret;
 
 			return user;
 		} catch (error) {
@@ -79,7 +79,7 @@ export class UserService {
 		}
 	}
 
-	async status(userId: number, status: UserStatus) {
+	async status(userId: number, status: UserStatus): Promise<User> {
 		if (!userId || !status) {
 			return;
 		}
@@ -108,7 +108,6 @@ export class UserService {
 				},
 			});
 			delete user.twoFASecret;
-			delete user.hash;
 			this.logger.debug(`Updated user status: ${user.status}`);
 
 			this.server.emit('updateStatus', {
@@ -156,53 +155,7 @@ export class UserService {
 		}
 	}
 
-	// async updateProfile(userId: number, dto: UserDto) {
-	// 	try {
-	// 		// Check if image encoding is correct
-	// 		/* var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-	//         if (!base64regex.test(dto.image)) {
-	//             throw new BadRequestException('Image is not base64 encoding');
-	//         }*/
-
-	// 		// Check if user exists
-	// 		const userExists = await this.prisma.user.findUnique({
-	// 			where: {
-	// 				id: userId,
-	// 			},
-	// 		});
-	// 		if (userExists) {
-	// 			const updatedUser = await this.prisma.user.update({
-	// 				where: {
-	// 					id: userId,
-	// 				},
-	// 				data: {
-	// 					nickname: dto.nickname,
-	// 					avatar: dto.avatar,
-	// 					image: dto.image,
-	// 					color: dto.color,
-	// 					paddleSkinEquipped: dto.paddleSkinEquipped,
-	// 				},
-	// 			});
-
-	// 			delete updatedUser.hash;
-
-	// 			return updatedUser;
-	// 		}
-	// 	} catch (error) {
-	// 		if (error instanceof Prisma.PrismaClientKnownRequestError) {
-	// 			if (error.code === 'P2002') {
-	// 				throw new ForbiddenException(
-	// 					`The User don't Exist. Error: ${error.message.substring(
-	// 						error.message.indexOf('Unique constraint'),
-	// 					)}`,
-	// 				);
-	// 			}
-	// 		}
-	// 		throw error;
-	// 	}
-	// }
-
-	async buySkin(userId: number, dto: UserBuySkinDto) {
+	async buySkin(userId: number, dto: UserBuySkinDto): Promise<User> {
 		try {
 			const user = await this.prisma.user.findUnique({
 				where: {
@@ -239,7 +192,7 @@ export class UserService {
 					},
 				});
 
-				delete updatedUser.hash;
+				delete updatedUser.twoFASecret;
 
 				return updatedUser;
 			}
@@ -257,7 +210,7 @@ export class UserService {
 		}
 	}
 
-	async updateSkinTable(userId: number, dto: UserUpdateSkinTableDto) {
+	async updateSkinTable(userId: number, dto: UserUpdateSkinTableDto): Promise<User> {
 		try {
 			const user = await this.prisma.user.findUnique({
 				where: {
@@ -285,7 +238,7 @@ export class UserService {
 						},
 					});
 
-					delete updatedUser.hash;
+					delete updatedUser.twoFASecret;
 
 					return updatedUser;
 				}
@@ -305,13 +258,13 @@ export class UserService {
 		}
 	}
 
-	async getUsers() {
+	async getUsers(): Promise<User[]> {
 		const users = this.prisma.user.findMany();
 
 		return users;
 	}
 
-	async getProfile(userId: number, personId: number) {
+	async getProfile(userId: number, personId: number): Promise<User> {
 		try {
 			const user = await this.prisma.user.findUnique({
 				where: {
@@ -336,7 +289,7 @@ export class UserService {
 		}
 	}
 
-	async updateStats(userId: number, dto: UserUpdateStatsDto) {
+	async updateStats(userId: number, dto: UserUpdateStatsDto): Promise<User> {
 		try {
 			const user = await this.prisma.user.findUnique({
 				where: {
@@ -364,7 +317,7 @@ export class UserService {
 					},
 				});
 
-				delete updatedUser.hash;
+				delete updatedUser.twoFASecret;
 
 				return updatedUser;
 			}
