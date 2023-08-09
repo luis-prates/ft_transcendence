@@ -137,7 +137,7 @@ onMounted(() => {
   //Demote
   socket.on("user-demoted-in-channel", (eventData) => {
     console.log("Demote" , eventData);
-    const { channelId, userId, user } = eventData;
+    const { channelId, userId } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
     if (curUser)
@@ -151,7 +151,7 @@ onMounted(() => {
     const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
     if (curChannel)
     {
-      if (message == "You have been promoted to owner in channel 25")
+      if (message.includes("You have been promoted to owner in channel"))
       {
         curChannel.ownerId = userStore().user.id;
       }
@@ -220,22 +220,34 @@ onMounted(() => {
 
   //You Prometed
   socket.on("user-promoted", (eventData) => {
-    console.log("Promoted" , eventData);
-    const { channelId, message} = eventData;
+    const { channelId, message, userId} = eventData;
 
-    const curUser = getUserInChannel(channelId, userStore().user.id);
-    if (curUser)
-      curUser.isAdmin = true;
+    if (message.includes("You have been promoted in channel")) {
+      const curUser = getUserInChannel(channelId, userStore().user.id);
+      if (curUser)
+        curUser.isAdmin = true;
+    }
+    else {
+      const curUser = getUserInChannel(channelId, userId);
+      if (curUser)
+        curUser.isAdmin = true;
+    }
   });
 
   //You Demoted
   socket.on("user-demoted", (eventData) => {
-    console.log("Promoted" , eventData);
-    const { channelId, message} = eventData;
+    const { channelId, message, userId} = eventData;
 
-    const curUser = getUserInChannel(channelId, userStore().user.id);
-    if (curUser)
-      curUser.isAdmin = false;
+    if (message.includes("You have been demoted in channel")) {
+      const curUser = getUserInChannel(channelId, userStore().user.id);
+      if (curUser)
+        curUser.isAdmin = false;
+    }
+    else {
+      const curUser = getUserInChannel(channelId, userId);
+      if (curUser)
+        curUser.isAdmin = false;
+    }
   });
 
   //You Kick
