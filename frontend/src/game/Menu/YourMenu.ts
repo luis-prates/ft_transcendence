@@ -36,6 +36,7 @@ export class YourMenu {
   private socket: Socket;
 
   private user = userStore().user;
+  private userStore = userStore();
 
   constructor() {
     this.menu.add(this.background);
@@ -189,7 +190,7 @@ export class YourMenu {
         else if (type == "leave")
         {
           //TODO IR PARA LOGIN
-          Router.setRoute(Router.ROUTE_LOGIN)
+		  this.userStore.logout();
           Router.push(`/`);
           this.socket.disconnect();
         }
