@@ -186,6 +186,7 @@ onMounted(() => {
       const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userId);
       if (curUser)
         store.removeUserFromChannel(channelId, userId);
+      chatListRef.value?.getFilteredChannels();
     }
   });
 
@@ -193,7 +194,10 @@ onMounted(() => {
   socket.on("user-banned-in-channel", (eventData) => {
     const { channelId, userId, message } = eventData;
     console.log(message);
-    
+
+    if (store.selected &&  store.selected.objectId == channelId && userId == userStore().user.id){
+      updateChannelStatus(false);
+    }
     const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
     if(curChannel) {
       const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userId);
@@ -201,6 +205,7 @@ onMounted(() => {
         store.removeUserFromChannel(channelId, userId);
         curChannel.banList.push(curUser);
       }
+      chatListRef.value?.getFilteredChannels();
     }
   });
 

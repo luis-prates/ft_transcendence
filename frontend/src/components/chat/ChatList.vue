@@ -232,7 +232,7 @@ const handleContextMenu = (e: any, channel: channel)  => {
         label: store.isUserInSelectedChannel(userStore().user.id) ? "Open" : "Join", 
         onClick: () => openChannel(channel)
       },
-      ...(store.isUserInSelectedChannel(userStore().user.id) && (channel.ownerId != userStore().user.id)
+      ...(store.isUserInSelectedChannel(userStore().user.id) && (channel.ownerId != userStore().user.id) && (channel.type != "DM")
       ? [
           {
             label: "Leave",
