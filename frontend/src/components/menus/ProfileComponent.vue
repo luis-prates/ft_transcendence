@@ -7,9 +7,9 @@
         </div>
         <div>
             <div id="label-nickname" class="user-label profile_components nickname" @click="toggleInput">{{ user.nickname }}</div>
-            <input id="inputName" type="text" pattern="[A-Za-z0-9]+" value="" disabled="false" class="profile_components user-nickname-input" @input="cleanInput" :maxlength="15" v-show="editing" @blur="cancelEdit">
-            <span class="clear-icon" v-show="isDiferent && editing" @click="updateNickname">✓</span>
-            <span class="clear-icon false-red"  v-show="!isDiferent && editing" @click="cleanInput">X</span>
+            <input id="inputName" type="text" pattern="[A-Za-z0-9]+" value="" :disabled=!editing class="profile_components user-nickname-input" @input="cleanInput" :maxlength="15" v-show="editing">
+            <span class="clear-icon" v-show="isDiferent && editing" @click="updateNickname()">✓</span>
+            <span class="clear-icon false-red"  v-show="!isDiferent && editing" @click="cancelEdit()">X</span>
 
         </div>
         <div class="user-label profile_components level">Level: {{ user.infoPong.level }}</div>
@@ -26,7 +26,7 @@
             <img v-if="isDefaultPaddle()" id="paddleImage" :src="getPaddle()" class="user_paddle_image">
         </div>
 
-        <button class="profile-buttons profile_components save-button" disabled="false">Save Profile</button>
+        <button class="profile-buttons profile_components save-button" :disabled=asSomeChange() @click="updateProfile()">Save Profile</button>
 
         <div class="paddle profile_components"></div>
         <div class="matches profile_components">Matches</div>
@@ -44,10 +44,12 @@
         <div>
             <button class="expand-button button1" :class="{ expanded: expanded[0] }" @click="toggleExpand(0)">
             <div class="expanded-content" v-if="expanded[0]">
-                <img :src=avatares alt="Expanded Image">
-                <div class="positioned-element">Element 1</div>
-                <div class="positioned-element">Element 2</div>
-                <!-- Adicione mais elementos posicionados conforme necessário -->
+                <div id="imageContainer"></div>
+                <div class="pagination-buttons">
+                    <i class="arrow-icon costume-avatar left" @click="changeAvatarPage(-1)"></i>
+                    <i class="arrow-icon costume-avatar right" @click="changeAvatarPage(1)"></i>
+                </div>
+                <div class="close-button" @click="closeButton(0)"></div>
             </div>
             </button>
             <button class="expand-button button2" :class="{ expanded: expanded[1] }" @click="toggleExpand(1)">
@@ -61,7 +63,7 @@
 import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import { userStore, type Block, type Friendship, type GAME } from "@/stores/userStore";
 import { skin, TypeSkin } from "@/game/ping_pong/Skin";
-import { onMounted, ref } from "vue";
+import { nextTick, onMounted, ref } from "vue";
 import { TwoFactor } from "@/game/Menu/TwoFactor";
 import MatchComponent from "./MatchComponent.vue"
 import avataresImages from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
@@ -211,48 +213,65 @@ function isNicknameDiferent() {
 async function updateNickname() {
     const inputName = document.getElementById("inputName") as HTMLInputElement;
     const new_nickname = inputName.value;
-
     if (new_nickname != user.nickname)
     {
-      /*if (await userStore().updateNickname(new_nickname))
-      {
-        pencilImage.src = pencil;
-        edit = false;
-        inputName.disabled = true;
-        inputName.style.display = "none";
-        inputName.style.borderColor = "black";
-
-        this.socket.emit("update_gameobject", {
-          className: "Character",
-          objectId: this.player.objectId,
-          name: this.player.name,
-          x: this.player.x,
-          y: this.player.y,
-          avatar: this.user.avatar,
-          nickname: this.user.nickname,
-          animation: { name: this.player.animation.name, isStop: false },
-        });
-      }
-      else
-        inputName.style.borderColor = "red";
+        if (await userStore().updateNickname(new_nickname))
+            cancelEdit();
+        else
+            inputName.style.borderColor = "red";
     }
-    else
-    {
-      pencilImage.src = pencil;
-      edit = false;
-      inputName.disabled = true;
-      inputName.style.display = "none";
-      inputName.style.borderColor = "black";
-    }*/
-    }
-
-
 }
 
 const expanded = ref([false, false]);
+const current_avatar = ref(user.avatar);
 
 function toggleExpand(index: number) {
+
+    if (expanded.value[index])
+        return;
+    
     expanded.value[index] = !expanded.value[index];
+
+    if (index == 0 && expanded.value[index])
+    {
+        current_avatar.value = user.avatar;
+        nextTick(() => {
+            changeAvatarPage(0);
+        });
+    }
+    
+    console.log( index, ": ", expanded.value[index] )
+}
+
+function changeAvatarPage(index: number) {
+
+    if (current_avatar.value + index < 0 || current_avatar.value + index > 7)
+        return;
+
+    const inputName = document.getElementById("imageContainer") as HTMLDivElement;
+    current_avatar.value += index;
+    inputName.style.backgroundPositionX = `-${79 + (88 * 3) * current_avatar.value + (7.5 * ((current_avatar.value - 3) > 0 ? 1 : 0))}px`;
+    inputName.style.backgroundPositionY = `-${25 + (239 * 4) * ((current_avatar.value - 3) > 0 ? 1 : 0)}px`;
+}
+
+function closeButton(index: number) {
+    expanded.value[index] = false;
+    console.log( index, ": ", expanded.value[index] )
+}
+
+function asSomeChange() 
+{
+    //TODO image, color, paddle
+    return !(current_avatar.value != user.avatar)
+}
+
+function updateProfile()
+{
+    if (current_avatar.value != user.avatar) user.avatar = current_avatar.value;
+   /* if (image) user.image = image;
+    if (color) user.infoPong.color = color;
+    if (paddle) user.infoPong.skin.default.paddle = paddle;*/
+    userStore().updateProfile();
 }
 
 // const props = defineProps<{ user: User }>();
@@ -273,7 +292,7 @@ onMounted(() => {
     left: 0%;
     top: 5%; //10%
     width: 465px; //35%;
-    height: 753px; //75%
+    height: 650px; //75%
     background-color: rgba(210, 180, 140, 0.6);
     border: 2px solid black;
     border-radius: 10px;
@@ -328,6 +347,10 @@ onMounted(() => {
     font-size: 25px;
     color: black;
     transition: color 0.3s ease;
+    max-width: 45%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .nickname:hover {
@@ -418,7 +441,7 @@ onMounted(() => {
 
 .save-button {
     position: absolute;
-    top: 208px;
+    top: 30%;
     width: 200px;
     height: 46px;
     border-radius: 8px;
@@ -439,29 +462,17 @@ onMounted(() => {
 .matches {
     font-size: 24px;
     left: 50%;
-    top: 37.5%;
+    top: 40%;
     transform: translateX(-50%);
     color: white;
     -webkit-text-stroke-width: 1.25px;
     -webkit-text-stroke-color: black;
 }
 
-.match_row {
-    position: absolute;
-    left: 4%;
-    top: 330px;
-    width: 92.5%;
-    height: 54%;
-    background-color: rgba(255, 255, 255, 0.199);
-    border: 2px solid black;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-}
-
 .grid-container {
     position: absolute;
     left: 4%;
-    top: 330px;
+    top: 290px;
     width: 92.5%;
     height: 54%;
     display: grid;
@@ -490,7 +501,7 @@ onMounted(() => {
 
 .arrow-icon {
   position: absolute;
-  top: 280px;
+  top: 260px;
   width: 0;
   height: 0;
   border-style: solid;
@@ -530,17 +541,94 @@ onMounted(() => {
 }
 
 .button1 {
-    height: 350px;
+    height: 255px;
 }
 
 .button2 {
-    top: 350px;
-    height: 400px;
+    top: 255px;
+    height: 395px;
 }
 
-.expanded {
-  width: 250px;
+.expanded.button1 {
+  width: 170px;
   background-color: rgba(255, 255, 255, 0.463);
+}
+
+.expanded.button2 {
+  width: 300px;
+  background-color: rgba(255, 255, 255, 0.463);
+}
+
+.expanded-content {
+    width: 100%;
+    height: 100%;
+}
+
+.sprite-container {
+    position: absolute;
+    top: 10%;
+    left: 17.5%;
+    width: 65%;
+    height: 65%;
+//   position: relative;
+//   width: 768px; /* Largura da imagem do sprite `768px`,*/
+//   height: 1024px; /* Altura da imagem do sprite  `1024px`,*/
+}
+
+//----- CUSTOME AVATAR -----
+.custom-image {
+  width: 32px; /* Largura do quadro do sprite */
+  height: 64px; /* Altura do quadro do sprite */
+  background-image: url('src/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg');
+  background-position: -8px -14px;
+}
+
+.costume-avatar {
+    position: absolute;
+    top: 140px;
+}
+
+.costume-avatar.arrow-icon.left {
+    position: absolute;
+    left: 1%;
+}
+
+.costume-avatar.arrow-icon.arrow-icon.right {
+    position: absolute;
+    right: 1%;
+}
+
+#imageContainer {
+    position: absolute;
+    width: 106px;
+    height: 213px;
+    top: 5%;
+    left: 50%;
+    background-image: url('src/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg');
+    background-size: 1000% 900%;
+    background-position-x: -79px;
+    background-position-y: -25px;
+    transform: translateX(-50%);
+    transition: background-position-x 0.15s ease;
+}
+
+.close-button {
+    position: absolute;
+    background-color: red;
+    border: 2px solid black;
+    color: black;
+    font-size: 16px;
+    width: 10%;
+    height: 7%;
+    top: 2%;
+    left: 3%;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.close-button:hover {
+    background-color: darkred;
+    color: white;
 }
 
 </style>

@@ -8,6 +8,7 @@ import { socketClass } from "@/socket/SocketClass";
 import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import { Game } from "@/game/base/Game";
 import { chatStore, type ChatMessage } from "./chatStore";
+import { Lobby } from "@/game/lobby/Lobby";
 
 export enum GameStatus {
   NOT_STARTED = "NOT_STARTED",
@@ -261,7 +262,24 @@ export const userStore = defineStore("user", function () {
       body: new URLSearchParams(body),
     };
     await fetch(env.BACKEND_SERVER_URL + "/users/update_profile", options)
-      .then(async (response) => console.log(await response.json()))
+      .then(async function (response: any) 
+      {
+        if (response.ok)
+        {
+          const lobbySocket: Socket = socketClass.getLobbySocket();
+          const player = Lobby.getPlayer();
+          lobbySocket.emit("update_gameobject", {
+            className: "Character",
+            objectId: player.objectId,
+            name: player.name,
+            x: player.x,
+            y: player.y,
+            avatar: user.avatar,
+            nickname: user.nickname,
+            animation: { name: player.animation.name, isStop: false },
+          });
+        }
+      })
       .catch((err) => console.error(err));
   }
 
@@ -287,11 +305,24 @@ export const userStore = defineStore("user", function () {
             else
               game.winnerNickname = newNickname;         
           })
+
+          const lobbySocket: Socket = socketClass.getLobbySocket();
+          const player = Lobby.getPlayer();
+          lobbySocket.emit("update_gameobject", {
+            className: "Character",
+            objectId: player.objectId,
+            name: player.name,
+            x: player.x,
+            y: player.y,
+            avatar: user.avatar,
+            nickname: user.nickname,
+            animation: { name: player.animation.name, isStop: false },
+          });
         }
         return response.ok;
       })
       .catch(function (err: any) {
-        console.error("COMIDAAA", err);
+        console.error(err);
         return false;
       });
   }
