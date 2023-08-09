@@ -1,15 +1,17 @@
 <template>
-    <div class="profile">
+    <div v-if="isProfileActive" class="profile">
         <div class="avatar profile_components" @click="uploadImage()">
             <img id="avatarImage" :src="getPhoto()" class="user_image">
             <input id="fileInput" type="file" style="display: none;" accept="image/*" @change="handleFileChange">
             <span id="user-status" :class="getStatus()"></span>
         </div>
         <div>
-            <div id="label-nickname" class="user-label profile_components nickname" @click="toggleInput">{{ user.nickname }}</div>
-            <input id="inputName" type="text" pattern="[A-Za-z0-9]+" value="" :disabled=!editing class="profile_components user-nickname-input" @input="cleanInput" :maxlength="15" v-show="editing">
+            <div id="label-nickname" class="user-label profile_components nickname" @click="toggleInput">{{ user.nickname }}
+            </div>
+            <input id="inputName" type="text" pattern="[A-Za-z0-9]+" value="" :disabled=!editing
+                class="profile_components user-nickname-input" @input="cleanInput" :maxlength="15" v-show="editing">
             <span class="clear-icon" v-show="isDiferent && editing" @click="updateNickname()">✓</span>
-            <span class="clear-icon false-red"  v-show="!isDiferent && editing" @click="cancelEdit()">X</span>
+            <span class="clear-icon false-red" v-show="!isDiferent && editing" @click="cancelEdit()">X</span>
         </div>
         <div class="user-label profile_components level">Level: {{ user.infoPong.level }}</div>
         <div class="user-label profile_components money">Money: {{ user.money }}₳</div>
@@ -22,26 +24,29 @@
         </div>
 
         <div class="user_paddle profile_components" :style="{ 'background-color': selectedColor }">
-            <img v-if="isDefaultPaddle()" id="paddleImage" :src="getPaddle()" class="user_paddle_image">
+            <img v-if="isDefaultPaddle()" id="paddleImage" :src="getPaddle()" class="user_paddle_image"
+                :style="{ 'background-color': selectedColor }">
         </div>
 
-        <button class="profile-buttons profile_components save-button" :disabled=asSomeChange() @click="updateProfile()">Save Profile</button>
+        <button class="profile-buttons profile_components save-button" :disabled=asSomeChange()
+            @click="updateProfile()">Save Profile</button>
 
         <div class="paddle profile_components"></div>
         <div class="matches profile_components">Matches</div>
         <transition name="fade" mode="out-in">
             <div class="grid-container" :key="currentPage">
-            <div v-for="(match, index) in currentPageMatches()" :key="index" class="grid-item">
-              <MatchComponent :user="user" :match="match" />
+                <div v-for="(match, index) in currentPageMatches()" :key="index" class="grid-item">
+                    <MatchComponent :user="user" :match="match" />
+                </div>
             </div>
-          </div>
         </transition>
         <div class="pagination-buttons">
             <i class="arrow-icon left" @click="changePage(-1)"></i>
             <i class="arrow-icon right" @click="changePage(1)"></i>
         </div>
         <div>
-            <button id="buttonAvatar" class="expand-button button1" :class="{ expanded: expanded[0] }" @click="toggleExpand(0)">
+            <button id="buttonAvatar" class="expand-button button1" :class="{ expanded: expanded[0] }"
+                @click="toggleExpand(0)">
                 <div class="expanded-content" v-if="expanded[0]">
                     <div id="imageContainer"></div>
                     <div class="pagination-buttons">
@@ -51,17 +56,23 @@
                     <div class="close-button" @click="closeButton(0)"></div>
                 </div>
             </button>
-            <button id="buttonPaddle" class="expand-button button2" :class="{ expanded: expanded[1] }" @click="toggleExpand(1)">
+            <button id="buttonPaddle" class="expand-button button2" :class="{ expanded: expanded[1] }"
+                @click="toggleExpand(1)">
                 <div class="expanded-content" v-if="expanded[1]">
                     <div class="close-button" @click="closeButton(1)"></div>
-                    <input type="color" id="colorPicker" v-model="selectedColor">
-                    <transition name="fade" mode="out-in">
-                        <div class="gridpaddle-container" :key="currentPage">
-                            <div v-for="(paddle, index) in currentPaddles()" :key="index" class="gridpaddle-item">
-                                <SkinComponent :paddle="paddle"/>
-                            </div>
+                    <div style=" position: absolute; left: 50%; top: 10%; -webkit-text-stroke-width: 1.25px; -webkit-text-stroke-color: black; color: white; font-size: 19px; font-family: 'Press Start 2P'; transform: translateX(-50%);">
+                        Color:
+                    </div>
+                    <input type="color" id="colorPicker" v-model=selectedColor>
+
+                    <div style=" position: absolute; left: 50%; top: 48%; -webkit-text-stroke-width: 1.25px; -webkit-text-stroke-color: black; color: white; font-size: 19px; font-family: 'Press Start 2P'; transform: translateX(-50%);">
+                        Skin:
+                    </div>
+                    <div class="gridpaddle-container" :key="currentPage">
+                        <div v-for="(paddle, index) in currentPaddles()" :key="index" class="gridpaddle-item">
+                            <SkinComponent :paddle="paddle" />
                         </div>
-                    </transition>
+                    </div>
                     <div class="pagination-buttons">
                         <i class="arrow-icon costume-paddle left" @click="changePaddlePage(-1)"></i>
                         <i class="arrow-icon costume-paddle right" @click="changePaddlePage(1)"></i>
@@ -69,12 +80,13 @@
                 </div>
             </button>
         </div>
+        <div class="close-button button_profile" @click="closeProfile()"></div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
-import { userStore, type Block, type Friendship, type GAME } from "@/stores/userStore";
+import { userStore, type GAME } from "@/stores/userStore";
 import { skin, TypeSkin } from "@/game/ping_pong/Skin";
 import { nextTick, onMounted, ref } from "vue";
 import { TwoFactor } from "@/game/Menu/TwoFactor";
@@ -85,10 +97,11 @@ import avataresImages from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565
 const defaultAvatar = "../../src/assets/chat/avatar.png";
 const avatares = avataresImages;
 
+const isProfileActive = ref(true);
 const user = userStore().user;
 const editing = ref(false);
 const isDiferent = ref(false);
-const user_matches = userStore().user.infoPong.historic; 
+const user_matches = userStore().user.infoPong.historic;
 const currentPage = ref(0);
 const matchesPerPage = 4;
 
@@ -105,18 +118,18 @@ function getPhoto() {
 }
 
 function getPaddle() {
-    const skinPadle = user.infoPong.skin.default.paddle ? user.infoPong.skin.default.paddle : "";
+    const skinPadle = (currentPagePaddle.value < 0 ? "" : user.infoPong.skin.paddles[currentPagePaddle.value]);
 
     return skin.get_skin_src(TypeSkin.Paddle + "_" + skinPadle);
 }
 
 function isDefaultPaddle() {
-    return user.infoPong.skin.default.paddle ? true : false;
+    return currentPagePaddle.value < 0 ? false : true;
 }
 
 function getStatus() {
     return "online_icon " + user.status;
-    
+
 }
 function uploadImage() {
     const fileInput = document.getElementById("fileInput") as HTMLElement;
@@ -127,13 +140,9 @@ function getTwoFactor() {
     return user.isTwoFAEnabled ? "ON" : "OFF";
 }
 
-function isQrCodeAtive() {
-    return user.isTwoFAEnabled;
-}
-
 function clickQrCode() {
     const twoFactorMenu = new TwoFactor();
-    twoFactorMenu.show((value) => {});
+    twoFactorMenu.show((value) => { });
 }
 
 function toggleInput() {
@@ -150,7 +159,7 @@ function toggleInput() {
     inputName.focus();
     isNicknameDiferent();
 }
-    
+
 function cancelEdit() {
     if (!editing.value)
         return;
@@ -172,8 +181,7 @@ function currentPageMatches() {
 }
 
 function changePage(step: number) {
-    if (currentPage.value + step >= 0 && currentPage.value + step < Math.ceil(user_matches.length / matchesPerPage))
-    {
+    if (currentPage.value + step >= 0 && currentPage.value + step < Math.ceil(user_matches.length / matchesPerPage)) {
         currentPage.value += step;
         currentPageMatches();
     }
@@ -192,10 +200,15 @@ async function handleFileChange(event: any) {
             });
 
             if (response.ok) {
+
+
                 const data = await response.json();
                 console.log("response data:", data);
                 const avatarImage = document.getElementById("avatarImage") as HTMLImageElement;
                 avatarImage.src = data.data.display_url;
+
+                user.image = data.data.display_url;
+                userStore().updateProfile();
             } else {
                 throw new Error("Erro na requisição");
             }
@@ -227,8 +240,7 @@ function isNicknameDiferent() {
 async function updateNickname() {
     const inputName = document.getElementById("inputName") as HTMLInputElement;
     const new_nickname = inputName.value;
-    if (new_nickname != user.nickname)
-    {
+    if (new_nickname != user.nickname) {
         if (await userStore().updateNickname(new_nickname))
             cancelEdit();
         else
@@ -244,9 +256,8 @@ function toggleExpand(index: number) {
 
     if (expanded.value[index])
         return;
-    
-    if (index == 0)
-    {
+
+    if (index == 0) {
         const button_avatar = document.getElementById("buttonAvatar") as HTMLButtonElement;
         expanded.value[index] = !expanded.value[index];
         button_avatar.disabled = true;
@@ -255,8 +266,7 @@ function toggleExpand(index: number) {
             changeAvatarPage(0);
         });
     }
-    else
-    {
+    else {
         const button_paddle = document.getElementById("buttonPaddle") as HTMLButtonElement;
         expanded.value[index] = !expanded.value[index];
         button_paddle.disabled = true;
@@ -275,15 +285,13 @@ function changeAvatarPage(index: number) {
 
 function closeButton(index: number) {
     expanded.value[index] = false;
-    if (index == 0)
-    {
+    if (index == 0) {
         const button_avatar = document.getElementById("buttonAvatar") as HTMLButtonElement;
         setTimeout(() => {
             button_avatar.disabled = false;
         }, 200);
     }
-    else
-    {
+    else {
         const button_paddle = document.getElementById("buttonPaddle") as HTMLButtonElement;
         setTimeout(() => {
             button_paddle.disabled = false;
@@ -291,11 +299,15 @@ function closeButton(index: number) {
     }
 }
 
-const currentPagePaddle = ref(0);
+function closeProfile()
+{
+    isProfileActive.value = false;
+}
+
+const currentPagePaddle = ref(user.infoPong.skin.paddles.findIndex(paddle => paddle === user.infoPong.skin.default.paddle));
 const paddlePerPage = 1;
 
-function changePaddlePage(index: number)
-{
+function changePaddlePage(index: number) {
     if (currentPagePaddle.value + index < -1 || currentPagePaddle.value + index == user.infoPong.skin.paddles.length)
         return;
 
@@ -309,23 +321,18 @@ function currentPaddles() {
     return paddles.slice(startIndex, endIndex);
 }
 
-function asSomeChange() 
-{
-    //TODO image, color, paddle
-    return !(current_avatar.value != user.avatar || selectedColor.value != user.infoPong.color)
+function asSomeChange() {
+    return !(current_avatar.value != user.avatar || selectedColor.value != user.infoPong.color || (currentPagePaddle.value < 0 ? "" : user.infoPong.skin.paddles[currentPagePaddle.value]) != user.infoPong.skin.default.paddle)
 }
 
-function updateProfile()
-{
+function updateProfile() {
+    const paddle = (currentPagePaddle.value < 0 ? "" : user.infoPong.skin.paddles[currentPagePaddle.value]);
+
     if (current_avatar.value != user.avatar) user.avatar = current_avatar.value;
-    //if (image) user.image = image;
     if (selectedColor.value != user.infoPong.color) user.infoPong.color = selectedColor.value;
-    //if (paddle) user.infoPong.skin.default.paddle = paddle;
+    if (paddle != user.infoPong.skin.default.paddle) user.infoPong.skin.default.paddle = paddle;
     userStore().updateProfile();
 }
-
-// const props = defineProps<{ user: User }>();
-
 
 onMounted(() => {
     currentPageMatches();
@@ -345,13 +352,19 @@ onMounted(() => {
 .profile {
     position: absolute;
     left: 0%;
-    top: 5%; //10%
+    top: 10%;
     width: 465px; //35%;
     height: 650px; //75%
     background-color: rgba(210, 180, 140, 0.6);
     border: 2px solid black;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.close-button.button_profile{
+    right: 1.5%;
+    top: 1.4%;
+    left: unset;
 }
 
 .profile_components {
@@ -376,13 +389,15 @@ onMounted(() => {
     left: 20px;
     top: 30px;
     border-radius: 10px;
-    transition: opacity 0.3s ease; /* Adiciona uma transição suave */
+    transition: opacity 0.3s ease;
+    /* Adiciona uma transição suave */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .user_image:hover {
     cursor: pointer;
-    opacity: 0.5; /* Define a opacidade ao passar o cursor sobre a imagem */
+    opacity: 0.5;
+    /* Define a opacidade ao passar o cursor sobre a imagem */
 }
 
 .user-label {
@@ -392,8 +407,8 @@ onMounted(() => {
 }
 
 .user-label-container {
-  position: relative;
-  display: inline-block;
+    position: relative;
+    display: inline-block;
 }
 
 .nickname {
@@ -409,10 +424,10 @@ onMounted(() => {
 }
 
 .nickname:hover {
-  color: rgb(73, 73, 73);
+    color: rgb(73, 73, 73);
 }
 
-.user-nickname-input { 
+.user-nickname-input {
     display: block;
     background-color: transparent;
     font-family: 'Press Start 2P';
@@ -428,12 +443,13 @@ onMounted(() => {
     cursor: pointer;
     color: green;
 }
+
 .false-red {
     color: red;
 }
 
 #inputName:not(:focus) {
-  display: none;
+    display: none;
 }
 
 .level {
@@ -459,7 +475,6 @@ onMounted(() => {
     border: 3px solid #000000;
     left: 370px;
     top: 30px;
-    border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
@@ -467,15 +482,15 @@ onMounted(() => {
     height: 125px;
     width: 50px;
     border: 3px solid #000000;
-    border-radius: 10px;
-    left: -2px;
-    top: -1.5px;
+    left: -2.6px;
+    top: -3px;
 }
 
 .qrcode {
     top: 153px;
     left: 167px;
 }
+
 .qr-button {
     position: absolute;
     top: -2px;
@@ -545,42 +560,46 @@ onMounted(() => {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
     transition: opacity 0.5s;
 }
 
-.fade-enter, .fade-leave-to {
+.fade-enter,
+.fade-leave-to {
     opacity: 0;
 }
 
 .arrow-icon {
-  position: absolute;
-  top: 260px;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  cursor: pointer;
-  border-width: 16px 20px 16px 20px;
+    position: absolute;
+    top: 260px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    cursor: pointer;
+    border-width: 16px 20px 16px 20px;
 }
 
 .arrow-icon.left {
-  left: 15%;
-  border-color: transparent black transparent transparent;
-  transition: border-color 0.3s ease;;
+    left: 15%;
+    border-color: transparent black transparent transparent;
+    transition: border-color 0.3s ease;
+    ;
 }
 
 .arrow-icon.left:hover {
-  border-color: transparent grey transparent transparent;
+    border-color: transparent grey transparent transparent;
 }
 
 .arrow-icon.right {
-  right: 15%;
-  border-color: transparent transparent transparent black;
-  transition: border-color 0.3s ease;;
+    right: 15%;
+    border-color: transparent transparent transparent black;
+    transition: border-color 0.3s ease;
+    ;
 }
 
 .arrow-icon.right:hover {
-  border-color: transparent transparent transparent grey;
+    border-color: transparent transparent transparent grey;
 }
 
 .expand-button {
@@ -604,13 +623,13 @@ onMounted(() => {
 }
 
 .expanded.button1 {
-  width: 170px;
-  background-color: rgba(255, 255, 255, 0.463);
+    width: 170px;
+    background-color: rgba(255, 255, 255, 0.463);
 }
 
 .expanded.button2 {
-  width: 200px;
-  background-color: rgba(255, 255, 255, 0.463);
+    width: 200px;
+    background-color: rgba(255, 255, 255, 0.463);
 }
 
 .expanded-content {
@@ -624,17 +643,19 @@ onMounted(() => {
     left: 17.5%;
     width: 65%;
     height: 65%;
-//   position: relative;
-//   width: 768px; /* Largura da imagem do sprite `768px`,*/
-//   height: 1024px; /* Altura da imagem do sprite  `1024px`,*/
+    //   position: relative;
+    //   width: 768px; /* Largura da imagem do sprite `768px`,*/
+    //   height: 1024px; /* Altura da imagem do sprite  `1024px`,*/
 }
 
 //----- CUSTOME AVATAR -----
 .custom-image {
-  width: 32px; /* Largura do quadro do sprite */
-  height: 64px; /* Altura do quadro do sprite */
-  background-image: url('src/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg');
-  background-position: -8px -14px;
+    width: 32px;
+    /* Largura do quadro do sprite */
+    height: 64px;
+    /* Altura do quadro do sprite */
+    background-image: url('src/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg');
+    background-position: -8px -14px;
 }
 
 .costume-avatar {
@@ -720,13 +741,13 @@ input[type="color"] {
 }
 
 input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
+    padding: 0;
 }
 
 input[type="color"]::-webkit-color-swatch {
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
 .gridpaddle-container {
@@ -739,10 +760,10 @@ input[type="color"]::-webkit-color-swatch {
 }
 
 .gridpaddle-item {
-    flex: 1 1 calc(25% - 1px); /* 25% para 4 elementos, 5px de espaçamento */
+    flex: 1 1 calc(25% - 1px);
+    /* 25% para 4 elementos, 5px de espaçamento */
     margin: 0 0.1px;
     margin-bottom: 20px;
-    box-sizing: border-box; /* Mantém o espaçamento dentro da largura do item */
-}
-
-</style>
+    box-sizing: border-box;
+    /* Mantém o espaçamento dentro da largura do item */
+}</style>

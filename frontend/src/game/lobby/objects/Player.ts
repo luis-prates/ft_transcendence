@@ -65,7 +65,9 @@ export class Player extends Character {
       this.select = Game.MouseColision(x, y);
       if (this.select == this) {
 
-        Game.instance.addMenu(new YourProfile(this).menu);
+        //TODO
+        //ProfileComponent
+        //Game.instance.addMenu(new YourProfile(this).menu);
 
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {
