@@ -12,6 +12,7 @@ import { ConfirmButton } from "@/game/Menu/ConfirmButton";
 import { Shop } from "@/game/Menu/Shop";
 import type { Socket } from "socket.io-client";
 import { YourMenu } from "@/game/Menu/YourMenu";
+import { ProfileComponent } from "@/components";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
@@ -68,6 +69,7 @@ export class Player extends Character {
         //TODO
         //ProfileComponent
         //Game.instance.addMenu(new YourProfile(this).menu);
+        
 
       } else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {

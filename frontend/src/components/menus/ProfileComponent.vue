@@ -5,7 +5,7 @@
             <span id="user-status" :class="getStatus()"></span>
         </div>
         <div id="label-nickname" class="user-label profile_components nickname">{{ user.nickname }}</div>
-        <div class="user-label profile_components level">Level: {{ user.infoPong.level }}</div>
+        <div class="user-label profile_components level">Level: {{ user.level }}</div>
         <div class="user-label profile_components money">Money: {{ user.money }}₳</div>
         <div class="user-label profile_components wins">Wins: {{ getWins() }}</div>
         <div class="user-label profile_components losts">Losts: {{ getLosts() }}</div>
@@ -16,7 +16,12 @@
         </div>
 
         <div class="user_friend">
-            <button class="profile_components buttons_attribute button-friend" @click="friendRequest()"></button>
+            <button class="profile_components buttons_attribute button-friend" @click="friendRequest()" :style="{ 'background-color': getFriendColor() }">
+                <img :src="getImageFriend()" class="user_friend_image">
+                <img v-if="getFriend() == 'You have a Request'" :src="messageImage" class="user_friend_image" style="left: 50%">
+                <div v-if="getFriend() != 'You have a Request'" class="user_friend_image" style="left: 50%; font-family: 'Press Start 2P'; font-size: 100%;">
+                    {{ getFriend() == 'Add Friend' ? '+' : '-' }}</div>
+            </button>
             <div class="friend_label">{{ getFriend() }}</div>
         </div>
         
@@ -28,7 +33,6 @@
             <button class="profile_components buttons_attribute block-button"
                 @click="blockUser()">{{ getBlock() }}</button>
         </div>
-
 
         <div class="paddle profile_components"></div>
         <div class="matches profile_components">Matches</div>
@@ -56,26 +60,26 @@ import { TwoFactor } from "@/game/Menu/TwoFactor";
 import MatchComponent from "./MatchComponent.vue"
 import SkinComponent from "./SkinComponent.vue"
 import avataresImages from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
+import friendImage from "@/assets/images/lobby/menu/friend.png";
+import yourFriendImage from "@/assets/images/lobby/menu/your_friend.png";
+import messageImage from "@/assets/images/lobby/menu/message.png";
 
 const defaultAvatar = "../../src/assets/chat/avatar.png";
-const avatares = avataresImages;
 
-const props = defineProps<{ user: User }>();
+const props = defineProps<{ user: any }>();
 
 const isProfileActive = ref(true);
 const user = props.user;
-const editing = ref(false);
-const isDiferent = ref(false);
-const user_matches = user.infoPong.historic;
+const user_matches = ref([]) as any;
 const currentPage = ref(0);
 const matchesPerPage = 4;
 
 function getWins() {
-    return user.infoPong.historic.filter((history: GAME) => history.winnerId == user.id).length;
+    return user_matches.value.filter((history: GAME) => history.winnerId == user.id).length;
 }
 
 function getLosts() {
-    return user.infoPong.historic.filter((history: GAME) => history.loserId == user.id).length;
+    return user_matches.value.filter((history: GAME) => history.loserId == user.id).length;
 }
 
 function getPhoto() {
@@ -83,9 +87,13 @@ function getPhoto() {
 }
 
 function getPaddle() {
-    const skinPadle = (currentPagePaddle.value < 0 ? "" : user.infoPong.skin.paddles[currentPagePaddle.value]);
+    const skinPadle = user.paddleSkinEquipped;
 
     return skin.get_skin_src(TypeSkin.Paddle + "_" + skinPadle);
+}
+
+function isDefaultPaddle() {
+    return user.paddleSkinEquipped ? true : false;
 }
 
 function getFriend(){
@@ -101,6 +109,12 @@ function getFriend(){
     return isYourFriend ? "Remove Friend" : (heSendARequestFriend ? "You have a Request" : (yourSendAFriendRequest ? "Cancel Request" : "Add Friend"));
 };
 
+function getImageFriend(){
+    if (getFriend() != "Remove Friend")
+        return friendImage;
+    return yourFriendImage;
+};
+
 function friendRequest() {
     const label = getFriend();
     if (label == "Add Friend")
@@ -111,6 +125,16 @@ function friendRequest() {
       return ;
     else if (label == "Remove Friend")
       userStore().deleteFriend(user.id);
+}
+
+function getFriendColor() {
+    const label = getFriend();
+    if (label == "Add Friend")
+        return 'green';
+    else if (label == "You have a Request")
+        return 'grey';
+    else
+        return 'red';
 }
 
 function getBlock(){
@@ -139,11 +163,6 @@ function sendMessage() {
 
 }
 
-
-function isDefaultPaddle() {
-    return currentPagePaddle.value < 0 ? false : true;
-}
-
 function getStatus() {
     return "online_icon " + user.status;
 
@@ -151,33 +170,32 @@ function getStatus() {
 function currentPageMatches() {
     const startIndex = currentPage.value * matchesPerPage;
     const endIndex = startIndex + matchesPerPage;
-    const matches = user.infoPong.historic;
+    const matches = user_matches.value;
     return matches.slice(startIndex, endIndex);
 }
 
 function changePage(step: number) {
-    if (currentPage.value + step >= 0 && currentPage.value + step < Math.ceil(user_matches.length / matchesPerPage)) {
+    if (currentPage.value + step >= 0 && currentPage.value + step < Math.ceil(user_matches.value.length / matchesPerPage)) {
         currentPage.value += step;
         currentPageMatches();
     }
 }
 
-const selectedColor = ref(user.infoPong.color);
+const selectedColor = ref(user.color);
 
 function closeProfile()
 {
     isProfileActive.value = false;
 }
 
-const currentPagePaddle = ref(user.infoPong.skin.paddles.findIndex(paddle => paddle === user.infoPong.skin.default.paddle));
-const paddlePerPage = 1;
+async function getMatch() {
+    user_matches.value = await userStore().getUserGames(user.id);
+}
 
 onMounted(() => {
+    getMatch();
+
     currentPageMatches();
-    const paddle_color = document.getElementById("paddleImage") as HTMLImageElement;
-    nextTick(() => {
-        paddle_color.style.backgroundColor = selectedColor.value;
-    });
 });
 
 // onUnmounted(() => {
@@ -245,6 +263,14 @@ onMounted(() => {
 .button-friend {
     height: 30px;
     width: 70px;
+}
+
+.user_friend_image {
+    position: absolute;
+    width: 40%;
+    left: 10%;
+    top: 10%;
+    height: 90%;
 }
 
 .buttons_midle {
@@ -414,7 +440,6 @@ onMounted(() => {
     left: 15%;
     border-color: transparent black transparent transparent;
     transition: border-color 0.3s ease;
-    ;
 }
 
 .arrow-icon.left:hover {
@@ -425,7 +450,6 @@ onMounted(() => {
     right: 15%;
     border-color: transparent transparent transparent black;
     transition: border-color 0.3s ease;
-    ;
 }
 
 .arrow-icon.right:hover {

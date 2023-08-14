@@ -52,7 +52,7 @@
       </div>
     </div>
   <ChatComponent class="chat_component"/>
-  <ProfileComponent :user="userStore().user" class="profile_component"/>
+  <MenusComponent />
 </template>
 
 <script setup lang="ts">
@@ -65,7 +65,7 @@ import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import Router from "@/router";
 import { chatStore } from "@/stores/chatStore";
 import { MyLobbyButtons } from "@/composables/MyLobbyButtons";
-import ProfileComponent from "../menus/ProfileComponent.vue";
+import MenusComponent from "../menus/MenusComponent.vue";
 import type { ChatMessage, channel } from "@/stores/chatStore";
 
 const store = userStore();

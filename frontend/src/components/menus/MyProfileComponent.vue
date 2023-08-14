@@ -21,6 +21,8 @@
             <button id="qrCodeButton" class="qr-button" @click="clickQrCode()">
                 <span class="">{{ getTwoFactor() }}</span>
             </button>
+            <TwoFactorComponent v-if="showTwoFactor" @two-factor-status="changeTwoFactorStatus()"/>
+
         </div>
 
         <div class="user_paddle profile_components" :style="{ 'background-color': selectedColor }">
@@ -92,6 +94,7 @@ import { nextTick, onMounted, ref } from "vue";
 import { TwoFactor } from "@/game/Menu/TwoFactor";
 import MatchComponent from "./MatchComponent.vue"
 import SkinComponent from "./SkinComponent.vue"
+import TwoFactorComponent from "./TwoFactorComponent.vue"
 import avataresImages from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
 
 const defaultAvatar = "../../src/assets/chat/avatar.png";
@@ -104,6 +107,7 @@ const isDiferent = ref(false);
 const user_matches = userStore().user.infoPong.historic;
 const currentPage = ref(0);
 const matchesPerPage = 4;
+const showTwoFactor = ref(false);
 
 function getWins() {
     return user.infoPong.historic.filter((history: GAME) => history.winnerId == user.id).length;
@@ -141,9 +145,15 @@ function getTwoFactor() {
 }
 
 function clickQrCode() {
-    const twoFactorMenu = new TwoFactor();
-    twoFactorMenu.show((value) => { });
+    showTwoFactor.value = true;
 }
+
+function  changeTwoFactorStatus()
+{
+    console.log("CHANGE TWO")
+    showTwoFactor.value = false;
+}
+
 
 function toggleInput() {
     if (editing.value == true)
@@ -733,7 +743,6 @@ input[type="color"] {
     top: 20%;
     left: 50%;
     transform: translateX(-50%);
-
 }
 
 input[type="color"]::-webkit-color-swatch-wrapper {
@@ -757,9 +766,7 @@ input[type="color"]::-webkit-color-swatch {
 
 .gridpaddle-item {
     flex: 1 1 calc(25% - 1px);
-    /* 25% para 4 elementos, 5px de espaçamento */
     margin: 0 0.1px;
     margin-bottom: 20px;
     box-sizing: border-box;
-    /* Mantém o espaçamento dentro da largura do item */
 }</style>
