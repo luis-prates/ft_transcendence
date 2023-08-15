@@ -53,9 +53,14 @@
   </div>
   <ChatComponent class="chat_component" />
   <MenusComponent />
+  <ConfirmButtonComponent :message="message"/>
 </template>
 
 <script setup lang="ts">
+
+const message = "ola amigos tudo bem?";
+
+
 import { ref, onMounted, onUnmounted } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
@@ -67,6 +72,7 @@ import { chatStore } from "@/stores/chatStore";
 import { MyLobbyButtons } from "@/composables/MyLobbyButtons";
 import MenusComponent from "../menus/MenusComponent.vue";
 import type { ChatMessage, channel } from "@/stores/chatStore";
+import ConfirmButtonComponent from "../menus/ConfirmButtonComponent.vue";
 
 const store = userStore();
 const user = userStore().user;

@@ -8,7 +8,7 @@
     <!-- <MapEditComponent /> -->
     <!-- <ProfileComponent class="profile" /> -->
   </div>
-  <input id="inputTwoFactor" type="text" pattern="[0-9]+" value="" disabled="false" style="display: none; background-color: transparent; font-family: 'Press Start 2P';" :maxlength="6">
+  <!-- <input id="inputTwoFactor" type="text" pattern="[0-9]+" value="" disabled="false" style="display: none; background-color: transparent; font-family: 'Press Start 2P';" :maxlength="6"> -->
 </template>
 
 <script setup lang="ts">

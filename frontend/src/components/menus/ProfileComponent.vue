@@ -276,7 +276,6 @@ onMounted(() => {
     height: 9%;
 }
 
-
 .buttons_attribute {
     border: 3px solid #000000;
     border-radius: 10px;
