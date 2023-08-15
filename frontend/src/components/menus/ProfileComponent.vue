@@ -53,7 +53,6 @@
 </template>
 
 <script setup lang="ts">
-import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import { userStore, type GAME, type User } from "@/stores/userStore";
 import { skin, TypeSkin } from "@/game/ping_pong/Skin";
 import { getCurrentInstance, nextTick, onMounted, ref } from "vue";

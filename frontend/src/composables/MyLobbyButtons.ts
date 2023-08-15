@@ -6,6 +6,7 @@ import { LeaderBoard } from "../../src/game/Menu/LeaderBoard";
 import { FriendsMenu } from "../../src/game/Menu/FriendsMenu";
 import { Messages } from "../../src/game/Menu/Messages";
 import { BattleMenu } from "../../src/game/Menu/BattleMenu";
+import { userStore } from '@/stores/userStore';
 
 export function MyLobbyButtons() {
 
@@ -68,13 +69,14 @@ export function MyLobbyButtons() {
   const onLeaderboardClick = () => {
     if (menuIsActive())
       return ;
-    leaderBoardMenu = true;
-    const leaderBoard = new LeaderBoard();
-    leaderBoard.show((value) => {
-      if (value == "EXIT") {
-        leaderBoardMenu = false;
-      }
-    });
+    userStore().userSelected = "leaderboard";
+    // leaderBoardMenu = true;
+    // const leaderBoard = new LeaderBoard();
+    // leaderBoard.show((value) => {
+    //   if (value == "EXIT") {
+    //     leaderBoardMenu = false;
+    //   }
+    // });
   }
 
   const menuIsActive = () => {
