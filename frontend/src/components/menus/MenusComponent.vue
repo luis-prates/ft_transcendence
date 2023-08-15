@@ -15,8 +15,7 @@ import ShopCommponent from "../menus/ShopCommponent.vue";
 let userProfile: any = '';
 const myProfile = ref(false);
 const yourProfile = ref(false);
-const yourShop = ref(true);
-
+const yourShop = ref(false);
 
 async function getUserDetails(userId: number) {
     userProfile = await userStore().getUserProfile(userId);

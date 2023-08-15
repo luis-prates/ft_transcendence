@@ -45,6 +45,8 @@ const close_sound = new Audio(sound_close_tab);
 
 function youHaveThis(item: ProductSkin) {
     if (item.type == TypeSkin.Paddle && !user.infoPong.skin.paddles.includes(item.name as never)) return false;
+	else if (item.type == TypeSkin.Table && !user.infoPong.skin.tables.includes(item.name as never)) return false;
+
 	return true;
 }
 
@@ -84,10 +86,9 @@ function buyItem(item: ProductSkin) {
         buy_sound.play();
 
 		userStore().buy_skin(item.name, item.type, item.price);
-		ameliaSay.innerText = "You bought " + item.tittle + " for " + item.price + "₳! Thank You!"
+		ameliaSay.innerText = "You bought \"" + item.tittle + "\" " + (item.type == TypeSkin.Paddle ? "Paddle" : "Table") + " for " + item.price + "₳! Thank You!"
     } else
 		ameliaSay.innerText = "You don't have enough money to buy this Skin.";
-	ameliaSay.classList.add("typewriter");
 }
 
 function closeShop() {
