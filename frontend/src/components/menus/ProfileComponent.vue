@@ -1,5 +1,5 @@
 <template>
-    <div v-if="isProfileActive" class="profile">
+    <div class="profile">
         <div class="avatar profile_components">
             <img id="avatarImage" :src="getPhoto()" class="user_image">
             <span id="user-status" :class="getStatus()"></span>
@@ -16,22 +16,23 @@
         </div>
 
         <div class="user_friend">
-            <button class="profile_components buttons_attribute button-friend" @click="friendRequest()" :style="{ 'background-color': getFriendColor() }">
+            <button class="profile_components buttons_attribute button-friend" @click="friendRequest()"
+                :style="{ 'background-color': getFriendColor() }">
                 <img :src="getImageFriend()" class="user_friend_image">
-                <img v-if="getFriend() == 'You have a Request'" :src="messageImage" class="user_friend_image" style="left: 50%">
-                <div v-if="getFriend() != 'You have a Request'" class="user_friend_image" style="left: 50%; font-family: 'Press Start 2P'; font-size: 100%;">
+                <img v-if="getFriend() == 'You have a Request'" :src="messageImage" class="user_friend_image"
+                    style="left: 50%">
+                <div v-if="getFriend() != 'You have a Request'" class="user_friend_image"
+                    style="left: 50%; font-family: 'Press Start 2P'; font-size: 100%;">
                     {{ getFriend() == 'Add Friend' ? '+' : '-' }}</div>
             </button>
             <div class="friend_label">{{ getFriend() }}</div>
         </div>
-        
+
         <div class="buttons_midle">
             <button class="profile_components buttons_attribute challenge-button"
                 @click="challengeUser()">Challenge</button>
-            <button class="profile_components buttons_attribute message-button" 
-                @click="sendMessage()">Send Message</button>
-            <button class="profile_components buttons_attribute block-button"
-                @click="blockUser()">{{ getBlock() }}</button>
+            <button class="profile_components buttons_attribute message-button" @click="sendMessage()">Send Message</button>
+            <button class="profile_components buttons_attribute block-button" @click="blockUser()">{{ getBlock() }}</button>
         </div>
 
         <div class="paddle profile_components"></div>
@@ -55,11 +56,8 @@
 import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import { userStore, type GAME, type User } from "@/stores/userStore";
 import { skin, TypeSkin } from "@/game/ping_pong/Skin";
-import { nextTick, onMounted, ref } from "vue";
-import { TwoFactor } from "@/game/Menu/TwoFactor";
+import { getCurrentInstance, nextTick, onMounted, ref } from "vue";
 import MatchComponent from "./MatchComponent.vue"
-import SkinComponent from "./SkinComponent.vue"
-import avataresImages from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
 import friendImage from "@/assets/images/lobby/menu/friend.png";
 import yourFriendImage from "@/assets/images/lobby/menu/your_friend.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
@@ -68,7 +66,7 @@ const defaultAvatar = "../../src/assets/chat/avatar.png";
 
 const props = defineProps<{ user: any }>();
 
-const isProfileActive = ref(true);
+const instance = getCurrentInstance();
 const user = props.user;
 const user_matches = ref([]) as any;
 const currentPage = ref(0);
@@ -96,20 +94,20 @@ function isDefaultPaddle() {
     return user.paddleSkinEquipped ? true : false;
 }
 
-function getFriend(){
+function getFriend() {
     let index = userStore().user.friends.findIndex(user => user.id == props.user.id);
     const isYourFriend = index == -1 ? false : true;
 
     index = userStore().user.friendsRequests.findIndex((friendship) => friendship.requestorId === props.user.id);
-		const heSendARequestFriend = index == -1 ? false : true;
-    
-		index = userStore().user.friendsRequests.findIndex((friendship) => friendship.requesteeId === props.user.id);
+    const heSendARequestFriend = index == -1 ? false : true;
+
+    index = userStore().user.friendsRequests.findIndex((friendship) => friendship.requesteeId === props.user.id);
     const yourSendAFriendRequest = index == -1 ? false : true;
-    
+
     return isYourFriend ? "Remove Friend" : (heSendARequestFriend ? "You have a Request" : (yourSendAFriendRequest ? "Cancel Request" : "Add Friend"));
 };
 
-function getImageFriend(){
+function getImageFriend() {
     if (getFriend() != "Remove Friend")
         return friendImage;
     return yourFriendImage;
@@ -118,13 +116,13 @@ function getImageFriend(){
 function friendRequest() {
     const label = getFriend();
     if (label == "Add Friend")
-      userStore().sendFriendRequest(user.id, user.nickname);
+        userStore().sendFriendRequest(user.id, user.nickname);
     else if (label == "Cancel Request")
-      userStore().cancelFriendRequest(user.id);
+        userStore().cancelFriendRequest(user.id);
     else if (label == "You have a Request")
-      return ;
+        return;
     else if (label == "Remove Friend")
-      userStore().deleteFriend(user.id);
+        userStore().deleteFriend(user.id);
 }
 
 function getFriendColor() {
@@ -137,10 +135,10 @@ function getFriendColor() {
         return 'red';
 }
 
-function getBlock(){
+function getBlock() {
     const userIndex = userStore().user.block.findIndex(block => block.blockedId == user.id);
     if (userIndex !== -1) {
-      return "UnBlock"
+        return "UnBlock"
     }
     return "Block";
 };
@@ -148,12 +146,12 @@ function getBlock(){
 function blockUser() {
     const label = getBlock();
     if (label == "Block")
-      userStore().blockUser(user.id, user.nickname, user.image);
+        userStore().blockUser(user.id, user.nickname, user.image);
     else if (label == "UnBlock")
-      userStore().unblockUser(user.id);
+        userStore().unblockUser(user.id);
 }
 
-function challengeUser(){
+function challengeUser() {
     userStore().challengeUser(user.id, user.nickname);
 };
 
@@ -183,18 +181,16 @@ function changePage(step: number) {
 
 const selectedColor = ref(user.color);
 
-function closeProfile()
-{
-    isProfileActive.value = false;
+function closeProfile() {
+    instance?.emit("close-profile");
 }
 
 async function getMatch() {
-    user_matches.value = await userStore().getUserGames(user.id);
+    user_matches.value = user.historic;
 }
 
 onMounted(() => {
     getMatch();
-
     currentPageMatches();
 });
 
@@ -216,7 +212,7 @@ onMounted(() => {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
-.close-button.button_profile{
+.close-button.button_profile {
     right: 1.5%;
     top: 1.4%;
     left: unset;
@@ -475,5 +471,4 @@ onMounted(() => {
     background-color: darkred;
     color: white;
 }
-
 </style>

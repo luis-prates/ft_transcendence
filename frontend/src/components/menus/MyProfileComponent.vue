@@ -1,5 +1,5 @@
 <template>
-    <div v-if="isProfileActive" class="profile">
+    <div class="profile">
         <div class="avatar profile_components" @click="uploadImage()">
             <img id="avatarImage" :src="getPhoto()" class="user_image">
             <input id="fileInput" type="file" style="display: none;" accept="image/*" @change="handleFileChange">
@@ -21,7 +21,7 @@
             <button id="qrCodeButton" class="qr-button" @click="clickQrCode()">
                 <span class="">{{ getTwoFactor() }}</span>
             </button>
-            <TwoFactorComponent v-if="showTwoFactor" @two-factor-status="changeTwoFactorStatus()"/>
+            <TwoFactorComponent v-if="showTwoFactor" @two-factor-status="changeTwoFactorStatus()" />
 
         </div>
 
@@ -62,12 +62,14 @@
                 @click="toggleExpand(1)">
                 <div class="expanded-content" v-if="expanded[1]">
                     <div class="close-button" @click="closeButton(1)"></div>
-                    <div style=" position: absolute; left: 50%; top: 10%; -webkit-text-stroke-width: 1.25px; -webkit-text-stroke-color: black; color: white; font-size: 19px; font-family: 'Press Start 2P'; transform: translateX(-50%);">
+                    <div
+                        style=" position: absolute; left: 50%; top: 10%; -webkit-text-stroke-width: 1.25px; -webkit-text-stroke-color: black; color: white; font-size: 19px; font-family: 'Press Start 2P'; transform: translateX(-50%);">
                         Color:
                     </div>
                     <input type="color" id="colorPicker" v-model=selectedColor>
 
-                    <div style=" position: absolute; left: 50%; top: 48%; -webkit-text-stroke-width: 1.25px; -webkit-text-stroke-color: black; color: white; font-size: 19px; font-family: 'Press Start 2P'; transform: translateX(-50%);">
+                    <div
+                        style=" position: absolute; left: 50%; top: 48%; -webkit-text-stroke-width: 1.25px; -webkit-text-stroke-color: black; color: white; font-size: 19px; font-family: 'Press Start 2P'; transform: translateX(-50%);">
                         Skin:
                     </div>
                     <div class="gridpaddle-container" :key="currentPage">
@@ -90,8 +92,7 @@
 import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import { userStore, type GAME } from "@/stores/userStore";
 import { skin, TypeSkin } from "@/game/ping_pong/Skin";
-import { nextTick, onMounted, ref } from "vue";
-import { TwoFactor } from "@/game/Menu/TwoFactor";
+import { getCurrentInstance, nextTick, onMounted, ref } from "vue";
 import MatchComponent from "./MatchComponent.vue"
 import SkinComponent from "./SkinComponent.vue"
 import TwoFactorComponent from "./TwoFactorComponent.vue"
@@ -99,8 +100,8 @@ import avataresImages from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565
 
 const defaultAvatar = "../../src/assets/chat/avatar.png";
 const avatares = avataresImages;
+const instance = getCurrentInstance();
 
-const isProfileActive = ref(true);
 const user = userStore().user;
 const editing = ref(false);
 const isDiferent = ref(false);
@@ -148,8 +149,7 @@ function clickQrCode() {
     showTwoFactor.value = true;
 }
 
-function  changeTwoFactorStatus()
-{
+function changeTwoFactorStatus() {
     console.log("CHANGE TWO")
     showTwoFactor.value = false;
 }
@@ -309,9 +309,8 @@ function closeButton(index: number) {
     }
 }
 
-function closeProfile()
-{
-    isProfileActive.value = false;
+function closeProfile() {
+    instance?.emit("close-profile");
 }
 
 const currentPagePaddle = ref(user.infoPong.skin.paddles.findIndex(paddle => paddle === user.infoPong.skin.default.paddle));
@@ -371,7 +370,7 @@ onMounted(() => {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
-.close-button.button_profile{
+.close-button.button_profile {
     right: 1.5%;
     top: 1.4%;
     left: unset;
@@ -769,4 +768,5 @@ input[type="color"]::-webkit-color-swatch {
     margin: 0 0.1px;
     margin-bottom: 20px;
     box-sizing: border-box;
-}</style>
+}
+</style>

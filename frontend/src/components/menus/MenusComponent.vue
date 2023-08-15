@@ -1,43 +1,60 @@
 <template>
-    <MyProfileComponent v-if="userSelect && userSelect == myUser" />
-	<ProfileComponent v-if="userSelect && userSelect != myUser" :user="userSelect" class="profile_component"/>
+    <MyProfileComponent v-if="myProfile" @close-profile="closeProfile()" />
+    <ProfileComponent v-if="yourProfile" :user="userProfile" class="profile_component" @close-profile="closeProfile()" />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { userStore } from "@/stores/userStore";
 import ProfileComponent from "../menus/ProfileComponent.vue";
 import MyProfileComponent from "../menus/MyProfileComponent.vue";
-import { TwoFactor } from "@/game/Menu/TwoFactor";
-import TwoFactorComponent from "../menus/TwoFactorComponent.vue";
 
-const myUser = userStore().user;
+const userSelect = ref<any | undefined>(userStore().userSelected);
+let userProfile: any = '';
+const myProfile = ref(false);
+const yourProfile = ref(false);
 
-const userSelect = ref();
 
 async function getUserDetails(userId: number) {
-    userSelect.value = await userStore().getUserProfile(userId);
+    userProfile = await userStore().getUserProfile(userId);
+    userProfile.historic = await userStore().getUserGames(userId);
 }
 
-function changeUserSelect(userId: number) {
-    getUserDetails(userId);
-}
+function closeProfile() {
+    userStore().userSelected = undefined;
 
-function cancelUserDetails() {
-    userSelect.value = '';
+    yourProfile.value = false;
+    myProfile.value = false;
+
+    console.log("is close! ", userSelect)
 }
 
 onMounted(() => {
-    userSelect.value = userStore().user;
-    //Teste
-    // getUserDetails(78);
 });
+
+watch(() => userStore().userSelected, (newValue, oldValue) => {
+    console.log("userSelected changed:", newValue, oldValue);
+    if (newValue) {
+        if (newValue == "me") {
+            console.log("Your profile: ", newValue);
+            yourProfile.value = false;
+            myProfile.value = true;
+        }
+        else {
+            console.log("profile: ", newValue);
+            getUserDetails(newValue);
+            setTimeout(() => {
+                myProfile.value = false;
+                yourProfile.value = true;
+            }, 100);
+        }
+    }
+},
+    { deep: true });
 
 // onUnmounted(() => {
 // });
 
 </script>
 
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>

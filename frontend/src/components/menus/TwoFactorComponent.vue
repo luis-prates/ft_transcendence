@@ -1,13 +1,4 @@
 <template>
-    <!-- <div class="user_two_factor_qr">
-        <img v-if=srcImage id="qrImage" :src="srcImage" class="user_qr_image">
-        <div class="message_two_factor">{{  getMessage() }}</div>
-        <input id="inputQR" class="input_Two_Factor" type="text" pattern="[0-9]+" value="" :maxlength="6" re>
-        <div style="top: 88%; left: 10%;">
-            <button @click="handleCancelClick">Cancel</button>
-            <button style="right: 20%; position: absolute;" @click="handleConfirmClick">Confirm</button>
-        </div>
-    </div> -->
     <form @submit="handleSubmit">
         <div class="user_two_factor_qr">
             <img v-if="srcImage" id="qrImage" :src="srcImage" class="user_qr_image">
@@ -15,7 +6,8 @@
             <input id="inputQR" class="input_Two_Factor" type="text" pattern="[0-9]+" :maxlength="6" required>
             <div style="top: 88%; left: 10%;">
                 <button type="button" @click="handleCancelClick">Cancel</button>
-                <button style="right: 20%;position: absolute;background-color: white;color: black;" type="submit">Confirm</button>
+                <button style="right: 20%;position: absolute;background-color: white;color: black;"
+                    type="submit">Confirm</button>
             </div>
         </div>
     </form>
@@ -59,9 +51,9 @@ async function handleConfirmClick() {
 }
 
 function handleCancelClick() {
-    
+
     const inputTwoFactor = document.getElementById("inputQR") as HTMLInputElement;
-    
+
     inputTwoFactor.value = "";
     instance?.emit("two-factor-status");
     console.log("Cancel button clicked");
@@ -123,5 +115,4 @@ onMounted(() => {
     max-width: 90%;
     word-wrap: break-word;
 }
-
 </style>

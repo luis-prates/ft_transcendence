@@ -35,7 +35,15 @@ export class Player extends Character {
     this.nickname = data.nickname;
     this.avatar = data.avatar;
     console.log("Player", data);
-    this.socket.emit("new_player", { objectId: this.objectId, name: this.name, nickname: this.nickname, avatar: this.avatar, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop, sx: this.animation.sx, sy: this.animation.sy} });
+    this.socket.emit("new_player", {
+      objectId: this.objectId,
+      name: this.name,
+      nickname: this.nickname,
+      avatar: this.avatar,
+      x: this.x,
+      y: this.y,
+      animation: { name: this.animation.name, isStop: this.animation.isStop, sx: this.animation.sx, sy: this.animation.sy },
+    });
   }
 
   draw(contex: CanvasRenderingContext2D): void {
@@ -64,14 +72,8 @@ export class Player extends Character {
     this.menu.value?.setAttribute("style", "display: none");
     if (button == 0) {
       this.select = Game.MouseColision(x, y);
-      if (this.select == this) {
-
-        //TODO
-        //ProfileComponent
-        //Game.instance.addMenu(new YourProfile(this).menu);
-        
-
-      } else if (this.select && this.select != this && this.select.interaction) {
+      if (this.select == this) userStore().userSelected = "me";
+      else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {
           if (gameObject && gameObject.interaction) gameObject.interaction(this);
         });
@@ -92,8 +94,7 @@ export class Player extends Character {
     this.agent.setPath([]);
   }
 
-  interaction(gameObject: GameObject): void {
-  }
+  interaction(gameObject: GameObject): void {}
   // public move(x: number, y: number, animation: string): void {
   //   super.move(x, y, animation);
   //   socket.emit("update_gameobject", { className: "Character", objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: animation, isStop: this.animation.isStop } });
