@@ -74,7 +74,7 @@
                     </div>
                     <div class="gridpaddle-container" :key="currentPage">
                         <div v-for="(paddle, index) in currentPaddles()" :key="index" class="gridpaddle-item">
-                            <SkinComponent :paddle="paddle" />
+                            <SkinComponent :skin="paddle" :type="getTypeSkin()"/>
                         </div>
                     </div>
                     <div class="pagination-buttons">
@@ -97,9 +97,12 @@ import MatchComponent from "./MatchComponent.vue"
 import SkinComponent from "./SkinComponent.vue"
 import TwoFactorComponent from "./TwoFactorComponent.vue"
 import avataresImages from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
+import sound_close_tab from "@/assets/audio/close.mp3";
 
 const defaultAvatar = "../../src/assets/chat/avatar.png";
 const avatares = avataresImages;
+const close_sound = new Audio(sound_close_tab);
+
 const instance = getCurrentInstance();
 
 const user = userStore().user;
@@ -194,6 +197,7 @@ function changePage(step: number) {
     if (currentPage.value + step >= 0 && currentPage.value + step < Math.ceil(user_matches.length / matchesPerPage)) {
         currentPage.value += step;
         currentPageMatches();
+        close_sound.play();
     }
 }
 
@@ -291,6 +295,7 @@ function changeAvatarPage(index: number) {
     current_avatar.value += index;
     inputName.style.backgroundPositionX = `-${79 + (88 * 3) * current_avatar.value + (7.5 * ((current_avatar.value - 3) > 0 ? 1 : 0))}px`;
     inputName.style.backgroundPositionY = `-${25 + (239 * 4) * ((current_avatar.value - 3) > 0 ? 1 : 0)}px`;
+    close_sound.play();
 }
 
 function closeButton(index: number) {
@@ -307,9 +312,11 @@ function closeButton(index: number) {
             button_paddle.disabled = false;
         }, 200);
     }
+	close_sound.play();
 }
 
 function closeProfile() {
+	close_sound.play();
     instance?.emit("close-profile");
 }
 
@@ -319,7 +326,7 @@ const paddlePerPage = 1;
 function changePaddlePage(index: number) {
     if (currentPagePaddle.value + index < -1 || currentPagePaddle.value + index == user.infoPong.skin.paddles.length)
         return;
-
+	close_sound.play();
     currentPagePaddle.value += index;
 }
 
@@ -328,6 +335,10 @@ function currentPaddles() {
     const endIndex = startIndex + paddlePerPage;
     const paddles = user.infoPong.skin.paddles;
     return paddles.slice(startIndex, endIndex);
+}
+
+function getTypeSkin() {
+    return TypeSkin.Paddle;
 }
 
 function asSomeChange() {
@@ -406,7 +417,6 @@ onMounted(() => {
 .user_image:hover {
     cursor: pointer;
     opacity: 0.5;
-    /* Define a opacidade ao passar o cursor sobre a imagem */
 }
 
 .user-label {

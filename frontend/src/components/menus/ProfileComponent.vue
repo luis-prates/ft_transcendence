@@ -61,6 +61,7 @@ import MatchComponent from "./MatchComponent.vue"
 import friendImage from "@/assets/images/lobby/menu/friend.png";
 import yourFriendImage from "@/assets/images/lobby/menu/your_friend.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
+import sound_close_tab from "@/assets/audio/close.mp3";
 
 const defaultAvatar = "../../src/assets/chat/avatar.png";
 
@@ -71,6 +72,7 @@ const user = props.user;
 const user_matches = ref([]) as any;
 const currentPage = ref(0);
 const matchesPerPage = 4;
+const close_sound = new Audio(sound_close_tab);
 
 function getWins() {
     return user_matches.value.filter((history: GAME) => history.winnerId == user.id).length;
@@ -165,6 +167,7 @@ function getStatus() {
     return "online_icon " + user.status;
 
 }
+
 function currentPageMatches() {
     const startIndex = currentPage.value * matchesPerPage;
     const endIndex = startIndex + matchesPerPage;
@@ -182,6 +185,7 @@ function changePage(step: number) {
 const selectedColor = ref(user.color);
 
 function closeProfile() {
+	close_sound.play();
     instance?.emit("close-profile");
 }
 

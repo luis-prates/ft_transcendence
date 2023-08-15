@@ -2,6 +2,7 @@ import { Character } from "@/game/base/Character";
 import { Game, Menu, Player } from "@/game";
 import { SpeechBubble } from "../../Menu/SpeechBubble";
 import { Shop } from "../../Menu/Shop";
+import { userStore } from "@/stores/userStore";
 
 export class Npc extends Character {
   constructor() {
@@ -32,6 +33,7 @@ export class Npc extends Character {
 
   public interaction(gameObject: Character): void {
     this.setLookAt(gameObject);
-    Game.instance.addMenu(new Shop().menu);
+    userStore().userSelected = "shop";
+    // Game.instance.addMenu(new Shop().menu);
   }
 }

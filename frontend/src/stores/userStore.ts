@@ -5,10 +5,21 @@ import axios from "axios";
 import type { TypeSkin } from "@/game/ping_pong/Skin";
 import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
-import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
+import { ConfirmButton } from "@/game/Menu/ConfirmButton";
 import { Game } from "@/game/base/Game";
 import { chatStore, type ChatMessage } from "./chatStore";
 import { Lobby } from "@/game/lobby/Lobby";
+
+export enum STATUS_CONFIRM {
+  PRODUCT,
+  CHALLENGE,
+  CHALLENGE_YOU,
+  FRIEND,
+  FRIEND_REQUEST,
+  BLOCK,
+  NOTIFICATION,
+  ERROR,
+}
 
 export enum GameStatus {
   NOT_STARTED = "NOT_STARTED",
