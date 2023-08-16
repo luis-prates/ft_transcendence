@@ -408,6 +408,9 @@ function userToChannel(channelId: any, user: ChatUser) {
     const userExists = Array.isArray(channel.users) && channel.users.some((existingUser: ChatUser) => existingUser.id === user.id);
 
     if (!userExists) {
+      //TODO i need the information if user isMuted from backend
+      user.isAdmin = false;
+      user.isMuted = false;
       channel.users.push(user);
     }
     else {
