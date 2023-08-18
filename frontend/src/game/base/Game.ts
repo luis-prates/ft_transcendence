@@ -65,7 +65,8 @@ export class Game {
           x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE,
           y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,
         };
-        Game.instance.addMenu(new CreateGame(data).menu);
+        userStore().newGame = data;
+//        Game.instance.addMenu(new CreateGame(data).menu);
       }
       event.preventDefault();
     });
