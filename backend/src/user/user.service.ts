@@ -97,7 +97,7 @@ export class UserService {
 				console.log('Status already updated!');
 				return;
 			}
-			this.logger.debug(`Current user status: ${user.status}`);
+			this.logger.debug(`Current user status: ${user.status}. Next status ${status}`);
 
 			user = await this.prisma.user.update({
 				where: {
@@ -145,7 +145,7 @@ export class UserService {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				if (error.code === 'P2002') {
 					throw new ForbiddenException(
-						`The User don't Exist. Error: ${error.message.substring(
+						`The user doesn't exist. Error: ${error.message.substring(
 							error.message.indexOf('Unique constraint'),
 						)}`,
 					);

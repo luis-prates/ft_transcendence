@@ -82,7 +82,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				);
 				// Leave the room for the game
 				client?.leave(`game-${gameId}-player`);
-				this.userService.status(userId, UserStatus.ONLINE);
+				await this.userService.status(userId, UserStatus.ONLINE);
 			} else if (isWatcher) {
 				this.socketService.gameIdToWatcherId.set(
 					gameId,
