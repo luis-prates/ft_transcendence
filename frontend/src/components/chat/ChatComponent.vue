@@ -24,7 +24,9 @@ const showTesss = ref(false);
 const showbuttom = ref(false);
 const chatListRef = ref<InstanceType<typeof ChatList> | null>(null);
 
-socketClass.setChatSocket({ query: { userId: user.user.id } });
+if (!socketClass.getChatSocket()) {
+	socketClass.setChatSocket({ query: { userId: user.user.id } });
+}
 const socket: Socket = socketClass.getChatSocket();
 
 function toggleTesss() {

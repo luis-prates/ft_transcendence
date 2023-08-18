@@ -34,7 +34,7 @@ const frameTime = 1000 / frameRate;
 onMounted(function () {
 	if (socket == undefined) {
 		console.log("socket is undefined");
-		Router.push('/');
+		Router.push('/lobby');
 		return;
 	}
   const canvas = document.getElementById("canvas1") as HTMLCanvasElement;
@@ -52,7 +52,7 @@ onMounted(function () {
 	socket = socketClass.getGameSocket();
 	socket.on("error", (errorMessage: string) => {
 		if (errorMessage.includes("Game does not exist")) {
-			Router.push(`/`);
+			Router.push(`/lobby`);
 			socket.disconnect();
 		}
 	})
