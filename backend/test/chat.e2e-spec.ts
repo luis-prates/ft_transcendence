@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { AppModule } from '../src/app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -368,17 +369,12 @@ describe('Chat', () => {
 		it('should send a message to the public channel', async () => {
 			// get publicChannelId as a string
 			const dataStore: IDataStore = pactum.stash.getDataStore();
-			console.log(dataStore);
 			const publicChannelId: string = dataStore['publicChannelId'];
-			console.log('publicChannelId is: ', publicChannelId);
-			// emit the message event as user1
-			// clients[0].emit('message', { "channelId": publicChannelId, "message": "Hello World!" });
 			// expect the message to be received by user2 and user3
 			const messagePromises = clients.slice(1, 3).map(
 				client =>
 					new Promise((resolve, reject) => {
 						const handler = ({ channelId, message }: HandlerArg) => {
-							console.log('channelId is: ', channelId, 'message is: ', message);
 							expect(channelId).toBe(publicChannelId);
 							expect(message).toBe('Hello from Public!');
 							resolve(undefined);
@@ -387,7 +383,7 @@ describe('Chat', () => {
 						listeners.push({ client, handler });
 					}),
 			);
-			// Note: removed setImmediate here
+			// Emit the message as user1
 			clients[0].emit('message', {
 				channelId: publicChannelId,
 				message: 'Hello from Public!',
@@ -396,7 +392,6 @@ describe('Chat', () => {
 		});
 		it('should send a message to the private channel', async () => {
 			const dataStore: IDataStore = pactum.stash.getDataStore();
-			console.log(dataStore);
 			const privateChannelId: string = dataStore['privateChannelId'];
 			// We'll make an array of promises for every client that needs to receive the message
 			const messagePromises = clients.slice(1, 3).map(
@@ -527,7 +522,6 @@ describe('Chat', () => {
 			// promise that will resolve if a message is received from user4 to user1
 			const messagePromise = new Promise((resolve, reject) => {
 				const handler = ({ channelId, message }: HandlerArg) => {
-					console.log('calling handler');
 					expect(channelId).toBe(channelId);
 					expect(message).toBe('Hello from Unblocked User!');
 					resolve(undefined);
@@ -766,6 +760,7 @@ describe('Chat', () => {
 				.spec()
 				.post('/chat/channels/$S{protectedChannelId}/mute/$S{user4Id}')
 				.withHeaders({ Authorization: 'Bearer $S{userAt1}' })
+				.withBody({ muteDuration: 0.2 }) // mute duration is in minutes
 				.expectStatus(201);
 			await Promise.all(userMutedPromises);
 		});

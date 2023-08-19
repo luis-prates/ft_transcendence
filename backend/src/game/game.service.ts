@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
-import { GameStatus, Prisma, UserStatus } from '@prisma/client';
+import { Game, GameStatus, Prisma, UserStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { GameDto, GameEndDto } from './dto';
+import { GameDto, GameEndDto, GameIdDto } from './dto';
 import { EventEmitter } from 'events';
 import { GameClass, Status, infoBot } from './ping_pong/GamePong';
 import { playerInfo } from '../socket/SocketInterface';
@@ -27,9 +27,6 @@ export class GameService {
 	private readonly logger = new Logger(GameService.name);
 	private server: Server;
 
-	// TODO: to be added to Game service
-	// private isInLobby = false;
-
 	constructor(private prisma: PrismaService, private playerService: PlayerService, private userService: UserService) {
 		this.events = new EventEmitter();
 	}
@@ -43,11 +40,9 @@ export class GameService {
 	}
 
 	async createGame(body: GameDto) {
-		this.logger.debug(`createGame is called with body: ${JSON.stringify(body)}`);
 		const game = await this.prisma.game.create({
 			data: {
 				gameType: body.gameType,
-				//! used if players are added when game is created
 				players: {
 					connect: body.players.map(player => ({ id: player })),
 				},
@@ -56,17 +51,13 @@ export class GameService {
 				players: true,
 			},
 		});
-		this.logger.debug(`game created in database: ${JSON.stringify(game)}`);
 		const playerOne = this.playerService.getPlayer(body.players[0]);
-		// objectId same as game.id generated in database?
 		body.gameRequest.objectId = game.id;
-		// new_game equivalent
 		this.games.push(
 			new GameClass(body.gameRequest, this, this.userService, () => {
 				// this.events.emit('gameEnded', game);
 				// remove game from games array
 				this.games = this.games.filter(g => g.data.objectId !== body.gameRequest.objectId);
-				this.logger.log(`Game ${game.id} ended and removed.`);
 				playerOne?.map?.removeGameObject(playerOne, body.gameRequest.objectId);
 			}),
 		);
@@ -74,9 +65,6 @@ export class GameService {
 		if (body.gameRequest.bot === true) {
 			this.addGameUser(game.id, infoBot);
 		}
-
-		this.logger.debug('GameClass Object created in memory');
-
 		//! perhaps this should be in the gateway?
 		// // entry_game equivalent
 		// this.logger.log(`Player 1 entered Game ${game.id}.`);
@@ -93,7 +81,7 @@ export class GameService {
 	async matchMakingGame(player: Player, info: playerInfo) {
 		const game = this.games.find(g => g.status == Status.Waiting);
 		if (!game) {
-			const gameCreated = (await this.createGame({
+			const gameCreated = await this.createGame({
 				gameType: 'PUBLIC',
 				players: [],
 				gameRequest: {
@@ -103,7 +91,7 @@ export class GameService {
 					tableSkin: '',
 					bot: false,
 				},
-			} as GameDto)) as any;
+			} as GameDto);
 			return gameCreated.id;
 		}
 		return game.data.objectId;
@@ -139,7 +127,6 @@ export class GameService {
 					bot: false,
 				},
 			} as GameDto)) as any;
-			console.log(gameCreated);
 			return gameCreated.id;
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -155,18 +142,16 @@ export class GameService {
 		}
 	}
 
-	async getActiveGames(status: GameStatus[]) {
+	async getActiveGames(status: GameStatus): Promise<Game[]> {
 		if (!status) {
 			throw new ForbiddenException('Cannot get games without status.');
 		}
-		if (status.includes(GameStatus.FINISHED)) {
+		if (status == GameStatus.FINISHED) {
 			throw new ForbiddenException('Cannot get finished games.');
 		}
 		return this.prisma.game.findMany({
 			where: {
-				status: {
-					in: status,
-				},
+				status: status,
 			},
 			include: {
 				players: {
@@ -184,7 +169,7 @@ export class GameService {
 	// if two users have the same number of won games, the user with the least
 	// number of lost games will be ranked higher
 	// if two users have the same number of won and lost games, their rank will be the same
-	async getLeaderboard() {
+	async getLeaderboard(): Promise<Array<LeaderBoard>> {
 		const leaderboard = await this.prisma.user.findMany({
 			where: {
 				id: {
@@ -286,7 +271,6 @@ export class GameService {
 	}
 
 	async enterGame(player: Player, info: playerInfo): Promise<boolean> {
-		console.log('ENTER GAME!');
 		const game = this.games.find(g => g.data.objectId === info.objectId);
 		if (!game) {
 			throw new ForbiddenException('Game does not exist');
@@ -299,15 +283,14 @@ export class GameService {
 		return isPlayer;
 	}
 
-	async updateGame(gameId: string, body?: any) {
+	async updateGameStatus(gameId: string, status?: GameStatus): Promise<Game> {
 		try {
-			this.logger.debug(`updateGame for game ${gameId} is called with body: ${JSON.stringify(body)}`);
 			const game = await this.prisma.game.update({
 				where: {
 					id: gameId,
 				},
 				data: {
-					status: body?.status,
+					status: status,
 				},
 				include: {
 					players: true,
@@ -331,7 +314,7 @@ export class GameService {
 	// will enable the start game button
 	// when the client clicks the start game button, it will send a request
 	// to the backend to call the start game function, which could be an event
-	async addGameUser(gameId: string, body: playerInfo) {
+	async addGameUser(gameId: string, body: GameIdDto): Promise<Game> {
 		try {
 			const game = await this.prisma.game.update({
 				where: {
@@ -361,7 +344,7 @@ export class GameService {
 		}
 	}
 
-	async startGame(gameId: string, body: GameDto) {
+	async startGame(gameId: string, body: GameDto): Promise<Game> {
 		try {
 			const game = await this.prisma.game.update({
 				where: {
@@ -388,7 +371,7 @@ export class GameService {
 	}
 
 	// handles what to do when the game ends
-	async endGame(gameId: string, body: GameEndDto) {
+	async endGame(gameId: string, body: GameEndDto): Promise<Game> {
 		try {
 			const game = await this.prisma.game.update({
 				where: {
@@ -426,7 +409,7 @@ export class GameService {
 		}
 	}
 
-	async getUserGames(userId: number) {
+	async getUserGames(userId: number): Promise<Game[]> {
 		return this.prisma.game.findMany({
 			where: {
 				players: {
@@ -451,12 +434,11 @@ export class GameService {
 		});
 	}
 
-	async deleteGame(gameId: string) {
+	async deleteGame(gameId: string): Promise<Game> {
 		const index = this.games.findIndex(g => g.data.objectId === gameId);
 		if (index !== -1) {
 			this.games.splice(index, 1);
 		}
-		this.logger.log(`Delete Game ${gameId}`);
 		return this.prisma.game.delete({
 			where: {
 				id: gameId,

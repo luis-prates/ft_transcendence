@@ -12,7 +12,6 @@ import battleImage from "@/assets/images/lobby/menu/battle.png";
 
 export class BattleMenu {
   private _menu = new Menu({ layer: "Global", isFocus: false });
-  private radius: number = 10;
   private background: ElementUI = this.createBackground();
     
   private user = userStore().user;
@@ -43,7 +42,7 @@ export class BattleMenu {
       
         // Desenha o corpo do balão com cor de fundo castanho
         ctx.fillStyle = backgroundColor;
-        this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, this.radius);
+        this.roundRect(ctx, pos.x, pos.y, pos.w, pos.h, 10);
         ctx.fill();
     
         // Desenha o contorno do balão com cor mais escura
@@ -105,7 +104,7 @@ export class BattleMenu {
         ctx.strokeStyle = "black";
         ctx.lineWidth = 2;
 
-        this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, this.radius);
+        this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
         ctx.fill();
         ctx.stroke();
 

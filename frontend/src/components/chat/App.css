@@ -89,7 +89,6 @@ body,html{
   .contacts li{
     width: 100% !important;
     padding: 5px 10px;
-    margin-bottom: 15px !important;
   }
   .active{
     background-color: rgba(0,0,0,0.3);
@@ -167,9 +166,27 @@ body,html{
     background-color: transparent;
     border-color: transparent;
   }
+  .config_chat_img {
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
+    max-width: 20px; /* Set the maximum width */
+    max-height: 20px; /* Set the maximum height */
+  }
+  .send_img {
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
+    max-width: 20px; /* Set the maximum width */
+    max-height: 20px; /* Set the maximum height */
+  }
   .close_chat {
     background-color: transparent;
     border-color: transparent;
+  }
+  .close_chat_img {
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
+    max-width: 20px; /* Set the maximum width */
+    max-height: 20px; /* Set the maximum height */
   }
   .hide_chat {
     background-color: black; 
@@ -260,6 +277,7 @@ body,html{
     align-items: center;
     justify-content: center;
     gap: 25%;
+    padding-bottom: 10%;
   }
   .chat_filter_button{
     background-color: transparent;
@@ -267,9 +285,13 @@ body,html{
     border-radius: 10px;
   }
   .chat_filter_button:hover{
-    cursor: pointer;
-    background-color: rgba(17, 9, 9, 0.2); 
-    border-radius: 10px;
+    background-color: black;
+  }
+  .chat_filter_img{
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
+    max-width: 20px; /* Set the maximum width */
+    max-height: 20px; /* Set the maximum height */
   }
   @media(max-width: 576px){
   .contacts_card{

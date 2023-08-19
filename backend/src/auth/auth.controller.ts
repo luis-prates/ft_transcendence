@@ -82,7 +82,7 @@ export class AuthController {
 		const { secret, otpauthUrl } = await this.authService.generateTwoFactorSecret(user);
 
 		const responseObj = await this.authService.generateQrCodeDataURL(otpauthUrl);
-		//! secret needs to be removed in production
+		//TODO: secret needs to be removed in production
 		//! secret is needed for testing
 		return { secret, responseObj };
 	}

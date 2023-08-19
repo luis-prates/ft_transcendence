@@ -1,5 +1,5 @@
 import { ChannelType } from '@prisma/client';
-import { IsNotEmpty, IsOptional, IsEnum, MinLength, IsArray, IsNumber, IsBase64, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsEnum, MinLength, IsArray, IsNumber, IsString } from 'class-validator';
 
 export class CreateChannelDto {
 	@IsOptional()
@@ -59,4 +59,10 @@ export class EditChannelDto {
 		message: 'Password is too short. Minimum length is $constraint1 characters, but actual is $value',
 	})
 	password?: string;
+}
+
+export class MuteUserDto {
+	@IsNotEmpty()
+	@IsNumber()
+	muteDuration: number;
 }

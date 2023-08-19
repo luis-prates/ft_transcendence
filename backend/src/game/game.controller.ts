@@ -13,11 +13,8 @@ import {
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { GameService } from './game.service';
-import { GameDto, GameEndDto } from './dto';
-import { playerInfo } from '../socket/SocketInterface';
-import { GameStatus } from '@prisma/client';
+import { GameDto, GameEndDto, GameIdDto, GameStatusDto } from './dto';
 
-//! deactivated for testing purposes
 @UseGuards(JwtGuard)
 @Controller('api/game')
 export class GameController {
@@ -30,8 +27,8 @@ export class GameController {
 	}
 
 	@Get('active')
-	getActiveGames(@Query('status') status: GameStatus[]) {
-		return this.gameService.getActiveGames(status);
+	getActiveGames(@Query() data: GameStatusDto) {
+		return this.gameService.getActiveGames(data.status);
 	}
 
 	@Get('leaderboard')
@@ -41,7 +38,7 @@ export class GameController {
 
 	@HttpCode(200)
 	@Patch('add/:gameId')
-	addGameUser(@Param('gameId', new ParseUUIDPipe()) gameId: string, @Body() body: playerInfo) {
+	addGameUser(@Param('gameId', new ParseUUIDPipe()) gameId: string, @Body() body: GameIdDto) {
 		return this.gameService.addGameUser(gameId, body);
 	}
 
