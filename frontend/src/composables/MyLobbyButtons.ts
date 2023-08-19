@@ -10,11 +10,6 @@ import { userStore } from '@/stores/userStore';
 
 export function MyLobbyButtons() {
 
-  let battleMenu: boolean = false;
-  let leaderBoardMenu: boolean = false;
-  let messagesMenu: boolean = false;
-  let friendsMenu: boolean = false;
-  
   const onLeaveClick = () => {
     // Handle Leave click
     const socket: Socket = socketClass.getLobbySocket();
@@ -28,63 +23,23 @@ export function MyLobbyButtons() {
 
   // Handle Messages click
   function onMessagesClick(clearNotification: any) {
-    if (menuIsActive())
-      return ;
+    userStore().userSelected = "messages";
     clearNotification();
-    messagesMenu = true;
-    const confirmButton = new Messages();
-    confirmButton.show((value) => {
-      if (value == "EXIT") {
-        messagesMenu = false;
-      }
-    });
   }
 
   // Handle Friends click
   const onFriendsClick = () => {
-    if (menuIsActive())
-      return ;
     userStore().userSelected = "friends";
-    // friendsMenu = true;
-    // const friendsBoard = new FriendsMenu();
-    // friendsBoard.show((value) => {
-    //   if (value == "EXIT") {
-    //     friendsMenu = false;
-    //   }
-    // });
   }
 
   // Handle Battles click
   const onBattlesClick = () => {
-    if (menuIsActive())
-      return ;
-    battleMenu = true;
-    const battleBoard = new BattleMenu();
-    battleBoard.show((value) => {
-      if (value == "EXIT") {
-        battleMenu = false;
-      }
-    });
+    userStore().userSelected = "battles";
   }
 
   // Handle Leaderboard click
   const onLeaderboardClick = () => {
-    if (menuIsActive())
-      return ;
     userStore().userSelected = "leaderboard";
-    // leaderBoardMenu = true;
-    // const leaderBoard = new LeaderBoard();
-    // leaderBoard.show((value) => {
-    //   if (value == "EXIT") {
-    //     leaderBoardMenu = false;
-    //   }
-    // });
-  }
-
-  const menuIsActive = () => {
-    if (messagesMenu || battleMenu || leaderBoardMenu || friendsMenu)
-      return true;
-    return false;
   }
 
   return {

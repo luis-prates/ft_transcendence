@@ -2,7 +2,10 @@
     <ShopCommponent v-if="yourShop" @close-shop="closeMenu()" />
     <LeaderBoardComponent v-if="leaderboard" @close-leaderboard="closeMenu()"/>
     <CreateGameComponent v-if="createGame" :data="createGameData" @close-createGame="closeMenu()"/>
+    
     <FriendsMenuComponent v-if="friendsMenu" @close-friends="closeMenu()"/>
+    <MessageBattleMenuComponent v-if="menu" :menu="menu" @close-menus="closeMenu()"/>
+    
     <MyProfileComponent v-if="myProfile" @close-profile="closeProfile()" />
     <ProfileComponent v-if="yourProfile" :user="userProfile" class="profile_component" @close-profile="closeProfile()" />
 </template>
@@ -16,6 +19,7 @@ import ShopCommponent from "../menus/ShopCommponent.vue";
 import LeaderBoardComponent from "../menus/LeaderBoardComponent.vue";
 import CreateGameComponent from "../menus/CreateGameComponent.vue";
 import FriendsMenuComponent from "../menus/FriendsMenuComponent.vue";
+import MessageBattleMenuComponent from "../menus/MessageBattleMenuComponent.vue";
 
 let userProfile: any = '';
 let createGameData: any = '';
@@ -25,6 +29,7 @@ const yourShop = ref(false);
 const leaderboard = ref(false);
 const createGame = ref(false);
 const friendsMenu = ref(false);
+const menu = ref(0);
 
 async function getUserDetails(userId: number) {
     closeProfile();
@@ -40,6 +45,7 @@ function closeMenu() {
     leaderboard.value = false;
     createGame.value = false;
     friendsMenu.value = false;
+    menu.value = 0;
 }
 
 function closeProfile() {
@@ -72,6 +78,16 @@ watch(() => userStore().userSelected, (newValue, oldValue) => {
         {
             closeMenu();
             friendsMenu.value = true;
+        }
+        else if (newValue == "messages")
+        {
+            closeMenu();
+            menu.value = 1;
+        }
+        else if (newValue == "battles")
+        {
+            closeMenu();
+            menu.value = 2;
         }
         else getUserDetails(newValue);
     }
