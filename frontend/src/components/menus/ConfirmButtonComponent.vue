@@ -1,23 +1,26 @@
 <template>
 	<div class="confirm_button">
-		<div class="confirm_button_text buttons_attribute_tittle">Notification</div>
+		<div class="confirm_button_text buttons_attribute_tittle">{{ props.title}}</div>
 		<div class="confirm_button_text">{{ props.message }}</div>
-		<button class="buttons_attribute">Cancel</button>
-		<button class="buttons_attribute" style="left: 55%;">Confirm</button>
+		<button class="buttons_attribute" @click="closeButton">Cancel</button>
+		<button class="buttons_attribute" style="left: 55%;" @click="handleConfirmClick">Confirm</button>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { TypeSkin, skin } from '@/game/ping_pong/Skin';
+import { getCurrentInstance, onMounted, ref } from 'vue';
 
+const props = defineProps<{ title: string, message: string, confirmFunction: Function}>(); //, type: number, timeOut?: number
+const instance = getCurrentInstance();
 
-const props = defineProps<{ message: string}>(); //, type: number, timeOut?: number
+function closeButton() {
+    instance?.emit("cancelButton");
+}
 
-// function getPaddle() {
-//     const skinPadle = props.paddle ? props.paddle : "";
-
-//     return skin.get_skin_src(TypeSkin.Paddle + "_" + skinPadle);
-// }
+function handleConfirmClick() {
+    props.confirmFunction();
+    closeButton();
+}
 
 </script>
 
@@ -36,14 +39,15 @@ const props = defineProps<{ message: string}>(); //, type: number, timeOut?: num
 }
 
 .confirm_button_text {
-	position: absolute;
-	top: 22.5%;
-	left: 10%;
+    position: absolute;
+    top: 25%;
+    left: 0%;
     word-wrap: break-word;
     max-width: 90%;
-    font-size: 15px;
-    font-family: 'Press Start 2P';
+    font-size: 20px;
+    font-family: "Press Start 2P";
     color: white;
+    text-align: center;
     -webkit-text-stroke-width: 0.9px;
     -webkit-text-stroke-color: black;
 }

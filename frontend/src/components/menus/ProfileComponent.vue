@@ -29,7 +29,7 @@
         </div>
 
         <div class="buttons_midle">
-            <button class="profile_components buttons_attribute challenge-button"
+            <button id="challengeButton" class="profile_components buttons_attribute challenge-button"
                 @click="challengeUser()">Challenge</button>
             <button class="profile_components buttons_attribute message-button" @click="sendMessage()">Send Message</button>
             <button class="profile_components buttons_attribute block-button" @click="blockUser()">{{ getBlock() }}</button>
@@ -61,8 +61,9 @@ import friendImage from "@/assets/images/lobby/menu/friend.png";
 import yourFriendImage from "@/assets/images/lobby/menu/your_friend.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
 import sound_close_tab from "@/assets/audio/close.mp3";
+import default_avatar from "@/assets/chat/avatar.png";
 
-const defaultAvatar = "../../src/assets/chat/avatar.png";
+const defaultAvatar = default_avatar;
 
 const props = defineProps<{ user: any }>();
 
@@ -158,6 +159,11 @@ function blockUser() {
 
 function challengeUser() {
     userStore().challengeUser(user.id, user.nickname);
+    const challenge_button = document.getElementById("challengeButton") as HTMLButtonElement;
+    challenge_button.disabled = true;
+    setTimeout(() => {
+        challenge_button.disabled = false;
+    }, 5000);
 };
 
 function sendMessage() {
@@ -417,7 +423,7 @@ onMounted(() => {
 
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.5s;
+    transition: opacity 0.1s;
 }
 
 .fade-enter,

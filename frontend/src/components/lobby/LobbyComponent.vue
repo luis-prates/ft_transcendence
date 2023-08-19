@@ -53,7 +53,7 @@
   </div>
   <ChatComponent class="chat_component" />
   <MenusComponent />
-  <!-- <ConfirmButtonComponent :message="message"/> -->
+  <ConfirmButtonComponent v-if="confirmButtonActive" :title="buttonTitle" :message="buttonMessage" :confirmFunction="yourConfirmFunction" @cancelButton="onCancel"/>
 </template>
 
 <script setup lang="ts">
@@ -63,7 +63,6 @@ import { Player, Map, Lobby, Game } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
 import { userStore, type Block, type Friendship, type GAME } from "@/stores/userStore";
 import ChatComponent from "@/components/chat/ChatComponent.vue";
-import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import Router from "@/router";
 import { chatStore } from "@/stores/chatStore";
 import { MyLobbyButtons } from "@/composables/MyLobbyButtons";
@@ -78,6 +77,10 @@ let lobby: Lobby | null = null;
 let notification = ref(0);
 const isLoad = ref(false);
 const socket = socketClass.getLobbySocket();
+const confirmButtonActive = ref(false);
+let buttonMessage: string = "";
+let buttonTitle: string = "";
+let yourConfirmFunction: Function;
 
 const {
   onLeaveClick,
@@ -90,6 +93,24 @@ const {
 function clearNotification() {
   notification.value = 0;
 }
+
+function activeButton(title:string, message: string, confirmFunction: Function, timeOut?: number) {
+  buttonTitle = title;
+  buttonMessage = message;
+  confirmButtonActive.value = true;
+  yourConfirmFunction = confirmFunction;
+  
+  if (timeOut)
+  {
+    setTimeout(() => {
+      confirmButtonActive.value = false;
+    }, timeOut * 1000);
+  }
+}
+
+function onCancel () {
+  confirmButtonActive.value = false;
+};
 
 onMounted(() => {
 
@@ -116,16 +137,12 @@ onMounted(() => {
     }, 1000);
   });
   socket.on("invite_request_game", (e: any) => {
-    const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
-    Game.instance.addMenu(confirmButton.menu);
-    confirmButton.show((value) => {
-      if (value == "CONFIRM") {
-        socket.emit("challenge_game", {
+    activeButton(e.playerName, "Challenge You!\n\nYou Accept?", () => {
+      socket.emit("challenge_game", {
           challenged: store.user.id,
           challenger: e.playerId,
         });
-      }
-    });
+    }, 5);
   });
   socket.on("challenge_game", (gameId: string) => {
     console.log("Challenge begin!")

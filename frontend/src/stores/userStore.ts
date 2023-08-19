@@ -1,4 +1,4 @@
-import { reactive, ref } from "vue";
+import { getCurrentInstance, reactive, ref } from "vue";
 import { defineStore } from "pinia";
 import { env } from "../env";
 import axios from "axios";
@@ -818,39 +818,22 @@ export const userStore = defineStore("user", function () {
 
   function challengeUser(challangedUserID: number, challangedUserNickname: string): string {
     const lobbySocket = socketClass.getLobbySocket();
-    const confirmButton = new ConfirmButton(challangedUserNickname, STATUS_CONFIRM.CHALLENGE);
-    confirmButton.show((value) => {
-      if (value == "CONFIRM") {
-        lobbySocket.emit("invite_game", {
-          //Desafiador
-          challengerId: user.id,
-          challengerNickname: user.nickname,
-          //Desafiado
-          challengedId: challangedUserID,
-          challengedNickname: challangedUserNickname,
-        });
 
-        lobbySocket.on("invite_request_game", (e: any) => {
-          const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
-          Game.instance.addMenu(confirmButton.menu);
-          confirmButton.show((value) => {
-            if (value == "CONFIRM") {
-              lobbySocket.emit("challenge_game", {
-                challenged: user.id,
-                challenger: e.playerId,
-              });
-            }
-          });
-        });
-
-        lobbySocket.on("invite_confirm_game", (message: string) => {
-          const confirmButton = new ConfirmButton(message, STATUS_CONFIRM.NOTIFICATION, 5000);
-          Game.instance.addMenu(confirmButton.menu);
-          lobbySocket.off("invite_confirm_game");
-        });
-        return "CONFIRM";
-      } else return "CANCEL";
+    lobbySocket.emit("invite_game", {
+      //Desafiador
+      challengerId: user.id,
+      challengerNickname: user.nickname,
+      //Desafiado
+      challengedId: challangedUserID,
+      challengedNickname: challangedUserNickname,
     });
+
+    lobbySocket.on("invite_confirm_game", (message: string) => {
+      // const confirmButton = new ConfirmButton(message, STATUS_CONFIRM.NOTIFICATION, 5000);
+      // Game.instance.addMenu(confirmButton.menu);
+      lobbySocket.off("invite_confirm_game");
+    });
+
     return "";
   }
 

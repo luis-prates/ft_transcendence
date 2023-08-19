@@ -17,13 +17,6 @@
         <div class="user-label profile_components money">Money: {{ user.money }}₳</div>
         <div class="user-label profile_components wins">Wins: {{ getWins() }}</div>
         <div class="user-label profile_components losts">Losts: {{ getLosts() }}</div>
-        <div class="user-label profile_components qrcode">QRCode:
-            <button id="qrCodeButton" class="qr-button" @click="clickQrCode()">
-                <span class="">{{ getTwoFactor() }}</span>
-            </button>
-            <TwoFactorComponent v-if="showTwoFactor" @two-factor-status="changeTwoFactorStatus()" />
-
-        </div>
 
         <div class="user_paddle profile_components" :style="{ 'background-color': selectedColor }">
             <img v-if="isDefaultPaddle()" id="paddleImage" :src="getPaddle()" class="user_paddle_image"
@@ -85,6 +78,13 @@
             </button>
         </div>
         <div class="close-button button_profile" @click="closeProfile()"></div>
+        <div class="user-label profile_components qrcode">QRCode:
+            <button id="qrCodeButton" class="qr-button" @click="clickQrCode()">
+                <span class="">{{ getTwoFactor() }}</span>
+            </button>
+            <TwoFactorComponent v-if="showTwoFactor" @two-factor-status="changeTwoFactorStatus()" />
+
+        </div>
     </div>
 </template>
 
@@ -577,7 +577,7 @@ onMounted(() => {
 
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.5s;
+    transition: opacity 0.1s;
 }
 
 .fade-enter,
