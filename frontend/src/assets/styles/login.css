@@ -322,3 +322,57 @@ body {
     grid-column: 1 / -1; /* Makes it span both columns */
     text-align: center; /* Centering the text */
 }
+
+.madeWith {
+	display: flex;
+	position: relative;
+	bottom: 0;
+	right: 0;
+	top: 50px;
+	padding: 10px;
+	font-size: 0.75em;
+	color: #8f8f8f;
+	text-decoration: none;
+	align-items: center;
+	gap: 10px;
+}
+
+.madeWith .logo {
+	display: flex;
+	flex-direction: row;
+	margin-right: 0px;    /* space between each tech stack item */
+	margin-left: 0px;    /* space between each tech stack item */
+	text-decoration: none; /* removes underline from link */
+	color: #2c8c99;        /* or whatever color you want for the text */
+	vertical-align: middle; /* aligns the text and the image vertically */
+	align-items: center;
+	background: #ffffff6f;
+	height: 4.2vw;
+	width: 4.2vw;
+	max-width: 50px;
+	max-height: 50px;
+	color: #fff;
+	border: 2px solid #fff;
+	border-radius: 15px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+	transition: all 0.3s ease-in-out;
+	justify-content: center;
+}
+
+.madeWith .logo:hover {
+	background: #ffffff;
+	color: #2c8c99;
+	border: 2px solid #2c8c99;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.madeWith .logo img {
+	width: 3vw;           /* example width; adjust as needed */
+	height: 3vw;          /* example height; adjust as needed */
+	max-width: 40px;      /* example max-width; adjust as needed */
+	max-height: 40px;     /* example max-height; adjust as needed */
+	margin-right: 8px;     /* space between image and the name */
+	margin-left: 8px;     /* space between image and the name */
+	vertical-align: middle; /* aligns the image with the text */
+	align-items: center;
+}

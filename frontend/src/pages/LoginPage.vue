@@ -27,13 +27,33 @@
 			</div>
 			<div class="credits">
 				<span class="by">Made by:</span> 
-				<a href="https://profile.intra.42.fr/users/edos-san" class="name" target="_blank">edos-san</a> 
 				<a href="https://profile.intra.42.fr/users/ede-alme" class="name" target="_blank">ede-alme</a> 
+				<a href="https://profile.intra.42.fr/users/edos-san" class="name" target="_blank">edos-san</a> 
 				<a href="https://profile.intra.42.fr/users/hvan-hov" class="name" target="_blank">hvan-hov</a> 
 				<a href="https://profile.intra.42.fr/users/lprates" class="name" target="_blank">lprates</a> 
 				<a href="https://profile.intra.42.fr/users/rteles" class="name" target="_blank">rteles</a>
 			</div>
 		</form>
+	</div>
+	<div class="madeWith" href>
+		<a href="https://vuejs.org/" class="logo" target="_blank">
+			<img src="@/assets/images/login/Vue_Logo.svg" alt="Vue Logo">
+		</a> 
+		<a href="https://vitejs.dev/" class="logo" target="_blank">
+			<img src="@/assets/images/login/vite_logo.svg" alt="Vite Logo">
+		</a> 
+		<a href="https://socket.io/" class="logo" target="_blank">
+			<img src="@/assets/images/login/socketio_logo.svg" alt="Socket.io Logo">
+		</a> 
+		<a href="https://www.typescriptlang.org/" class="logo" target="_blank">
+			<img src="@/assets/images/login/Typescript_logo_2020.svg" alt="Typescript Logo">
+		</a> 
+		<a href="https://nestjs.com/" class="logo" target="_blank">
+			<img src="@/assets/images/login/NestJS_logo.svg" alt="NestJs Logo">
+		</a>
+		<a href="https://www.prisma.io/" class="logo" target="_blank">
+			<img src="@/assets/images/login/prisma-logo-icon.svg" alt="Prisma Logo">
+		</a>
 	</div>
 </template>
 
