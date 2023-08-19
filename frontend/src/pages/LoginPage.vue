@@ -6,8 +6,8 @@
 	<div class="loginElement" href>
 		<span class="borderLine"></span>
 		<form>
-			<h2>Sign In</h2>
-			<div class="inputBox">
+			<h2>Welcome to Transcendence</h2>
+			<!-- <div class="inputBox">
 				<input type="number" required="true" v-model="objectId" placeholder=" " >
 				<span>User Id (for testing)</span>
 				<i></i>
@@ -17,13 +17,21 @@
 				<span>Email Test</span>
 				<i></i>
 			</div>
-			<!-- <div class="links">
+			<div class="links">
 				<a href="#">Forgot password</a>
 				<a href="#">Signup</a>
 			</div> -->
 			<div class="loginBox">
-				<input type="submit" value="Login" @click="tes($event)" :disabled="!objectId">
+				<!-- <input type="submit" value="Login" @click="tes($event)" :disabled="!objectId"> -->
 				<a class="login" :href="env.REDIRECT_URI_42_API" target="_self">Login with</a>
+			</div>
+			<div class="credits">
+				<span class="by">Made by:</span> 
+				<a href="https://profile.intra.42.fr/users/edos-san" class="name" target="_blank">edos-san</a> 
+				<a href="https://profile.intra.42.fr/users/ede-alme" class="name" target="_blank">ede-alme</a> 
+				<a href="https://profile.intra.42.fr/users/hvan-hov" class="name" target="_blank">hvan-hov</a> 
+				<a href="https://profile.intra.42.fr/users/lprates" class="name" target="_blank">lprates</a> 
+				<a href="https://profile.intra.42.fr/users/rteles" class="name" target="_blank">rteles</a>
 			</div>
 		</form>
 	</div>
