@@ -12,14 +12,17 @@
 		</div>
 		<div class="close-button" @click="closerBoard()"></div>
 	</div>
+	<MessageListComponent v-if="messageList" :menu="menuType" @close-message-list="closeMenu()"/>
+	<!-- <BattleListComponent v-if="battleList" :menu="menuType" @close-battleList="closeMenu()"/> -->
 </template>
 
 <script setup lang="ts">
-import { getCurrentInstance, onMounted } from 'vue';
+import { getCurrentInstance, onMounted, ref } from 'vue';
 import sound_close_tab from "@/assets/audio/close.mp3";
 
 import messageImage from "@/assets/chat/dm_messages.png";
 import battleImage from "@/assets/images/lobby/menu/battle.png";
+import MessageListComponent from "../menus/MessageListComponent.vue";
 
 const props = defineProps<{ menu: number }>();
 
@@ -28,6 +31,9 @@ const battle_image = battleImage;
 const close_sound = new Audio(sound_close_tab);
 
 const instance = getCurrentInstance();
+const messageList = ref(false);
+const battleList = ref(false);
+const menuType = ref(0);
 
 function closerBoard() {
 	close_sound.play();
@@ -45,13 +51,23 @@ function getBackgroundColor()
 function clickButton(value: number) {
 	close_sound.play();
 
+	closeMenu();
 	if (props.menu == 1)
 	{
-
+		messageList.value = true;
+		menuType.value = value;
 	}
 	else if (props.menu == 2)
 	{
+		if (value == 3)
+		{
 
+		}
+		else
+		{
+			battleList.value = true;
+			menuType.value = value;
+		}
 	}
 }
 
@@ -93,6 +109,14 @@ function getImage()
 	}
 }
 
+function closeMenu()
+{
+	messageList.value = false;
+	battleList.value = false;
+	menuType.value = 0;
+}
+
+
 onMounted(async () => {
 		
 });
@@ -122,7 +146,7 @@ onMounted(async () => {
 
 .friend_title {
 	position: absolute;
-	left: 50%;
+	left: 54.5%;
 	transform: translate(-50%);
 	top: 1%;
 	font-size: 20px;
@@ -156,7 +180,6 @@ onMounted(async () => {
 	-webkit-text-stroke-width: 1.1px;
 	-webkit-text-stroke-color: black;
 }
-
 
 .buttons_attribute:hover {
     cursor: pointer;
