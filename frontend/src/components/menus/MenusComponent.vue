@@ -1,9 +1,10 @@
 <template>
-    <MyProfileComponent v-if="myProfile" @close-profile="closeMenu()" />
-    <ProfileComponent v-if="yourProfile" :user="userProfile" class="profile_component" @close-profile="closeMenu()" />
     <ShopCommponent v-if="yourShop" @close-shop="closeMenu()" />
     <LeaderBoardComponent v-if="leaderboard" @close-leaderboard="closeMenu()"/>
     <CreateGameComponent v-if="createGame" :data="createGameData" @close-createGame="closeMenu()"/>
+    <FriendsMenuComponent v-if="friendsMenu" @close-friends="closeMenu()"/>
+    <MyProfileComponent v-if="myProfile" @close-profile="closeProfile()" />
+    <ProfileComponent v-if="yourProfile" :user="userProfile" class="profile_component" @close-profile="closeProfile()" />
 </template>
 
 <script setup lang="ts">
@@ -14,6 +15,7 @@ import MyProfileComponent from "../menus/MyProfileComponent.vue";
 import ShopCommponent from "../menus/ShopCommponent.vue";
 import LeaderBoardComponent from "../menus/LeaderBoardComponent.vue";
 import CreateGameComponent from "../menus/CreateGameComponent.vue";
+import FriendsMenuComponent from "../menus/FriendsMenuComponent.vue";
 
 let userProfile: any = '';
 let createGameData: any = '';
@@ -22,8 +24,10 @@ const yourProfile = ref(false);
 const yourShop = ref(false);
 const leaderboard = ref(false);
 const createGame = ref(false);
+const friendsMenu = ref(false);
 
 async function getUserDetails(userId: number) {
+    closeProfile();
     userProfile = await userStore().getUserProfile(userId);
     userProfile.historic = await userStore().getUserGames(userId);
     yourProfile.value = true;
@@ -32,11 +36,15 @@ async function getUserDetails(userId: number) {
 function closeMenu() {
     userStore().userSelected = undefined;
 
-    yourProfile.value = false;
-    myProfile.value = false;
     yourShop.value = false;
     leaderboard.value = false;
     createGame.value = false;
+    friendsMenu.value = false;
+}
+
+function closeProfile() {
+    yourProfile.value = false;
+    myProfile.value = false;
 }
 
 onMounted(() => {
@@ -45,12 +53,26 @@ onMounted(() => {
 watch(() => userStore().userSelected, (newValue, oldValue) => {
     console.log("userSelected changed:", newValue, oldValue);
     if (newValue) {
-        myProfile.value = false;
-        yourShop.value = false;
-        yourProfile.value = false;
-        if (newValue == "me")   myProfile.value = true;
-        else if (newValue == "shop")    yourShop.value = true;
-        else if (newValue == "leaderboard") leaderboard.value = true;
+        if (newValue == "me")
+        {
+            closeProfile();
+            myProfile.value = true;
+        }
+        else if (newValue == "shop")
+        {
+            closeMenu();
+            yourShop.value = true;
+        }
+        else if (newValue == "leaderboard")
+        {
+            closeMenu();
+            leaderboard.value = true;
+        }
+        else if (newValue == "friends")
+        {
+            closeMenu();
+            friendsMenu.value = true;
+        }
         else getUserDetails(newValue);
     }
 },

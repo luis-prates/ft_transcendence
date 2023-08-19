@@ -44,13 +44,14 @@ export function MyLobbyButtons() {
   const onFriendsClick = () => {
     if (menuIsActive())
       return ;
-    friendsMenu = true;
-    const friendsBoard = new FriendsMenu();
-    friendsBoard.show((value) => {
-      if (value == "EXIT") {
-        friendsMenu = false;
-      }
-    });
+    userStore().userSelected = "friends";
+    // friendsMenu = true;
+    // const friendsBoard = new FriendsMenu();
+    // friendsBoard.show((value) => {
+    //   if (value == "EXIT") {
+    //     friendsMenu = false;
+    //   }
+    // });
   }
 
   // Handle Battles click

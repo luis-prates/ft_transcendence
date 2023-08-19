@@ -4,11 +4,11 @@
 		<transition name="fade" mode="out-in">
             <div class="grid-container" :key="currentPage">
 				<div v-for="(player, index) in currentPageBoard()" :key="index" class="grid-item" @click="openProfile(player.userId)">
-					<div class="player-content" :style="{ backgroundColor: getColorRank(player), '-webkit-text-stroke-color': getColorBorder(player) }">
-						<p class="player_rank">{{ player.rank }}</p>
+					<div class="player-content" :style="{ backgroundColor: getColorRank(player), '-webkit-text-stroke-color': getColorBorder(player), color: getColor(player) }">
+						<p class="player_rank" :style="{color: getColor(player)}">{{ player.rank }}</p>
 						<img class="player_image" :src="getPhoto(player)">
 						<p class="player-nickname">{{ player.nickname }}</p>
-						<p class="player-points">{{ player.points }}</p>
+						<p class="player-points" :style="{color: getColor(player)}">{{ player.points }}</p>
 					</div>
 				</div>
             </div>
@@ -73,11 +73,14 @@ function getColorBorder(player: any)
 	return player.userId == userStore().user.id ? "red" : "black";
 }
 
+function getColor(player: any)
+{
+	return player.userId == userStore().user.id ? "gold" : "silver";
+}
+
 function openProfile(userId: number)
 {
 	close_sound.play();
-    instance?.emit("close-leaderboard");
-	console.log("profile: ", userId)
 	if (userId != userStore().user.id)
 		userStore().userSelected = userId;
 	else
@@ -116,16 +119,16 @@ onMounted(async () => {
 }
 
 .grid-container {
-    position: absolute;
-    left: 5%;
-    top: 11%;
-    width: 90%;
-    height: 75%;
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 1%;
-    align-items: center;
-    font-size: 10px;
+	position: absolute;
+	left: 5%;
+	top: 11%;
+	width: 90%;
+	height: 75%;
+	display: grid;
+	gap: 1%;
+	font-size: 10px;
+	grid-template-rows: repeat(auto-fill, minmax(37px, 1fr));
+	align-items: center;
 }
 
 .leader_tittle {
@@ -269,8 +272,5 @@ onMounted(async () => {
     background-color: darkred;
     color: white;
 }
-
-
-
 
 </style>

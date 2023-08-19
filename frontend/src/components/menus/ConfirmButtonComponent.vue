@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { getCurrentInstance, onMounted, ref } from 'vue';
+import { getCurrentInstance } from 'vue';
 
 const props = defineProps<{ title: string, message: string, confirmFunction: Function}>(); //, type: number, timeOut?: number
 const instance = getCurrentInstance();
