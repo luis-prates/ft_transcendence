@@ -15,13 +15,13 @@
         <!-- Add chat list items here -->
         <div class="chat_filter">
           <button id="dmButton" class="chat_filter_button" @click="changeFilter('dm')">
-            <img class="chat_filter_img" src="src/assets/chat/dm_messages.png" title="Direct Messages" />
+            <img class="chat_filter_img" src="@/assets/chat/dm_messages.png" title="Direct Messages" />
           </button>
           <button id="insideButton" class="chat_filter_button" @click="changeFilter('inside')">
-            <img class="chat_filter_img" src="src/assets/chat/my_channels.png" title="My Channels" />
+            <img class="chat_filter_img" src="@/assets/chat/my_channels.png" title="My Channels" />
           </button>
           <button id="allButton" class="chat_filter_button" @click="changeFilter('all')">
-            <img class="chat_filter_img" src="src/assets/chat/all_channels.png" title="Other Channels" />
+            <img class="chat_filter_img" src="@/assets/chat/all_channels.png" title="Other Channels" />
           </button>
         </div>
         <ul class="contacts" @click="toggleStatus">
@@ -40,13 +40,13 @@
         <ul class="contacts">
           <div v-if="imAdmin" class="chat_filter">
             <button @click="setShowUsers(1)"  class="chat_filter_button">
-              <img class="chat_filter_img" src="src/assets/chat/userslist.png" title="Users" />
+              <img class="chat_filter_img" src="@/assets/chat/userslist.png" title="Users" />
             </button>
             <button @click="setShowUsers(2)"  class="chat_filter_button">
-              <img class="chat_filter_img" src="src/assets/chat/blacklist.png" title="Users Banned" />
+              <img class="chat_filter_img" src="@/assets/chat/blacklist.png" title="Users Banned" />
             </button>
             <button @click="setShowUsers(3)"  class="chat_filter_button">
-              <img class="chat_filter_img" src="src/assets/chat/add_user.png" title="Add User" />
+              <img class="chat_filter_img" src="@/assets/chat/add_user.png" title="Add User" />
             </button>
           </div>
           <div v-if="showUsers">

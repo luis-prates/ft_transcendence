@@ -11,7 +11,7 @@
         </div>
         <div class="video_cam">
           <button @click="toggleStatus" class="close_chat">
-            <img class="close_chat_img" src="src/assets/chat/close_channel.png" title="Close" />
+            <img class="close_chat_img" src="@/assets/chat/close_channel.png" title="Close" />
           </button>
         </div>
       </div>
@@ -57,7 +57,7 @@
         </div>
         <div class="video_cam">
           <button @click="toggleStatus" class="close_chat">
-            <img class="close_chat_img" src="src/assets/chat/close_channel.png" title="Close" />
+            <img class="close_chat_img" src="@/assets/chat/close_channel.png" title="Close" />
           </button>
         </div>
       </div>
@@ -87,10 +87,10 @@
         </div>
         <div class="video_cam">
           <button v-if=imOwner() @click="editChannel" class="config_chat">
-            <img class="config_chat_img" src="src/assets/chat/edit_channel.png" title="Edit" />
+            <img class="config_chat_img" src="@/assets/chat/edit_channel.png" title="Edit" />
           </button>
           <button @click="toggleStatus" class="close_chat">
-            <img class="close_chat_img" src="src/assets/chat/close_channel.png" title="Close" />
+            <img class="close_chat_img" src="@/assets/chat/close_channel.png" title="Close" />
           </button>
         </div>
       </div>
@@ -109,7 +109,7 @@
         <textarea v-model="text" name="" @keyup.enter="send" class="form-control type_msg" placeholder="Type your message..." style="resize: none"></textarea>
         <div class="input-group-append">
           <span class="input-group-text send_btn" @click="send"><i class="fas fa-location-arrow"></i>
-            <img class="send_img" src="src/assets/chat/send.png" title="Send" />
+            <img class="send_img" src="@/assets/chat/send.png" title="Send" />
           </span>
         </div>
       </div>
@@ -142,8 +142,8 @@ const { selected } = storeToRefs(store);
 const chatSocket: Socket = socketClass.getChatSocket();
 console.log("Socket criado na instancia do componente: ", chatSocket);
 
-//const defaultAvatar = "src/assets/chat/chat_avatar.png";
-//const defaultUser = "src/assets/chat/avatar.png";
+//const defaultAvatar = "@/assets/chat/chat_avatar.png";
+//const defaultUser = "@/assets/chat/avatar.png";
 let defaultAvatar = ref(chat_avatar);
 
 //Check if the user is the owner of channel
