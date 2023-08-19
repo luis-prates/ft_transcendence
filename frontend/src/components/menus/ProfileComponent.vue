@@ -68,17 +68,21 @@ const props = defineProps<{ user: any }>();
 
 const instance = getCurrentInstance();
 const user = props.user;
-const user_matches = ref([]) as any;
+const user_matches = ref(user.historic) as any;
 const currentPage = ref(0);
 const matchesPerPage = 4;
 const close_sound = new Audio(sound_close_tab);
 
 function getWins() {
-    return user_matches.value.filter((history: GAME) => history.winnerId == user.id).length;
+    if (user_matches.value)
+        return user_matches.value.filter((history: GAME) => history.winnerId == user.id).length;
+    return 0;
 }
 
 function getLosts() {
-    return user_matches.value.filter((history: GAME) => history.loserId == user.id).length;
+    if (user_matches.value)
+        return user_matches.value.filter((history: GAME) => history.loserId == user.id).length;
+    return 0;
 }
 
 function getPhoto() {
@@ -170,8 +174,10 @@ function getStatus() {
 function currentPageMatches() {
     const startIndex = currentPage.value * matchesPerPage;
     const endIndex = startIndex + matchesPerPage;
-    const matches = user_matches.value;
-    return matches.slice(startIndex, endIndex);
+    const matches = user_matches.value ? user_matches.value : [];
+    if (matches.length > 0)
+        return matches.slice(startIndex, endIndex);
+    return [];
 }
 
 function changePage(step: number) {
@@ -188,12 +194,7 @@ function closeProfile() {
     instance?.emit("close-profile");
 }
 
-async function getMatch() {
-    user_matches.value = user.historic;
-}
-
 onMounted(() => {
-    getMatch();
     currentPageMatches();
 });
 

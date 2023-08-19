@@ -31,8 +31,9 @@
 import { ref, getCurrentInstance, onMounted } from 'vue';
 import { userStore } from '@/stores/userStore';
 import sound_close_tab from "@/assets/audio/close.mp3";
+import default_Avatar from "@/assets/chat/avatar.png";
 
-const defaultAvatar = "../../src/assets/chat/avatar.png";
+const defaultAvatar = default_Avatar;
 const close_sound = new Audio(sound_close_tab);
 const instance = getCurrentInstance();
 

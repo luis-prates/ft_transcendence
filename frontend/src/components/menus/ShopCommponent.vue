@@ -78,7 +78,7 @@ function buyItem(item: ProductSkin) {
 	const ameliaSay = document.getElementById("amelia_say") as HTMLDivElement;
 
 	if (youHaveThis(item))
-		ameliaSay.innerText = "You have already this Skin!";
+		ameliaSay.innerText = "You already have this Skin!";
     else if (user.money >= item.price) {
 		if (item.type == TypeSkin.Paddle) user.infoPong.skin.paddles.push(item.name as never);
         else if (item.type == TypeSkin.Table) user.infoPong.skin.tables.push(item.name as never);

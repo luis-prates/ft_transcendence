@@ -26,6 +26,7 @@ const createGame = ref(false);
 async function getUserDetails(userId: number) {
     userProfile = await userStore().getUserProfile(userId);
     userProfile.historic = await userStore().getUserGames(userId);
+    yourProfile.value = true;
 }
 
 function closeMenu() {
@@ -50,12 +51,7 @@ watch(() => userStore().userSelected, (newValue, oldValue) => {
         if (newValue == "me")   myProfile.value = true;
         else if (newValue == "shop")    yourShop.value = true;
         else if (newValue == "leaderboard") leaderboard.value = true;
-        else {
-            getUserDetails(newValue);
-            setTimeout(() => {
-                yourProfile.value = true;
-            }, 100);
-        }
+        else getUserDetails(newValue);
     }
 },
 { deep: true });

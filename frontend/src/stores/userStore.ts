@@ -176,7 +176,7 @@ export const userStore = defineStore("user", function () {
         user.infoPong.level = response.data.level;
         user.infoPong.xp = response.data.xp;
         user.infoPong.color = response.data.color;
-        user.infoPong.skin.default.tableColor = response.data.tableColorEquipped;
+        user.infoPong.skin.default.tableColor = response.data.tableColorEquipped ? response.data.tableColorEquipped : "#1e8c2f";
         user.infoPong.skin.default.tableSkin = response.data.tableSkinEquipped;
         user.infoPong.skin.default.paddle = response.data.paddleSkinEquipped;
         user.infoPong.skin.tables = response.data.tableSkinsOwned;
@@ -242,7 +242,7 @@ export const userStore = defineStore("user", function () {
         user.infoPong.level = response.data.dto.level;
         user.infoPong.xp = response.data.dto.xp;
         user.infoPong.color = response.data.dto.color;
-        user.infoPong.skin.default.tableColor = response.data.dto.tableColorEquipped;
+        user.infoPong.skin.default.tableColor = response.data.dto.tableColorEquipped ? response.data.dto.tableColorEquipped : "#1e8c2f";
         user.infoPong.skin.default.tableSkin = response.data.dto.tableSkinEquipped;
         user.infoPong.skin.default.paddle = response.data.dto.paddleSkinEquipped;
         user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
@@ -352,10 +352,10 @@ export const userStore = defineStore("user", function () {
       .catch((err) => console.error(err));
   }
 
-  async function updateTableDefault(tableColor: string, tableSkin: string) {
+  async function updateTableDefault(tableColor: string, tableSkin?: string) {
     let body = {} as any;
     body.color = tableColor;
-    body.skin = tableSkin;
+    body.skin = tableSkin ? tableSkin : "";
 
     const options = {
       method: "PATCH",
