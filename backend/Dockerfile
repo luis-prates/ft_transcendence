@@ -3,14 +3,16 @@ FROM node:alpine AS base
 
 WORKDIR /app
 
-COPY package.json ./
+COPY package*.json ./
 
 RUN npm install
 
 # ---- Copy Files/Build ----
 FROM base AS build
 
-WORKDIR /app
+# WORKDIR /app
+
+RUN npm install -g @nestjs/cli
 
 COPY . .
 
@@ -25,22 +27,21 @@ RUN npm install pm2 -g
 
 WORKDIR /app
 
-# Copy script and make it executable
-COPY docker-entrypoint.sh .
-
-RUN chmod +x ./docker-entrypoint.sh
-
 # Set the entry point to our script
-ENTRYPOINT [ "./docker-entrypoint.sh" ]
 
 COPY --from=build /app/dist ./dist
 
-COPY --from=base /app/node_modules ./node_modules
+COPY --from=build /app/node_modules ./node_modules
 
 COPY --from=build /app/prisma ./prisma
 
-COPY package*.json ./
+COPY --from=build package*.json ./
 
 # CMD [ "npm", "run", "start:prod" ]
+
+# Copy script and make it executable
+COPY docker-entrypoint.sh .
+RUN chmod +x ./docker-entrypoint.sh
+ENTRYPOINT [ "./docker-entrypoint.sh" ]
 
 CMD [ "pm2-runtime", "start", "dist/main.js" ]
