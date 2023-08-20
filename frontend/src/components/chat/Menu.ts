@@ -150,7 +150,7 @@ sendDM = async (user : ChatUser) => {
     const myId = userStore().user.id;
     if (myId == channel.ownerId)
       return true;
-    const userId = userChat?.id;
+    const userId = userChat.id;
     const iAmInChannel = channel.users.find((userChat: ChatUser) => userChat.id == myId);
     if (iAmInChannel && iAmInChannel.isAdmin && userId != channel.ownerId)
     {

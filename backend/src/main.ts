@@ -28,16 +28,5 @@ async function bootstrap() {
 	app.use(passport.initialize());
 	app.use(passport.session());
 	await app.listen(3000);
-	// const io = new Server(app.getHttpServer(), {
-	// 	cors: {
-	// 		origin: '*',
-	// 	},
-	// 	pingInterval: 2000,
-	// 	pingTimeout: 5000,
-	// });
-	// const lobby = new Lobby(io);
-	// io.on('connection', (socket) => {
-	// 	lobby.connection(socket);
-	// });
 }
 bootstrap();
