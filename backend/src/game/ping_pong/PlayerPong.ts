@@ -107,7 +107,6 @@ export class Player_Pong {
 			x: this.x,
 			y: this.y,
 			score: this.score,
-			avatar: this.avatar,
 			color: this.color,
 		});
 		this.fpsUpdate = 0;
