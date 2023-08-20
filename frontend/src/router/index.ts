@@ -30,11 +30,6 @@ const routes = [
       objectId: route.query.objectId,
     }),
   },
-  //   {
-  //     path: "/about",
-  //     name: "About",
-  //     component: About,
-  //   },
 ];
 
 const router = createRouter({

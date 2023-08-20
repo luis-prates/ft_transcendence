@@ -1,4 +1,4 @@
-import { Game, Map, type GameObject, type Rectangle } from "@/game";
+import { Game, Map, type GameObject, type Rectangle, Npc } from "@/game";
 
 import { ref } from "vue";
 
@@ -8,6 +8,7 @@ export class MapObject extends Map {
   public static selection: Rectangle | null = null;
   public static debugView = ref(true);
   public static datas: { gamaObject: GameObject; data: any }[] = [];
+  private gameObjetSelect: GameObject | null = null;
 
   public static startPossition: { x: number; y: number } = { x: 153, y: 738 };
   constructor(data?: any) {
@@ -68,7 +69,19 @@ export class MapObject extends Map {
     }
   }
 
+  keydown(key: string): void {
+    key = key.toUpperCase();
+    if (this.gameObjetSelect && this.gameObjetSelect instanceof Npc) {
+      let x = this.gameObjetSelect.x + (key == "A" ? -1 : key == "D" ? 1 : 0);
+      let y = this.gameObjetSelect.y + (key == "W" ? -1 : key == "S" ? 1 : 0);
+      (this.gameObjetSelect as Npc).setLookAt({ x, y } as any);
+      const data = MapObject.datas.find((data) => data.gamaObject == this.gameObjetSelect);
+      if (data) data.data["animation"] = this.gameObjetSelect.animation;
+    }
+  }
+
   mouseClick(x: number, y: number, button: number): void {
+    this.gameObjetSelect = null;
     console.log("event.offsetX, event.offsetY, event.button");
     if (MapObject.action.value === 0 || MapObject.action.value === 5) {
       if (MapObject.selection === null) MapObject.selection = { x: x, y: y, w: Map.SIZE, h: Map.SIZE };
@@ -107,6 +120,12 @@ export class MapObject extends Map {
     else if (button == 2) {
       if (gameObject && gameObject.type != "player") Game.instance.removeGameObject(gameObject);
     }
+  }
+
+  checkColision(x: number, y: number): boolean {
+    x = Math.floor(x / Map.SIZE) * Map.SIZE;
+    y = Math.floor(y / Map.SIZE) * Map.SIZE;
+    return Game.MouseColision(x, y) ? true : false;
   }
 
   public setGameObjectss(x: number, y: number, button: number) {

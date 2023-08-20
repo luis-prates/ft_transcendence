@@ -8,9 +8,6 @@
     </div>
     <div class="table">
       <img src="@/assets/images/lobby/table_2aaa15.png" />
-      <img src="@/assets/images/lobby/table_efc120.png" />
-      <img src="@/assets/images/lobby/table_de1bda.png" />
-      <button @click="test">Test</button>
     </div>
 
     <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoad" />
@@ -258,7 +255,7 @@ function test() {
   top: 70px;
   /* z-index: -1; */
   position: absolute;
-  width: 150px;
+  width: 55px;
   height: 90px;
   right: 5px;
   top: 5px;
