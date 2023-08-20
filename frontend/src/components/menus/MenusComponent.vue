@@ -8,6 +8,8 @@
     
     <MyProfileComponent v-if="myProfile" @close-profile="closeProfile()" />
     <ProfileComponent v-if="yourProfile" :user="userProfile" class="profile_component" @close-profile="closeProfile()" />
+
+    <SpeechBubbleComponent v-if="speechBubbleActive" :npc="npcSelected" :message="npcMessage" @close-bubble="closeBubble()"/>
 </template>
 
 <script setup lang="ts">
@@ -20,6 +22,7 @@ import LeaderBoardComponent from "../menus/LeaderBoardComponent.vue";
 import CreateGameComponent from "../menus/CreateGameComponent.vue";
 import FriendsMenuComponent from "../menus/FriendsMenuComponent.vue";
 import MessageBattleMenuComponent from "../menus/MessageBattleMenuComponent.vue";
+import SpeechBubbleComponent from "../menus/SpeechBubbleComponent.vue";
 
 let userProfile: any = '';
 let createGameData: any = '';
@@ -30,6 +33,10 @@ const leaderboard = ref(false);
 const createGame = ref(false);
 const friendsMenu = ref(false);
 const menu = ref(0);
+const speechBubbleActive = ref(false);
+
+const npcSelected = ref();
+const npcMessage = ref("");
 
 async function getUserDetails(userId: number) {
     closeProfile();
@@ -51,6 +58,12 @@ function closeMenu() {
 function closeProfile() {
     yourProfile.value = false;
     myProfile.value = false;
+}
+
+function closeBubble() {
+    userStore().userSelected = undefined;
+    userStore().npcSelected = undefined;
+    speechBubbleActive.value = false;
 }
 
 onMounted(() => {
@@ -88,6 +101,12 @@ watch(() => userStore().userSelected, (newValue, oldValue) => {
         {
             closeMenu();
             menu.value = 2;
+        }
+        else if (newValue == "npc")
+        {
+            speechBubbleActive.value = true;
+            npcSelected.value = userStore().npcSelected;
+            npcMessage.value = userStore().npcSelected.message;
         }
         else getUserDetails(newValue);
     }

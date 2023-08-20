@@ -108,6 +108,7 @@ export interface User {
 
 export const userStore = defineStore("user", function () {
   const userSelected = ref<any | undefined>(undefined);
+  const npcSelected = ref<any | undefined>(undefined);
   const newGame = ref<any | undefined>(undefined);
 
   const randomColor = () => {
@@ -840,6 +841,7 @@ export const userStore = defineStore("user", function () {
   return {
     user,
     userSelected,
+    npcSelected,
     newGame,
     login,
     loginTest,

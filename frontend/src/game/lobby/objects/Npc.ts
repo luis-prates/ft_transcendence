@@ -5,6 +5,9 @@ import { Shop } from "../../Menu/Shop";
 import { userStore } from "@/stores/userStore";
 
 export class Npc extends Character {
+  public message: string;
+  public timeOut: number;
+
   constructor() {
     super();
     this.nickname = "Shop Amelia";
@@ -12,6 +15,8 @@ export class Npc extends Character {
     this.animation.sx = 144;
     this.x = 1850;
     this.y = 700;
+    this.message = "Bem vindos amigos!";
+    this.timeOut = 10;
   }
 
   private pontoEvento = [
@@ -34,6 +39,8 @@ export class Npc extends Character {
   public interaction(gameObject: Character): void {
     this.setLookAt(gameObject);
     userStore().userSelected = "shop";
+   /* userStore().npcSelected = this;
+    userStore().userSelected = "npc";*/
     // Game.instance.addMenu(new Shop().menu);
   }
 }

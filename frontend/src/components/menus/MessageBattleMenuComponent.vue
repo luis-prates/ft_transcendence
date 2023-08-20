@@ -28,7 +28,6 @@ import sound_close_tab from "@/assets/audio/close.mp3";
 import { userStore } from '@/stores/userStore';
 import Router from '@/router';
 
-
 const props = defineProps<{ menu: number }>();
 const emits = defineEmits(['close-menus-mb']);
 
