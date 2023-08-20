@@ -67,7 +67,7 @@
                     </div>
                     <div class="gridpaddle-container" :key="currentPage">
                         <div v-for="(paddle, index) in currentPaddles()" :key="index" class="gridpaddle-item">
-                            <SkinComponent :skin="paddle" :type="getTypeSkin()"/>
+                            <SkinComponent :skin="paddle" :type="getTypeSkin()" />
                         </div>
                     </div>
                     <div class="pagination-buttons">
@@ -201,37 +201,75 @@ function changePage(step: number) {
     }
 }
 
-async function handleFileChange(event: any) {
+// async function handleFileChange(event: any) {
+//     if (event.target) {
+//         let fileForm = new FormData();
+//         const selectedFile = event.target.files[0];
+
+//         fileForm.append("image", selectedFile, selectedFile.name);
+//         try {
+//             const response = await fetch("https://api.imgbb.com/1/upload?key=d9a1c108b92558d90d3b1bd9f59a507c", {
+//                 method: "POST",
+//                 body: fileForm,
+//             });
+
+//             if (response.ok) {
+
+
+//                 const data = await response.json();
+//                 console.log("response data:", data);
+//                 const avatarImage = document.getElementById("avatarImage") as HTMLImageElement;
+//                 avatarImage.src = data.data.display_url;
+
+//                 user.image = data.data.display_url;
+//                 userStore().updateProfile();
+//             } else {
+//                 throw new Error("Erro na requisição");
+//             }
+//         } catch (error) {
+//             console.error(error);
+//             new ConfirmButton(error, STATUS_CONFIRM.ERROR, 10);
+//         }
+//     }
+// }
+
+
+function handleFileChange(event: any) {
     if (event.target) {
-        let fileForm = new FormData();
-        const selectedFile = event.target.files[0];
-
-        fileForm.append("image", selectedFile, selectedFile.name);
-        try {
-            const response = await fetch("https://api.imgbb.com/1/upload?key=d9a1c108b92558d90d3b1bd9f59a507c", {
-                method: "POST",
-                body: fileForm,
-            });
-
-            if (response.ok) {
-
-
-                const data = await response.json();
-                console.log("response data:", data);
-                const avatarImage = document.getElementById("avatarImage") as HTMLImageElement;
-                avatarImage.src = data.data.display_url;
-
-                user.image = data.data.display_url;
-                userStore().updateProfile();
-            } else {
-                throw new Error("Erro na requisição");
-            }
-        } catch (error) {
-            console.error(error);
-            new ConfirmButton(error, STATUS_CONFIRM.ERROR, 10);
+        const selectedFile = event.target.files[0] as File;
+        if (selectedFile) {
+            convertFileToBase64(selectedFile)
+                .then(base64String => {
+                    const avatarImage = document.getElementById("avatarImage") as HTMLImageElement;
+                    avatarImage.src = base64String;
+                    userStore().user.image = base64String;
+                    userStore().updateProfile();
+                    console.log("image uploaded!")
+                })
+                .catch(error => {
+                    console.error('Error converting file to base64:', error);
+                });
         }
     }
 }
+
+// Convert file to base64 string
+function convertFileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            if (typeof reader.result === "string") {
+                resolve(reader.result);
+            } else {
+                reject(new Error("Invalid file type"));
+            }
+        };
+        reader.onerror = (error) => {
+            reject(error);
+        };
+        reader.readAsDataURL(file);
+    });
+};
 
 function cleanInput(event: Event) {
     isNicknameDiferent();
@@ -312,11 +350,11 @@ function closeButton(index: number) {
             button_paddle.disabled = false;
         }, 200);
     }
-	close_sound.play();
+    close_sound.play();
 }
 
 function closeProfile() {
-	close_sound.play();
+    close_sound.play();
     instance?.emit("close-profile");
 }
 
@@ -326,7 +364,7 @@ const paddlePerPage = 1;
 function changePaddlePage(index: number) {
     if (currentPagePaddle.value + index < -1 || currentPagePaddle.value + index == user.infoPong.skin.paddles.length)
         return;
-	close_sound.play();
+    close_sound.play();
     currentPagePaddle.value += index;
 }
 
@@ -373,8 +411,8 @@ onMounted(() => {
     position: absolute;
     left: 0%;
     top: 10%;
-    width: 465px; //35%;
-    height: 650px; //75%
+    width: 465px;
+    height: 650px;
     background-color: rgba(210, 180, 140, 0.6);
     border: 2px solid black;
     border-radius: 10px;
@@ -410,7 +448,6 @@ onMounted(() => {
     top: 30px;
     border-radius: 10px;
     transition: opacity 0.3s ease;
-    /* Adiciona uma transição suave */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
