@@ -45,7 +45,6 @@ export class PlayerService {
 	//TODO: add namespace to keys maybe?
 	createPlayer(socket: Socket, payload: any): Player {
 		const player = new Player(socket, payload, this);
-		this.logger.debug(`created player: ${player.objectId}`);
 		this.players.set(player.objectId, player);
 		this.sockets.set(player.objectId, socket);
 		return player;
@@ -77,7 +76,6 @@ export class PlayerService {
 		}
 		this.logger.debug(`userId: ${userId}`);
 		const player: Player = this.players.get(userId);
-		this.logger.debug(`player: ${JSON.stringify(player)}`);
 		return player;
 	}
 

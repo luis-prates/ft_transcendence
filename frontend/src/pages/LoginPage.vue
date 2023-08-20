@@ -239,9 +239,8 @@ function tes(event: any) {
 				avatar: store.user.avatar
 			});
 
-			await sleep(1500);
-			Router.setRoute(Router.ROUTE_ALL);
-			Router.push("/");
+			await sleep(1000);
+			Router.push("/lobby");
 			console.log(store.user.isLogin);
 		})
 		.catch((err) => {
@@ -285,8 +284,8 @@ onMounted(() => {
 			socket = socketClass.getLobbySocket();
 			socket.emit("connection_lobby", { userId: store.user.id, objectId: store.user.id.toString(), nickname: store.user.nickname, avatar: store.user.avatar });
 			await sleep(2000);
-			Router.setRoute(Router.ROUTE_ALL);
-			Router.push("/");
+			// Router.setRoute(Router.ROUTE_ALL);
+			Router.push("/lobby");
 			console.log(store.user.isLogin);
 		});
 	}

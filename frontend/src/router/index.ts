@@ -18,8 +18,8 @@ const routes_login = [
 
 const routes = [
   {
-    path: "/",
-    name: "home",
+    path: "/lobby",
+    name: "Lobby",
     component: HomePage,
   },
   {
@@ -30,11 +30,21 @@ const routes = [
       objectId: route.query.objectId,
     }),
   },
+  {
+    path: "/:catchAll(.*)",
+    name: "login",
+    component: LoginPage,
+    props: (route: any) => ({
+      token: route.query.token,
+      error: route.query.error,
+      firstTime: route.query.isFirstTime === "true",
+    }),
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: routes_login,
+  routes: routes,
 });
 
 class Router {

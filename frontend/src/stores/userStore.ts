@@ -171,7 +171,7 @@ export const userStore = defineStore("user", function () {
         getBlockedUsers();
         getBlockedBy();
         getUserGames(user.id);
-		user.isLogin = true;
+        user.isLogin = true;
       })
       .catch(function (error) {
         console.error(error);
@@ -205,7 +205,7 @@ export const userStore = defineStore("user", function () {
   }
 
   async function loginTest() {
-	let isFirstTime = false;
+    let isFirstTime = false;
     // if (user.isLogin) return;
     await axios
       .post(env.BACKEND_SERVER_URL + "/auth/signin", user)
@@ -232,7 +232,7 @@ export const userStore = defineStore("user", function () {
         user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
         user.infoPong.skin.paddles = response.data.dto.paddleSkinsOwned;
         user.isTwoFAEnabled = response.data.dto.isTwoFAEnabled;
-		isFirstTime = response.data.firstTime;
+        isFirstTime = response.data.firstTime;
         getFriends();
         getFriendRequests();
         getBlockedUsers();
@@ -246,7 +246,7 @@ export const userStore = defineStore("user", function () {
       });
     console.log("USER: ", user);
     // .finally(() => window.location.href = window.location.origin);
-    return { firstTime: isFirstTime, isTwoFAEnabled: user.isTwoFAEnabled};
+    return { firstTime: isFirstTime, isTwoFAEnabled: user.isTwoFAEnabled };
   }
 
   async function updateProfile() {
@@ -266,8 +266,7 @@ export const userStore = defineStore("user", function () {
       .catch((err) => console.error(err));
   }
 
-  
-  async function updateNickname(newNickname: string) : Promise<boolean> {
+  async function updateNickname(newNickname: string): Promise<boolean> {
     let body = {} as any;
     body.nickname = newNickname;
 
@@ -278,16 +277,12 @@ export const userStore = defineStore("user", function () {
     };
     return await fetch(env.BACKEND_SERVER_URL + "/users/update_profile", options)
       .then(function (response: any) {
-        if (response.ok)
-        {
+        if (response.ok) {
           user.nickname = newNickname;
-          user.infoPong.historic.forEach(function (game: GAME)
-          {
-            if (game.loserId == user.id)
-              game.loserNickname = newNickname;
-            else
-              game.winnerNickname = newNickname;         
-          })
+          user.infoPong.historic.forEach(function (game: GAME) {
+            if (game.loserId == user.id) game.loserNickname = newNickname;
+            else game.winnerNickname = newNickname;
+          });
         }
         return response.ok;
       })
@@ -296,7 +291,6 @@ export const userStore = defineStore("user", function () {
         return false;
       });
   }
-
 
   async function buy_skin(skin: string, type: TypeSkin, price: number) {
     let body = {} as any;
@@ -563,7 +557,7 @@ export const userStore = defineStore("user", function () {
       });
   }
 
-  async function blockUser(userId: number, userNickname: string, userImage: string) { 
+  async function blockUser(userId: number, userNickname: string, userImage: string) {
     const options = {
       method: "POST",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -572,8 +566,7 @@ export const userStore = defineStore("user", function () {
     await fetch(env.BACKEND_SERVER_URL + "/blocklist/block/" + userId, options)
       .then(async function (response: any) {
         //Add in Store
-        if (response.ok)
-        {
+        if (response.ok) {
           const existingEvent = user.block.find((block: any) => block.blockedId === userId);
           if (!existingEvent) {
             user.block.push({
@@ -593,10 +586,10 @@ export const userStore = defineStore("user", function () {
           const blockList = user.block.filter((block: Block) => block.blockedId !== user.id);
           blockList.forEach(function (block: Block) {
             channels.forEach(function (channel: any) {
-              channel.messages = channel.messages.filter((message: ChatMessage) => block.blockedId !== message.userId); 
+              channel.messages = channel.messages.filter((message: ChatMessage) => block.blockedId !== message.userId);
             });
-          })
-            
+          });
+
           //Emit
           const lobbySocket: Socket = socketClass.getLobbySocket();
           lobbySocket.emit("block_user", {
@@ -605,7 +598,6 @@ export const userStore = defineStore("user", function () {
             blockId: userId,
           });
         }
-
       })
       .catch((err) => console.error(err));
   }
@@ -781,14 +773,12 @@ export const userStore = defineStore("user", function () {
       });
   }
 
-  function challengeUser(challangedUserID: number, challangedUserNickname: string) : string
-  {
+  function challengeUser(challangedUserID: number, challangedUserNickname: string): string {
     const lobbySocket = socketClass.getLobbySocket();
     const confirmButton = new ConfirmButton(challangedUserNickname, STATUS_CONFIRM.CHALLENGE);
     confirmButton.show((value) => {
       if (value == "CONFIRM") {
-
-        lobbySocket.emit("invite_game", { 
+        lobbySocket.emit("invite_game", {
           //Desafiador
           challengerId: user.id,
           challengerNickname: user.nickname,
@@ -796,15 +786,15 @@ export const userStore = defineStore("user", function () {
           challengedId: challangedUserID,
           challengedNickname: challangedUserNickname,
         });
-      
-        lobbySocket.on("invite_request_game", (e: any) => {				  
+
+        lobbySocket.on("invite_request_game", (e: any) => {
           const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
           Game.instance.addMenu(confirmButton.menu);
-              confirmButton.show((value) => {
+          confirmButton.show((value) => {
             if (value == "CONFIRM") {
               lobbySocket.emit("challenge_game", {
-              challenged: user.id, 
-              challenger: e.playerId,
+                challenged: user.id,
+                challenger: e.playerId,
               });
             }
           });
@@ -815,12 +805,14 @@ export const userStore = defineStore("user", function () {
           Game.instance.addMenu(confirmButton.menu);
           lobbySocket.off("invite_confirm_game");
         });
-        return ("CONFIRM");
-      }
-      else
-        return ("CANCEL");
+        return "CONFIRM";
+      } else return "CANCEL";
     });
-    return ("");
+    return "";
+  }
+
+  function logout() {
+    user.isLogin = false;
   }
 
   return {
@@ -865,7 +857,9 @@ export const userStore = defineStore("user", function () {
     twoFAGenerate,
     twoFATurnOn,
     twoFATurnOff,
-  
-	firstTimePrompt,
+
+    firstTimePrompt,
+
+    logout,
   };
 });

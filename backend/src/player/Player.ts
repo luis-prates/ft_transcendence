@@ -58,23 +58,8 @@ export class Player {
 
 	setSocket(value: Socket) {
 		this.logger.debug(`setSocket: ${value.id}`);
-		this.time = 0;
 		value.on('disconnect', () => {
-			this.time = Date.now();
-			setTimeout(() => {
-				console.log('disconnect: ' + this.objectId);
-				if (this.time && this.map) {
-					//! this is the first call to remove player
-					//! need to fix infinite loop that starts here
-					console.log('TIME DISCONNECT CRL');
-					this.map.removePlayer(this);
-					//! useless since I'm removing it on the line above
-					// Lobby.players = Lobby.players.splice(
-					// 	Lobby.players.indexOf(this),
-					// 	1,
-					// );
-				}
-			}, 30000);
+			this.map?.removePlayer(this);
 		});
 		this._lobbySocket = value;
 	}
