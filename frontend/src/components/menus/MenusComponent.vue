@@ -4,7 +4,7 @@
     <CreateGameComponent v-if="createGame" :data="createGameData" @close-createGame="closeMenu()"/>
     
     <FriendsMenuComponent v-if="friendsMenu" @close-friends="closeMenu()"/>
-    <MessageBattleMenuComponent v-if="menu" :menu="menu" @close-menus="closeMenu()"/>
+    <MessageBattleMenuComponent v-if="menu > 0" :menu="menu" @close-menus-mb="closeMenu()"/>
     
     <MyProfileComponent v-if="myProfile" @close-profile="closeProfile()" />
     <ProfileComponent v-if="yourProfile" :user="userProfile" class="profile_component" @close-profile="closeProfile()" />

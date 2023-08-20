@@ -13,18 +13,24 @@
 		<div class="close-button" @click="closerBoard()"></div>
 	</div>
 	<MessageListComponent v-if="messageList" :menu="menuType" @close-message-list="closeMenu()"/>
-	<!-- <BattleListComponent v-if="battleList" :menu="menuType" @close-battleList="closeMenu()"/> -->
+	<BattleListComponent v-if="battleList" :menu="menuType" @close-battle-list="closeMenu()"/>
 </template>
 
 <script setup lang="ts">
 import { getCurrentInstance, onMounted, ref } from 'vue';
-import sound_close_tab from "@/assets/audio/close.mp3";
+import { socketClass } from "@/socket/SocketClass";
+import BattleListComponent from "../menus/BattleListComponent.vue";
 
 import messageImage from "@/assets/chat/dm_messages.png";
 import battleImage from "@/assets/images/lobby/menu/battle.png";
 import MessageListComponent from "../menus/MessageListComponent.vue";
+import sound_close_tab from "@/assets/audio/close.mp3";
+import { userStore } from '@/stores/userStore';
+import Router from '@/router';
+
 
 const props = defineProps<{ menu: number }>();
+const emits = defineEmits(['close-menus-mb']);
 
 const message_image = messageImage;
 const battle_image = battleImage;
@@ -37,7 +43,7 @@ const menuType = ref(0);
 
 function closerBoard() {
 	close_sound.play();
-	instance?.emit("close-menus");
+	instance?.emit("close-menus-mb");
 }
 
 function getBackgroundColor()
@@ -61,7 +67,22 @@ function clickButton(value: number) {
 	{
 		if (value == 3)
 		{
+			const user = userStore().user;
+			socketClass.setGameSocket({
+				query: {
+					userId: user.id,
+				},
+			});
+				const gameSocket = socketClass.getGameSocket();
+				gameSocket.emit("match_making_game", { 
+				userId: user.id,
+			});
 
+			gameSocket.on("match_making_game", (e: any) => { 
+				const gameId = e;
+				gameSocket.off("match_making_game");
+				Router.push(`/game?objectId=${gameId}`);
+			});
 		}
 		else
 		{
@@ -100,13 +121,9 @@ function getLabel(value: number) {
 function getImage()
 {
 	if (props.menu == 1)
-	{
 		return message_image;
-	}
 	else
-	{
 		return battle_image;
-	}
 }
 
 function closeMenu()

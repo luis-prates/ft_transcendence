@@ -1,17 +1,17 @@
 <template>
-	<div class="friend_board">
-		<img class="background_friends" :src="friend_image">
-		<div class="friend_title">Friends</div>
+	<div class="battlelist_board">
+		<img class="background_battlelist" :src="battleImage">
+		<div class="battlelist_title">{{ getTitle() }}</div>
 		<transition name="fade" mode="out-in">
 			<div class="grid-container" :key="currentPage">
-				<div v-for="(friend, index) in currentPageBoard()" :key="index">
-					<div class="friend_content" @click="openProfile(friend.id)">
-						<img class="friend_image" :src="getPhoto(friend)">
-						<p class="friend_nickname">{{ friend.nickname }}</p>
+				<div v-for="(game, index) in currentPageBoard()" :key="index">
+					<div class="battlelist_content" @click="enterGame(game)">
+						<img v-if="isVisible(0, game)" class="game_image" :src="getPhoto(0, game)">
+						<p v-if="isVisible(0, game)" class="game_nickname">{{ getNickname(0, game) }}</p>
+						<img class="game_image game_vs_image" :src="vsImage">
+						<img v-if="isVisible(1, game)" class="game_image" style="left: 91%;" :src="getPhoto(1, game)">
+						<p v-if="isVisible(1, game)" class="game_nickname" style="left: 57.5%;">{{ getNickname(1, game) }}</p>
 					</div>
-					<button class="friend_message" @click="sendDm">
-						<img class="friend_message button" :src="message_image">
-					</button>
 				</div>
 			</div>
 		</transition>
@@ -19,37 +19,45 @@
 			<i class="arrow-icon left" @click="changePage(-1)"></i>
 			<i class="arrow-icon right" @click="changePage(1)"></i>
 		</div>
-		<div class="close-button" @click="closerBoard()"></div>
+		<div class="close-button" @click="closeBoard()"></div>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { ref, getCurrentInstance, onMounted } from 'vue';
-import { userStore } from '@/stores/userStore';
+import { GameStatus, userStore, type GAME } from '@/stores/userStore';
 import sound_close_tab from "@/assets/audio/close.mp3";
 import default_Avatar from "@/assets/chat/avatar.png";
 
-import friendImage from "@/assets/images/lobby/menu/your_friend.png";
-import messageImage from "@/assets/chat/dm_messages.png";
-import avatarDefault from "@/assets/chat/avatar.png";
+import vs_image from "@/assets/images/lobby/menu/vs.png";
+import battle_image from "@/assets/images/lobby/menu/battle.png";
+import Router from '@/router';
+
+const props = defineProps<{ menu: number }>();
 
 const defaultAvatar = default_Avatar;
-const message_image = messageImage;
-const friend_image = friendImage;
+const vsImage = vs_image;
+const battleImage = battle_image;
 const close_sound = new Audio(sound_close_tab);
 
 const instance = getCurrentInstance();
 
 const currentPage = ref(0);
-const usersPerPage = 10;
+const usersPerPage = 8;
 
-const users = ref(userStore().user.friends);
+const users = ref([] as any);
+
+function getTitle() {
+	if (props.menu == 1)
+		return "Waiting";
+	return "Actives";
+}
 
 function currentPageBoard() {
 	const startIndex = currentPage.value * usersPerPage;
 	const endIndex = startIndex + usersPerPage;
-	const leaderBoard = users.value;
-	return leaderBoard.slice(startIndex, endIndex);
+	const battleList = users.value;
+	return battleList.slice(startIndex, endIndex);
 }
 
 function changePage(step: number) {
@@ -60,41 +68,58 @@ function changePage(step: number) {
 	}
 }
 
-function getPhoto(player: any)
+function getNickname(nb: number, game: GAME)
 {
-	return player.image ? player.image : defaultAvatar;
+	return game.players[nb]?.nickname;
 }
 
-function openProfile(userId: number)
+function getPhoto(nb: number, game: GAME)
+{
+	return game.players[nb].image ? game.players[nb].image : defaultAvatar;
+}
+
+function enterGame(game: GAME)
 {
 	close_sound.play();
-	if (userId != userStore().user.id)
-		userStore().userSelected = userId;
+	Router.push(`/game?objectId=${game.id}`);
+}
+
+function closeBoard() {
+	close_sound.play();
+	instance?.emit("close-battle-list");
+}
+
+function isVisible(nb: number, game: GAME) {
+	if (game.players[nb])
+		return true;
+	return false;
+}
+
+async function getGames()
+{
+	if (props.menu == 1)
+	{
+		const game = await userStore().getGames(GameStatus.NOT_STARTED);
+		users.value = game;
+	}
 	else
-		userStore().userSelected = "me";
-}
-
-function closerBoard() {
-	close_sound.play();
-	instance?.emit("close-friends");
-}
-
-function sendDm() {
-	// TODO SEND DM
-	console.log("send DM");
+	{
+		const game = await userStore().getGames(GameStatus.IN_PROGESS);
+		users.value = game;
+	}
 }
 
 onMounted(async () => {
-		
+	getGames();
 });
 </script>
 
 <style scoped lang="scss">
 
-.friend_board {
+.battlelist_board {
 	position: absolute;
 	width: 450px;
-	height: 555px;
+	height: 450px;
 	left: 50%;
 	top: 10%;
 	background-color: rgba(192, 192, 192, 0.6);
@@ -103,7 +128,7 @@ onMounted(async () => {
 	transform: translate(-50%);
 }
 
-.background_friends {
+.background_battlelist {
 	position: absolute;
 	width: 100%;
 	height: 100%;
@@ -113,7 +138,7 @@ onMounted(async () => {
 .grid-container {
 	position: absolute;
 	left: 5%;
-	top: 11%;
+	top: 15%;
 	width: 90%;
 	height: 75%;
 	display: grid;
@@ -124,12 +149,12 @@ onMounted(async () => {
 }
 
 
-.friend_title {
+.battlelist_title {
 	position: absolute;
 	left: 50%;
 	transform: translate(-50%);
 	top: 1%;
-	font-size: 20px;
+	font-size: 25px;
 	font-family: 'Press Start 2P';
 	color: gold;
 	-webkit-text-stroke-width: 1.1px;
@@ -140,7 +165,7 @@ onMounted(async () => {
 	position: relative;
 }
 
-.friend_content {
+.battlelist_content {
 	position: relative;
 	font-family: "Press Start 2P";
 	font-size: 20px;
@@ -148,38 +173,54 @@ onMounted(async () => {
 	height: 35px;
 	width: 95%;
 	left: 2.5%;
-	background-color: grey;
+	background-color: #efaa26;
 	border-radius: 10px;
 	border: 1px solid black;
 	-webkit-text-stroke-width: 1px;
 	-webkit-text-stroke-color: black;
 	color: silver;
+	transition: opacity 0.3 ease;
 }
 
-.friend_content:hover {
+.battlelist_content:hover {
 	cursor: pointer;
 	opacity: 0.8;
 }
 
-.friend_image {
+.game_image {
 	position: absolute;
 	width: 30px;
 	height: 27.5px;
-	left: 10%;
+	left: 1%;
 	top: 10%;
 	border-radius: 10px;
 	border: 1px solid black;
+	transition: opacity 0.3 ease;
 }
 
-.friend_message {
-	position: absolute;
-	right: 5%;
-	width: 30px;
-	height: 30px;
-	top: 50%;
-	transform: translateY(-50%);
-	background-color: transparent;
+
+.game_image.game_vs_image {
+    left: 50%;
+    transform: translateX(-50%);
 	border: 0px;
+    border-radius: 0px;
+}
+
+.friend_accept {
+    position: absolute;
+    right: 16%;
+    width: 15%;
+    height: 35px;
+    top: 0%;
+    /* transform: translateY(-50%); */
+    background-color: green;
+    border: 1px solid black;
+    border-radius: 8px;
+}
+
+.friend_accept:hover {
+    cursor: pointer;
+    opacity: 0.75;
 }
 
 .friend_message.button {
@@ -188,14 +229,13 @@ onMounted(async () => {
 	width: 100%;
 }
 
-.friend_nickname {
+.game_nickname {
 	position: absolute;
-	width: 10px;
+	width: 30%;
 	height: 10px;
-	left: 25%;
+	left: 10%;
 	top: 15%;
 	font-size: 16px;
-	transform: translateX(-50%);
 }
 
 .fade-enter-active,
