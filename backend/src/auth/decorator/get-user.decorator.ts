@@ -5,6 +5,5 @@ export const GetUser = createParamDecorator((data: string | undefined, ctx: Exec
 	if (data) {
 		return request.user[data];
 	}
-	delete request.user.hash;
 	return request.user;
 });

@@ -13,9 +13,9 @@
       <button @click="test">Test</button>
     </div>
 
-    <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoad" />
+    <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoaded" />
   </div>
-  <div class="button-container" v-if="isLoad">
+  <div class="button-container" v-if="isLoaded">
 
     <div class="retro-button" @click="onLeaveClick">
       <img src="@/assets/images/lobby/menu/leave.png" alt="Leave Icon" />
@@ -51,7 +51,7 @@
       </div>
     </div>
   </div>
-  <ChatComponent class="chat_component" />
+  <ChatComponent v-if="isLoaded" class="chat_component"/>
   <MenusComponent />
   <ConfirmButtonComponent v-if="confirmButtonActive" :title="buttonTitle" :message="buttonMessage" :confirmFunction="yourConfirmFunction" @cancelButton="onCancel"/>
 </template>
@@ -75,7 +75,7 @@ const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 let lobby: Lobby | null = null;
 let notification = ref(0);
-const isLoad = ref(false);
+const isLoaded = ref(false);
 const socket = socketClass.getLobbySocket();
 const confirmButtonActive = ref(false);
 let buttonMessage: string = "";
@@ -115,7 +115,12 @@ function onCancel () {
 onMounted(() => {
 
   notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;
-  isLoad.value = false;
+  isLoaded.value = false;
+  if (socket == undefined) {
+    console.log("socket is undefined");
+    Router.push('/');
+    return;
+  }
   socket.emit("join_map", { userId: store.user.id, objectId: store.user.id, map: { name: "lobby" } });
   socket.on("load_map", (data: any) => {
     console.log("load_map", data.data);
@@ -129,10 +134,10 @@ onMounted(() => {
           data.data.forEach((d: any) => {
             lobby?.addGameObjectData(d);
           });
-          isLoad.value = true;
+          isLoaded.value = true;
           lobby.update();
         }
-        console.log("isConcted.value : ", isLoad.value);
+        console.log("isConcted.value : ", isLoaded.value);
       });
     }, 1000);
   });
@@ -247,8 +252,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   console.log("unmounted");
-  socket.off("load_map");
-  if (lobby) lobby.destructor();
+  socket?.off("load_map");
+  lobby?.destructor();
 });
 
 function salvarDesenhoComoImagem() {

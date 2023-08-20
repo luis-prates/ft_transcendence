@@ -53,7 +53,7 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		this.lobbyService.joinMap(client, payload);
 	}
 
-	handleDisconnect(client: Socket) {
+	async handleDisconnect(@ConnectedSocket() client: Socket) {
 		this.logger.debug(`Client disconnected: ${client.id} from lobby namespace`);
 
 		this.logger.log(`Clients Before: ${this.playerService.getPlayerCount()}`);
@@ -62,15 +62,15 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 		const currentPlayer = this.playerService.getPlayer(userId);
 		this.playerService.removePlayer(currentPlayer);
 
-		this.userService.status(userId, UserStatus.OFFLINE);
+		setTimeout(async () => {
+			await this.userService.status(userId, UserStatus.OFFLINE);
+		}, 500);
 
 		this.logger.log(`Clients After: ${this.playerService.getPlayerCount()}`);
 	}
 
 	@SubscribeMessage('invite_game')
 	async handleInviteGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		this.logger.debug(`Invite game received: ${JSON.stringify(body)}`);
-
 		//Desafiador
 		const challengerId = body.challengerId;
 		const challengerNickname = body.challengerNickname;

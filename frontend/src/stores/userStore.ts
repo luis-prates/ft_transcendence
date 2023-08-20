@@ -838,6 +838,11 @@ export const userStore = defineStore("user", function () {
     return "";
   }
 
+  
+  function logout() {
+    user.isLogin = false;
+  }
+
   return {
     user,
     userSelected,
@@ -885,5 +890,6 @@ export const userStore = defineStore("user", function () {
     twoFATurnOff,
 
     firstTimePrompt,
+    logout,
   };
 });

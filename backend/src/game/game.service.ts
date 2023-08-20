@@ -292,7 +292,6 @@ export class GameService {
 
 	async updateGameStatus(gameId: string, status?: GameStatus): Promise<Game> {
 		try {
-			this.logger.debug(`updateGame for game ${gameId} is called with body: ${status}`);
 			const game = await this.prisma.game.update({
 				where: {
 					id: gameId,

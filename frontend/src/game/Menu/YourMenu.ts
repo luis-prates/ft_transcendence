@@ -36,6 +36,7 @@ export class YourMenu {
   private socket: Socket;
 
   private user = userStore().user;
+  private userStore = userStore();
 
   constructor() {
     this.menu.add(this.background);
@@ -89,19 +90,14 @@ export class YourMenu {
 
 	private createButton(type: string, x: number, y: number, label: string): ElementUI {
     let img: HTMLImageElement;
-    if (type == "message")
-      img = this.img_message;
-    else if (type == "friends")
-      img = this.img_friendImage;
-    else if (type == "battle")
-      img = this.img_battle;
-    else if (type == "leaderboard")
-      img = this.img_leaderBoard;
-    else if (type == "leave")
-      img = this.img_leaveImage;
+    if (type == "message") img = this.img_message;
+    else if (type == "friends") img = this.img_friendImage;
+    else if (type == "battle") img = this.img_battle;
+    else if (type == "leaderboard") img = this.img_leaderBoard;
+    else if (type == "leave") img = this.img_leaveImage;
 
     const numberOfFriendRequest = this.user.friendsRequests.filter((friendship) => friendship.requesteeId === this.user.id).length;
-    this.notification = numberOfFriendRequest == 0 ? "" : (numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99" );
+    this.notification = numberOfFriendRequest == 0 ? "" : numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99";
 
 	  const button: ElementUI = {
 		type: type,
@@ -112,44 +108,37 @@ export class YourMenu {
 			ctx.strokeStyle = "black";
 			ctx.lineWidth = 2;
 
-			this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
+        this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
 
-			ctx.fill();
-			ctx.stroke();
+        ctx.fill();
+        ctx.stroke();
 
-			ctx.fillStyle = "black";
+        ctx.fillStyle = "black";
 
-			if (img.complete)
-      ctx.drawImage(img, 
-        button.rectangle.x + button.rectangle.w * 0.25, 
-        button.rectangle.y + button.rectangle.h * 0.05, 
-        button.rectangle.w * 0.5, 
-        button.rectangle.h * 0.60);
-        
-        
-        if (type == "message")
-        {
+        if (img.complete) ctx.drawImage(img, button.rectangle.x + button.rectangle.w * 0.25, button.rectangle.y + button.rectangle.h * 0.05, button.rectangle.w * 0.5, button.rectangle.h * 0.6);
+
+        if (type == "message") {
           ctx.fillStyle = "red";
-          this.fillTextCenter(ctx, this.notification, 
-          button.rectangle.x + button.rectangle.w * 0.6, 
-          button.rectangle.y + button.rectangle.h * 0.65, 
-          button.rectangle.w * 0.16,
-          button.rectangle.h * 0.25, undefined, "'Press Start 2P', cursive", false);
+          this.fillTextCenter(
+            ctx,
+            this.notification,
+            button.rectangle.x + button.rectangle.w * 0.6,
+            button.rectangle.y + button.rectangle.h * 0.65,
+            button.rectangle.w * 0.16,
+            button.rectangle.h * 0.25,
+            undefined,
+            "'Press Start 2P', cursive",
+            false
+          );
         }
-          
+
         ctx.fillStyle = "black";
         ctx.lineWidth = 1;
-        this.fillTextCenter(ctx, label, 
-        button.rectangle.x, 
-        button.rectangle.y + button.rectangle.h * 0.95,
-        button.rectangle.w,
-        button.rectangle.h * 0.25, undefined, "'Press Start 2P', cursive", false);
-			},
-			onClick: () => {
-        if (type == "message")
-        {
-          if (this.menuIsActive())
-            return ;
+        this.fillTextCenter(ctx, label, button.rectangle.x, button.rectangle.y + button.rectangle.h * 0.95, button.rectangle.w, button.rectangle.h * 0.25, undefined, "'Press Start 2P', cursive", false);
+      },
+      onClick: () => {
+        if (type == "message") {
+          if (this.menuIsActive()) return;
           this.notification = "";
           this.messagesMenu = true;
           const confirmButton = new Messages();
@@ -158,11 +147,8 @@ export class YourMenu {
               this.messagesMenu = false;
             }
           });
-        }
-        else if (type == "friends")
-        {
-          if (this.menuIsActive())
-            return ;
+        } else if (type == "friends") {
+          if (this.menuIsActive()) return;
           this.friendsMenu = true;
           const friendsBoard = new FriendsMenu();
           friendsBoard.show((value) => {
@@ -170,11 +156,8 @@ export class YourMenu {
               this.friendsMenu = false;
             }
           });
-        }
-        else if (type == "battle")
-        {
-          if (this.menuIsActive())
-            return ;
+        } else if (type == "battle") {
+          if (this.menuIsActive()) return;
           this.battleMenu = true;
           const battleBoard = new BattleMenu();
           battleBoard.show((value) => {
@@ -182,11 +165,8 @@ export class YourMenu {
               this.battleMenu = false;
             }
           });
-        }
-        else if (type == "leaderboard")
-        {
-          if (this.menuIsActive())
-            return ;
+        } else if (type == "leaderboard") {
+          if (this.menuIsActive()) return;
           this.leaderBoardMenu = true;
           const leaderBoard = new LeaderBoard();
           leaderBoard.show((value) => {
@@ -194,23 +174,18 @@ export class YourMenu {
               this.leaderBoardMenu = false;
             }
           });
-        }
-        else if (type == "leave")
-        {
-          //TODO IR PARA LOGIN
-          Router.setRoute(Router.ROUTE_LOGIN)
+        } else if (type == "leave") {
+          this.userStore.logout();
           Router.push(`/`);
           this.socket.disconnect();
         }
-		  },
-	  };
-	  return button;
-	}
+      },
+    };
+    return button;
+  }
 
-  menuIsActive() : boolean
-  {
-    if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu || this.friendsMenu)
-      return true;
+  menuIsActive(): boolean {
+    if (this.messagesMenu || this.battleMenu || this.leaderBoardMenu || this.friendsMenu) return true;
     return false;
   }
 
@@ -233,7 +208,7 @@ export class YourMenu {
   private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
     ctx.font = font ? h + "px " + font : h + "px Arial";
     ctx.textAlign = "start";
-    
+
     const begin = x + w * 0.1;
     const max = max_with ? max_with : w - w * 0.2;
 
@@ -246,9 +221,7 @@ export class YourMenu {
       offset = offsetmax;
     }
 
-  
-    if (stroke)
-      ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+    if (stroke) ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
     ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
   }
 

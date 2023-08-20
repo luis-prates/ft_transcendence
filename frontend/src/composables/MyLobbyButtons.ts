@@ -15,8 +15,8 @@ export function MyLobbyButtons() {
     const socket: Socket = socketClass.getLobbySocket();
     
     console.log("onLeaveClick");
-    // this.userStore.logout();
-    Router.setRoute(Router.ROUTE_LOGIN)
+    userStore().logout();
+    //Router.setRoute(Router.ROUTE_LOGIN)
     Router.push(`/`);
     socket.disconnect();
   }
