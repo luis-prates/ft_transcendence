@@ -996,8 +996,6 @@
 				{ "x": 2, "y": 0 }
 			]
 		},
-		{ "className": "Door", "mapName": "school", "x": 1792, "y": 480, "mapPosition": { "x": 192, "y": 1088 } },
-		{ "className": "Door", "mapName": "school", "x": 1824, "y": 480, "mapPosition": { "x": 192, "y": 1088 } },
 		{ "className": "Npc", "nickname": "Mafalda", "typeNpc": "mafalda", "x": 1888, "y": 576, "avatar": 3 },
 		{
 			"className": "WaterFont",
@@ -1046,7 +1044,8 @@
 			],
 			"aimation_sx": 0,
 			"aimation_sy": 65
-		}
+		},
+		{ "className": "Npc", "nickname": "Shop Amelia", "typeNpc": "shop", "x": 160, "y": 288, "avatar": 5 }
 	],
 	"objectId": "lobby"
 }

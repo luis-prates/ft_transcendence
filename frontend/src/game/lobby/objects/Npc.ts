@@ -55,7 +55,7 @@ export class Npc extends Character {
   public interaction(gameObject: Character): void {
     this.setLookAt(gameObject);
 
-    if (this.nickname == "Amelia")
+    if (this.nickname == "Shop Amelia")
     {
       Game.instance.addMenu(new Shop().menu);
       return ;

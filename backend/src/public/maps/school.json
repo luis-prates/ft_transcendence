@@ -1107,7 +1107,7 @@
 				"name": "walk_left"
 			}
 		},
-		{ "className": "Npc", "nickname": "Amelia", "typeNpc": "shop", "x": 160, "y": 288, "avatar": 5 }
+		{ "className": "Npc", "nickname": "Shop Amelia", "typeNpc": "shop", "x": 160, "y": 288, "avatar": 5 }
 	],
 	"objectId": "school"
 }
