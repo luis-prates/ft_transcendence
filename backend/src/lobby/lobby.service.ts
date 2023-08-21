@@ -28,6 +28,7 @@ export class LobbyService {
 	}
 
 	public joinMap(socket: Socket, payload: any): void {
+		console.log('LOGGG', payload);
 		this.logger.debug('join_map event received');
 		this.logger.debug(`players count: ${this.playerService.getPlayerCount()}`);
 		const player = this.playerService.getPlayer(Number(payload.userId));
