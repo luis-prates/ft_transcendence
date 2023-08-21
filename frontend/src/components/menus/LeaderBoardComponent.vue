@@ -1,30 +1,32 @@
 <template>
     <div class="leader_board">
-		<div class="leader_tittle">LeaderBoard</div>
-		<transition name="fade" mode="out-in">
+        <div class="leader_tittle">LeaderBoard</div>
+        <transition name="fade" mode="out-in">
             <div class="grid-container" :key="currentPage">
-				<div v-for="(player, index) in currentPageBoard()" :key="index" class="grid-item" @click="openProfile(player.userId)">
-					<div class="player-content" :style="{ backgroundColor: getColorRank(player), '-webkit-text-stroke-color': getColorBorder(player), color: getColor(player) }">
-						<p class="player_rank" :style="{color: getColor(player)}">{{ player.rank }}</p>
-						<img class="player_image" :src="getPhoto(player)">
-						<p class="player-nickname">{{ player.nickname }}</p>
-						<p class="player-points" :style="{color: getColor(player)}">{{ player.points }}</p>
-					</div>
-				</div>
+                <div v-for="(player, index) in currentPageBoard()" :key="index" class="grid-item"
+                    @click="openProfile(player.userId)">
+                    <div class="player-content"
+                        :style="{ backgroundColor: getColorRank(player), '-webkit-text-stroke-color': getColorBorder(player), color: getColor(player) }">
+                        <p class="player_rank" :style="{ color: getColor(player) }">{{ player.rank }}</p>
+                        <img class="player_image" :src="getPhoto(player)">
+                        <p class="player-nickname">{{ player.nickname }}</p>
+                        <p class="player-points" :style="{ color: getColor(player) }">{{ player.points }}</p>
+                    </div>
+                </div>
             </div>
         </transition>
-		<!-- <div class="player-content" style="position: absolute;top: 83%;width: 85.5%;left: 7%;background-color: red;">
-						<p class="player_rank">{{ yourRank.rank }}</p>
-						 <img class="player_image" :src="getPhoto(yourRank.image)">
-						<p class="player-nickname">{{ yourRank.nickname }}</p>
-						<p class="player-points">{{ yourRank.points }}</p> 
-		</div> -->
-		<div class="pagination-buttons">
+        <div v-if="yourRank" class="player-content" style="position: absolute;top: 83%;width: 85.5%;left: 7%;background-color: red;" @click="openProfile(yourRank.userId)">
+			<p class="player_rank">{{ yourRank.rank }}</p>
+			 <img class="player_image" :src="getPhoto(yourRank)">
+			<p class="player-nickname">{{ yourRank.nickname }}</p>
+			<p class="player-points">{{ yourRank.points }}</p> 
+		</div>
+        <div class="pagination-buttons">
             <i class="arrow-icon left" @click="changePage(-1)"></i>
             <i class="arrow-icon right" @click="changePage(1)"></i>
         </div>
-		<div class="close-button" @click="closerLeaderBoard()"></div>
-	</div>
+        <div class="close-button" @click="closerLeaderBoard()"></div>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -41,7 +43,7 @@ const currentPage = ref(0);
 const usersPerPage = 10;
 
 const users = ref([] as any);
-const yourRank = ref();
+const yourRank = ref(undefined as any);
 
 function currentPageBoard() {
     const startIndex = currentPage.value * usersPerPage;
@@ -54,41 +56,36 @@ function changePage(step: number) {
     if (currentPage.value + step >= 0 && currentPage.value + step < Math.ceil(users.value.length / usersPerPage)) {
         currentPage.value += step;
         currentPageBoard();
-		close_sound.play();
+        close_sound.play();
     }
 }
 
-function getPhoto(player: any)
-{
-	return player.image ? player.image : defaultAvatar;
+function getPhoto(player: any) {
+    return player.image ? player.image : defaultAvatar;
 }
 
-function getColorRank(player: any)
-{
-	return  player.rank == 1 ? "gold" : (player.rank == 2 ? "silver" : (player.rank == 3 ? "#CD7F32" : "grey"));
+function getColorRank(player: any) {
+    return player.rank == 1 ? "gold" : (player.rank == 2 ? "silver" : (player.rank == 3 ? "#CD7F32" : "grey"));
 }
 
-function getColorBorder(player: any)
-{
-	return player.userId == userStore().user.id ? "red" : "black";
+function getColorBorder(player: any) {
+    return player.userId == userStore().user.id ? "red" : "black";
 }
 
-function getColor(player: any)
-{
-	return player.userId == userStore().user.id ? "gold" : "silver";
+function getColor(player: any) {
+    return "silver";
 }
 
-function openProfile(userId: number)
-{
-	close_sound.play();
-	if (userId != userStore().user.id)
-		userStore().userSelected = userId;
-	else
-		userStore().userSelected = "me";
+function openProfile(userId: number) {
+    close_sound.play();
+    if (userId != userStore().user.id)
+        userStore().userSelected = userId;
+    else
+        userStore().userSelected = "me";
 }
 
 function closerLeaderBoard() {
-	close_sound.play();
+    close_sound.play();
     instance?.emit("close-leaderboard");
 }
 
@@ -96,8 +93,8 @@ onMounted(async () => {
     try {
         const leaderboardData = await userStore().getLeaderboard();
         users.value = leaderboardData;
-		yourRank.value = leaderboardData.find((player: any) => player.userId == userStore().user.id);
-		console.log("your Rank: ", yourRank)
+        yourRank.value = leaderboardData.find((player: any) => player.userId == userStore().user.id);
+        console.log("your Rank: ", yourRank)
     } catch (error) {
         console.error('Erro ao obter a leaderboard:', error);
     }
@@ -105,9 +102,8 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-
 .leader_board {
-	position: absolute;
+    position: absolute;
     width: 450px;
     height: 555px;
     left: 50%;
@@ -119,26 +115,26 @@ onMounted(async () => {
 }
 
 .grid-container {
-	position: absolute;
-	left: 5%;
-	top: 11%;
-	width: 90%;
-	height: 75%;
-	display: grid;
-	gap: 1%;
-	font-size: 10px;
-	grid-template-rows: repeat(auto-fill, minmax(37px, 1fr));
-	align-items: center;
+    position: absolute;
+    left: 5%;
+    top: 7%;
+    width: 90%;
+    height: 75%;
+    display: grid;
+    gap: 1%;
+    font-size: 10px;
+    grid-template-rows: repeat(auto-fill, minmax(37px, 1fr));
+    align-items: center;
 }
 
 .leader_tittle {
-	position: absolute;
+    position: absolute;
     left: 50%;
     transform: translate(-50%);
     top: 1%;
     font-size: 20px;
     font-family: 'Press Start 2P';
-	color: gold;
+    color: gold;
     -webkit-text-stroke-width: 1.1px;
     -webkit-text-stroke-color: #8B4513;
 }
@@ -154,7 +150,7 @@ onMounted(async () => {
     transition: opacity 0.3s ease;
     height: 35px;
     width: 95%;
-	left: 2.5%;
+    left: 2.5%;
     background-color: grey;
     border-radius: 10px;
     border: 1px solid black;
@@ -169,10 +165,10 @@ onMounted(async () => {
 }
 
 .player_rank {
-	width: 10px;
-	height: 10px;
-	left: 3%;
-	top: 35%;
+    width: 10px;
+    height: 10px;
+    left: 3%;
+    top: 35%;
     font-size: 15px;
     -webkit-text-stroke-width: 0.8px;
     color: silver;
@@ -180,34 +176,34 @@ onMounted(async () => {
 }
 
 .player_image {
-	position: absolute;
-	width: 30px;
-	height: 27.5px;
-	left: 10%;
-	top: 10%;
+    position: absolute;
+    width: 30px;
+    height: 27.5px;
+    left: 10%;
+    top: 10%;
     border-radius: 10px;
     border: 1px solid black;
 }
 
 .player-nickname {
-	position: absolute;
-	width: 10px;
-	height: 10px;
-	left: 25%;
-	top: 15%;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    left: 25%;
+    top: 15%;
     font-size: 16px;
-	transform: translateX(-50%);
+    transform: translateX(-50%);
 }
 
 .player-points {
-	position: absolute;
-	width: 10px;
-	height: 10px;
-	left: 90%;
-	top: 15%;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    left: 90%;
+    top: 15%;
     font-size: 16px;
-	transform: translateX(-50%);
-	color: silver;
+    transform: translateX(-50%);
+    color: silver;
 }
 
 .fade-enter-active,
@@ -220,8 +216,9 @@ onMounted(async () => {
 .fade-leave-to {
     opacity: 0;
 }
+
 .pagination-buttons {
-	top: 92.5%;
+    top: 92.5%;
 }
 
 .arrow-icon {
@@ -272,5 +269,4 @@ onMounted(async () => {
     background-color: darkred;
     color: white;
 }
-
 </style>

@@ -12,8 +12,8 @@
 		</div>
 		<div class="close-button" @click="closerBoard()"></div>
 	</div>
-	<MessageListComponent v-if="messageList" :menu="menuType" @close-message-list="closeMenu()"/>
-	<BattleListComponent v-if="battleList" :menu="menuType" @close-battle-list="closeMenu()"/>
+	<MessageListComponent v-if="messageList" :menu="menuType" @close-message-list="closeMenu()" />
+	<BattleListComponent v-if="battleList" :menu="menuType" @close-battle-list="closeMenu()" />
 </template>
 
 <script setup lang="ts">
@@ -45,8 +45,7 @@ function closerBoard() {
 	instance?.emit("close-menus-mb");
 }
 
-function getBackgroundColor()
-{
+function getBackgroundColor() {
 	if (props.menu == 1)
 		return "#efaa26";
 	else if (props.menu == 2)
@@ -57,34 +56,30 @@ function clickButton(value: number) {
 	close_sound.play();
 
 	closeMenu();
-	if (props.menu == 1)
-	{
+	if (props.menu == 1) {
 		messageList.value = true;
 		menuType.value = value;
 	}
-	else if (props.menu == 2)
-	{
-		if (value == 3)
-		{
+	else if (props.menu == 2) {
+		if (value == 3) {
 			const user = userStore().user;
 			socketClass.setGameSocket({
 				query: {
 					userId: user.id,
 				},
 			});
-				const gameSocket = socketClass.getGameSocket();
-				gameSocket.emit("match_making_game", { 
+			const gameSocket = socketClass.getGameSocket();
+			gameSocket.emit("match_making_game", {
 				userId: user.id,
 			});
 
-			gameSocket.on("match_making_game", (e: any) => { 
+			gameSocket.on("match_making_game", (e: any) => {
 				const gameId = e;
 				gameSocket.off("match_making_game");
 				Router.push(`/game?objectId=${gameId}`);
 			});
 		}
-		else
-		{
+		else {
 			battleList.value = true;
 			menuType.value = value;
 		}
@@ -92,8 +87,7 @@ function clickButton(value: number) {
 }
 
 function getLabel(value: number) {
-	if (props.menu == 1)
-	{
+	if (props.menu == 1) {
 		if (value == 0)
 			return "Messages";
 		else if (value == 1)
@@ -103,8 +97,7 @@ function getLabel(value: number) {
 		else if (value == 3)
 			return "Who Blocked You!";
 	}
-	else if (props.menu == 2)
-	{
+	else if (props.menu == 2) {
 		if (value == 0)
 			return "Battles";
 		else if (value == 1)
@@ -117,16 +110,14 @@ function getLabel(value: number) {
 	return "";
 }
 
-function getImage()
-{
+function getImage() {
 	if (props.menu == 1)
 		return message_image;
 	else
 		return battle_image;
 }
 
-function closeMenu()
-{
+function closeMenu() {
 	messageList.value = false;
 	battleList.value = false;
 	menuType.value = 0;
@@ -134,16 +125,15 @@ function closeMenu()
 
 
 onMounted(async () => {
-		
+
 });
 </script>
 
 <style scoped lang="scss">
-
 .friend_board {
 	position: absolute;
-    width: 300px;
-    height: 200px;
+	width: 300px;
+	height: 200px;
 	left: 50%;
 	top: 20%;
 	background-color: rgba(192, 192, 192, 0.6);
@@ -182,10 +172,10 @@ onMounted(async () => {
 }
 
 .buttons_attribute {
-    border: 3px solid #000000;
-    border-radius: 10px;
-    transition: opacity 0.3s ease;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+	border: 3px solid #000000;
+	border-radius: 10px;
+	transition: opacity 0.3s ease;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 	width: 100%;
 	height: 25%;
 	background-color: grey;
@@ -198,8 +188,8 @@ onMounted(async () => {
 }
 
 .buttons_attribute:hover {
-    cursor: pointer;
-    opacity: 0.75;
+	cursor: pointer;
+	opacity: 0.75;
 }
 
 .close-button {
@@ -220,5 +210,4 @@ onMounted(async () => {
 	background-color: darkred;
 	color: white;
 }
-
 </style>

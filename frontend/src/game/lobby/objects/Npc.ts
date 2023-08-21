@@ -6,7 +6,6 @@ import { userStore } from "@/stores/userStore";
 
 export class Npc extends Character {
   public message: string;
-  public timeOut: number;
   public typeNpc: string = "npc";
 
   constructor(data?: any) {
@@ -17,7 +16,6 @@ export class Npc extends Character {
     this.x = 1850;
     this.y = 700;
     this.message = "";
-    this.timeOut = 10;
     // console.log("npc: ", this.x, this.y);
     if (data) this.setData(data);
   }
@@ -63,7 +61,7 @@ export class Npc extends Character {
     userStore().userSelected = "npc";*/
     // Game.instance.addMenu(new Shop().menu);
     
-    if (this.nickname == "Shop Amelia")
+    if (this.typeNpc == "shop")
     {
       userStore().userSelected = "shop";
       // Game.instance.addMenu(new Shop().menu);
@@ -72,7 +70,7 @@ export class Npc extends Character {
     
     //const m = new Menu({ KeyClose: "A" });
     
-    if (this.nickname == "Mafalda")
+    if (this.typeNpc == "mafalda")
     {
       this.message = "Hi, " + userStore().user.nickname + "! I'm Mafalda, the Headmaster for 42 Lisboa!";
       userStore().npcSelected = this;
@@ -84,7 +82,7 @@ export class Npc extends Character {
       // };
       // m.add(e);
     }
-    else if (this.nickname == "Lili")
+    else if (this.typeNpc == "lili")
     {
       this.message = "Hi! I'm Lili, the Security Guard for 42 Lisboa! Welcome!";
       userStore().npcSelected = this;

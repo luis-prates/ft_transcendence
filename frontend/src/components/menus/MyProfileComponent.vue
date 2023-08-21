@@ -412,7 +412,7 @@ onMounted(() => {
     left: 0%;
     top: 10%;
     width: 465px;
-    height: 650px;
+    height: 630px;
     background-color: rgba(210, 180, 140, 0.6);
     border: 2px solid black;
     border-radius: 10px;
@@ -672,7 +672,7 @@ onMounted(() => {
 
 .button2 {
     top: 255px;
-    height: 395px;
+    height: 374px;
 }
 
 .expanded.button1 {
@@ -729,7 +729,7 @@ onMounted(() => {
 
 .costume-paddle {
     position: absolute;
-    top: 280px;
+    top: 265px;
 }
 
 .costume-paddle.arrow-icon.left {

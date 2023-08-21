@@ -6,15 +6,16 @@
 			<div class="grid-container" :key="currentPage">
 				<div v-for="(friend, index) in currentPageBoard()" :key="index">
 					<div style="height: 100%; height: 100%;">
-						<div class="friendRequest_content" @click="openProfile(friend)"  :style="{width: getwidth()}" >
+						<div class="friendRequest_content" @click="openProfile(friend)" :style="{ width: getwidth() }">
 							<!-- <img class="friendRequest_image" :src="getPhoto(friend)"> -->
 							<p class="friendRequest_nickname">{{ getNickname(friend) }}</p>
 						</div>
 						<button v-if="button1IsVisible()" class="friend_accept" @click="clickButton1(friend)">
 							Accept
 						</button>
-						<button v-if="button2IsVisible()" class="friend_accept" :style="{backgroundColor: getColor()}" style="right: 0%;" @click="clickButton2(friend)">
-							{{ getLabelButton()}}
+						<button v-if="button2IsVisible()" class="friend_accept" :style="{ backgroundColor: getColor() }"
+							style="right: 0%;" @click="clickButton2(friend)">
+							{{ getLabelButton() }}
 						</button>
 					</div>
 				</div>
@@ -76,8 +77,7 @@ function changePage(step: number) {
 	}
 }
 
-function getNickname(friend: any)
-{
+function getNickname(friend: any) {
 	if (props.menu == 1)
 		return friend.requestorName;
 	else if (props.menu == 2)
@@ -86,8 +86,7 @@ function getNickname(friend: any)
 		return friend.blocker.nickname;
 }
 
-function openProfile(friend: any)
-{
+function openProfile(friend: any) {
 	let userId;
 	if (props.menu == 1)
 		userId = friend.requestorId;
@@ -110,8 +109,7 @@ function closeBoard() {
 
 async function clickButton1(friend: any) {
 	close_sound.play();
-	if (props.menu == 1)
-	{
+	if (props.menu == 1) {
 		await userStore().acceptFriendRequest(friend.requestorId, friend.requestorName);
 		users.value = userStore().user.friendsRequests.filter((request: { requestorId: number; }) => request.requestorId !== userStore().user.id);
 	}
@@ -119,13 +117,11 @@ async function clickButton1(friend: any) {
 
 async function clickButton2(friend: any) {
 	close_sound.play();
-	if (props.menu == 1)
-	{
+	if (props.menu == 1) {
 		await userStore().rejectFriendRequest(friend.requestorId);
 		users.value = userStore().user.friendsRequests.filter((request: { requestorId: number; }) => request.requestorId !== userStore().user.id);
 	}
-	else if (props.menu == 2)
-	{
+	else if (props.menu == 2) {
 		await userStore().unblockUser(friend.blockedId);
 		users.value = userStore().user.block.filter((block: any) => block.blockedId !== userStore().user.id);
 	}
@@ -174,7 +170,6 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-
 .friendRequest_board {
 	position: absolute;
 	width: 350px;
@@ -258,20 +253,20 @@ onMounted(async () => {
 }
 
 .friend_accept {
-    position: absolute;
-    right: 16%;
-    width: 15%;
-    height: 35px;
-    top: 0%;
-    /* transform: translateY(-50%); */
-    background-color: green;
-    border: 1px solid black;
-    border-radius: 8px;
+	position: absolute;
+	right: 16%;
+	width: 15%;
+	height: 35px;
+	top: 0%;
+	/* transform: translateY(-50%); */
+	background-color: green;
+	border: 1px solid black;
+	border-radius: 8px;
 }
 
 .friend_accept:hover {
-    cursor: pointer;
-    opacity: 0.75;
+	cursor: pointer;
+	opacity: 0.75;
 }
 
 .friend_message.button {
@@ -300,6 +295,7 @@ onMounted(async () => {
 .fade-leave-to {
 	opacity: 0;
 }
+
 .pagination-buttons {
 	top: 92.5%;
 }
@@ -352,5 +348,4 @@ onMounted(async () => {
 	background-color: darkred;
 	color: white;
 }
-
 </style>

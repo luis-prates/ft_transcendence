@@ -327,9 +327,9 @@ function closeShop() {
     top: 4%;
     left: 50%;
     background-image: url('src/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg');
-    background-size: 1500% 1500%;
-    background-position-x: -835px;
-    background-position-y: -40px;
+    background-size: 1700% 1700%;
+    background-position-x: -960px;
+    background-position-y: -990px;
     transform: translateX(-50%);
     background-color: gold;
     border: 2px solid black;
@@ -340,13 +340,13 @@ function closeShop() {
     0% {
         background-size: 1500% 1500%;
         background-position-x: -835px;
-        background-position-y: -40px;
+        background-position-y: -990px;
     }
 
     100% {
         background-size: 1700% 1700%;
         background-position-x: -960px;
-        background-position-y: -40px;
+        background-position-y: -1120px;
     }
 }
 

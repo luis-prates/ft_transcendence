@@ -10,7 +10,8 @@
 						<p v-if="isVisible(0, game)" class="game_nickname">{{ getNickname(0, game) }}</p>
 						<img class="game_image game_vs_image" :src="vsImage">
 						<img v-if="isVisible(1, game)" class="game_image" style="left: 91%;" :src="getPhoto(1, game)">
-						<p v-if="isVisible(1, game)" class="game_nickname" style="left: 57.5%;">{{ getNickname(1, game) }}</p>
+						<p v-if="isVisible(1, game)" class="game_nickname" style="left: 57.5%;">{{ getNickname(1, game) }}
+						</p>
 					</div>
 				</div>
 			</div>
@@ -68,18 +69,15 @@ function changePage(step: number) {
 	}
 }
 
-function getNickname(nb: number, game: GAME)
-{
+function getNickname(nb: number, game: GAME) {
 	return game.players[nb]?.nickname;
 }
 
-function getPhoto(nb: number, game: GAME)
-{
+function getPhoto(nb: number, game: GAME) {
 	return game.players[nb].image ? game.players[nb].image : defaultAvatar;
 }
 
-function enterGame(game: GAME)
-{
+function enterGame(game: GAME) {
 	close_sound.play();
 	Router.push(`/game?objectId=${game.id}`);
 }
@@ -95,15 +93,12 @@ function isVisible(nb: number, game: GAME) {
 	return false;
 }
 
-async function getGames()
-{
-	if (props.menu == 1)
-	{
+async function getGames() {
+	if (props.menu == 1) {
 		const game = await userStore().getGames(GameStatus.NOT_STARTED);
 		users.value = game;
 	}
-	else
-	{
+	else {
 		const game = await userStore().getGames(GameStatus.IN_PROGESS);
 		users.value = game;
 	}
@@ -115,7 +110,6 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-
 .battlelist_board {
 	position: absolute;
 	width: 450px;
@@ -200,27 +194,27 @@ onMounted(async () => {
 
 
 .game_image.game_vs_image {
-    left: 50%;
-    transform: translateX(-50%);
+	left: 50%;
+	transform: translateX(-50%);
 	border: 0px;
-    border-radius: 0px;
+	border-radius: 0px;
 }
 
 .friend_accept {
-    position: absolute;
-    right: 16%;
-    width: 15%;
-    height: 35px;
-    top: 0%;
-    /* transform: translateY(-50%); */
-    background-color: green;
-    border: 1px solid black;
-    border-radius: 8px;
+	position: absolute;
+	right: 16%;
+	width: 15%;
+	height: 35px;
+	top: 0%;
+	/* transform: translateY(-50%); */
+	background-color: green;
+	border: 1px solid black;
+	border-radius: 8px;
 }
 
 .friend_accept:hover {
-    cursor: pointer;
-    opacity: 0.75;
+	cursor: pointer;
+	opacity: 0.75;
 }
 
 .friend_message.button {
@@ -248,6 +242,7 @@ onMounted(async () => {
 .fade-leave-to {
 	opacity: 0;
 }
+
 .pagination-buttons {
 	top: 92.5%;
 }
@@ -300,5 +295,4 @@ onMounted(async () => {
 	background-color: darkred;
 	color: white;
 }
-
 </style>

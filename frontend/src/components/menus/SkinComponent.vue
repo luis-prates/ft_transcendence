@@ -1,6 +1,8 @@
 <template>
-    <img v-if="props.skin && props.type == TypeSkin.Paddle" id="paddleImage" :src="getPaddle(props.type)" class="user_paddle_image">
-    <img v-if="props.skin && props.type == TypeSkin.Table" id="paddleImage" :src="getPaddle(props.type)" class="user_table_image">
+    <img v-if="props.skin && props.type == TypeSkin.Paddle" id="paddleImage" :src="getPaddle(props.type)"
+        class="user_paddle_image">
+    <img v-if="props.skin && props.type == TypeSkin.Table" id="paddleImage" :src="getPaddle(props.type)"
+        class="user_table_image">
 </template>
 
 <script setup lang="ts">
@@ -17,8 +19,6 @@ function getPaddle(type: TypeSkin) {
 </script>
 
 <style scoped lang="scss">
-
-
 .user_paddle_image {
     height: 125px;
     width: 50px;
@@ -34,5 +34,4 @@ function getPaddle(type: TypeSkin) {
     left: -2.6px;
     top: -3px;
 }
-
 </style>

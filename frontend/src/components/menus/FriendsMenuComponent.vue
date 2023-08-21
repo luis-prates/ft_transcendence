@@ -60,13 +60,11 @@ function changePage(step: number) {
 	}
 }
 
-function getPhoto(player: any)
-{
+function getPhoto(player: any) {
 	return player.image ? player.image : defaultAvatar;
 }
 
-function openProfile(userId: number)
-{
+function openProfile(userId: number) {
 	close_sound.play();
 	if (userId != userStore().user.id)
 		userStore().userSelected = userId;
@@ -85,12 +83,11 @@ function sendDm() {
 }
 
 onMounted(async () => {
-		
+
 });
 </script>
 
 <style scoped lang="scss">
-
 .friend_board {
 	position: absolute;
 	width: 450px;
@@ -208,6 +205,7 @@ onMounted(async () => {
 .fade-leave-to {
 	opacity: 0;
 }
+
 .pagination-buttons {
 	top: 92.5%;
 }
@@ -260,5 +258,4 @@ onMounted(async () => {
 	background-color: darkred;
 	color: white;
 }
-
 </style>

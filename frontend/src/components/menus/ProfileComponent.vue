@@ -196,7 +196,7 @@ function changePage(step: number) {
 const selectedColor = ref(user.color);
 
 function closeProfile() {
-	close_sound.play();
+    close_sound.play();
     instance?.emit("close-profile");
 }
 
@@ -215,7 +215,7 @@ onMounted(() => {
     left: 0%;
     top: 10%;
     width: 465px;
-    height: 650px;
+    height: 630px;
     background-color: rgba(210, 180, 140, 0.6);
     border: 2px solid black;
     border-radius: 10px;

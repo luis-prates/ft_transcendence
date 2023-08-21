@@ -1,15 +1,16 @@
 <template>
     <ShopCommponent v-if="yourShop" @close-shop="closeMenu()" />
-    <LeaderBoardComponent v-if="leaderboard" @close-leaderboard="closeMenu()"/>
-    <CreateGameComponent v-if="createGame" :data="createGameData" @close-createGame="closeMenu()"/>
-    
-    <FriendsMenuComponent v-if="friendsMenu" @close-friends="closeMenu()"/>
-    <MessageBattleMenuComponent v-if="menu > 0" :menu="menu" @close-menus-mb="closeMenu()"/>
-    
+    <LeaderBoardComponent v-if="leaderboard" @close-leaderboard="closeMenu()" />
+    <CreateGameComponent v-if="createGame" :data="createGameData" @close-createGame="closeMenu()" />
+
+    <FriendsMenuComponent v-if="friendsMenu" @close-friends="closeMenu()" />
+    <MessageBattleMenuComponent v-if="menu > 0" :menu="menu" @close-menus-mb="closeMenu()" />
+
     <MyProfileComponent v-if="myProfile" @close-profile="closeProfile()" />
     <ProfileComponent v-if="yourProfile" :user="userProfile" class="profile_component" @close-profile="closeProfile()" />
 
-    <SpeechBubbleComponent v-if="speechBubbleActive" :npc="npcSelected" :message="npcMessage" @close-bubble="closeBubble()"/>
+    <SpeechBubbleComponent v-if="speechBubbleActive" :npc="npcSelected" :message="npcMessage"
+        @close-bubble="closeBubble()" />
 </template>
 
 <script setup lang="ts">
@@ -72,38 +73,31 @@ onMounted(() => {
 watch(() => userStore().userSelected, (newValue, oldValue) => {
     console.log("userSelected changed:", newValue, oldValue);
     if (newValue) {
-        if (newValue == "me")
-        {
+        if (newValue == "me") {
             closeProfile();
             myProfile.value = true;
         }
-        else if (newValue == "shop")
-        {
+        else if (newValue == "shop") {
             closeMenu();
             yourShop.value = true;
         }
-        else if (newValue == "leaderboard")
-        {
+        else if (newValue == "leaderboard") {
             closeMenu();
             leaderboard.value = true;
         }
-        else if (newValue == "friends")
-        {
+        else if (newValue == "friends") {
             closeMenu();
             friendsMenu.value = true;
         }
-        else if (newValue == "messages")
-        {
+        else if (newValue == "messages") {
             closeMenu();
             menu.value = 1;
         }
-        else if (newValue == "battles")
-        {
+        else if (newValue == "battles") {
             closeMenu();
             menu.value = 2;
         }
-        else if (newValue == "npc")
-        {
+        else if (newValue == "npc") {
             speechBubbleActive.value = true;
             npcSelected.value = userStore().npcSelected;
             npcMessage.value = userStore().npcSelected.message;
@@ -111,7 +105,7 @@ watch(() => userStore().userSelected, (newValue, oldValue) => {
         else getUserDetails(newValue);
     }
 },
-{ deep: true });
+    { deep: true });
 
 
 watch(() => userStore().newGame, (newValue, oldValue) => {
@@ -123,7 +117,7 @@ watch(() => userStore().newGame, (newValue, oldValue) => {
         userStore().newGame = undefined;
     }
 },
-{ deep: true });
+    { deep: true });
 
 
 // onUnmounted(() => {

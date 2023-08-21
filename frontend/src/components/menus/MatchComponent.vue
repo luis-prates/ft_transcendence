@@ -1,12 +1,12 @@
 <template>
     <div class="match_result" :class="{ win: getResult() === 'WIN!', lost: getResult() === 'LOST!' }">
-      {{ getResult() }}
+        {{ getResult() }}
     </div>
     <div class="match_player1">
         <img id="avatarImage" :src="getPhoto(1)" class="match_image">
         <div class="match_nickname">{{ props.match.players[0].nickname }}</div>
     </div>
-    
+
     <div class="match_player2">
         <img id="avatarImage" :src="getPhoto(2)" class="match_image">
         <div class="match_nickname">{{ props.match.players[1].nickname }}</div>
@@ -26,8 +26,7 @@ const vs_image = "src/assets/images/lobby/menu/vs.png";
 const defaultAvatar = "../../src/assets/chat/avatar.png";
 
 
-function getPhoto(player: number)
-{
+function getPhoto(player: number) {
     if (player == 1)
         return props.match.players[0].image ? props.match.players[0].image : defaultAvatar;
     else if (player == 2)
@@ -35,15 +34,13 @@ function getPhoto(player: number)
     return vs_image;
 }
 
-function getScore()
-{
+function getScore() {
     if (props.match.players[0].id == props.match.winnerId)
         return (props.match.winnerScore + "-" + props.match.loserScore);
     return (props.match.loserScore + "-" + props.match.winnerScore);
 }
 
-function getResult()
-{
+function getResult() {
     if (props.user.id == props.match.winnerId)
         return ("WIN!");
     return ("LOST!");
@@ -58,8 +55,6 @@ function getResult()
 </script>
 
 <style scoped lang="scss">
-
-
 .match_player1 {
     position: absolute;
     top: 20%;
@@ -67,6 +62,7 @@ function getResult()
     width: 40%;
     left: 2%;
 }
+
 .match_player2 {
     position: absolute;
     top: 20%;
@@ -132,12 +128,10 @@ function getResult()
 }
 
 .win {
-  color: gold;
+    color: gold;
 }
 
 .lost {
-  color: whitesmoke;
+    color: whitesmoke;
 }
-
-
 </style>
