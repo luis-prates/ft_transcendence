@@ -345,7 +345,6 @@ function test() {
     height: 64px;
     margin-right: 10px;
   }
-<<<<<<< HEAD
 }
 
 .button-container {
@@ -433,6 +432,4 @@ function test() {
   bottom: -0.5vw;
   left: 2.5vw;
   z-index: 3;
-=======
->>>>>>> feature/lobby_marge_maps
 }</style>

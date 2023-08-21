@@ -117,7 +117,7 @@ export class MapObject extends Map {
       if (!nickname) return;
       const typeNpc = this.checkColision(x, y) ? "NULL" : window.prompt("type:");
       this.setGameObjects(x, y, button, { className: "Npc", nickname, typeNpc }, (gameObject: Npc) => {
-        const avatar = gameObject.avatar + 1;
+        const avatar = gameObject.avatar + 1;//TODO REVIEW
         gameObject.setData({ avatar: avatar > 7 ? 0 : avatar });
         const data = MapObject.datas.find((data) => data.gamaObject == gameObject);
         if (data) data.data["avatar"] = gameObject.avatar;

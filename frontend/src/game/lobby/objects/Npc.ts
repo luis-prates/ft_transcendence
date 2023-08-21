@@ -7,7 +7,7 @@ import { userStore } from "@/stores/userStore";
 export class Npc extends Character {
   public message: string;
   public timeOut: number;
-  public type_npc: string = "npc";
+  public typeNpc: string = "npc";
 
   constructor(data?: any) {
     super();
@@ -16,9 +16,9 @@ export class Npc extends Character {
     this.animation.sx = 144;
     this.x = 1850;
     this.y = 700;
-    this.message = "Bem vindos amigos!";
+    this.message = "";
     this.timeOut = 10;
-    console.log("npc: ", this.x, this.y);
+    // console.log("npc: ", this.x, this.y);
     if (data) this.setData(data);
   }
 
@@ -39,7 +39,7 @@ export class Npc extends Character {
     if (data?.x != undefined) this.x = data.x;
     if (data?.y != undefined) this.y = data.y;
     if (data?.nickname != undefined) this.nickname = data.nickname;
-    if (data?.type_npc != undefined) this.type_npc = data.type_npc || "npc";
+    if (data?.typeNpc != undefined) this.typeNpc = data.typeNpc;
     if (data?.avatar != undefined) {
       this.avatar = data.avatar || 1;
       this.animation.sx = (this.avatar - 4 >= 0 ? this.avatar - 4 : this.avatar) * 144;
@@ -70,11 +70,11 @@ export class Npc extends Character {
       return ;
     }
     
-    const m = new Menu({ KeyClose: "A" });
+    //const m = new Menu({ KeyClose: "A" });
     
     if (this.nickname == "Mafalda")
     {
-      this.message = "Hi! I'm Mafalda, the Headmaster for 42 Lisboa!";
+      this.message = "Hi, " + userStore().user.nickname + "! I'm Mafalda, the Headmaster for 42 Lisboa!";
       userStore().npcSelected = this;
       userStore().userSelected = "npc";
       // const e: ElementUI = {
