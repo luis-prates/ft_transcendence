@@ -39,7 +39,7 @@ export class Npc extends Character {
     if (data?.x != undefined) this.x = data.x;
     if (data?.y != undefined) this.y = data.y;
     if (data?.nickname != undefined) this.nickname = data.nickname;
-    if (data?.typeNpc != undefined) this.typeNpc = data.typeNpc;
+    if (data?.typeNpc != undefined) this.typeNpc = data.typeNpc || "npc";
     if (data?.avatar != undefined) {
       this.avatar = data.avatar || 1;
       this.animation.sx = (this.avatar - 4 >= 0 ? this.avatar - 4 : this.avatar) * 144;

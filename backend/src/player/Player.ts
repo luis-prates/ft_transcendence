@@ -93,7 +93,7 @@ export class Player {
 	}
 
 	public offLobby(event: string): void {
-		this._lobbySocket.off(event, () => { });
+		this._lobbySocket?.off(event, () => { });
 	}
 
 	public offGame(event: string): void {
