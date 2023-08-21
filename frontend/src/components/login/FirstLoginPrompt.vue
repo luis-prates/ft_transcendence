@@ -9,7 +9,7 @@
 					<div class="modal-body">
 						<input v-if="$props.type === 'picture'" type="file" id="firstLoginCodeInput" class="form-control" accept="image/*" @change="handlePictureChange" required />
 						<img v-if="profilePicURL" :src="profilePicURL" alt="Selected image" class="img-fluid mx-auto d-block mt-3" style="max-width: 400px; max-height: 400px;"/>
-						<input v-else type="text" id="firstLoginCodeInput" v-model="code" required />
+						<input v-if="$props.type === 'nickname'" type="text" id="firstLoginCodeInput" v-model="code" required />
 						<div v-if="errorMessage" class="invalid-feedback d-block">{{ errorMessage }}</div>
 					</div>
 						<div class="modal-footer border-top-0 text-white">

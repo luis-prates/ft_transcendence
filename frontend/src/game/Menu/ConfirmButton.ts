@@ -8,6 +8,7 @@ export enum STATUS_CONFIRM {
   FRIEND,
   FRIEND_REQUEST,
   BLOCK,
+  NOTIFICATION,
   ERROR,
 }
 
@@ -142,6 +143,8 @@ export class ConfirmButton {
       this.drawMessage(ctx, pos, "Are you sure you", "want to cancel the", "the friend request?");
     else if (this.type == STATUS_CONFIRM.BLOCK)
       this.drawMessage(ctx, pos, "Are you sure you", "want to block the", this.something + "?");
+    else if (this.type == STATUS_CONFIRM.NOTIFICATION)
+      this.drawMessage(ctx, pos, "Notification", this.something, "");
     else if (this.type == STATUS_CONFIRM.ERROR)
       this.drawMessage(ctx, pos, "Error", this.something, "");
   }

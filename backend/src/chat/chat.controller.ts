@@ -3,7 +3,7 @@ import { ChatService } from './chat.service';
 import { JwtGuard } from '../auth/guard';
 import { RolesGuard } from './roleguard';
 import { Roles } from './decorator';
-import { CreateChannelDto, JoinChannelDto, EditChannelDto } from './dto';
+import { CreateChannelDto, JoinChannelDto, EditChannelDto, MuteUserDto } from './dto';
 
 @UseGuards(JwtGuard)
 @Controller('chat/channels')
@@ -104,8 +104,12 @@ export class ChatController {
 	@Post(':channelId/mute/:userId')
 	@UseGuards(RolesGuard)
 	@Roles('admin', 'owner')
-	async muteUser(@Param('channelId') channelId: string, @Param('userId') userId: string) {
-		return this.chatService.muteUser(Number(channelId), Number(userId));
+	async muteUser(
+		@Param('channelId') channelId: string,
+		@Param('userId') userId: string,
+		@Body() muteUserDto: MuteUserDto,
+	) {
+		return this.chatService.muteUser(Number(channelId), Number(userId), muteUserDto.muteDuration);
 	}
 
 	// Unmute user
@@ -130,6 +134,14 @@ export class ChatController {
 	@Roles('admin', 'owner')
 	async demoteAdmin(@Request() req: any, @Param('channelId') channelId: string, @Param('userId') userId: string) {
 		return this.chatService.demoteAdmin(Number(req.user.id), Number(channelId), Number(userId));
+	}
+
+	// Make someone owner if you are the owner
+	@Post(':channelId/owner/:userId')
+	@UseGuards(RolesGuard)
+	@Roles('owner')
+	async makeOwner(@Param('channelId') channelId: string, @Param('userId') userId: string) {
+		return this.chatService.makeOwner(Number(channelId), Number(userId));
 	}
 
 	// Change channel password

@@ -23,18 +23,13 @@ export class LobbyService {
 	}
 
 	public connection(socket: Socket, payload: any): void {
-		console.log('LOGGG', payload);
 		const player: Player = this.playerService.onSocketConnected(socket, payload);
-		//! done in game.service.ts
-		// this.game.connection(player);
-		//this.chatController.connection(player);
 		this.logger.debug(`new connection: ${player.objectId}`);
 	}
 
 	public joinMap(socket: Socket, payload: any): void {
 		console.log('LOGGG', payload);
 		this.logger.debug('join_map event received');
-		//this.logger.debug('data received: ' + JSON.stringify(data));
 		this.logger.debug(`players count: ${this.playerService.getPlayerCount()}`);
 		const player = this.playerService.getPlayer(Number(payload.userId));
 		if (!player) {

@@ -35,7 +35,7 @@ export class AuthController {
 	@UseFilters(OAuthExceptionFilter)
 	@UseGuards(FortyTwoGuard)
 	authenticate42() {
-		passport.authenticate('42', { failureRedirect: '/login' });
+		passport.authenticate('42', { failureRedirect: '/' });
 	}
 
 	@Get('42/return')
@@ -82,7 +82,7 @@ export class AuthController {
 		const { secret, otpauthUrl } = await this.authService.generateTwoFactorSecret(user);
 
 		const responseObj = await this.authService.generateQrCodeDataURL(otpauthUrl);
-		//! secret needs to be removed in production
+		//TODO: secret needs to be removed in production
 		//! secret is needed for testing
 		return { secret, responseObj };
 	}

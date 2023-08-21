@@ -5,6 +5,9 @@ import axios from "axios";
 import type { TypeSkin } from "@/game/ping_pong/Skin";
 import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
+import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
+import { Game } from "@/game/base/Game";
+import { chatStore, type ChatMessage } from "./chatStore";
 
 export enum GameStatus {
   NOT_STARTED = "NOT_STARTED",
@@ -168,7 +171,7 @@ export const userStore = defineStore("user", function () {
         getBlockedUsers();
         getBlockedBy();
         getUserGames(user.id);
-		user.isLogin = true;
+        user.isLogin = true;
       })
       .catch(function (error) {
         console.error(error);
@@ -202,7 +205,7 @@ export const userStore = defineStore("user", function () {
   }
 
   async function loginTest() {
-	let isFirstTime = false;
+    let isFirstTime = false;
     // if (user.isLogin) return;
     await axios
       .post(env.BACKEND_SERVER_URL + "/auth/signin", user)
@@ -229,7 +232,7 @@ export const userStore = defineStore("user", function () {
         user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
         user.infoPong.skin.paddles = response.data.dto.paddleSkinsOwned;
         user.isTwoFAEnabled = response.data.dto.isTwoFAEnabled;
-		isFirstTime = response.data.firstTime;
+        isFirstTime = response.data.firstTime;
         getFriends();
         getFriendRequests();
         getBlockedUsers();
@@ -242,12 +245,11 @@ export const userStore = defineStore("user", function () {
     user.isLogin = true;
     console.log("USER: ", user);
     // .finally(() => window.location.href = window.location.origin);
-    return { firstTime: isFirstTime, isTwoFAEnabled: user.isTwoFAEnabled};
+    return { firstTime: isFirstTime, isTwoFAEnabled: user.isTwoFAEnabled };
   }
 
   async function updateProfile() {
     let body = {} as any;
-    body.nickname = user.nickname;
     body.avatar = user.avatar;
     body.image = user.image;
     body.color = user.infoPong.color;
@@ -261,6 +263,32 @@ export const userStore = defineStore("user", function () {
     await fetch(env.BACKEND_SERVER_URL + "/users/update_profile", options)
       .then(async (response) => console.log(await response.json()))
       .catch((err) => console.error(err));
+  }
+
+  async function updateNickname(newNickname: string): Promise<boolean> {
+    let body = {} as any;
+    body.nickname = newNickname;
+
+    const options = {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${user.access_token_server}` },
+      body: new URLSearchParams(body),
+    };
+    return await fetch(env.BACKEND_SERVER_URL + "/users/update_profile", options)
+      .then(function (response: any) {
+        if (response.ok) {
+          user.nickname = newNickname;
+          user.infoPong.historic.forEach(function (game: GAME) {
+            if (game.loserId == user.id) game.loserNickname = newNickname;
+            else game.winnerNickname = newNickname;
+          });
+        }
+        return response.ok;
+      })
+      .catch(function (err: any) {
+        console.error("COMIDAAA", err);
+        return false;
+      });
   }
 
   async function buy_skin(skin: string, type: TypeSkin, price: number) {
@@ -537,27 +565,38 @@ export const userStore = defineStore("user", function () {
     await fetch(env.BACKEND_SERVER_URL + "/blocklist/block/" + userId, options)
       .then(async function (response: any) {
         //Add in Store
-        const existingEvent = user.block.find((block: any) => block.blockedId === userId);
-        if (!existingEvent) {
-          user.block.push({
-            blocked: {
-              id: userId,
-              nickname: userNickname,
-              image: userImage,
-            },
-            blockedId: userId,
+        if (response.ok) {
+          const existingEvent = user.block.find((block: any) => block.blockedId === userId);
+          if (!existingEvent) {
+            user.block.push({
+              blocked: {
+                id: userId,
+                nickname: userNickname,
+                image: userImage,
+              },
+              blockedId: userId,
+              blockerId: user.id,
+            });
+          }
+          console.log("Block User:", userNickname, user.block);
+
+          //Block Messages from this User Block
+          let channels = chatStore().channels;
+          const blockList = user.block.filter((block: Block) => block.blockedId !== user.id);
+          blockList.forEach(function (block: Block) {
+            channels.forEach(function (channel: any) {
+              channel.messages = channel.messages.filter((message: ChatMessage) => block.blockedId !== message.userId);
+            });
+          });
+
+          //Emit
+          const lobbySocket: Socket = socketClass.getLobbySocket();
+          lobbySocket.emit("block_user", {
             blockerId: user.id,
+            blockerNickname: user.nickname,
+            blockId: userId,
           });
         }
-        console.log("Block User:", userNickname, user.block);
-
-        //Emit
-        const lobbySocket: Socket = socketClass.getLobbySocket();
-        lobbySocket.emit("block_user", {
-          blockerId: user.id,
-          blockerNickname: user.nickname,
-          blockId: userId,
-        });
       })
       .catch((err) => console.error(err));
   }
@@ -571,8 +610,8 @@ export const userStore = defineStore("user", function () {
     await fetch(env.BACKEND_SERVER_URL + "/blocklist/block/" + userId, options)
       .then(async function (response: any) {
         //Add in Store
-        user.block = user.block.filter((block: any) => block.blockedId == userId);
-        console.log("Block: ", userId, ": ", user.block);
+        user.block = user.block.filter((block: any) => block.blockedId != userId);
+        console.log("UnBlock: ", userId, ": ", user.block);
 
         //Emit
         const lobbySocket: Socket = socketClass.getLobbySocket();
@@ -733,6 +772,48 @@ export const userStore = defineStore("user", function () {
       });
   }
 
+  function challengeUser(challangedUserID: number, challangedUserNickname: string): string {
+    const lobbySocket = socketClass.getLobbySocket();
+    const confirmButton = new ConfirmButton(challangedUserNickname, STATUS_CONFIRM.CHALLENGE);
+    confirmButton.show((value) => {
+      if (value == "CONFIRM") {
+        lobbySocket.emit("invite_game", {
+          //Desafiador
+          challengerId: user.id,
+          challengerNickname: user.nickname,
+          //Desafiado
+          challengedId: challangedUserID,
+          challengedNickname: challangedUserNickname,
+        });
+
+        lobbySocket.on("invite_request_game", (e: any) => {
+          const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
+          Game.instance.addMenu(confirmButton.menu);
+          confirmButton.show((value) => {
+            if (value == "CONFIRM") {
+              lobbySocket.emit("challenge_game", {
+                challenged: user.id,
+                challenger: e.playerId,
+              });
+            }
+          });
+        });
+
+        lobbySocket.on("invite_confirm_game", (message: string) => {
+          const confirmButton = new ConfirmButton(message, STATUS_CONFIRM.NOTIFICATION, 5000);
+          Game.instance.addMenu(confirmButton.menu);
+          lobbySocket.off("invite_confirm_game");
+        });
+        return "CONFIRM";
+      } else return "CANCEL";
+    });
+    return "";
+  }
+
+  function logout() {
+    user.isLogin = false;
+  }
+
   return {
     user,
     login,
@@ -741,10 +822,12 @@ export const userStore = defineStore("user", function () {
     //User Information
     update,
     updateProfile,
+    updateNickname,
     buy_skin,
     updateTableDefault,
     getUsers,
     getUserProfile,
+    challengeUser,
 
     //Friends
     getFriends,
@@ -774,6 +857,8 @@ export const userStore = defineStore("user", function () {
     twoFATurnOn,
     twoFATurnOff,
 
-	firstTimePrompt,
+    firstTimePrompt,
+
+    logout,
   };
 });

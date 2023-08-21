@@ -58,23 +58,8 @@ export class Player {
 
 	setSocket(value: Socket) {
 		this.logger.debug(`setSocket: ${value.id}`);
-		this.time = 0;
 		value.on('disconnect', () => {
-			this.time = Date.now();
-			setTimeout(() => {
-				console.log('disconnect: ' + this.objectId);
-				if (this.time && this.map) {
-					//! this is the first call to remove player
-					//! need to fix infinite loop that starts here
-					console.log('TIME DISCONNECT CRL');
-					this.map.removePlayer(this);
-					//! useless since I'm removing it on the line above
-					// Lobby.players = Lobby.players.splice(
-					// 	Lobby.players.indexOf(this),
-					// 	1,
-					// );
-				}
-			}, 30000);
+			this.map?.removePlayer(this);
 		});
 		this._lobbySocket = value;
 	}
@@ -92,19 +77,19 @@ export class Player {
 	}
 
 	public emitToLobby(event: string, data: any): void {
-		this._lobbySocket.emit(event, data);
+		this._lobbySocket?.emit(event, data);
 	}
 
 	public emitToGame(event: string, data: any): void {
-		this.gameSocket.emit(event, data);
+		this.gameSocket?.emit(event, data);
 	}
 
 	public onLobby(event: string, callback: (...args: any[]) => void): void {
-		this._lobbySocket.on(event, callback);
+		this._lobbySocket?.on(event, callback);
 	}
 
 	public onGame(event: string, callback: (...args: any[]) => void): void {
-		this.gameSocket.on(event, callback);
+		this.gameSocket?.on(event, callback);
 	}
 
 	public offLobby(event: string): void {
@@ -112,16 +97,16 @@ export class Player {
 	}
 
 	public offGame(event: string): void {
-		this.gameSocket.off(event, () => { });
+		this.gameSocket?.off(event, () => {});
 	}
 
-	public offAll(): void {
+	public offAll(event: string): void {
 		// this._socket.offAll();
+		this._lobbySocket?.off(event, () => {});
 	}
 
 	public destroy(): void {
-		this.offAll();
-		this._lobbySocket.disconnect();
+		this._lobbySocket?.disconnect();
 		this.gameSocket?.disconnect();
 		// this.playerService.players = Lobby.players.splice(Lobby.players.indexOf(this), 1);
 		// this.playerService?.removePlayer(this);
