@@ -2,7 +2,7 @@ import { Character } from "../../base/Character";
 import { socketClass } from "@/socket/SocketClass";
 import { Map } from "./Map";
 import { Game } from "@/game/base/Game";
-import type { GameObject } from "@/game/base/GameObject";
+import type { GameObject, Rectangle } from "@/game/base/GameObject";
 import { type Ref } from "vue";
 import { userStore, type GAME } from "@/stores/userStore";
 import { LeaderBoard } from "@/game/Menu/LeaderBoard";
@@ -83,7 +83,7 @@ export class Player extends Character {
     }
   }
 
-  onSelected(): void {}
+  onSelected(): void { }
 
   public setLookAt(gameObject: GameObject): void {
     super.setLookAt(gameObject);
@@ -94,9 +94,27 @@ export class Player extends Character {
     this.agent.setPath([]);
   }
 
-  interaction(gameObject: GameObject): void {}
-  // public move(x: number, y: number, animation: string): void {
-  //   super.move(x, y, animation);
-  //   socket.emit("update_gameobject", { className: "Character", objectId: this.objectId, name: this.name, x: this.x, y: this.y, animation: { name: animation, isStop: this.animation.isStop } });
-  // }
+  interaction(gameObject: GameObject): void {
+  }
+
+  public getRetanguloTable(): Rectangle {
+    const x1 = Math.floor(this.x / Map.SIZE) * Map.SIZE
+    const y1 = Math.floor(this.y / Map.SIZE) * Map.SIZE
+    return ({ x: x1 - (Map.SIZE * 3), y: y1 - (Map.SIZE * 3), w: Map.SIZE * 6, h: Map.SIZE * 6 });
+  }
+
+  public isRectangleInsideTable(rect1: Rectangle): boolean {
+    if (!this.isRectangleInside(rect1, this.getRetanguloTable())) return false;
+    for (let gameObject of Game.instance.gameObjets) {
+      if (Game.isColision(gameObject, rect1 as any)) {
+        return false
+      };
+    };
+
+    return true;
+  }
+  public isRectangleInside(rect1: Rectangle, rect2: Rectangle): boolean {
+    return (rect1.x >= rect2.x && (rect1.x) <= rect2.x + rect2.w && rect1.y >= rect2.y && (rect1.y) <= rect2.y + rect2.h);
+  }
+
 }

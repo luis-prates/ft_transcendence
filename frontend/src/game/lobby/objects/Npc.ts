@@ -1,5 +1,5 @@
 import { Character } from "@/game/base/Character";
-import { Game, Menu, Player } from "@/game";
+import { type ElementUI, Game, Menu, Player } from "@/game";
 import { SpeechBubble } from "../../Menu/SpeechBubble";
 import { Shop } from "../../Menu/Shop";
 import { userStore } from "@/stores/userStore";
@@ -7,8 +7,9 @@ import { userStore } from "@/stores/userStore";
 export class Npc extends Character {
   public message: string;
   public timeOut: number;
+  public type_npc: string = "npc";
 
-  constructor() {
+  constructor(data?: any) {
     super();
     this.nickname = "Shop Amelia";
     this.type = "npc";
@@ -17,6 +18,8 @@ export class Npc extends Character {
     this.y = 700;
     this.message = "Bem vindos amigos!";
     this.timeOut = 10;
+    console.log("npc: ", this.x, this.y);
+    if (data) this.setData(data);
   }
 
   private pontoEvento = [
@@ -25,6 +28,24 @@ export class Npc extends Character {
     // { x: 16, y: 48 },
     // { x: 16, y: -48 },
   ];
+
+  public setData(data: any): void {
+    console.log("npc: ", data);
+    if (data?.animation != undefined) {
+      this.animation?.setAnimation(data.animation.name);
+      this.animation?.setStop(data.animation.isStop);
+    }
+    if (data?.objectId != undefined) this.objectId = data.objectId;
+    if (data?.x != undefined) this.x = data.x;
+    if (data?.y != undefined) this.y = data.y;
+    if (data?.nickname != undefined) this.nickname = data.nickname;
+    if (data?.type_npc != undefined) this.type_npc = data.type_npc || "npc";
+    if (data?.avatar != undefined) {
+      this.avatar = data.avatar || 1;
+      this.animation.sx = (this.avatar - 4 >= 0 ? this.avatar - 4 : this.avatar) * 144;
+      this.animation.sy = (this.avatar - 4 >= 0 ? 1 : 0) * 320;
+    }
+  }
 
   draw(context: CanvasRenderingContext2D): void {
     super.draw(context);
@@ -38,9 +59,43 @@ export class Npc extends Character {
 
   public interaction(gameObject: Character): void {
     this.setLookAt(gameObject);
-    userStore().userSelected = "shop";
-   /* userStore().npcSelected = this;
+    /* userStore().npcSelected = this;
     userStore().userSelected = "npc";*/
     // Game.instance.addMenu(new Shop().menu);
+    
+    if (this.nickname == "Shop Amelia")
+    {
+      userStore().userSelected = "shop";
+      // Game.instance.addMenu(new Shop().menu);
+      return ;
+    }
+    
+    const m = new Menu({ KeyClose: "A" });
+    
+    if (this.nickname == "Mafalda")
+    {
+      this.message = "Hi! I'm Mafalda, the Headmaster for 42 Lisboa!";
+      userStore().npcSelected = this;
+      userStore().userSelected = "npc";
+      // const e: ElementUI = {
+      //   type: "button",
+      //   rectangle: SpeechBubble.rectangleDimesion("Hi! I'm Mafalda, the Headmaster for 42 Lisboa!", this.x, this.y),
+      //   draw: (c) => SpeechBubble.draw(c, e.rectangle, "Hi! I'm Mafalda, the Headmaster for 42 Lisboa!"),
+      // };
+      // m.add(e);
+    }
+    else if (this.nickname == "Lili")
+    {
+      this.message = "Hi! I'm Lili, the Security Guard for 42 Lisboa! Welcome!";
+      userStore().npcSelected = this;
+      userStore().userSelected = "npc";
+      // const e: ElementUI = {
+      //   type: "button",
+      //   rectangle: SpeechBubble.rectangleDimesion("Hi! I'm Lili, the Security Guard for 42 Lisboa! Welcome!", this.x, this.y),
+      //   draw: (c) => SpeechBubble.draw(c, e.rectangle, "Hi! I'm Lili, the Security Guard for 42 Lisboa! Welcome!"),
+      // };
+      // m.add(e);
+    }
+    // Game.addMenu(m);
   }
 }

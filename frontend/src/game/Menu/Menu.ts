@@ -94,11 +94,10 @@ export class Menu implements GameObject {
 
   setData(data: any) {}
 
-  setTimeOut(timeOut: number)
-  {
+  setTimeOut(timeOut: number) {
     setTimeout(() => {
       Game.instance.removeMenu(this);
-  }, timeOut);
+    }, timeOut);
   }
 
   public add(parent?: ElementUI, ...elements: ElementUI[]) {

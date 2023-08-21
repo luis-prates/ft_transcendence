@@ -11,7 +11,7 @@ export class Lobby extends Game {
 
   constructor(map: Map, player: Player) {
     super(map, player);
-    this.addGameObject(new Npc());
+    //this.addGameObject(new Npc());
 	this.lobbySocket.on("new_gameobject", (data: any) => {
       this.addGameObjectData(data);
       console.log("new_gameobject", data);

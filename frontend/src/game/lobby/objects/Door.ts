@@ -22,7 +22,10 @@ export class Door implements GameObject {
 
   draw(contex: CanvasRenderingContext2D): void {
     contex.fillStyle = "#1821E7";
-    contex.fillRect(this.x, this.y, Map.SIZE, Map.SIZE);
+    contex.beginPath();
+    contex.arc(this.x + Map.SIZE / 2, this.y + Map.SIZE / 2, 3, 0, 2 * Math.PI);
+    contex.fill();
+    contex.closePath();
   }
 
   setData(data: any): void {
@@ -34,8 +37,12 @@ export class Door implements GameObject {
   }
 
   interaction(gameObject: GameObject): void {
-    console.log("door -> interaction", gameObject);
-    this.lobbySocket.emit("join_map", { objectId: gameObject.objectId, map: { name: "house", position: { x: 300, y: 300 } } });
+    this.lobbySocket.emit("join_map", {
+      userId: gameObject.objectId, objectId: gameObject.objectId, map: {
+        name: this.mapName,
+        position: this.mapPosition
+      }
+    });
   }
 
   public getPointEvent(): { x: number; y: number } {
@@ -43,6 +50,5 @@ export class Door implements GameObject {
   }
 
   onSelected(): void {
-    console.log("door -> onSelected");
   }
 }
