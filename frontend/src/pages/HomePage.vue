@@ -2,17 +2,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" />
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
   <div class="box" href>
-    <!-- <ProfileComponent class="profile" />     -->
     <LobbyComponent />
-    <!-- <MapEditComponent /> -->
-    <!-- <ProfileComponent class="profile" /> -->
   </div>
-  <!-- <input id="inputTwoFactor" type="text" pattern="[0-9]+" value="" disabled="false" style="display: none; background-color: transparent; font-family: 'Press Start 2P';" :maxlength="6"> -->
 </template>
 
 <script setup lang="ts">
 import { userStore } from "@/stores/userStore";
-import { ChatComponent } from "@/components";
 import LobbyComponent from "@/components/lobby/LobbyComponent.vue";
 import MapEditComponent from "@/components/lobby/MapEditComponent.vue";
 
