@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
 import { userStore, type Block, type Friendship, type GAME } from "@/stores/userStore";
@@ -72,7 +72,6 @@ const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 let lobby: Lobby | null = null;
 let notification = ref(0);
-const isLoaded = ref(false);
 const socket = socketClass.getLobbySocket();
 const confirmButtonActive = ref(false);
 let buttonMessage: string = "";
@@ -90,6 +89,8 @@ const {
 function clearNotification() {
   notification.value = 0;
 }
+
+const isLoaded = computed(() => Lobby.isLoaded.value) ;
 
 function activeButton(title:string, message: string, confirmFunction: Function, timeOut?: number) {
   buttonTitle = title;
@@ -112,7 +113,7 @@ function onCancel () {
 onMounted(() => {
 
   notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;
-  isLoaded.value = false;
+  Lobby.isLoaded.value = false;
   if (socket == undefined) {
     console.log("socket is undefined");
     Router.push('/');
@@ -131,10 +132,10 @@ onMounted(() => {
           data.data.forEach((d: any) => {
             lobby?.addGameObjectData(d);
           });
-          isLoaded.value = true;
+          Lobby.isLoaded.value = true;
           lobby.update();
         }
-        console.log("isConcted.value : ", isLoaded.value);
+        console.log("isConcted.value : ",  Lobby.isLoaded.value);
       });
     }, 1000);
   });
