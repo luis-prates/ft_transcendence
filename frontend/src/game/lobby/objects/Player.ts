@@ -5,14 +5,7 @@ import { Game } from "@/game/base/Game";
 import type { GameObject, Rectangle } from "@/game/base/GameObject";
 import { type Ref } from "vue";
 import { userStore, type GAME } from "@/stores/userStore";
-import { LeaderBoard } from "@/game/Menu/LeaderBoard";
-import { Profile } from "@/game/Menu/Profile";
-import { YourProfile } from "@/game/Menu/YourProfile";
-import { ConfirmButton } from "@/game/Menu/ConfirmButton";
-import { Shop } from "@/game/Menu/Shop";
 import type { Socket } from "socket.io-client";
-import { YourMenu } from "@/game/Menu/YourMenu";
-import { ProfileComponent } from "@/components";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
