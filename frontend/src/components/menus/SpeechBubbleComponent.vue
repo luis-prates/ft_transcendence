@@ -2,9 +2,12 @@
     <div class="npc_window">
         <div id="npcAvatar" class="npc_avatar"></div>
         <div style="position: absolute; left: 12%; color: orange;">
-            {{ props.npc.nickname }}:
+            <strong>{{ props.npc.nickname }}:</strong>
         </div>
-        <div id="npc_say" class="typewriter" @click="nextSpeechOrClose()">{{ props.message }}</div>
+        <div id="npc_say" class="typewriter" @click="nextSpeechOrClose()">
+            {{ message[currentMessageIndex] }}
+        </div>
+        <div class="close-button" @click="closeBallon()"></div>
     </div>
 </template>
 
@@ -15,6 +18,7 @@ const props = defineProps<{ npc: any, message: any }>();
 
 const instance = getCurrentInstance();
 const isInsideComponent = ref(false);
+const currentMessageIndex = ref(0);
 
 function changeAvatarPage() {
 
@@ -33,24 +37,30 @@ function closeBallon() {
 }
 
 function nextSpeechOrClose() {
-    console.log("hi!");
-    closeBallon();
-}
+    console.log("message leng:", props.message.length, " current: ", currentMessageIndex.value)
 
-function handleClickOutside(event: MouseEvent) {
-    if (!isInsideComponent.value) {
+    if (currentMessageIndex.value < props.message.length - 1) {
+        currentMessageIndex.value++;
+    } else {
         closeBallon();
     }
 }
 
+function handleClickOutside(event: MouseEvent) {
+    // if (!isInsideComponent.value) {
+    //     console.log("fechou aqui");
+    //     closeBallon();
+    // }
+}
+
 onMounted(() => {
-    window.addEventListener('click', handleClickOutside);
+    // window.addEventListener('click', handleClickOutside);
     changeAvatarPage();
 
 
-    setTimeout(() => {
-        closeBallon();
-    }, 5 * 1000);
+    // setTimeout(() => {
+    //     closeBallon();
+    // }, 5 * 1000);
 
 });
 
@@ -84,7 +94,7 @@ onUnmounted(() => {
     top: 50%;
     left: 1%;
     transform: translateY(-50%);
-    background-image: url('src/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg');
+    background-image: url('src/assets/images/lobby/avatares.jpg');
     background-size: 2000% 2000%;
     background-position-x: -835px;
     background-position-y: -40px;
@@ -100,6 +110,7 @@ onUnmounted(() => {
     width: 90%;
     max-width: 87%;
     overflow: hidden;
+    white-space: pre-line;
     animation: typing 0.5s steps(40) 0.1s 1 normal both;
 }
 
@@ -112,4 +123,24 @@ onUnmounted(() => {
         opacity: 1;
     }
 }
+
+.close-button {
+    position: absolute;
+    background-color: red;
+    border: 2px solid black;
+    color: black;
+    font-size: 16px;
+    width: 17.5px;
+    height: 17.5px;
+    top: 2%;
+    right: 0.8%;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.close-button:hover {
+    cursor: pointer;
+    background-color: darkred;
+    color: white;
+}
+
 </style>

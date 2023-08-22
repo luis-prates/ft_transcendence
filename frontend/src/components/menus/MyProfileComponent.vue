@@ -96,10 +96,11 @@ import { getCurrentInstance, nextTick, onMounted, ref } from "vue";
 import MatchComponent from "./MatchComponent.vue"
 import SkinComponent from "./SkinComponent.vue"
 import TwoFactorComponent from "./TwoFactorComponent.vue"
-import avataresImages from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
+import avataresImages from "@/assets/images/lobby/avatares.jpg";
 import sound_close_tab from "@/assets/audio/close.mp3";
+import default_avatar from "@/assets/chat/avatar.png";
 
-const defaultAvatar = "../../src/assets/chat/avatar.png";
+const defaultAvatar = default_avatar;
 const avatares = avataresImages;
 const close_sound = new Audio(sound_close_tab);
 
@@ -707,7 +708,7 @@ onMounted(() => {
     /* Largura do quadro do sprite */
     height: 64px;
     /* Altura do quadro do sprite */
-    background-image: url('src/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg');
+    background-image: url('src/assets/images/lobby/avatares.jpg');
     background-position: -8px -14px;
 }
 
@@ -748,7 +749,7 @@ onMounted(() => {
     height: 213px;
     top: 5%;
     left: 50%;
-    background-image: url('src/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg');
+    background-image: url('src/assets/images/lobby/avatares.jpg');
     background-size: 1000% 900%;
     background-position-x: -79px;
     background-position-y: -25px;

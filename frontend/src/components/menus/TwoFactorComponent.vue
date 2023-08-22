@@ -2,9 +2,10 @@
     <form @submit="handleSubmit">
         <div class="user_two_factor_qr">
             <img v-if="srcImage" id="qrImage" :src="srcImage" class="user_qr_image">
+            <div class="message_two_factor" style="top: 56%">{{ getTittle() }}</div>
             <div class="message_two_factor">{{ getMessage() }}</div>
             <input id="inputQR" class="input_Two_Factor" type="text" pattern="[0-9]+" :maxlength="6" required>
-            <div style="top: 88%; left: 10%;">
+            <div style="top: 90%; left: 10%;">
                 <button type="button" @click="handleCancelClick">Cancel</button>
                 <button style="right: 20%;position: absolute;background-color: white;color: black;"
                     type="submit">Confirm</button>
@@ -59,10 +60,23 @@ function handleCancelClick() {
     console.log("Cancel button clicked");
 }
 
+function getTittle() {
+    if (!userStore().user.isTwoFAEnabled)
+        return "To Enable 2FA:"
+    return "To Disable 2FA:";
+}
+
 function getMessage() {
     if (!userStore().user.isTwoFAEnabled)
-        return "Download app do Google asdkasdkakdawkodawkopkopawdkodwakokoawdkoawdkowadkokawdkoawdokwad adwokkpaw doka wokkop awokkoadko dawkokaw d";
-    return "Para Cancelar o Two Factor asdmlkalsmkd lasdml amsd mlçaçl sdmçasd, lçaçlsd l,ça,lçsd ,las,l dal,sd ,lçasl,çd ,lça,sl çdal,s dlal s,çds,lça ";
+        return "1 - Download the Google Authenticator app from your phone's app store.\n\
+                2 - Launch the app and tap on the '+' icon.\n\
+                3 - Choose \"Scan a QR code\".\n\
+                4 - Scan the QR code displayed above.\n\
+                5 - Enter the generated code into the input box provided and hit \"Confirm\".\n\
+                6 - 2FA is now activated.\n\
+                7 - The next time you log in, you will be prompted to enter your 2FA code.";
+    return "1 - Input your code into the box below and click \"Confirm\".\n\
+            2 - 2FA is now deactivated.";
 }
 
 onMounted(() => {
@@ -89,7 +103,7 @@ onMounted(() => {
 .user_qr_image {
     position: absolute;
     left: 50%;
-    top: 5%;
+    top: 3%;
     transform: translateX(-50%);
     width: 250px;
     height: 250px;
@@ -101,7 +115,7 @@ onMounted(() => {
     background-color: transparent;
     font-family: 'Press Start 2P';
     position: absolute;
-    top: 75%;
+    top: 80%;
     width: 80%;
     left: 10%;
     border-radius: 10px;
@@ -109,10 +123,15 @@ onMounted(() => {
 
 .message_two_factor {
     position: absolute;
-    top: 57%;
+    top: 60%;
     font-size: 10px;
     left: 5%;
     max-width: 90%;
     word-wrap: break-word;
+    width: 90%;
+    height: 15%;
+    max-height: 60%;
+    overflow-y: auto;
+    white-space: pre-line;
 }
 </style>

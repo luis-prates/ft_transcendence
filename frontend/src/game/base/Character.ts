@@ -1,4 +1,4 @@
-import imgUrl from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
+import imgUrl from "@/assets/images/lobby/avatares.jpg";
 import type { GameObject, GameObjectType } from "./GameObject";
 import { AnimationController } from "../animation/AnimationController";
 import { PathFinding, type PathNode } from "../path_finding/PathFinding";

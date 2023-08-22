@@ -22,8 +22,12 @@ import type { GAME, User } from '@/stores/userStore';
 const props = defineProps<{ match: GAME, user: User }>();
 
 //IMAGES
-const vs_image = "src/assets/images/lobby/menu/vs.png";
-const defaultAvatar = "../../src/assets/chat/avatar.png";
+
+import vsImage from "@/assets/images/lobby/menu/vs.png";
+import default_avatar from "@/assets/chat/avatar.png";
+
+const vs_image = vsImage;
+const defaultAvatar = default_avatar;
 
 
 function getPhoto(player: number) {

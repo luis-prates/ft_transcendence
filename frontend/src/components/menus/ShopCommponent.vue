@@ -326,7 +326,7 @@ function closeShop() {
     height: 30%;
     top: 4%;
     left: 50%;
-    background-image: url('src/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg');
+    background-image: url('src/assets/images/lobby/avatares.jpg');
     background-size: 1700% 1700%;
     background-position-x: -960px;
     background-position-y: -990px;
