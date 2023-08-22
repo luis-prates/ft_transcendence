@@ -160,14 +160,14 @@ export class Game {
 
   addGameObject(gameObject: GameObject): GameObject {
     this.gameObjets.push(gameObject);
-    if (gameObject.type == "character" || gameObject.type == "player") console.log("Add: ", gameObject);
+    //if (gameObject.type == "character" || gameObject.type == "player") console.log("Add: ", gameObject);
     if (gameObject.mouseClick) this.mouseEvents.push(gameObject.mouseClick.bind(gameObject));
     if (gameObject.update) this.gameObjetsUpdate.push(gameObject);
     return gameObject;
   }
 
   addGameObjectData(data: any): GameObject {
-    console.log("Add: ", data);
+    //console.log("Add: ", data);
     return this.addGameObject(new listClass[data.className](data));
   }
 

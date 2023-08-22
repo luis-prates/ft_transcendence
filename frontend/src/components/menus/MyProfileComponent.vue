@@ -395,11 +395,6 @@ function updateProfile() {
 
 onMounted(() => {
     currentPageMatches();
-    const paddle_color = document.getElementById("paddleImage") as HTMLImageElement;
-    nextTick(() => {
-
-        paddle_color.style.backgroundColor = selectedColor.value;
-    });
 });
 
 // onUnmounted(() => {
