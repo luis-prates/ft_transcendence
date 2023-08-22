@@ -62,10 +62,15 @@ import yourFriendImage from "@/assets/images/lobby/menu/your_friend.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
 import sound_close_tab from "@/assets/audio/close.mp3";
 import default_avatar from "@/assets/chat/avatar.png";
+import { Menu } from "../chat/Menu";
+import type { ChatUser } from "@/stores/chatStore";
+
 
 const defaultAvatar = default_avatar;
 
 const props = defineProps<{ user: any }>();
+
+
 
 const instance = getCurrentInstance();
 const user = props.user;
@@ -168,8 +173,9 @@ function challengeUser() {
 
 function sendMessage() {
 
-    //TODO
-
+    console.log("VAII ABRIRRRRR", Menu.chatListRef);
+    
+    Menu.chatListRef({id: user.id} as ChatUser);
 }
 
 function getStatus() {

@@ -1,19 +1,20 @@
 <template>
   <div class="chat">
-    <ChatContent @protected-channel="protectedChannel" :protectedStatus="protectedChannelStatus" @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_mensagen" />
-    <ChatList ref="chatListRef" @protected-channel="protectedChannel" @update-channel-status="updateChannelStatus" :channelStatus="channel" @update-create-channel="updateCreateChannel" :createChannel="createChannel" class="chat_list"/>
+    <ChatContent class="chat_mensagen" />
+    <ChatList class="chat_list"/>
   </div>
 </template>
 
 <script setup lang="ts">
 import ChatList from "./ChatList.vue";
 import ChatContent from "./ChatContent.vue";
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { chatStore, type channel, type ChatMessage, type ChatUser } from "@/stores/chatStore";
 import { userStore } from "@/stores/userStore";
 import { socketClass } from "@/socket/SocketClass";
 import { provide } from 'vue';//channelStatus
 import type { Socket } from "socket.io-client";
+import { Menu } from "./Menu";
 //import { send } from "process";
 //import { AxiosHeaders } from "axios";
 
@@ -76,7 +77,7 @@ onMounted(() => {
   socket.on("channel-removed", (eventData) => {
     const { channelId } = eventData;
     if (store.selected &&  store.selected.objectId == channelId){
-      updateChannelStatus(false);
+      store.updatechannelstatus = false;
     }
     store.removeUserFromChannel(channelId, user.user.id);
     chatListRef.value?.getFilteredChannels();
@@ -84,7 +85,7 @@ onMounted(() => {
   socket.on("channel-deleted", (eventData) => {
     const { deletedChannel } = eventData;
     if (store.selected &&  store.selected.objectId == deletedChannel.id){
-      updateChannelStatus(false);
+      store.updatechannelstatus = false;
     }
     const curChannelIndex = chatStore().channels.findIndex(
     (channel) => channel.objectId === deletedChannel.id
@@ -198,7 +199,7 @@ onMounted(() => {
     console.log(message);
 
     if (store.selected &&  store.selected.objectId == channelId && userId == userStore().user.id){
-      updateChannelStatus(false);
+      store.updatechannelstatus = false;
     }
     const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
     if(curChannel) {
@@ -293,26 +294,12 @@ onUnmounted(() => {
 });
 
 // Data initialization
-const channel = ref(false);
-const createChannel = ref(false);
-const protectedChannelStatus = ref(false);
+const updatechannelstatus = computed(() =>chatStore().updatechannelstatus);
+const updatecreatechannel = computed(() =>chatStore().updatecreatechannel);
+const protectedChannelStatus = computed(() =>chatStore().protectedChannelStatus);
 
 // Provide the channel status to chld components
-provide('channelValue', channel);
 // Method to update channelStatus when emitted from child component
-const updateChannelStatus = (newStatus: boolean) => {
-  channel.value = newStatus;
-};
-//testing for emits protected channel
-const protectedChannel = (newStatus: boolean) => {
-  protectedChannelStatus.value = newStatus;
-}
-
-// Method to update createChannel var when emitted from child component
-const updateCreateChannel = (newStatus: boolean) => {
-  console.log("chamou a funcao!");
-  createChannel.value = newStatus;
-};
 </script>
 
 <style scoped lang="scss">

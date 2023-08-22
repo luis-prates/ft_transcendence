@@ -1,4 +1,4 @@
-import { reactive, ref } from "vue";
+import { reactive, ref, type Ref } from "vue";
 import { defineStore } from "pinia";
 import { userStore, type User, type Block } from "./userStore";
 import { env } from "@/env";
@@ -37,6 +37,14 @@ export interface channel {
 
 
 export const chatStore = defineStore("chat", () => {
+
+
+  const updatechannelstatus: Ref<boolean> = ref<boolean> (false);
+  const protectedChannelStatus: Ref<boolean>  = ref<boolean> (false);
+  const updatecreatechannel: Ref<boolean>  = ref<boolean> (false);
+  const isMenuOpen: Ref<boolean>  = ref<boolean> (false);
+
+
   const channels = reactive<channel[]>([]);
   const selected = ref<any | undefined>(undefined);
   const user = userStore().user;
@@ -563,6 +571,9 @@ async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
   return {
     channels,
     selected,
+    protectedChannelStatus,
+    updatechannelstatus,
+    updatecreatechannel,
     addChannel,
     getMessages,
     addMessage,
@@ -585,5 +596,6 @@ async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
     unmuteUser,
     kickUserFromChannel,
     banUser,
+    isMenuOpen,
   };
 });

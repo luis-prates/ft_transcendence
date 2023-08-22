@@ -1,5 +1,5 @@
 <template>
-  <div v-if="createChannel" class="card">
+  <div v-if="updatecreatechannel == true" class="card">
     <div class="card-header msg_head">
       <div class="d-flex bd-highlight">
         <!-- cabeca do formulario -->
@@ -44,7 +44,7 @@
       </form>
     </div>
   </div>
-  <div v-else-if="protectedStatus" class="card">
+  <div v-else-if="protectedChannelStatus == true" class="card">
   <!-- Form for joining a protected channel -->
   <div class="card-header msg_head">
       <div class="d-flex bd-highlight">
@@ -74,7 +74,7 @@
     </form>
   </div>
 </div>
-  <div v-else-if="channelStatus" class="card">
+  <div v-else-if="updatechannelstatus == true" class="card">
     <!-- Channel Messages here: -->
     <div class="card-header msg_head">
       <div class="d-flex bd-highlight">
@@ -123,7 +123,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
 import ChatContentMessages from "./ChatContentMessages.vue";
-import { nextTick, getCurrentInstance, watch } from "vue";
+import { nextTick, getCurrentInstance, watch, computed } from "vue";
 import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
 import { storeToRefs } from "pinia";
 import { userStore } from "@/stores/userStore";
@@ -137,6 +137,13 @@ import chat_avatar from "@/assets/chat/chat_avatar.png";
 const store = chatStore();
 const user = userStore();
 const { selected } = storeToRefs(store);
+
+
+const protectedChannelStatus = computed(() =>chatStore().protectedChannelStatus);
+const updatecreatechannel = computed(() =>chatStore().updatecreatechannel);
+const updatechannelstatus = computed(() => chatStore().updatechannelstatus);
+
+
 
 // socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
@@ -161,7 +168,7 @@ const getChannelName = () => {
 
 // Vai retornar a operacao createChannel ou Save channel consoante a operacao
 const getButtomOp = () => {
-  if (props.channelStatus && props.createChannel)
+  if (updatechannelstatus.value && updatecreatechannel)
     return "Update Channel";
   return "Create Channel";
 }
@@ -172,13 +179,6 @@ function getChatAvatar() {
   }
   return selected.value?.avatar;
   }
-  
-  // Props declaration
-  const props = defineProps({
-    createChannel: Boolean,
-    channelStatus: Boolean,
-    protectedStatus: Boolean,
-  });
   
   // Define reactive variables
   const errorMessage = ref('');
@@ -194,8 +194,8 @@ function getChatAvatar() {
   const channelAvatar = ref(null);
 
 function editChannel() {
-  instance?.emit("update-channel-status", true);
-  instance?.emit("update-create-channel", true);
+  store.updatechannelstatus = true;
+  store.updatecreatechannel = true;
   channelName.value = selected.value?.name as any;
   channelPassword.value = selected.value?.password as any;
   channelType.value = selected.value?.type as any;
@@ -207,9 +207,9 @@ function editChannel() {
 
 // Emit event from the child component
 const toggleStatus = () => {
-  instance?.emit("update-channel-status", false);
-  instance?.emit("update-create-channel", false);
-  instance?.emit("protected-channel", false);
+  store.updatechannelstatus = false;
+  store.updatecreatechannel = false;
+  store.protectedChannelStatus = false;
   channelName.value = '';
   channelPassword.value = '';
   channelType.value = 'PUBLIC';
@@ -256,7 +256,7 @@ onUnmounted(() => {
 const scrollContainer = ref<HTMLElement | null>(null);
 
 watch(
-  [() => store.selected?.messages?.length, () => props.channelStatus],
+  [() => store.selected?.messages?.length, () => updatechannelstatus.value],
   ([newMessageLength, newChannelStatus], [oldMessageLength, oldChannelStatus]) => {
     if (
       newMessageLength !== oldMessageLength ||
@@ -343,8 +343,8 @@ const joinProtected  = async () => {
         // Reset form inputs
         channelPassword.value = '';
         errorMessage.value = '';
-        instance?.emit("protected-channel", false);
-        instance?.emit("update-channel-status", true);
+        store.protectedChannelStatus = false;
+        store.updatechannelstatus = true;
         store.getMessages(store.selected);
       } else if (response.error == "INCORRECT_PASSWORD"){
         // Handle channel creation failure here
@@ -400,7 +400,7 @@ const createNewChannel = async () => {
       // Display error message in the form or take any other action
       return ;
     }
-    instance?.emit("update-create-channel", false);
+    store.updatecreatechannel = false;
   } catch (error) {
     console.error(error);
     // Handle any other errors that occurred during channel creation
@@ -431,7 +431,7 @@ const updateChannel = async () => {
       channelType.value = 'PUBLIC';
       channelAvatar.value = null;
       errorMessage.value = '';
-      instance?.emit("update-create-channel", false);
+      store.updatecreatechannel = false;
     } else {
       console.log("Error response: ", response);
       errorMessage.value = 'Failed to edit channel. Please try again.';

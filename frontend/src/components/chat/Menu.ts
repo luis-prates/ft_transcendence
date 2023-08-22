@@ -4,10 +4,11 @@
   import { storeToRefs } from "pinia";
   import { userStore } from "@/stores/userStore";
 
+
   export class Menu
   {
 
-  
+  public static  chatListRef: (user: ChatUser) => void;
   store = chatStore()
   selected = storeToRefs(chatStore()).selected;
   // Get the current component instance

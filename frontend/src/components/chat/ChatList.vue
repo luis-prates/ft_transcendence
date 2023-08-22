@@ -3,7 +3,7 @@
     <div class="card mb-sm-3 mb-md-0 contacts_card">
       <button class="hide_chat" @click="toggleChat">{{buttonString}}</button>
       
-      <div v-if="channelStatus == false" class="card-body contacts_body">
+      <div v-if="!store.updatechannelstatus" class="card-body contacts_body">
         <div class="card-header">
           <div class="input-group">
             <input id="searchChannel" type="text" placeholder="Search..." name="" class="form-control search" v-model="searchTerm" @input="handleSearch"/>
@@ -24,7 +24,7 @@
             <img class="chat_filter_img" src="src/assets/chat/all_channels.png" title="Other Channels" />
           </button>
         </div>
-        <ul class="contacts" @click="toggleStatus">
+        <ul class="contacts">
           <li v-for="channel in channelsFilters">
             <ChatListChannels :channel="channel" @click="selectChannel(channel)" @contextmenu="handleContextMenu($event, channel)" />
           </li>
@@ -90,10 +90,14 @@ import { Menu } from "./Menu";
 
 
 
+// const updatechannelstatus = computed(() =>chatStore().updatechannelstatus);
+// const protectedChannelStatus = computed(() =>chatStore().protectedChannelStatus);
+// const updatecreatechannel = computed(() =>chatStore().updatecreatechannel);
+
 const store = chatStore();
 const userSelect = ref('' as any);
 const { selected } = storeToRefs(store);
-const isMenuOpen = ref(false);
+const isMenuOpen = ref(chatStore().isMenuOpen);
 const channelsFilters = ref([] as channel[]);
 const searchTerm = ref('');
 const usersInChannelSelect = ref([] as ChatUser[]);
@@ -172,6 +176,25 @@ function changeFilter (filter: string)
   getFilteredChannels();
 }
 
+
+async function DMHandling(user : any){
+  console.log("DMHandling: ", user);
+  const isDMSent = await menu.sendDM(user);
+  if (isDMSent) {
+    
+    const currentUserId = userStore().user.id;
+    const otherUserId = user.id;
+    const dmChannel = chatStore().channels.find(channel =>
+      channel.type === "DM" &&
+      channel.users.some(user => user.id === currentUserId) &&
+      channel.users.some(user => user.id === otherUserId)
+    );
+
+    if (dmChannel)
+      openChannel(dmChannel);
+  }
+}
+
 function getFilteredChannels()
 {
   if (isChatFilterType.value == "dm")
@@ -213,7 +236,6 @@ const toggleMenu = () => {
 };
 
 const selectChannel = (channel: channel) => {
-  //instance?.emit("update-create-channel", false);
   if (channel.banList.find((banList) => banList.id === userStore().user.id))
     return;
   if (selected.value != channel && isMenuOpen.value) {
@@ -221,8 +243,8 @@ const selectChannel = (channel: channel) => {
   }
   store.selectChannel(channel);
   openChannel(store.selected);
-  if (isMenuOpen.value)
-  toggleMenu();
+  // if (isMenuOpen.value)
+  //   toggleMenu();
 }
 
 const handleContextMenu = (e: any, channel: channel)  => {
@@ -297,6 +319,7 @@ const handleContextMenuFriendUser = (e: any, user: ChatUser)  => {
   });
 };
 
+
 const handleContextMenuUser = (e: any, user: ChatUser)  => {
   const items = [
     { 
@@ -308,20 +331,7 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
       { 
         label: "Send DM", 
         onClick: async () => {
-        const isDMSent = await menu.sendDM(user);
-        if (isDMSent) {
-          
-          const currentUserId = userStore().user.id;
-          const otherUserId = user.id;
-          const dmChannel = chatStore().channels.find(channel =>
-            channel.type === "DM" &&
-            channel.users.some(user => user.id === currentUserId) &&
-            channel.users.some(user => user.id === otherUserId)
-          );
-
-          if (dmChannel)
-            openChannel(dmChannel);
-        }
+          DMHandling(user);
         },
       },
       { 
@@ -397,7 +407,6 @@ let userProfileSelect: ChatUser;
 let profile: any;
 
 const selectUser = (user: ChatUser) => {
-//instance?.emit("update-create-channel", false);
 
 console.log("user Selecionado:", user.nickname);
 if (selected.value != user && isMenuOpen.value) {
@@ -471,9 +480,9 @@ const openChannel = async function (channel: channel) {
   if (store.isUserInSelectedChannel(userStore().user.id))
   {
     store.getMessages(channel);
-    instance?.emit('update-create-channel', false);
-    instance?.emit('protected-channel', false);
-    instance?.emit("update-channel-status", true);
+    chatStore().updatecreatechannel = false;
+    chatStore().protectedChannelStatus = false;
+    chatStore().updatechannelstatus = true;
     usersInChannelSelect.value = channel.users;
     bannedUsersInChannelSelect.value = channel.banList;
     usersFilters.value = channel.users;
@@ -489,13 +498,13 @@ const openChannel = async function (channel: channel) {
     if (channel.type == "PUBLIC"){
       await store.joinChannel(channel.objectId);
       store.getMessages(channel);
-      instance?.emit('update-create-channel', false);
-      instance?.emit('protected-channel', false);
-      instance?.emit("update-channel-status", true);
+      store.updatecreatechannel = false;
+      store.protectedChannelStatus = false;
+      store.updatechannelstatus = true;
     }
     else{
       console.log("I will try to put the password!");
-      instance?.emit("protected-channel", true);
+      store.protectedChannelStatus = true;
       // store.joinChannel(channel.objectId, "privado")
     }
   }
@@ -503,42 +512,22 @@ const openChannel = async function (channel: channel) {
 
 //Creating a new channel:
 const createChannel = () => {
-  if (!props.channelStatus) {
+  if (store.updatechannelstatus) {
     console.log("Vai criar um novo channel");
-    instance?.emit("update-create-channel", true);
+    store.updatecreatechannel = true;
   }
   else {
     console.log("Vai adicionar um novo user ao channel");
   }
-  //instance?.emit("update-channel-status", newStatus);
 };
 
-// Method to update channelStatus when emitted from child component
-const updateChannelStatus = (newStatus: boolean) => {
-  instance?.emit('update-channel-status', newStatus);
-};
 
-// Method to update createChannel var when emitted from child component
-const updateCreateChannel = (newStatus: boolean) => {
-  instance?.emit("update-create-channel", newStatus);
-};
-
-// Props declaration
-const props = defineProps({
-  channelStatus: Boolean,
-});
 
 // Get the current component instance
 const instance = getCurrentInstance();
 
-// Emit event from the child component
-const toggleStatus = () => {
-  //const newStatus = !props.channelStatus;
-  //instance?.emit("update-channel-status", newStatus);
-};
-
 // Variável para controlar o estado do chat
-let isChatHidden = true;
+let isChatHidden = ref(true);
 
 onMounted(() => {
   toggleChat();
@@ -554,6 +543,13 @@ onMounted(() => {
     onUnmounted(() => {
       cardBody.removeEventListener('scroll', handleScroll);
     });
+
+    Menu.chatListRef = (use: ChatUser) => {
+      console.log("chatListRef: ", use);
+      if (!isChatHidden.value)
+        toggleChat();
+      DMHandling(use)
+  };
 });
 
 const buttonString = ref("⇑"); // Set initial button text
@@ -564,10 +560,10 @@ const toggleChat = () => {
   const searchUser = document.getElementById('searchUser') as HTMLInputElement;
   const searchChannel = document.getElementById('searchChannel') as HTMLInputElement;
 
-  if (isChatHidden) {
+  if (isChatHidden.value) {
     // Ocultar o chat
-    if (props.channelStatus) {
-      instance?.emit('update-channel-status', false);
+    if (store.updatechannelstatus) {
+      store.updatechannelstatus = false;
     }
     chatElement.style.bottom = "-57%";
     //Limpar Conteudo
@@ -582,15 +578,16 @@ const toggleChat = () => {
     getFilteredChannels();
   }
   // Update the button text based on isChatHidden
-  buttonString.value = isChatHidden ? "⇑" : "⇓";
-  isChatHidden = !isChatHidden;//
-  instance?.emit('update-create-channel', false);
-  instance?.emit("protected-channel", false);
+  buttonString.value = isChatHidden.value ? "⇑" : "⇓";
+  isChatHidden.value = !isChatHidden.value;//
+  store.updatecreatechannel = false;
+  store.protectedChannelStatus = false;
 
 };
 
 defineExpose({
-        getFilteredChannels
+        getFilteredChannels,
+        DMHandling
     });
 
 </script>
