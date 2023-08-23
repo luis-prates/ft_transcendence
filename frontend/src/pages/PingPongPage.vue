@@ -33,9 +33,10 @@ const frameTime = 1000 / frameRate;
 
 onMounted(function () {
 	if (socket == undefined) {
-		console.log("socket is undefined");
-		Router.push('/lobby');
-		return;
+    socket = socketClass.getGameSocket();
+		// console.log("socket is undefined");
+		// Router.push('/lobby');
+		// return;
 	}
   const canvas = document.getElementById("canvas1") as HTMLCanvasElement;
   const button = document.getElementById("buttonLeave") as HTMLButtonElement;;
