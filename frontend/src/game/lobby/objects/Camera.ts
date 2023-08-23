@@ -83,13 +83,13 @@ export class Camera {
       this.x = this.player.x - this.width * 0.25;
     }
     if (this.player.x + this.player.w > this.rightEdge()) {
-      this.x = this.player.x + this.player.w - this.width * 0.75;
+      this.x = this.player.x + this.player.w - this.width * 0.5;
     }
     if (this.player.y < this.topEdge()) {
       this.y = this.player.y - this.height * 0.25;
     }
     if (this.player.y + this.player.h > this.bottomEdge()) {
-      this.y = this.player.y + this.player.h - this.height * 0.75;
+      this.y = this.player.y + this.player.h - this.height * 0.5;
     }
 
     //limite da câmera
@@ -105,5 +105,6 @@ export class Camera {
     if (this.y + this.height > this.map.h) {
       this.y = this.map.h - this.height;
     }
+    console.log("x: ", this.x, "y: ", this.y, "width: ", this.width, "height: ", this.height, )
   }
 }
