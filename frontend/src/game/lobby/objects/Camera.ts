@@ -105,6 +105,5 @@ export class Camera {
     if (this.y + this.height > this.map.h) {
       this.y = this.map.h - this.height;
     }
-    console.log("x: ", this.x, "y: ", this.y, "width: ", this.width, "height: ", this.height, )
   }
 }

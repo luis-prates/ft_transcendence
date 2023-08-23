@@ -28,7 +28,7 @@ export class Npc extends Character {
   ];
 
   public setData(data: any): void {
-    console.log("npc: ", data);
+    //console.log("npc: ", data);
     if (data?.animation != undefined) {
       this.animation?.setAnimation(data.animation.name);
       this.animation?.setStop(data.animation.isStop);
