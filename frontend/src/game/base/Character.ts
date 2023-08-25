@@ -1,4 +1,4 @@
-import imgUrl from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
+import imgUrl from "@/assets/images/lobby/avatares.jpg";
 import type { GameObject, GameObjectType } from "./GameObject";
 import { AnimationController } from "../animation/AnimationController";
 import { PathFinding, type PathNode } from "../path_finding/PathFinding";
@@ -14,7 +14,7 @@ export interface CharacterOnline {
   avatar: number;
   x: number;
   y: number;
-  animation: { name: string; isStop: boolean, sx: number, sy: number };
+  animation: { name: string; isStop: boolean; sx: number; sy: number };
 }
 
 export class Character implements GameObject {
@@ -38,8 +38,7 @@ export class Character implements GameObject {
   isSelect: boolean = false;
 
   constructor(data?: CharacterOnline) {
-    if (data)
-    {
+    if (data) {
       this.nickname = data.nickname;
       this.avatar = data.avatar;
       this.name = data.name;
@@ -76,9 +75,9 @@ export class Character implements GameObject {
     });
     this.animation.createAnimation("walk_bottom", {
       frames: [
-        { x: 0, y:  + 0 },
-        { x: 1, y:  + 0 },
-        { x: 2, y:  + 0 },
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
       ],
     });
     this.animation.setAnimation("walk_bottom");
@@ -113,10 +112,10 @@ export class Character implements GameObject {
       context.closePath();
     }
     this.animation?.draw(context, this.x, this.y - this.h / 2, this.w, this.h);
-    context.fillStyle = userStore().user.id != this.objectId ? 'rgba(255, 255, 255, 0.65)' : 'rgba(255, 255, 255, 0.8)';//White
-    context.strokeStyle = userStore().user.id != this.objectId ? 'rgba(0, 0, 0, 0.65)' : 'rgba(0,0,0, 0.8)';//Black
+    context.fillStyle = userStore().user.id != this.objectId ? "rgba(255, 255, 255, 0.65)" : "rgba(255, 255, 255, 0.8)"; //White
+    context.strokeStyle = userStore().user.id != this.objectId ? "rgba(0, 0, 0, 0.65)" : "rgba(0,0,0, 0.8)"; //Black
     context.lineWidth = 5;
-    this.fillTextCenter(context, this.nickname, this.x - this.w / 2, this.y - this.h * 0.3, this.w * 2, 10, undefined, "'Press Start 2P', cursive", true)
+    this.fillTextCenter(context, this.nickname, this.x - this.w / 2, this.y - this.h * 0.3, this.w * 2, 10, undefined, "'Press Start 2P', cursive", true);
   }
 
   public move(x: number, y: number, animation: string) {
@@ -138,8 +137,7 @@ export class Character implements GameObject {
   }
 
   interaction?(gameObject: GameObject): void {
-    if (this.isSelect && this.objectId != userStore().user.id)
-      Game.instance.addMenu(new Profile(this.objectId).menu);
+    if (this.isSelect && this.objectId != userStore().user.id) userStore().userSelected = this.objectId;
   }
 
   public setLookAt(gameObject: GameObject) {
@@ -161,7 +159,7 @@ export class Character implements GameObject {
   private fillTextCenter(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, max_with?: number, font?: string, stroke?: boolean) {
     ctx.font = font ? h + "px " + font : h + "px Arial";
     ctx.textAlign = "start";
-    
+
     const begin = x + w * 0.1;
     const max = max_with ? max_with : w - w * 0.2;
 
@@ -173,10 +171,8 @@ export class Character implements GameObject {
       if (begin + offsetmax + labelWidth > begin + max - offset) break;
       offset = offsetmax;
     }
-    
-    if (stroke)
-    ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
+
+    if (stroke) ctx.strokeText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
     ctx.fillText(label, x + w * 0.1 + offset, y, w - w * 0.2 - offset);
   }
-
 }

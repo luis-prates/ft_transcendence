@@ -38,6 +38,7 @@ export class GamePong {
   playerNumber: number = 0;
   counting: number = 0;
   context: CanvasRenderingContext2D;
+  maxScore: number = 3;
   endGame: gameEnd = {
     result: "",
     exp: 0,
@@ -73,7 +74,7 @@ export class GamePong {
     this.player2 = new PlayerPong(this, 2, "Player 2", avatarDefault);
     this.ball = new Ball(this);
     this.data = data;
-	this.viewImage = new Image();
+	  this.viewImage = new Image();
     this.viewImage.src = viewGame;
   }
   //Update Input Keys

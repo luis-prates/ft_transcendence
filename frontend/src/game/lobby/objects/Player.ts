@@ -5,13 +5,7 @@ import { Game } from "@/game/base/Game";
 import type { GameObject, Rectangle } from "@/game/base/GameObject";
 import { type Ref } from "vue";
 import { userStore, type GAME } from "@/stores/userStore";
-import { LeaderBoard } from "@/game/Menu/LeaderBoard";
-import { Profile } from "@/game/Menu/Profile";
-import { YourProfile } from "@/game/Menu/YourProfile";
-import { ConfirmButton } from "@/game/Menu/ConfirmButton";
-import { Shop } from "@/game/Menu/Shop";
 import type { Socket } from "socket.io-client";
-import { YourMenu } from "@/game/Menu/YourMenu";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
@@ -34,7 +28,15 @@ export class Player extends Character {
     this.nickname = data.nickname;
     this.avatar = data.avatar;
     console.log("Player", data);
-    this.socket.emit("new_player", { objectId: this.objectId, name: this.name, nickname: this.nickname, avatar: this.avatar, x: this.x, y: this.y, animation: { name: this.animation.name, isStop: this.animation.isStop, sx: this.animation.sx, sy: this.animation.sy } });
+    this.socket.emit("new_player", {
+      objectId: this.objectId,
+      name: this.name,
+      nickname: this.nickname,
+      avatar: this.avatar,
+      x: this.x,
+      y: this.y,
+      animation: { name: this.animation.name, isStop: this.animation.isStop, sx: this.animation.sx, sy: this.animation.sy },
+    });
   }
 
   draw(contex: CanvasRenderingContext2D): void {
@@ -63,11 +65,8 @@ export class Player extends Character {
     this.menu.value?.setAttribute("style", "display: none");
     if (button == 0) {
       this.select = Game.MouseColision(x, y);
-      if (this.select == this) {
-
-        Game.instance.addMenu(new YourProfile(this).menu);
-
-      } else if (this.select && this.select != this && this.select.interaction) {
+      if (this.select == this) userStore().userSelected = "me";
+      else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {
           if (gameObject && gameObject.interaction) gameObject.interaction(this);
         });

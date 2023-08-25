@@ -75,6 +75,13 @@ class Skin {
 		if (skin) return skin.image;
 		return new Image();
 	}
+
+	public get_skin_src(id: string): string {
+		const skin = this.skins.find((skin) => skin.id === id);
+	  
+		if (skin) return skin.image.src;
+		return "";
+	}
 }
 
 export const skin = new Skin()
