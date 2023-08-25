@@ -118,6 +118,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		try {
 			isPlayer = await this.gameService.enterGame(player, body);
 		} catch (error) {
+			if (error.message == 'Game does not exist') {
+				this.logger.warn(`Game ${gameId} not found`);
+				await this.userService.status(userId, UserStatus.ONLINE);
+			}
 			client?.emit('error', error.message);
 		}
 
