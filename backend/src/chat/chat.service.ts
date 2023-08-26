@@ -3,7 +3,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateChannelDto, EditChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
-import { Channel, Message, User, ChannelUser, Message, User } from '@prisma/client';
+import { Channel, User, ChannelUser, Message } from '@prisma/client';
 import { ChannelType } from '@prisma/client';
 import { EventEmitter } from 'events';
 import * as bcrypt from 'bcrypt';
