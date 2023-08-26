@@ -1,5 +1,8 @@
 import "./assets/styles/main.css";
 import '@/scss/styles.scss';
+import ContextMenu from '@imengyu/vue3-context-menu'
+// stylesheet
+import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css'
 // Import all of Bootstrap's JS
 // import * as bootstrap from 'bootstrap';
 import { createApp } from "vue";
@@ -24,6 +27,7 @@ document.addEventListener("contextmenu", (event) => {
 });
 
 app.use(createPinia());
+app.use(ContextMenu);
 app.use(Router.getRouter());
 app.component('font-awesome-icon', FontAwesomeIcon);
 app.mount("#app");

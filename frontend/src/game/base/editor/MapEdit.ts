@@ -9,6 +9,7 @@ export class MapEdit extends Lobby {
     super(map, new Player(ref(undefined), MapObject.startPossition));
     window.addEventListener("keydown", (e) => {
       if (e.key === "p") MapObject.debugView.value = !MapObject.debugView.value;
+      map.keydown(e.key);
       e.preventDefault();
     });
     this.canvas.addEventListener("mousedown", this.handleMouseDown.bind(this));

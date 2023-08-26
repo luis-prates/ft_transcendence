@@ -5,8 +5,8 @@ import { Player, Map, Game } from "@/game";
 export class Camera {
   x = 0;
   y = 0;
-  width = window.innerWidth;
-  height = window.innerHeight;
+  private _width: number | undefined = undefined;
+  private _height: number | undefined = undefined;
   private map: Map;
   private player: GameObject;
 
@@ -18,6 +18,22 @@ export class Camera {
     this.y = 0;
     // this.width = map.w;
     // this.height = map.h;
+  }
+
+  get width() {
+    return this._width || window.innerWidth;
+  }
+
+  set width(value) {
+    this._width = value;
+  }
+
+  get height() {
+    return this._height || window.innerHeight;
+  }
+
+  set height(value) {
+    this._height = value;
   }
 
   leftEdge() {
@@ -42,7 +58,7 @@ export class Camera {
     for (let gameObjec of gameObjecs) {
       gameObjec.draw(context);
     }
-	this.map.drawLayer_3(context);
+    this.map.drawLayer_3(context);
     Game.instance.drawMenuLocal(context);
     context.restore();
   }

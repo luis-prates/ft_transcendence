@@ -97,59 +97,74 @@ export class Map implements GameObject {
     });
   }
 
+  keydown(key: string): void { }
+
   draw(contex: CanvasRenderingContext2D): void {
-    if (this.isLoaded === false) return;
 
-    // If the cached canvas doesn't exist or the layer's size has changed, create a new cached canvas
-    if (!this.cachedMapObjs || this.cachedMapObjs.width !== this.w || this.cachedMapObjs.height !== this.h) {
-      this.cachedMapObjs = document.createElement("canvas");
-      this.cachedMapObjs.width = this.w;
-      this.cachedMapObjs.height = this.h;
-      this.cachedMapObjsContext = this.cachedMapObjs.getContext("2d");
+    contex.strokeStyle = "rgb(30, 39, 210)";
+    contex.strokeRect(this.x, this.y, this.w, this.h);
+    if (this.isLoaded) {
+
+      // If the cached canvas doesn't exist or the layer's size has changed, create a new cached canvas
+      if (!this.cachedMapObjs || this.cachedMapObjs.width !== this.w || this.cachedMapObjs.height !== this.h) {
+        this.cachedMapObjs = document.createElement("canvas");
+        this.cachedMapObjs.width = this.w;
+        this.cachedMapObjs.height = this.h;
+        this.cachedMapObjsContext = this.cachedMapObjs.getContext("2d");
+      }
+
+      // Now, instead of drawing directly to the main context, you're doing so on the cached context
+      if (this.layer_1.image.complete && this.cachedMapObjsContext) {
+        this.cachedMapObjsContext.strokeStyle = "blue";
+        this.cachedMapObjsContext.drawImage(this.layer_1.image, 0, 0, this.w, this.h);
+      }
+
+      if (this.cachedMapObjs) {
+        contex.drawImage(this.cachedMapObjs, 0, 0);
+      }
     }
-
-    // Now, instead of drawing directly to the main context, you're doing so on the cached context
-    if (this.layer_1.image.complete && this.cachedMapObjsContext) {
-      this.cachedMapObjsContext.strokeStyle = "blue";
-      this.cachedMapObjsContext.drawImage(this.layer_1.image, 0, 0, this.w, this.h);
-    }
-
-    if (this.cachedMapObjs) {
-      contex.drawImage(this.cachedMapObjs, 0, 0);
+    if (Game.isDragover) {
+      const rec: Rectangle = Game.getPlayer().getRetanguloTable();
+      // verde opaco
+      contex.fillStyle = "rgba(0, 255, 0, 0.5)";
+      contex.fillRect(rec.x, rec.y, rec.w, rec.h);
+      // borda verde
+      contex.strokeStyle = "green";
+      contex.strokeRect(rec.x, rec.y, rec.w, rec.h);
     }
   }
 
   drawLayer_3(contex: CanvasRenderingContext2D): void {
-	if (!this.paintedOnce) {
-		// If the cached canvas doesn't exist or the layer's size has changed, create a new cached canvas
-		if (!this.cachedLayer3 || this.cachedLayer3.width !== this.layer_3.context.canvas.width || this.cachedLayer3.height !== this.layer_3.context.canvas.height) {
-		  this.cachedLayer3 = document.createElement("canvas");
-		  this.cachedLayer3.width = this.layer_3.context.canvas.width;
-		  this.cachedLayer3.height = this.layer_3.context.canvas.height;
-		  this.cachedLayer3Context = this.cachedLayer3.getContext("2d");
-		}
-	
-		if (this.layer_3.image.complete && this.cachedLayer3Context) {
-		  this.cachedLayer3Context.clearRect(0, 0, this.cachedLayer3.width, this.cachedLayer3.height);
-		  //   this.cachedLayer3Context.drawImage(this.layer_3.image, 0, 0);
-		  this.layer_3.context.drawImage(this.layer_3.image, 0, 0);
-		  const imageData = this.layer_3.context.getImageData(0, 0, this.layer_3.image.width, this.layer_3.image.height);
-		  const data = imageData.data;
-		  const opacityFactor = 128 / 255; // Opacidade de 50%
-		  // Modify the copied data
-		  for (let i = 3; i < data.length; i += 4) {
-			data[i] = data[i] * opacityFactor;
-		  }
-		  this.cachedLayer3Context.putImageData(imageData, 0, 0);
-		}
-		this.paintedOnce = true;
-	}
-	if (this.cachedLayer3) {
-	  contex.drawImage(this.cachedLayer3, 0, 0);
-	}
+    if (!this.paintedOnce) {
+      // If the cached canvas doesn't exist or the layer's size has changed, create a new cached canvas
+      if (!this.cachedLayer3 || this.cachedLayer3.width !== this.layer_3.context.canvas.width || this.cachedLayer3.height !== this.layer_3.context.canvas.height) {
+        this.cachedLayer3 = document.createElement("canvas");
+        this.cachedLayer3.width = this.layer_3.context.canvas.width;
+        this.cachedLayer3.height = this.layer_3.context.canvas.height;
+        this.cachedLayer3Context = this.cachedLayer3.getContext("2d");
+      }
+
+      if (this.layer_3.image.complete && this.cachedLayer3Context) {
+        this.cachedLayer3Context.clearRect(0, 0, this.cachedLayer3.width, this.cachedLayer3.height);
+        //   this.cachedLayer3Context.drawImage(this.layer_3.image, 0, 0);
+        this.layer_3.context.drawImage(this.layer_3.image, 0, 0);
+        const imageData = this.layer_3.context.getImageData(0, 0, this.layer_3.image.width, this.layer_3.image.height);
+        const data = imageData.data;
+        const opacityFactor = 128 / 255; // Opacidade de 50%
+        // Modify the copied data
+        for (let i = 3; i < data.length; i += 4) {
+          data[i] = data[i] * opacityFactor;
+        }
+        this.cachedLayer3Context.putImageData(imageData, 0, 0);
+      }
+      this.paintedOnce = true;
+    }
+    if (this.cachedLayer3) {
+      contex.drawImage(this.cachedLayer3, 0, 0);
+    }
   }
 
-  mouseClick(x: number, y: number, button: number): void {}
+  mouseClick(x: number, y: number, button: number): void { }
 
   async saveMap() {
     const data = {
@@ -179,8 +194,26 @@ export class Map implements GameObject {
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = "desenho.json";
+    link.download = "map.json";
     link.click();
+
     console.log("Salvando mapa...\n");
+  }
+
+  public isCollision(gameObject: GameObject): boolean {
+    const x = Math.floor(gameObject.x / Map.SIZE);
+    const y = Math.floor(gameObject.y / Map.SIZE);
+    const w = Math.floor(gameObject.w / Map.SIZE);
+    const h = Math.floor(gameObject.h / Map.SIZE);
+    console.log("map: isCollision: x: " + x + " y: " + y + " w: " + w + " h: " + h);
+    for (let j = y; j < y + h; j++) {
+      for (let i = x; i < x + w; i++) {
+        console.log("map: isCollision: i: " + i + " j: " + j, "grid: " + Game.grid[i][j]);
+        if (Game.grid[i][j] == 1) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }

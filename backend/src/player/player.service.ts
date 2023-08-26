@@ -9,6 +9,7 @@ export class PlayerService {
 	//! lobby only socket map
 	private sockets: Map<number, Socket> = new Map<number, Socket>();
 	private readonly logger = new Logger(Player.name);
+	private MARVIN = 6969;
 
 	constructor(private prismaService: PrismaService) {
 		this.logger.log('PlayerService initialized');
@@ -16,7 +17,7 @@ export class PlayerService {
 		this.prismaService.user
 			.findUnique({
 				where: {
-					id: 6969,
+					id: this.MARVIN,
 				},
 			})
 			.then(user => {
@@ -24,12 +25,11 @@ export class PlayerService {
 					this.prismaService.user
 						.create({
 							data: {
-								id: 6969,
+								id: this.MARVIN,
 								name: 'Marvin',
 								nickname: 'Marvin',
 								email: 'marvin@marvin.com',
 								image: 'src/assets/images/pingpong/marvin.jpg',
-								hash: 'asdgasdgasdg',
 							},
 						})
 						.then(user => {
@@ -37,14 +37,11 @@ export class PlayerService {
 						});
 				}
 			});
-
-		//! feed from database maybe?
 	}
 
 	//TODO: add namespace to keys maybe?
 	createPlayer(socket: Socket, payload: any): Player {
 		const player = new Player(socket, payload, this);
-		this.logger.debug(`created player: ${player.objectId}`);
 		this.players.set(player.objectId, player);
 		this.sockets.set(player.objectId, socket);
 		return player;
@@ -76,14 +73,13 @@ export class PlayerService {
 		}
 		this.logger.debug(`userId: ${userId}`);
 		const player: Player = this.players.get(userId);
-		this.logger.debug(`player: ${JSON.stringify(player)}`);
 		return player;
 	}
 
 	getUserIdFromGameSocket(socket: Socket): number {
 		// find id in sockets map
 		for (const [key, value] of this.players.entries()) {
-			if (value.getGameSocket() && value.getGameSocket().id == socket.id) {
+			if (value.getGameSocket() && value.getGameSocket().id == socket?.id) {
 				return key;
 			}
 		}
@@ -104,7 +100,7 @@ export class PlayerService {
 
 	hasPlayerFromObjectId(objectId: number): boolean {
 		// find objectId in sockets map
-		for (const [key, value] of this.sockets.entries()) {
+		for (const [, value] of this.sockets.entries()) {
 			if (value.data.objectId == objectId) {
 				return true;
 			}
@@ -133,7 +129,7 @@ export class PlayerService {
 
 	updatePlayerSocket(socket: Socket): void {
 		this.logger.debug('updatePlayerSocket');
-		const playerSocket = this.sockets.get(Number(socket.id));
+		const playerSocket = this.sockets.get(Number(socket?.id));
 		if (!playerSocket) {
 			return;
 		}

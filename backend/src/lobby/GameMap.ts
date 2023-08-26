@@ -19,10 +19,8 @@ export class GameMap {
 
 	public join(player: Player, position?: { x: number; y: number }): void {
 		GameMap.offAll(player);
-		this.logger.debug(`player ${player.objectId} joined map: ${this.map.objectId}`);
 		//TODO: player.map.map.objectId needs to be cleaned up
 		if (player.map && player.map.map.objectId != this.map.objectId) {
-			console.log('CHAMOU AQUI CRL,', player.map.map.objectId, this.map.objectId);
 			player.map.removePlayer(player);
 		}
 		player.map = this;
@@ -33,7 +31,9 @@ export class GameMap {
 		player.data.y = position?.y || this.map.start_position.y;
 		this.logger.debug('Emitting load_map event');
 		if (clientSocket) {
-			clientSocket.setSocket(player.getSocket());
+			if (clientSocket.getSocket() != player.getSocket()) {
+				clientSocket.setSocket(player.getSocket());
+			}
 			clientSocket.data = player.data;
 		} else {
 			this.players.push(player);
@@ -65,14 +65,6 @@ export class GameMap {
 	}
 
 	public emitAll(event: string, data: any, player: Player, ignorePlayer: boolean): void {
-		// this.playerService.getPlayers().forEach(clientSocket => {
-		// 	if (
-		// 		ignorerPlayer === undefined ||
-		// 		clientSocket.objectId !== ignorerPlayer.objectId
-		// 	) {
-		// 		clientSocket.emitToLobby(event, data);
-		// 	}
-		// });
 		if (ignorePlayer) {
 			player.getSocket().to('lobby').emit(event, data);
 		} else {
@@ -85,8 +77,7 @@ export class GameMap {
 		GameMap.offAll(player);
 		// this sets the player.map to undefined
 		player.map = undefined;
-		console.log('FOI REMOVIDO');
-		//this.playerService.removePlayer(player);
+		this.players = this.players.filter(e => e.objectId != player.objectId);
 		this.emitAll('remove_gameobject', player.data, player, true);
 	}
 
@@ -103,6 +94,5 @@ export class GameMap {
 		player.offLobby('new_gameobject');
 		player.offLobby('update_gameobject');
 		player.offLobby('remove_gameobject');
-		console.log('off all: ' + player.objectId);
 	}
 }

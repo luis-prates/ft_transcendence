@@ -59,6 +59,7 @@ export class GamePong {
   }
   backgroundMusic = new Audio(music);
   watchersNumber: number = 0;
+  private viewImage;
 
   constructor(canvas: HTMLCanvasElement, width: number, height: number, offSet: number, context: CanvasRenderingContext2D, data: gameRequest, table: TablePong) {
     this.canvas = canvas;
@@ -72,6 +73,8 @@ export class GamePong {
     this.player2 = new PlayerPong(this, 2, "Player 2", avatarDefault);
     this.ball = new Ball(this);
     this.data = data;
+	this.viewImage = new Image();
+    this.viewImage.src = viewGame;
   }
   //Update Input Keys
   update() {
@@ -131,14 +134,11 @@ export class GamePong {
     this.context.fillStyle = "white";
     this.context.lineWidth = 1;
 
-    const viewImage = new Image();
-    viewImage.src = viewGame;
-
-    if (viewImage.complete)
-      this.context.drawImage(viewImage, 65, this.height + this.offSet + 9, 50, 50);
+    if (this.viewImage.complete)
+      this.context.drawImage(this.viewImage, 65, this.height + this.offSet + 9, 50, 50);
     else {
-      this.context.fillText("Viewrs:", 10, this.height + this.offSet + 45, 100);
-      this.context.strokeText("Viewrs:", 10, this.height + this.offSet + 45, 100);
+      this.context.fillText("Viewers:", 10, this.height + this.offSet + 45, 100);
+      this.context.strokeText("Viewers:", 10, this.height + this.offSet + 45, 100);
     }
 
     this.context.fillText(this.watchersNumber.toString(), 120, this.height + this.offSet + 45, 50);

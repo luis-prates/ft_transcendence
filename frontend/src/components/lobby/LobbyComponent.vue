@@ -8,36 +8,39 @@
     </div>
     <div class="table">
       <img src="@/assets/images/lobby/table_2aaa15.png" />
-      <img src="@/assets/images/lobby/table_efc120.png" />
-      <img src="@/assets/images/lobby/table_de1bda.png" />
-      <button @click="test">Test</button>
     </div>
 
-    <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoad" />
+    <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoaded" />
   </div>
-  <ChatComponent class="chat_component"/>
+  <ChatComponent v-if="isLoaded" class="chat_component" />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
-import { userStore, type Block, type Friendship } from "@/stores/userStore";
+import { userStore, type Block, type Friendship, type GAME } from "@/stores/userStore";
 import ChatComponent from "@/components/chat/ChatComponent.vue";
 import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
 import Router from "@/router";
 import { chatStore } from "@/stores/chatStore";
+import type { ChatMessage, channel } from "@/stores/chatStore";
 
 const store = userStore();
 const user = userStore().user;
 const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 let lobby: Lobby | null = null;
-const isLoad = ref(false);
+const isLoaded = ref(false);
 const socket = socketClass.getLobbySocket();
 
 onMounted(() => {
-  isLoad.value = false;
+  isLoaded.value = false;
+  if (socket == undefined) {
+    console.log("socket is undefined");
+    Router.push('/');
+    return;
+  }
   socket.emit("join_map", { userId: store.user.id, objectId: store.user.id, map: { name: "lobby" } });
   socket.on("load_map", (data: any) => {
     console.log("load_map", data.data);
@@ -51,51 +54,48 @@ onMounted(() => {
           data.data.forEach((d: any) => {
             lobby?.addGameObjectData(d);
           });
-          isLoad.value = true;
+          isLoaded.value = true;
           lobby.update();
         }
-        console.log("isConcted.value : ", isLoad.value);
+        console.log("isConcted.value : ", isLoaded.value);
       });
     }, 1000);
   });
   socket.on("invite_request_game", (e: any) => {
-      const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
-      Game.instance.addMenu(confirmButton.menu);
-			confirmButton.show((value) => {
-          if (value == "CONFIRM") {
-            socket.emit("challenge_game", {
-              challenged: store.user.id, 
-              challenger: e.playerId,
-            });
-          }
-		  });
+    const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
+    Game.instance.addMenu(confirmButton.menu);
+    confirmButton.show((value) => {
+      if (value == "CONFIRM") {
+        socket.emit("challenge_game", {
+          challenged: store.user.id,
+          challenger: e.playerId,
+        });
+      }
     });
-    socket.on("challenge_game", (gameId: string) => {
-      console.log("Challenge begin!")
-			socket.off("invite_confirm_game");
-			Router.push(`/game?objectId=${gameId}`);
-		});
+  });
+  socket.on("challenge_game", (gameId: string) => {
+    console.log("Challenge begin!");
+    socket.off("invite_confirm_game");
+    Router.push(`/game?objectId=${gameId}`);
+  });
 
-    //Block
-    socket.on("block_user",  (event: Block) => {
-      const existingEvent = user.block.find((block: any) => block.blockerId === event.blockerId);
-      
-      if (!existingEvent) user.block.push(event);
+  //Block
+  socket.on("block_user", (event: Block) => {
+    const existingEvent = user.block.find((block: any) => block.blockerId === event.blockerId);
 
-      console.log("Block!", event, "Block List:", user.block);
-		});
+    if (!existingEvent)
+      user.block.push(event);
+    // console.log("Block!", event, "Block List:", user.block);
+  });
 
-    //Unblock
-    socket.on("unblock_user", (event: Block) => {
-      user.block = user.block.filter((block: Block) => block.blockerId !== event.blockerId);
-
-      console.log("Unblock!", event, "Block List:", user.block);
-		});
+  //Unblock
+  socket.on("unblock_user", (event: Block) => {
+    user.block = user.block.filter((block: Block) => block.blockerId !== event.blockerId);
 
     //Send Friend Request
-    socket.on("sendFriendRequest",  (event: Friendship) => {
+    socket.on("sendFriendRequest", (event: Friendship) => {
       const existingEvent = user.friendsRequests.find((friend: Friendship) => friend.requestorId === event.requestorId);
-      
+
       if (!existingEvent)
         user.friendsRequests.push(event);
       //console.log("Send Friend!", event, "Friend Request:", user.friendsRequests);
@@ -103,7 +103,7 @@ onMounted(() => {
     });
 
     //Cancel Friend Request
-    socket.on("cancelFriendRequest",  (event: Friendship) => {
+    socket.on("cancelFriendRequest", (event: Friendship) => {
       user.friendsRequests = user.friendsRequests.filter((friend: Friendship) => friend.requestorId != event.requestorId);
 
       //console.log("Cancel Friend!", event, "Friend Request:", user.friendsRequests);
@@ -111,48 +111,75 @@ onMounted(() => {
     });
 
     //Accept Friend Request
-    socket.on("acceptFriendRequest",  (event: Friendship) => {
+    socket.on("acceptFriendRequest", (event: Friendship) => {
       user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.id);
       const existingEvent = user.friends.find((friend: Friendship) => friend.requesteeId === event.id);
-      
+
       if (!existingEvent)
         user.friends.push(event);
       //console.log("Accept Friend!", event);
       Game.updateNotifications();
-		});
-    
+    });
+
     //Reject Friend Request
-    socket.on("rejectFriendRequest",  (event: Friendship) => {
+    socket.on("rejectFriendRequest", (event: Friendship) => {
       user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.requesteeId);
       //console.log("Reject Friend Request!", event);
       Game.updateNotifications();
-		});
+    });
 
     //Delete Friend
-    socket.on("deleteFriend",  (event: Friendship) => {
+    socket.on("deleteFriend", (event: Friendship) => {
       user.friends = user.friends.filter((friend: Friendship) => friend.id != event.id);
       //console.log("Delete Friend!", event);
-		});
+    });
 
 
-    //Delete Friend
-    socket.on("updateStatus",  (event: any) => {
-      console.log("ENTROUUU", event)
-
+    //Update Status
+    socket.on("updateStatus", (event: any) => {
       chatStore().channels.forEach(channel => {
         const userIndex = channel.users.findIndex(user => user.id == event.id);
         if (userIndex !== -1) {
           channel.users[userIndex].status = event.status;
-          console.log("new Status");
         }
       });
+      //TODO
+      const userFriend = userStore().user.friends.findIndex(user => user.id == event.id);
+      if (userFriend !== -1) {
+        userStore().user.friends[userFriend].status = event.status;
+      }
     });
+
+    //Update Nickname
+    socket.on("updateNickname", (event: any) => {
+      chatStore().channels.forEach(channel => {
+        const userIndex = channel.users.findIndex(user => user.id == event.id);
+        if (userIndex !== -1) {
+          channel.users[userIndex].nickname = event.nickname;
+        }
+      });
+      userStore().user.friends.forEach(function (user) {
+        if (user.id == event.id)
+          user.nickname = event.nickname;
+      });
+      userStore().user.block.forEach(function (user: Block) {
+        if (user.blocker.id == event.id)
+          user.blocker.nickname = event.nickname;
+      });
+      userStore().user.infoPong.historic.forEach(function (game: GAME) {
+        if (game.winnerId == event.id)
+          game.winnerNickname = event.nickname;
+        else
+          game.loserNickname = event.nickname;
+      });
+    });
+  });
 });
 
 onUnmounted(() => {
   console.log("unmounted");
-  socket.off("load_map");
-  if (lobby) lobby.destructor();
+  socket?.off("load_map");
+  lobby?.destructor();
 });
 
 function salvarDesenhoComoImagem() {
@@ -174,22 +201,25 @@ function test() {
 
 <style scoped lang="scss">
 .laod {
-  width: 100%; /* 100% da largura da janela */
+  width: 100%;
+  /* 100% da largura da janela */
   height: 100%;
   position: fixed;
   margin: 0;
   padding: 0;
 }
+
 .game {
-  width: 100%; /* 100% da largura da janela */
-  height: 100%; /* 100% da altura da janela */
+  width: 100%;
+  /* 100% da largura da janela */
+  height: 100%;
+  /* 100% da altura da janela */
   margin: 0;
   padding: 0;
   background-color: rgb(30, 39, 210);
 }
 
-.chat_component
-{
+.chat_component {
   width: 70%;
   height: 60%;
   right: 0px;
@@ -208,6 +238,7 @@ function test() {
   border-radius: 15px;
   box-shadow: 0px 0px 10px 0px rgba(59, 217, 15, 0.75);
   display: none;
+
   button {
     width: 40%;
     height: 100%;
@@ -216,6 +247,7 @@ function test() {
     border: 2px solid rgb(59, 217, 15);
     box-shadow: 0px 0px 10px 0px rgba(59, 217, 15, 0.75);
   }
+
   button:hover {
     background-color: rgb(200, 213, 23);
     border: 2px solid rgb(59, 217, 15);
@@ -228,7 +260,7 @@ function test() {
   top: 70px;
   /* z-index: -1; */
   position: absolute;
-  width: 150px;
+  width: 55px;
   height: 90px;
   right: 5px;
   top: 5px;
@@ -236,10 +268,10 @@ function test() {
   border: 2px solid rgb(178, 120, 120);
   padding: 10px;
   border-radius: 15px;
+
   img {
     width: 32px;
     height: 64px;
     margin-right: 10px;
   }
-}
-</style>
+}</style>

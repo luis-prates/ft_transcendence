@@ -32,6 +32,11 @@ let accumulatedTime = 0;
 const frameTime = 1000 / frameRate;
 
 onMounted(function () {
+	if (socket == undefined) {
+		console.log("socket is undefined");
+		Router.push('/lobby');
+		return;
+	}
   const canvas = document.getElementById("canvas1") as HTMLCanvasElement;
   const button = document.getElementById("buttonLeave") as HTMLButtonElement;;
   const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -45,6 +50,12 @@ onMounted(function () {
 		}
 	});
 	socket = socketClass.getGameSocket();
+	socket.on("error", (errorMessage: string) => {
+		if (errorMessage.includes("Game does not exist")) {
+			Router.push(`/lobby`);
+			socket.disconnect();
+		}
+	})
   socket.emit("entry_game", {
     objectId: props.objectId,
 	  userId: user.id, 
@@ -104,8 +115,9 @@ onMounted(function () {
     }
     else
     {
-      Router.push(`/`);
-      socket.disconnect();
+      Router.push(`/lobby`);
+      game?.audio("music_stop");
+      socket?.disconnect();
     }
   }
 
@@ -270,6 +282,8 @@ onMounted(function () {
     socket.off("game_sound");
     socket.off("game_view");
     socket.off("end_game");
+    game?.audio("music_stop");
+    socket?.disconnect();
     window.removeEventListener('resize', updateButtonSizeAndPosition);
     button.removeEventListener('click', leaveTheGame);
   });
