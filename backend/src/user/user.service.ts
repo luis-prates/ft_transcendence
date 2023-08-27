@@ -64,7 +64,7 @@ export class UserService {
 
 			delete user.twoFASecret;
 
-			return user;	
+			return user;
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				if (error.code === 'P2002') {

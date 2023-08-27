@@ -5,6 +5,7 @@
 		<transition name="fade" mode="out-in">
 			<div class="grid-container" :key="currentPage">
 				<div v-for="(friend, index) in currentPageBoard()" :key="index">
+					<!-- TODO: add friend status -->
 					<div class="friend_content" @click="openProfile(friend.id)">
 						<img class="friend_image" :src="getPhoto(friend)">
 						<p class="friend_nickname">{{ friend.nickname }}</p>
