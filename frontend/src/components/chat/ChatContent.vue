@@ -27,7 +27,7 @@
           <label for="channelAvatar">Avatar (Image)</label>
           <input type="file" id="channelAvatar" class="form-control" accept="image/*" @change="handleAvatarChange">
         </div>
-        <div class="form-group" v-if="channelType !== 'PRIVATE'">
+        <div class="form-group" v-if="channelType !== 'PRIVATE' && channelType !== 'PUBLIC'">
           <label for="channelPassword">Password</label>
           <input type="password" id="channelPassword" class="form-control" v-model="channelPassword" pattern=".{0}|.{3,}" :title='"Password must be at least 3 characters long."'>
         </div>
@@ -35,6 +35,7 @@
           <label for="channelType">*Channel Type</label>
           <select id="channelType" class="form-control" v-model="channelType" required>
             <option value="PUBLIC">Public</option>
+            <option value="PROTECTED">Protected</option>
             <option value="PRIVATE">Private</option>
           </select>
         </div>
@@ -367,8 +368,8 @@ const createNewChannel = async () => {
   try {
     // Retrieve the form values and do something with them
     const name = channelName.value;
-    const password = channelType.value == "PUBLIC" ? channelPassword.value : undefined;
-    const type = password ? "PROTECTED" : channelType.value;
+    const password = channelType.value == "PROTECTED" ? channelPassword.value : undefined;
+    const type = channelType.value;
     const avatar = avatarBase64.value ? avatarBase64.value : ""; // This is the File object
     console.log("Avatar base64 string:", avatar);
 

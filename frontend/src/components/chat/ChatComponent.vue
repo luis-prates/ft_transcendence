@@ -174,6 +174,7 @@ onMounted(() => {
       curChannel.avatar = editedChannel.avatar ? editedChannel.avatar : "";
       curChannel.name = editedChannel.name;
       curChannel.type = editedChannel.type;
+      chatListRef.value?.getFilteredChannels();
     }
   });
 

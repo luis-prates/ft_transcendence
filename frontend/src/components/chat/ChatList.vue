@@ -360,8 +360,12 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
       //para admins do channel
       ...(imAdmin.value && (user.isAdmin == false) && (user.id != userStore().user.id) ? [
       { 
-        label: menu.getMute(user), 
-        onClick: () => muteOrUnmute(user),
+        label: "Mute", 
+        children: [
+            { label: "Item1", onClick: () => {console.log("Item1")} },
+            { label: "Item2", onClick: () => {console.log("Item2")} },
+            { label: "Item3", onClick: () => {console.log("Item3")} },
+          ]
       },
       { 
         label: "Kick", 
@@ -625,13 +629,30 @@ defineExpose({
 
 .custom-context-menu {
   background-color: #000000;
-  color: #ffffff;
   cursor: pointer; 
 }
 
 .custom-context-menu .label {
-  color: #FFFFFF;
+  color: white;
 }
-.mx-context-menu-item-wrapper :hover {
-background-color: rgb(57, 57, 57);}
+
+/* .custom-context-menu .label :hover{
+  color: gray !important;
+} */
+.mx-context-menu-item:hover
+{
+  background-color: rgb(57, 57, 57);
+}
+
+.mx-context-menu-item.open
+{
+  background-color: rgb(57, 57, 57);
+}
+
+.mx-context-menu-item.open:hover
+{
+  background-color: rgb(57, 57, 57);
+}
+
+
 </style>
