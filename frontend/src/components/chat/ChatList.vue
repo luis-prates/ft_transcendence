@@ -482,12 +482,21 @@ const openChannel = async function (channel: channel) {
   }
   else
   {
-    if (channel.type == "PUBLIC"){
+    if (channel.type == "PUBLIC" || channel.type == "DM"){
       await store.joinChannel(channel.objectId);
       store.getMessages(channel);
       instance?.emit('update-create-channel', false);
       instance?.emit('protected-channel', false);
       instance?.emit("update-channel-status", true);
+      usersInChannelSelect.value = channel.users;
+      bannedUsersInChannelSelect.value = channel.banList;
+      usersFilters.value = channel.users;
+      bannedUsersFilters.value = channel.banList;
+      friendListFilter.value = userStore().user.friends.filter((friend) => {
+        const isNotInSelectedUsers = !store.selected.users.some((selectedUser:any) => selectedUser.id === friend.id);
+        const isNotInBanList = !store.selected.banList.some((bannedUser:any) => bannedUser.id === friend.id);
+        return isNotInSelectedUsers && isNotInBanList;
+      });
     }
     else{
       console.log("I will try to put the password!");
