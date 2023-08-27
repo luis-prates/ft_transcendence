@@ -1,7 +1,7 @@
 <template>
   <div class="chat">
     <ChatContent class="chat_mensagen" />
-    <ChatList class="chat_list"/>
+    <ChatList  class="chat_list"/>
   </div>
 </template>
 
@@ -65,8 +65,9 @@ onMounted(() => {
 
   socket.on('channel-created', (eventData: { newChannel: any, message: any }) => {
     const { newChannel, message } = eventData;
-    store.addChannel(newChannel, message);
-    chatListRef.value?.getFilteredChannels();
+   
+    const c = store.addChannel(newChannel, message);
+    //chatListRef.value?.getFilteredChannels();
   });
 
   socket.on('user-removed', (eventData: { channelId: any, message: any, user: any }) => {
@@ -80,7 +81,7 @@ onMounted(() => {
       store.updatechannelstatus = false;
     }
     store.removeUserFromChannel(channelId, user.user.id);
-    chatListRef.value?.getFilteredChannels();
+    //chatListRef.value?.getFilteredChannels();
   });
   socket.on("channel-deleted", (eventData) => {
     const { deletedChannel } = eventData;
@@ -93,13 +94,13 @@ onMounted(() => {
   if (curChannelIndex !== -1) {
     store.channels.splice(curChannelIndex, 1);
     console.log("A lista depois de apagar o channel:", store.channels)
-    chatListRef.value?.getFilteredChannels();
+   // chatListRef.value?.getFilteredChannels();
   }
   });
   socket.on("channel-added", (eventData) => {
     const { channelId } = eventData;
     store.userToChannel(channelId, user.user);
-      chatListRef.value?.getFilteredChannels();
+      //chatListRef.value?.getFilteredChannels();
   });
   //TODO, user-added acionado 3x
   socket.on("user-added", (eventData) => {
@@ -189,7 +190,7 @@ onMounted(() => {
       const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userId);
       if (curUser)
         store.removeUserFromChannel(channelId, userId);
-      chatListRef.value?.getFilteredChannels();
+     // chatListRef.value?.getFilteredChannels();
     }
   });
 
@@ -208,7 +209,7 @@ onMounted(() => {
         store.removeUserFromChannel(channelId, userId);
         curChannel.banList.push(curUser);
       }
-      chatListRef.value?.getFilteredChannels();
+     // chatListRef.value?.getFilteredChannels();
     }
   });
 
@@ -294,9 +295,9 @@ onUnmounted(() => {
 });
 
 // Data initialization
-const updatechannelstatus = computed(() =>chatStore().updatechannelstatus);
-const updatecreatechannel = computed(() =>chatStore().updatecreatechannel);
-const protectedChannelStatus = computed(() =>chatStore().protectedChannelStatus);
+const updatechannelstatus = computed(() =>store.updatechannelstatus);
+const updatecreatechannel = computed(() =>store.updatecreatechannel);
+const protectedChannelStatus = computed(() =>store.protectedChannelStatus);
 
 // Provide the channel status to chld components
 // Method to update channelStatus when emitted from child component

@@ -25,7 +25,7 @@
           </button>
         </div>
         <ul class="contacts">
-          <li v-for="channel in channelsFilters">
+          <li v-for="channel in getFilteredChannels">
             <ChatListChannels :channel="channel" @click="selectChannel(channel)" @contextmenu="handleContextMenu($event, channel)" />
           </li>
         </ul>
@@ -98,7 +98,7 @@ const store = chatStore();
 const userSelect = ref('' as any);
 const { selected } = storeToRefs(store);
 const isMenuOpen = ref(chatStore().isMenuOpen);
-const channelsFilters = ref([] as channel[]);
+const channelsFilters = ref(store.channels);
 const searchTerm = ref('');
 const usersInChannelSelect = ref([] as ChatUser[]);
 const bannedUsersInChannelSelect = ref([] as ChatUser[]);
@@ -145,7 +145,7 @@ const setShowUsers = (value:any) => {
 }
 
 const handleSearch = () => {
-  getFilteredChannels();
+
 };
 
 const handleSearchUser = () => {
@@ -161,6 +161,11 @@ const handleSearchUser = () => {
   return usersFilters;
 };
 
+function addChannel(channel: channel)
+{
+  channelsFilters.value.push(channel)
+}
+
 function changeFilter (filter: string)
 {
   isChatFilterType.value = filter;
@@ -173,7 +178,6 @@ function changeFilter (filter: string)
   insideButton.style.backgroundColor = isChatFilterType.value == "inside" ? "rgba(17, 9, 9, 0.5)" : "transparent";
   allButton.style.backgroundColor = isChatFilterType.value == "all" ? "rgba(17, 9, 9, 0.5)" : "transparent";
 
-  getFilteredChannels();
 }
 
 
@@ -195,7 +199,7 @@ async function DMHandling(user : any){
   }
 }
 
-function getFilteredChannels()
+const  getFilteredChannels = computed(() =>
 {
   if (isChatFilterType.value == "dm")
   {
@@ -228,8 +232,8 @@ function getFilteredChannels()
   });
   console.log("FILTRO COM SEARCH", channelsFilters);
 
-  return channelsFilters;
-}
+  return channelsFilters.value;
+})
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
@@ -480,9 +484,9 @@ const openChannel = async function (channel: channel) {
   if (store.isUserInSelectedChannel(userStore().user.id))
   {
     store.getMessages(channel);
-    chatStore().updatecreatechannel = false;
-    chatStore().protectedChannelStatus = false;
-    chatStore().updatechannelstatus = true;
+    store.updatecreatechannel = false;
+    store.protectedChannelStatus = false;
+    store.updatechannelstatus = true;
     usersInChannelSelect.value = channel.users;
     bannedUsersInChannelSelect.value = channel.banList;
     usersFilters.value = channel.users;
@@ -495,7 +499,7 @@ const openChannel = async function (channel: channel) {
   }
   else
   {
-    if (channel.type == "PUBLIC"){
+    if (channel.type == "PUBLIC" || channel.type == "DM"){
       await store.joinChannel(channel.objectId);
       store.getMessages(channel);
       store.updatecreatechannel = false;
@@ -512,7 +516,7 @@ const openChannel = async function (channel: channel) {
 
 //Creating a new channel:
 const createChannel = () => {
-  if (store.updatechannelstatus) {
+  if (!store.updatechannelstatus) {
     console.log("Vai criar um novo channel");
     store.updatecreatechannel = true;
   }
@@ -575,7 +579,6 @@ const toggleChat = () => {
   } else {
     // Mostrar o chat
     chatElement.style.bottom = "0%";
-    getFilteredChannels();
   }
   // Update the button text based on isChatHidden
   buttonString.value = isChatHidden.value ? "⇑" : "⇓";
@@ -586,8 +589,8 @@ const toggleChat = () => {
 };
 
 defineExpose({
-        getFilteredChannels,
-        DMHandling
+        DMHandling,
+        addChannel
     });
 
 </script>

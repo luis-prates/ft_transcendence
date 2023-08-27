@@ -50,7 +50,7 @@ export const chatStore = defineStore("chat", () => {
   const user = userStore().user;
 
   //TODO DM channel name must be something like: 'Denny conversation'
-  function addChannel(newChannel: any, message: String) {
+  function addChannel(newChannel: any, message: String): channel {
     const channel: channel = {
       objectId: newChannel.id,
       name: newChannel.name,
@@ -82,6 +82,7 @@ export const chatStore = defineStore("chat", () => {
     else {
       console.log("Channel already exists!");
     }
+    return (channel);
   }
 
   function isUserInSelectedChannel(id: number): boolean {
