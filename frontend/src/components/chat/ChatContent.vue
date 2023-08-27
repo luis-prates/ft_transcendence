@@ -29,7 +29,7 @@
         </div>
         <div class="form-group" v-if="channelType !== 'PRIVATE' && channelType !== 'PUBLIC'">
           <label for="channelPassword">Password</label>
-          <input type="password" id="channelPassword" class="form-control" v-model="channelPassword" pattern=".{0}|.{3,}" :title='"Password must be at least 3 characters long."'>
+          <input type="password" id="channelPassword" class="form-control" v-model="channelPassword" pattern=".{3,}" :title='"Password must be at least 3 characters long."' required>
         </div>
         <div class="form-group">
           <label for="channelType">*Channel Type</label>
@@ -393,13 +393,24 @@ const createNewChannel = async () => {
       channelName.value = '';
       channelPassword.value = '';
       channelType.value = 'PUBLIC';
-      channelAvatar.value = null;
+      avatarBase64.value = "";
       errorMessage.value = '';
+      channelAvatar.value = null;
+      defaultAvatar.value = chat_avatar;
     } else if (response == "409"){
       // Handle channel creation failure here
       errorMessage.value = 'Failed to create channel. Channel name is already taken';
       // Display error message in the form or take any other action
       return ;
+    }
+    else {
+      channelName.value = '';
+      channelPassword.value = '';
+      channelType.value = 'PUBLIC';
+      avatarBase64.value = "";
+      channelAvatar.value = null;
+      errorMessage.value = '';
+      defaultAvatar.value = chat_avatar;
     }
     instance?.emit("update-create-channel", false);
   } catch (error) {
@@ -412,7 +423,7 @@ const updateChannel = async () => {
   try {
     const name = (channelName.value == store.selected.name) ? null : channelName.value;
     const password = channelType.value != "PROTECTED" ? undefined : channelPassword.value;
-    const type = password ? "PROTECTED" : channelType.value;
+    const type = channelType.value ? channelType.value : null;
     const avatar = avatarBase64.value ? avatarBase64.value : null;
 
     const editChannelDto = {
@@ -430,8 +441,10 @@ const updateChannel = async () => {
       channelName.value = '';
       channelPassword.value = '';
       channelType.value = 'PUBLIC';
-      channelAvatar.value = null;
+      avatarBase64.value = "";
       errorMessage.value = '';
+      channelAvatar.value = null;
+      defaultAvatar.value = chat_avatar;
       instance?.emit("update-create-channel", false);
     } else {
       console.log("Error response: ", response);

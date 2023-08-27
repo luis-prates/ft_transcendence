@@ -46,7 +46,7 @@ export const chatStore = defineStore("chat", () => {
     const channel: channel = {
       objectId: newChannel.id,
       name: newChannel.name,
-      avatar: newChannel.avatar ? newChannel : "",
+      avatar: newChannel.avatar ? newChannel.avatar : "",
       password: "",
       messages: [],
       users: newChannel.users.map((userData: any) => {
