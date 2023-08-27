@@ -448,6 +448,8 @@ async function makeAdmin(channel: channel, userChat: ChatUser) {
 }
 
 
+
+
 async function demoteAdmin(channel: channel, userChat: ChatUser) {
   const options = {
     method: "POST",
@@ -494,23 +496,32 @@ async function makeOwner(channelId:string, userId:string) {
   }
 }
 
-async function muteUser(channel: channel, userChat: ChatUser) {
+async function muteUser(channelId: string, userId: string, muteDuration: number) {
+  const muteUserDto = {
+    muteDuration: muteDuration,
+  };
+
   const options = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${user.access_token_server}`,
     },
+    body: JSON.stringify(muteUserDto),
   };
 
-  await axios
-    .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/mute/${userChat.id}`, 
-      { channelId: channel.objectId, userId: userChat.id, }, options)
-    .then(function (response: any) {
-      console.log(`Mute: ${userChat.nickname}, ${response.data}`);
-      userChat.isMuted = true;
-    })
-    .catch((err) => console.error(err));
+  try {
+    const response = await fetch(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/mute/${userId}`, options);
+
+    if (response.ok) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
 }
 
 async function unmuteUser(channel: channel, userChat: ChatUser) {

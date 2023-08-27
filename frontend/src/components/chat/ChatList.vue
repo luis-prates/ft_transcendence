@@ -359,14 +359,16 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
       }] : []),
       //para admins do channel
       ...(imAdmin.value && (user.isAdmin == false) && (user.id != userStore().user.id) ? [
-      { 
+      ...(user.isMuted == false ? [{ 
         label: "Mute", 
         children: [
-            { label: "Item1", onClick: () => {console.log("Item1")} },
-            { label: "Item2", onClick: () => {console.log("Item2")} },
-            { label: "Item3", onClick: () => {console.log("Item3")} },
+            { label: "1  min", onClick: () => {store.muteUser(selected?.value.objectId, user.id, 1)} },
+            { label: "5  min", onClick: () => {store.muteUser(selected?.value.objectId, user.id, 5)} },
+            { label: "15 min", onClick: () => {store.muteUser(selected?.value.objectId, user.id, 15)} },
+            { label: "30 min", onClick: () => {store.muteUser(selected?.value.objectId, user.id, 30)} },
+            { label: "60 min", onClick: () => {store.muteUser(selected?.value.objectId, user.id, 60)} },
           ]
-      },
+      }] : []),
       { 
         label: "Kick", 
         onClick: () => kickUser(user),
@@ -447,17 +449,6 @@ function makeOrDemoteAdmin (userChannel: ChatUser){
     chatStore().demoteAdmin(channel, userChannel);
   else
     chatStore().makeAdmin(channel, userChannel);
-}
-
-function muteOrUnmute (userChannel: ChatUser){
-  const channel = chatStore().selected as channel;
-
-  if (!channel)
-    return ;
-  if (userChannel.isMuted)
-    chatStore().unmuteUser(channel, userChannel);
-  else
-    chatStore().muteUser(channel, userChannel);
 }
 
 function kickUser (userChannel: ChatUser){
