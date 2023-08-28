@@ -475,6 +475,7 @@ function kickUser (userChannel: ChatUser){
 }
 
 const openChannel = async function (channel: channel) {
+  store.selected = channel;
   if (store.isUserInSelectedChannel(userStore().user.id))
   {
     store.getMessages(channel);
