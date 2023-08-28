@@ -524,12 +524,7 @@ async function muteUser(channelId: string, userId: string, muteDuration: number)
   }
 }
 
-async function unmuteUser(channel: channel, userChat: ChatUser) {
-  if (channel.ownerId != user.id)
-  {
-    console.log("You aren't a OWNER!");
-  }
-
+async function unmuteUser(channelId: string, userId: string) {
   const options = {
     method: "POST",
     headers: {
@@ -538,12 +533,28 @@ async function unmuteUser(channel: channel, userChat: ChatUser) {
     },
   };
 
+  const requestBody = {
+    channelId: channelId,
+    userId: userId,
+  };
+
+  try {
+    const response = await axios.post(
+      `${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/unmute/${userId}`,
+      requestBody,
+      options
+    );
+
+    console.log(`You unmuted user: ${userId} from channel ${channelId}`);
+  } catch (error) {
+    console.error(`Error unmute user:  ${userId}`, error);
+  }
+
   await axios
-  .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/unmute/${userChat.id}`, 
-    { channelId: channel.objectId, userId: userChat.id, }, options)
+  .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/unmute/${userId}`, 
+    { channelId: channelId, userId: userId, }, options)
   .then(function (response: any) {
-    console.log(`Unmute : ${userChat.nickname}, ${response.data}`);
-    userChat.isMuted = false;
+    console.log(`Unmute Request: ${userId}, ${response.data}`);
   })
   .catch((err) => console.error(err));
 }

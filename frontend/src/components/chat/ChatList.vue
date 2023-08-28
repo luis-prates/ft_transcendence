@@ -32,7 +32,7 @@
       </div>
       <div v-else class="card-body contacts_body">
         <div class="card-header">
-          <div class="input-group">
+          <div v-if="!(store.selected.type == 'DM')" class="input-group">
             <input id="searchUser" type="text" placeholder="Search..." name="" class="form-control search" v-model="searchUser" @input="handleSearchUser"/>
           </div>
         </div>
@@ -368,7 +368,14 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
             { label: "30 min", onClick: () => {store.muteUser(selected?.value.objectId, user.id, 30)} },
             { label: "60 min", onClick: () => {store.muteUser(selected?.value.objectId, user.id, 60)} },
           ]
-      }] : []),
+      }] : [
+      { 
+        label: "UnMute", 
+        onClick: () => {
+          store.unmuteUser(selected?.value.objectId, user.id);
+        }
+      }
+      ]),
       { 
         label: "Kick", 
         onClick: () => kickUser(user),
