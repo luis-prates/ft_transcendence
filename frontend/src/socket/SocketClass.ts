@@ -28,6 +28,10 @@ class SocketClass {
       this._gameSocket = io(env.GAME_SERVER_URL, query);
     }
 
+	public clearGameSocket() {
+		this._gameSocket = undefined;
+	}
+
   public setChatSocket(query: any) {
     this._chatSocket = io(env.CHAT_URL, query);
   }

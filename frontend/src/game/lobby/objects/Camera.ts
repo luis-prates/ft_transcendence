@@ -80,16 +80,16 @@ export class Camera {
 
     //atualizar a posição da câmera em função do this.player
     if (this.player.x < this.leftEdge()) {
-      this.x = this.player.x - this.width * 0.25;
+      this.x = this.player.x - this.width;
     }
     if (this.player.x + this.player.w > this.rightEdge()) {
-      this.x = this.player.x + this.player.w - this.width * 0.75;
+      this.x = this.player.x + this.player.w - this.width * 0.5;
     }
     if (this.player.y < this.topEdge()) {
-      this.y = this.player.y - this.height * 0.25;
+      this.y = this.player.y - this.height;
     }
     if (this.player.y + this.player.h > this.bottomEdge()) {
-      this.y = this.player.y + this.player.h - this.height * 0.75;
+      this.y = this.player.y + this.player.h - this.height * 0.6;
     }
 
     //limite da câmera

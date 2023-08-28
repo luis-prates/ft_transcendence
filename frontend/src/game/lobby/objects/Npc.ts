@@ -2,8 +2,10 @@ import { Character } from "@/game/base/Character";
 import { type ElementUI, Game, Menu, Player } from "@/game";
 import { SpeechBubble } from "../../Menu/SpeechBubble";
 import { Shop } from "../../Menu/Shop";
+import { userStore } from "@/stores/userStore";
 
 export class Npc extends Character {
+  public message: string[];
   public typeNpc: string = "npc";
 
   constructor(data?: any) {
@@ -13,7 +15,8 @@ export class Npc extends Character {
     this.animation.sx = 144;
     this.x = 1850;
     this.y = 700;
-    console.log("npc: ", this.x, this.y);
+    this.message = [];
+    // console.log("npc: ", this.x, this.y);
     if (data) this.setData(data);
   }
 
@@ -25,7 +28,7 @@ export class Npc extends Character {
   ];
 
   public setData(data: any): void {
-    console.log("npc: ", data);
+    //console.log("npc: ", data);
     if (data?.animation != undefined) {
       this.animation?.setAnimation(data.animation.name);
       this.animation?.setStop(data.animation.isStop);
@@ -54,33 +57,42 @@ export class Npc extends Character {
 
   public interaction(gameObject: Character): void {
     this.setLookAt(gameObject);
-
-    if (this.nickname == "Shop Amelia")
+    
+    if (this.typeNpc == "shop")
     {
-      Game.instance.addMenu(new Shop().menu);
+      userStore().userSelected = "shop";
       return ;
     }
-    
-    const m = new Menu({ KeyClose: "A" });
-    
-    if (this.nickname == "Mafalda")
+        
+    if (this.typeNpc == "mafalda")
     {
-      const e: ElementUI = {
-        type: "button",
-        rectangle: SpeechBubble.rectangleDimesion("Hi! I'm Mafalda, the Headmaster for 42 Lisboa!", this.x, this.y),
-        draw: (c) => SpeechBubble.draw(c, e.rectangle, "Hi! I'm Mafalda, the Headmaster for 42 Lisboa!"),
-      };
-      m.add(e);
+      this.message = [
+      "Hi, " + userStore().user.nickname + "! I'm Mafalda, the Headmaster for 42 Lisboa!\n\
+      I will explation the \"Pong Game\" rules! Click here to see the rules or click in red button for close.",
+      "Objective:\n\
+      Direct the ball past your opponent's paddle to score a point while preventing them from doing the same to you.",
+      "Player Controls:\n\
+      W: Move paddle up.\n\
+      S: Move paddle down.",
+      "Starting Play:\n\
+      The ball is served from the center of the screen and moves in a random direction.\n\
+      On subsequent serves, the ball moves in a random direction but towards the last scorer.",
+      "Gameplay:\n\
+      Paddles can only move vertically along their respective sides.\
+      The ball bounces off walls and paddles.\
+      If the ball passes a player's paddle and reaches the screen's edge, the opposing player scores a point.",
+      "Winning:\n\
+      The first player to reach a pre-determined number of points 3, 6, 9 or 12 wins the game.",
+      "And, That's all! Thank you for seeing the rules."
+    ];
+      userStore().npcSelected = this;
+      userStore().userSelected = "npc";
     }
-    else if (this.nickname == "Lili")
+    else if (this.typeNpc == "lili")
     {
-      const e: ElementUI = {
-        type: "button",
-        rectangle: SpeechBubble.rectangleDimesion("Hi! I'm Lili, the Security Guard for 42 Lisboa! Welcome!", this.x, this.y),
-        draw: (c) => SpeechBubble.draw(c, e.rectangle, "Hi! I'm Lili, the Security Guard for 42 Lisboa! Welcome!"),
-      };
-      m.add(e);
+      this.message = ["Hi! I'm Lili, the Security Guard for 42 Lisboa! Welcome!"];
+      userStore().npcSelected = this;
+      userStore().userSelected = "npc";
     }
-    Game.addMenu(m);
   }
 }

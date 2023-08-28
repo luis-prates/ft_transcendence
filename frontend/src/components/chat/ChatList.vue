@@ -428,27 +428,31 @@ if (selected.value != user && isMenuOpen.value) {
 }
 
 function openPerfilUser (user: ChatUser){
-  if (isProfileOpen)
-  {
-    if (userProfileSelect == user)
-      return;
-    else
-      profile.menu.close();
-  }
+  // if (isProfileOpen)
+  // {
+  //   if (userProfileSelect == user)
+  //     return;
+  //   else
+  //     profile.menu.close();
+  // }
 
-  isProfileOpen = true;
-  userProfileSelect = user;
+  // isProfileOpen = true;
+  // userProfileSelect = user;
 
+  // if (userStore().user.id == user.id)
+  //   profile = new YourProfile(Lobby.getPlayer());
+  // else
+  //   profile = new Profile(user.id);
+
+  // profile.show((value: string) => {
+  // 	if (value == "EXIT") {
+  //     isProfileOpen = false;
+  // 	}
+  // });
   if (userStore().user.id == user.id)
-    profile = new YourProfile(Lobby.getPlayer());
+    userStore().userSelected = "me";
   else
-    profile = new Profile(user.id);
-
-  profile.show((value: string) => {
-  	if (value == "EXIT") {
-      isProfileOpen = false;
-  	}
-  });
+    userStore().userSelected = user.id;
 }
 
 function makeOrDemoteAdmin (userChannel: ChatUser){
