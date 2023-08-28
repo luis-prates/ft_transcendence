@@ -297,6 +297,24 @@ const handleContextMenuFriendUser = (e: any, user: ChatUser)  => {
   });
 };
 
+async function DMHandling(user : any){
+  console.log("DMHandling: ", user);
+  const isDMSent = await menu.sendDM(user);
+  if (isDMSent) {
+    
+    const currentUserId = userStore().user.id;
+    const otherUserId = user.id;
+    const dmChannel = chatStore().channels.find(channel =>
+      channel.type === "DM" &&
+      channel.users.some(user => user.id === currentUserId) &&
+      channel.users.some(user => user.id === otherUserId)
+    );
+
+    if (dmChannel)
+      openChannel(dmChannel);
+  }
+}
+
 const handleContextMenuUser = (e: any, user: ChatUser)  => {
   const items = [
     { 
@@ -308,20 +326,7 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
       { 
         label: "Send DM", 
         onClick: async () => {
-        const isDMSent = await menu.sendDM(user);
-        if (isDMSent) {
-          
-          const currentUserId = userStore().user.id;
-          const otherUserId = user.id;
-          const dmChannel = chatStore().channels.find(channel =>
-            channel.type === "DM" &&
-            channel.users.some(user => user.id === currentUserId) &&
-            channel.users.some(user => user.id === otherUserId)
-          );
-
-          if (dmChannel)
-            openChannel(dmChannel);
-        }
+          DMHandling(user);
         },
       },
       { 
@@ -545,7 +550,7 @@ const toggleStatus = () => {
 };
 
 // Variável para controlar o estado do chat
-let isChatHidden = true;
+let isChatHidden = ref(true);
 
 onMounted(() => {
   toggleChat();
@@ -561,6 +566,13 @@ onMounted(() => {
     onUnmounted(() => {
       cardBody.removeEventListener('scroll', handleScroll);
     });
+
+    Menu.chatListRef = (user: ChatUser) => {
+      console.log("chatListRef: ", user);
+      if (!isChatHidden.value)
+        toggleChat();
+      DMHandling(user)
+  };
 });
 
 const buttonString = ref("⇑"); // Set initial button text
@@ -571,7 +583,7 @@ const toggleChat = () => {
   const searchUser = document.getElementById('searchUser') as HTMLInputElement;
   const searchChannel = document.getElementById('searchChannel') as HTMLInputElement;
 
-  if (isChatHidden) {
+  if (isChatHidden.value) {
     // Ocultar o chat
     if (props.channelStatus) {
       instance?.emit('update-channel-status', false);
@@ -589,8 +601,8 @@ const toggleChat = () => {
     getFilteredChannels();
   }
   // Update the button text based on isChatHidden
-  buttonString.value = isChatHidden ? "⇑" : "⇓";
-  isChatHidden = !isChatHidden;//
+  buttonString.value = isChatHidden.value ? "⇑" : "⇓";
+  isChatHidden.value = !isChatHidden.value;//
   instance?.emit('update-create-channel', false);
   instance?.emit("protected-channel", false);
 
