@@ -648,7 +648,7 @@ export class ChatService {
 		}, muteDuration * 60 * 1000); // Convert minutes to milliseconds
 
 		// emit event that user was muted
-		this.events.emit('user-muted-in-channel', { channelId, userId });
+		this.events.emit('user-muted-in-channel', { channelId, userId, muteDuration });
 	}
 
 	async unmuteUser(channelId: number, userId: number) {

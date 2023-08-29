@@ -207,7 +207,7 @@ export class ChatGateway implements OnGatewayConnection {
 			});
 		});
 
-		this.chatService.events.on('user-muted-in-channel', async ({ channelId, userId }) => {
+		this.chatService.events.on('user-muted-in-channel', async ({ channelId, userId, muteDuration }) => {
 			const client: Socket = this.userIdToSocketMap.get(userId);
 			if (!client) {
 				// if socketId not found, client is not currently connected and doesnt need the websocket event
@@ -216,14 +216,16 @@ export class ChatGateway implements OnGatewayConnection {
 
 			client.emit('user-muted', {
 				channelId,
-				message: `You have been muted in channel ${channelId}`,
+        muteDuration,
+				message: `You have been muted in channel ${channelId}, for ${muteDuration} seconds`,
 			});
 
 			// Send a message to all users in the channel that a user has been muted
 			client.broadcast.to(`channel-${channelId}`).emit('user-muted', {
 				channelId,
 				userId,
-				message: `User ${userId} has been muted in channel ${channelId}`,
+        muteDuration,
+				message: `User ${userId} has been muted in channel ${channelId}, for ${muteDuration} seconds`,
 			});
 		});
 
