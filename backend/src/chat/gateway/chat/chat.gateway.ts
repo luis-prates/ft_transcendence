@@ -217,7 +217,7 @@ export class ChatGateway implements OnGatewayConnection {
 			client.emit('user-muted', {
 				channelId,
         muteDuration,
-				message: `You have been muted in channel ${channelId}, for ${muteDuration} seconds`,
+				message: `You have been muted in channel ${channelId}, for ${muteDuration} minutes`,
 			});
 
 			// Send a message to all users in the channel that a user has been muted
@@ -225,7 +225,7 @@ export class ChatGateway implements OnGatewayConnection {
 				channelId,
 				userId,
         muteDuration,
-				message: `User ${userId} has been muted in channel ${channelId}, for ${muteDuration} seconds`,
+				message: `User ${userId} has been muted in channel ${channelId}, for ${muteDuration} minutes`,
 			});
 		});
 
