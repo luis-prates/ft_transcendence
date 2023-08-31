@@ -170,7 +170,7 @@ export const userStore = defineStore("user", function () {
         user.name = response.data.name;
         user.nickname = response.data.nickname;
         user.email = response.data.email;
-        user.status = response.data.status;
+        // user.status = response.data.status;
         user.image = response.data.image;
         user.money = response.data.money;
         user.avatar = response.data.avatar;
@@ -233,7 +233,7 @@ export const userStore = defineStore("user", function () {
 
         user.access_token_server = response.data.access_token;
         user.id = response.data.dto.id;
-        user.status = response.data.dto.status;
+        // user.status = response.data.dto.status;
         user.name = response.data.dto.name;
         user.email = response.data.dto.email;
         user.nickname = response.data.dto.nickname;

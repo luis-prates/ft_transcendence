@@ -103,6 +103,8 @@ watch(() => userStore().userSelected, (newValue, oldValue) => {
             npcMessage.value = userStore().npcSelected.message;
         }
         else getUserDetails(newValue);
+
+        userStore().userSelected = undefined;
     }
 },
     { deep: true });

@@ -3,7 +3,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateChannelDto, EditChannelDto, JoinChannelDto } from './dto';
 import { ConflictException } from '@nestjs/common';
-import { Channel, ChannelUser, Message, User } from '@prisma/client';
+import { Channel, User, ChannelUser, Message } from '@prisma/client';
 import { ChannelType } from '@prisma/client';
 import { EventEmitter } from 'events';
 import * as bcrypt from 'bcrypt';
@@ -50,37 +50,74 @@ export class ChatService {
 		});
 	}
 
-	async getMessagesByChannel(channelId: number): Promise<Message[]> {
-		return this.prisma.message.findMany({
-			where: {
-				channelId: channelId,
-			},
-			include: {
-				user: true,
-			},
-			orderBy: {
-				createdAt: 'asc',
-			},
-		});
-	}
+  async getMessagesByChannel(channelId: number, userId: number): Promise<Message[]> {
 
-	async getMessagesByUser(user: User): Promise<Message[]> {
-		const userChannels = await this.prisma.channelUser.findMany({
-			where: { userId: user.id },
-			select: { channelId: true },
-		});
-		const channelIds = userChannels.map(channelUser => channelUser.channelId);
-		return this.prisma.message.findMany({
-			where: {
-				channelId: {
-					in: channelIds,
-				},
-			},
-			orderBy: {
-				createdAt: 'desc',
-			},
-		});
-	}
+    // Get the list of users that the current user has blocked
+    const blockedUsers = await this.prisma.blocklist.findMany({
+      where: {
+        blockerId: userId,
+      },
+      select: {
+        blockedId: true
+      }
+    });
+
+    // Extract the IDs of the blocked users
+    const blockedUserIds = blockedUsers.map(b => b.blockedId);
+
+    // Fetch messages from the channel excluding those from blocked users
+    return this.prisma.message.findMany({
+      where: {
+        channelId: channelId,
+        // Excluding messages from blocked users
+        NOT: {
+          userId: {
+            in: blockedUserIds
+          }
+        }
+      },
+      include: {
+        user: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+  }
+
+  async getMessagesByUser(user: User): Promise<Message[]> {
+    // Fetch the user's channels.
+    const userChannels = await this.prisma.channelUser.findMany({
+      where: { userId: user.id },
+      select: { channelId: true },
+    });
+    const channelIds = userChannels.map(channelUser => channelUser.channelId);
+
+    // Fetch the list of users the current user has blocked.
+    const blockedUsers = await this.prisma.blocklist.findMany({
+      where: { blockerId: user.id },
+      select: { blockedId: true },
+    });
+    const blockedUserIds = blockedUsers.map(block => block.blockedId);
+
+    // Fetch messages from the user's channels excluding messages from blocked users.
+    return this.prisma.message.findMany({
+      where: {
+        channelId: {
+          in: channelIds,
+        },
+        userId: { // Exclude messages from blocked users.
+          notIn: blockedUserIds,
+        }
+      },
+      include: {
+        user: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 
 	async createChannel(createChannelDto: CreateChannelDto, user: User): Promise<Channel> {
 		let newChannel;
@@ -611,7 +648,7 @@ export class ChatService {
 		}, muteDuration * 60 * 1000); // Convert minutes to milliseconds
 
 		// emit event that user was muted
-		this.events.emit('user-muted-in-channel', { channelId, userId });
+		this.events.emit('user-muted-in-channel', { channelId, userId, muteDuration });
 	}
 
 	async unmuteUser(channelId: number, userId: number) {
