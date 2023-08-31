@@ -1,31 +1,32 @@
 <template>
-    <div class="match_result" :class="{ win: getResult() === 'WIN!', lost: getResult() === 'LOST!' }">
-        {{ getResult() }}
+    <div class="match_classe" @click="openProfile(match)">
+        <div class="match_result" :class="{ win: getResult() === 'WIN!', lost: getResult() === 'LOST!' }">
+            {{ getResult() }}
+        </div>
+        <div class="match_player1">
+            <img id="avatarImage" :src="getPhoto(1)" class="match_image">
+            <div class="match_nickname">{{ props.match.players[0].nickname }}</div>
+        </div>
+        <div class="match_player2">
+            <img id="avatarImage" :src="getPhoto(2)" class="match_image">
+            <div class="match_nickname">{{ props.match.players[1].nickname }}</div>
+        </div>
+        <img id="avatarImage" :src="getPhoto(3)" class="match_image_vs">
+        <div class="match_score">{{ getScore() }}</div>
     </div>
-    <div class="match_player1">
-        <img id="avatarImage" :src="getPhoto(1)" class="match_image">
-        <div class="match_nickname">{{ props.match.players[0].nickname }}</div>
-    </div>
-
-    <div class="match_player2">
-        <img id="avatarImage" :src="getPhoto(2)" class="match_image">
-        <div class="match_nickname">{{ props.match.players[1].nickname }}</div>
-    </div>
-    <img id="avatarImage" :src="getPhoto(3)" class="match_image_vs">
-
-    <div class="match_score">{{ getScore() }}</div>
 </template>
 
 <script setup lang="ts">
-import type { GAME, User } from '@/stores/userStore';
+import { userStore, type GAME, type User } from '@/stores/userStore';
 
 const props = defineProps<{ match: GAME, user: User }>();
 
-//IMAGES
-
+//IMAGES and Sound
 import vsImage from "@/assets/images/lobby/menu/vs.png";
 import default_avatar from "@/assets/chat/avatar.png";
+import sound_close_tab from "@/assets/audio/close.mp3";
 
+const close_sound = new Audio(sound_close_tab);
 const vs_image = vsImage;
 const defaultAvatar = default_avatar;
 
@@ -50,15 +51,31 @@ function getResult() {
     return ("LOST!");
 }
 
-// onMounted(() => {
-// });
-
-// onUnmounted(() => {
-// });
+function openProfile(match: GAME) {
+    close_sound.play();
+    const playerId = props.user.id == match.winnerId ? match.loserId : match.winnerId;
+    if (playerId != userStore().user.id)
+        userStore().userSelected = playerId;
+    else
+        userStore().userSelected = "me";
+}
 
 </script>
 
 <style scoped lang="scss">
+.match_classe {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+}
+
+.match_classe:hover {
+    opacity: 0.5;
+}
+
+
 .match_player1 {
     position: absolute;
     top: 20%;

@@ -53,6 +53,17 @@ export class UserService {
 					nickname: dto.nickname,
 				});
 			}
+
+			if (dto.image && user.image !== dto.image) {
+
+				console.log(userId, ": imagem updated!")
+
+				this.server.emit('updateImage', {
+					id: userId,
+					image: dto.image,
+				});
+			}
+
 			user = await this.prisma.user.update({
 				where: {
 					id: userId,

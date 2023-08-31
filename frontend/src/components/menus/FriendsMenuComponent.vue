@@ -5,9 +5,9 @@
 		<transition name="fade" mode="out-in">
 			<div class="grid-container" :key="currentPage">
 				<div v-for="(friend, index) in currentPageBoard()" :key="index">
-					<!-- TODO: add friend status -->
 					<div class="friend_content" @click="openProfile(friend.id)">
 						<img class="friend_image" :src="getPhoto(friend)">
+						<span id="user-status" :class="getStatus(friend.status)"></span>
 						<p class="friend_nickname">{{ friend.nickname }}</p>
 					</div>
 					<button class="friend_message" @click="sendDm">
@@ -45,6 +45,10 @@ const currentPage = ref(0);
 const usersPerPage = 10;
 
 const users = ref(userStore().user.friends);
+
+function getStatus(status: string) {
+	return "online_icon " + status;
+}
 
 function currentPageBoard() {
 	const startIndex = currentPage.value * usersPerPage;
@@ -163,10 +167,30 @@ onMounted(async () => {
 	position: absolute;
 	width: 30px;
 	height: 27.5px;
-	left: 10%;
+	left: 2%;
 	top: 10%;
 	border-radius: 10px;
 	border: 1px solid black;
+}
+
+#user-status {
+	position: absolute;
+	left: 8%;
+	top: 65%;
+	height: 10px;
+	width: 10px;
+	border: 1px solid #000000;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+.friend_nickname {
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	left: 15%;
+	top: 15%;
+	font-size: 16px;
+	transform: translateX(-50%);
 }
 
 .friend_message {
@@ -184,16 +208,6 @@ onMounted(async () => {
 	position: absolute;
 	height: 100%;
 	width: 100%;
-}
-
-.friend_nickname {
-	position: absolute;
-	width: 10px;
-	height: 10px;
-	left: 25%;
-	top: 15%;
-	font-size: 16px;
-	transform: translateX(-50%);
 }
 
 .fade-enter-active,

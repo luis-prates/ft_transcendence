@@ -41,8 +41,16 @@ const npcMessage = ref("");
 
 async function getUserDetails(userId: number) {
     closeProfile();
-    userProfile = await userStore().getUserProfile(userId);
-    userProfile.historic = await userStore().getUserGames(userId);
+
+    const userFriend = userStore().user.friends.findIndex(user => user.id == userId);
+    if (userFriend !== -1) {
+        userProfile = userStore().user.friends[userFriend];
+        userStore().user.friends[userFriend].historic = await userStore().getUserGames(userId);
+    }
+    else {
+        userProfile = await userStore().getUserProfile(userId);
+        userProfile.historic = await userStore().getUserGames(userId);
+    }
     yourProfile.value = true;
 }
 
