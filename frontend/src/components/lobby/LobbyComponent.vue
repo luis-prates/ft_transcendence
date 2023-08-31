@@ -48,9 +48,10 @@
       </div>
     </div>
   </div>
-  <ChatComponent v-if="isLoaded" class="chat_component"/>
+  <ChatComponent v-if="isLoaded" class="chat_component" />
   <MenusComponent />
-  <ConfirmButtonComponent v-if="confirmButtonActive" :title="buttonTitle" :message="buttonMessage" :confirmFunction="yourConfirmFunction" @cancelButton="onCancel"/>
+  <ConfirmButtonComponent v-if="confirmButtonActive" :title="buttonTitle" :message="buttonMessage"
+    :confirmFunction="yourConfirmFunction" @cancelButton="onCancel" />
 </template>
 
 <script setup lang="ts">
@@ -91,21 +92,20 @@ function clearNotification() {
   notification.value = 0;
 }
 
-function activeButton(title:string, message: string, confirmFunction: Function, timeOut?: number) {
+function activeButton(title: string, message: string, confirmFunction: Function, timeOut?: number) {
   buttonTitle = title;
   buttonMessage = message;
   confirmButtonActive.value = true;
   yourConfirmFunction = confirmFunction;
-  
-  if (timeOut)
-  {
+
+  if (timeOut) {
     setTimeout(() => {
       confirmButtonActive.value = false;
     }, timeOut * 1000);
   }
 }
 
-function onCancel () {
+function onCancel() {
   confirmButtonActive.value = false;
 };
 
@@ -141,9 +141,9 @@ onMounted(() => {
   socket.on("invite_request_game", (e: any) => {
     activeButton(e.playerName, "Challenge You!\n\nYou Accept?", () => {
       socket.emit("challenge_game", {
-          challenged: store.user.id,
-          challenger: e.playerId,
-        });
+        challenged: store.user.id,
+        challenger: e.playerId,
+      });
     }, 5);
   });
   socket.on("challenge_game", (gameId: string) => {
@@ -215,34 +215,46 @@ onMounted(() => {
         channel.users[userIndex].status = event.status;
       }
     });
-    //TODO
     const userFriend = userStore().user.friends.findIndex(user => user.id == event.id);
-    if (userFriend !== -1) {
-      userStore().user.friends[userFriend].status = event.status;
-    }
+    if (userFriend !== -1) userStore().user.friends[userFriend].status = event.status;
   });
 
   //Update Nickname
   socket.on("updateNickname", (event: any) => {
     chatStore().channels.forEach(channel => {
       const userIndex = channel.users.findIndex(user => user.id == event.id);
-      if (userIndex !== -1) {
-        channel.users[userIndex].nickname = event.nickname;
-      }
+      if (userIndex !== -1) channel.users[userIndex].nickname = event.nickname;
     });
     userStore().user.friends.forEach(function (user) {
-      if (user.id == event.id)
-        user.nickname = event.nickname;
+      if (user.id == event.id) user.nickname = event.nickname;
     });
     userStore().user.block.forEach(function (user: Block) {
-      if (user.blocker?.id == event.id)
-        user.blocker.nickname = event.nickname;
+      if (user.blocker?.id == event.id) user.blocker.nickname = event.nickname;
     });
     userStore().user.infoPong.historic.forEach(function (game: GAME) {
-      if (game.winnerId == event.id)
-        game.winnerNickname = event.nickname;
-      else
-        game.loserNickname = event.nickname;
+
+      if (game.winnerId == event.id) game.winnerNickname = event.nickname;
+      else if (game.loserId == event.id) game.loserNickname = event.nickname;
+      if (game.players[0].id == event.id) game.players[0].nickname = event.nickname;
+      else if (game.players[1].id == event.id) game.players[1].nickname = event.nickname;
+    });
+  });
+
+  //Update Image
+  socket.on("updateImage", (event: any) => {
+    chatStore().channels.forEach(channel => {
+      const userIndex = channel.users.findIndex(user => user.id == event.id);
+      if (userIndex !== -1) channel.users[userIndex].image = event.image;
+    });
+    userStore().user.friends.forEach(function (user) {
+      if (user.id == event.id) user.image = event.image;
+    });
+    userStore().user.block.forEach(function (user: Block) {
+      if (user.blocker?.id == event.id) user.blocker.image = event.image;
+    });
+    userStore().user.infoPong.historic.forEach(function (game: GAME) {
+      if (game.players[0].id == event.id) game.players[0].image = event.image;
+      else if (game.players[1].id == event.id) game.players[1].image = event.image;
     });
   });
 });
@@ -432,4 +444,5 @@ function test() {
   bottom: -0.5vw;
   left: 2.5vw;
   z-index: 3;
-}</style>
+}
+</style>
