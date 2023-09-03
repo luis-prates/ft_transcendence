@@ -7,7 +7,7 @@
       <button style="right: 0px">Test</button>
     </div>
     <div class="table">
-      <img src="@/assets/images/lobby/table_2aaa15.png" @dragover="dragoverTable" @drop="handleDrop" @dragleave="handleDragLeave" />
+      <img src="@/assets/images/lobby/table_2aaa15.png" @dragover="dragoverTable" />
     </div>
 
     <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoaded" />
@@ -85,15 +85,6 @@ function clearNotification() {
 
 function dragoverTable() {
   Game.isDragover = true;
-  // console.log("dragoverTable");
-}
-
-function handleDrop() {
-  console.log("handleDrop");
-}
-
-function handleDragLeave() {
-  console.log("handleDragLeave");
 }
 
 function activeButton(title: string, message: string, confirmFunction: Function, timeOut?: number) {
