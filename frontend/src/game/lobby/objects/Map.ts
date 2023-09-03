@@ -29,7 +29,7 @@ export class Map implements GameObject {
   type: GameObjectType;
   isSelect: boolean = false;
   public static SIZE = 32;
-  objectId = 0;
+  objectId: any = 0;
   protected isLoaded = false;
   public layer_1: layer_1 = { image: new Image(), opacity: 1 };
   public layer_2: layer_2 = { image: new Image(), opacity: 1, grid: [] };
@@ -152,7 +152,7 @@ export class Map implements GameObject {
         this.layer_3.context.drawImage(this.layer_3.image, 0, 0);
         const imageData = this.layer_3.context.getImageData(0, 0, this.layer_3.image.width, this.layer_3.image.height);
         const data = imageData.data;
-        const opacityFactor = 128 / 255; // Opacidade de 50%
+        const opacityFactor = (Game.Map.objectId as any) == "lobby" ? 128 / 255 : 1; // Opacidade de 50%
         // Modify the copied data
         for (let i = 3; i < data.length; i += 4) {
           data[i] = data[i] * opacityFactor;
