@@ -52,18 +52,27 @@ export class Game {
     //Game.instance.addMenu(this.your_menu.menu);
     // Adicione os event listeners para os eventos de drag e drop
     this.canvas.addEventListener("dragover", (event) => {
-      Game.isDragover = true;
+      if (event.dataTransfer && Game.isDragover) {
+
+        event.dataTransfer.dropEffect = 'copy';
+
+      }
+      else if (event && event.dataTransfer)
+        event.dataTransfer.dropEffect = 'none';
       event.preventDefault()
     });
+
     this.canvas.addEventListener("dragleave", (event) => {
       Game.isDragover = false;
       event.preventDefault()
     });
     this.canvas.addEventListener("drop", (event) => {
       if (event.dataTransfer && event.dataTransfer.types.includes("text/uri-list")) {
-        console.log("Drop");
         // Get the ID of the dragged component
         const componentId = event.dataTransfer.getData("text/uri-list");
+        if (!componentId.includes("assets/images/lobby/table_2aaa15.png"))
+          return;
+        console.log("componentId: ", componentId);
         const color = componentId.includes("assets/images/lobby/table_") ? "#" + componentId.substring(componentId.indexOf("_") + 1, componentId.indexOf(".")) : "green";
         const rect = this.canvas.getBoundingClientRect();
         const data = {
@@ -73,10 +82,9 @@ export class Game {
           x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE,
           y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,
         };
-//        Game.instance.addMenu(new CreateGame(data).menu);
-        if (this.player.isRectangleInsideTable({ x: data.x, y: data.y, w: Map.SIZE, h: (Map.SIZE * 2) }))
-        {
-//          Game.instance.addMenu(new CreateGame(data).menu);
+        //        Game.instance.addMenu(new CreateGame(data).menu);
+        if (this.player.isRectangleInsideTable({ x: data.x, y: data.y, w: Map.SIZE, h: (Map.SIZE * 2) })) {
+          //          Game.instance.addMenu(new CreateGame(data).menu);
           userStore().newGame = data;
         }
       }

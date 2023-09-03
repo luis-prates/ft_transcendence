@@ -7,13 +7,12 @@
       <button style="right: 0px">Test</button>
     </div>
     <div class="table">
-      <img src="@/assets/images/lobby/table_2aaa15.png" />
+      <img src="@/assets/images/lobby/table_2aaa15.png" @dragover="dragoverTable" @drop="handleDrop" @dragleave="handleDragLeave" />
     </div>
 
     <img class="laod" src="@/assets/images/load/load_2.gif" v-if="!isLoaded" />
   </div>
   <div class="button-container" v-if="isLoaded">
-
     <div class="retro-button" @click="onLeaveClick">
       <img src="@/assets/images/lobby/menu/leave.png" alt="Leave Icon" />
       <div class="button-text">
@@ -50,12 +49,10 @@
   </div>
   <ChatComponent v-if="isLoaded" class="chat_component" />
   <MenusComponent />
-  <ConfirmButtonComponent v-if="confirmButtonActive" :title="buttonTitle" :message="buttonMessage"
-    :confirmFunction="yourConfirmFunction" @cancelButton="onCancel" />
+  <ConfirmButtonComponent v-if="confirmButtonActive" :title="buttonTitle" :message="buttonMessage" :confirmFunction="yourConfirmFunction" @cancelButton="onCancel" />
 </template>
 
 <script setup lang="ts">
-
 import { ref, onMounted, onUnmounted } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
@@ -80,16 +77,23 @@ let buttonMessage: string = "";
 let buttonTitle: string = "";
 let yourConfirmFunction: Function;
 
-const {
-  onLeaveClick,
-  onMessagesClick,
-  onFriendsClick,
-  onBattlesClick,
-  onLeaderboardClick,
-} = MyLobbyButtons();
+const { onLeaveClick, onMessagesClick, onFriendsClick, onBattlesClick, onLeaderboardClick } = MyLobbyButtons();
 
 function clearNotification() {
   notification.value = 0;
+}
+
+function dragoverTable() {
+  Game.isDragover = true;
+  // console.log("dragoverTable");
+}
+
+function handleDrop() {
+  console.log("handleDrop");
+}
+
+function handleDragLeave() {
+  console.log("handleDragLeave");
 }
 
 function activeButton(title: string, message: string, confirmFunction: Function, timeOut?: number) {
@@ -107,15 +111,14 @@ function activeButton(title: string, message: string, confirmFunction: Function,
 
 function onCancel() {
   confirmButtonActive.value = false;
-};
+}
 
 onMounted(() => {
-
   notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;
   isLoaded.value = false;
   if (socket == undefined) {
     console.log("socket is undefined");
-    Router.push('/');
+    Router.push("/");
     return;
   }
   socket.emit("join_map", { userId: store.user.id, objectId: store.user.id, map: { name: "lobby" } });
@@ -139,15 +142,20 @@ onMounted(() => {
     }, 1000);
   });
   socket.on("invite_request_game", (e: any) => {
-    activeButton(e.playerName, "Challenge You!\n\nYou Accept?", () => {
-      socket.emit("challenge_game", {
-        challenged: store.user.id,
-        challenger: e.playerId,
-      });
-    }, 5);
+    activeButton(
+      e.playerName,
+      "Challenge You!\n\nYou Accept?",
+      () => {
+        socket.emit("challenge_game", {
+          challenged: store.user.id,
+          challenger: e.playerId,
+        });
+      },
+      5
+    );
   });
   socket.on("challenge_game", (gameId: string) => {
-    console.log("Challenge begin!")
+    console.log("Challenge begin!");
     socket.off("invite_confirm_game");
     Router.push(`/game?objectId=${gameId}`);
   });
@@ -156,8 +164,7 @@ onMounted(() => {
   socket.on("block_user", (event: Block) => {
     const existingEvent = user.block.find((block: any) => block.blockerId === event.blockerId);
 
-    if (!existingEvent)
-      user.block.push(event);
+    if (!existingEvent) user.block.push(event);
   });
 
   //Unblock
@@ -171,16 +178,15 @@ onMounted(() => {
   socket.on("sendFriendRequest", (event: Friendship) => {
     const existingEvent = user.friendsRequests.find((friend: Friendship) => friend.requestorId === event.requestorId);
 
-    if (!existingEvent)
-      user.friendsRequests.push(event);
-    notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;;
+    if (!existingEvent) user.friendsRequests.push(event);
+    notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;
   });
 
   //Cancel Friend Request
   socket.on("cancelFriendRequest", (event: Friendship) => {
     user.friendsRequests = user.friendsRequests.filter((friend: Friendship) => friend.requestorId != event.requestorId);
 
-    notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;;
+    notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;
   });
 
   //Accept Friend Request
@@ -188,41 +194,38 @@ onMounted(() => {
     user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.id);
     const existingEvent = user.friends.find((friend: Friendship) => friend.requesteeId === event.id);
 
-    if (!existingEvent)
-      user.friends.push(event);
+    if (!existingEvent) user.friends.push(event);
 
-    notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;;
+    notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;
   });
 
   //Reject Friend Request
   socket.on("rejectFriendRequest", (event: Friendship) => {
     user.friendsRequests = user.friendsRequests.filter((request: Friendship) => request.requesteeId != event.requesteeId);
-    notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;;
+    notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;
   });
 
   //Delete Friend
   socket.on("deleteFriend", (event: Friendship) => {
     user.friends = user.friends.filter((friend: Friendship) => friend.id != event.id);
-
   });
-
 
   //Update Status
   socket.on("updateStatus", (event: any) => {
-    chatStore().channels.forEach(channel => {
-      const userIndex = channel.users.findIndex(user => user.id == event.id);
+    chatStore().channels.forEach((channel) => {
+      const userIndex = channel.users.findIndex((user) => user.id == event.id);
       if (userIndex !== -1) {
         channel.users[userIndex].status = event.status;
       }
     });
-    const userFriend = userStore().user.friends.findIndex(user => user.id == event.id);
+    const userFriend = userStore().user.friends.findIndex((user) => user.id == event.id);
     if (userFriend !== -1) userStore().user.friends[userFriend].status = event.status;
   });
 
   //Update Nickname
   socket.on("updateNickname", (event: any) => {
-    chatStore().channels.forEach(channel => {
-      const userIndex = channel.users.findIndex(user => user.id == event.id);
+    chatStore().channels.forEach((channel) => {
+      const userIndex = channel.users.findIndex((user) => user.id == event.id);
       if (userIndex !== -1) channel.users[userIndex].nickname = event.nickname;
     });
     userStore().user.friends.forEach(function (user) {
@@ -232,7 +235,6 @@ onMounted(() => {
       if (user.blocker?.id == event.id) user.blocker.nickname = event.nickname;
     });
     userStore().user.infoPong.historic.forEach(function (game: GAME) {
-
       if (game.winnerId == event.id) game.winnerNickname = event.nickname;
       else if (game.loserId == event.id) game.loserNickname = event.nickname;
       if (game.players[0].id == event.id) game.players[0].nickname = event.nickname;
@@ -242,8 +244,8 @@ onMounted(() => {
 
   //Update Image
   socket.on("updateImage", (event: any) => {
-    chatStore().channels.forEach(channel => {
-      const userIndex = channel.users.findIndex(user => user.id == event.id);
+    chatStore().channels.forEach((channel) => {
+      const userIndex = channel.users.findIndex((user) => user.id == event.id);
       if (userIndex !== -1) channel.users[userIndex].image = event.image;
     });
     userStore().user.friends.forEach(function (user) {
@@ -411,11 +413,7 @@ function test() {
   width: max-content;
   /* Takes the full width of the parent */
   font-size: calc(min(max(1rem, 1vw), 2rem));
-  text-shadow:
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
   top: 100%;
   /* Positions the text right below the button */
   left: 50%;
