@@ -80,7 +80,7 @@ function loadMap(event: any) {
 function loadLobby(data: any) {
   console.log("json: ", data);
   if (lobby) lobby.destructor();
-  socket.emit("join_map", { objectId: store.user.id, map: { name: data.objectId } });
+  socket.emit("join_map", { userId: store.user.id, objectId: store.user.id, map: { name: "lobby" } });
   const map = new MapObject();
   map.setData(data).then(() => {
     console.log("Map: Dados carregados");

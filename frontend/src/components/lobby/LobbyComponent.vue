@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { Player, Map, Lobby, Game } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
 import { userStore, type Block, type Friendship, type GAME } from "@/stores/userStore";
@@ -70,7 +70,6 @@ const game = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 let lobby: Lobby | null = null;
 let notification = ref(0);
-const isLoaded = ref(false);
 const socket = socketClass.getLobbySocket();
 const confirmButtonActive = ref(false);
 let buttonMessage: string = "";
@@ -82,6 +81,8 @@ const { onLeaveClick, onMessagesClick, onFriendsClick, onBattlesClick, onLeaderb
 function clearNotification() {
   notification.value = 0;
 }
+
+const isLoaded = computed(() => Lobby.isLoaded.value);
 
 function dragoverTable() {
   Game.isDragover = true;
@@ -106,7 +107,7 @@ function onCancel() {
 
 onMounted(() => {
   notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;
-  isLoaded.value = false;
+  Lobby.isLoaded.value = false;
   if (socket == undefined) {
     console.log("socket is undefined");
     Router.push("/");
@@ -115,7 +116,7 @@ onMounted(() => {
 
   socket.emit("join_map", { userId: store.user.id, objectId: store.user.id, map: Game.lastPosition || { name: "lobby" } });
   socket.on("load_map", (data: any) => {
-    console.log("load_map", data.data);
+    console.log("load_map", data);
     setTimeout(() => {
       if (lobby) lobby.destructor();
       const map = new Map();
@@ -126,10 +127,10 @@ onMounted(() => {
           data.data.forEach((d: any) => {
             lobby?.addGameObjectData(d);
           });
-          isLoaded.value = true;
+          Lobby.isLoaded.value = true;
           lobby.update();
         }
-        console.log("isConcted.value : ", isLoaded.value);
+        console.log("isConcted.value : ", Lobby.isLoaded.value);
       });
     }, 1000);
   });
