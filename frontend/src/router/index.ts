@@ -65,7 +65,6 @@ class Router {
         name: Game.Map.objectId?.toString(),
         position: { x: Game.getPlayer().x, y: Game.getPlayer().y },
       }
-      console.log("Game.lastPosition: ", Game.lastPosition);
     }
     router.push(path);
   }

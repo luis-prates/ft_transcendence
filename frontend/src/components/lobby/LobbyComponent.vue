@@ -121,6 +121,7 @@ onMounted(() => {
       if (lobby) lobby.destructor();
       const map = new Map();
       map.setData(data.map).then(() => {
+        Game.lastPosition = undefined;
         lobby = new Lobby(map, new Player(menu, data.player));
         if (game.value !== undefined) {
           game.value.appendChild(lobby.canvas);
