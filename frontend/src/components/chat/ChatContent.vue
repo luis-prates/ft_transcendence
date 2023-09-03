@@ -105,7 +105,7 @@
       </div>
     </div>
 
-    <div class="card-footer">
+    <div v-if=!imMuted() class="card-footer">
       <div class="input-group">
         <textarea v-model="text" name="" @keyup.enter="send" class="form-control type_msg" placeholder="Type your message..." style="resize: none"></textarea>
         <div class="input-group-append">
@@ -113,6 +113,11 @@
             <img class="send_img" src="src/assets/chat/send.png" title="Send" />
           </span>
         </div>
+      </div>
+    </div>
+    <div v-else class="card-footer">
+      <div class="input-group">
+        <textarea v-model="text" name="" class="form-control type_msg" placeholder="You are Muted in this channel..." style="resize: none" readonly></textarea>
       </div>
     </div>
   </div>
@@ -125,7 +130,7 @@ import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
 import ChatContentMessages from "./ChatContentMessages.vue";
 import { nextTick, getCurrentInstance, watch } from "vue";
-import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
+import { chatStore, type channel, type ChatUser, type ChatMessage } from "@/stores/chatStore";
 import { storeToRefs } from "pinia";
 import { userStore } from "@/stores/userStore";
 import type { Socket } from "socket.io-client";
@@ -152,6 +157,21 @@ const imOwner = () => {
   if (selected.value?.ownerId == user.user.id)
     return true;
   return false;
+}
+
+//Check if the user is muted in channel
+const imMuted = () => {
+  const curUser = selected.value.users.find((userChannel: ChatUser) => userChannel.id == userStore().user.id);
+    if (curUser.isMuted) {
+      resetTextarea();
+      return true;
+    }
+  return false;
+}
+
+// Function to reset the textarea content
+function resetTextarea() {
+  text.value = ""; // Reset the content to an empty string
 }
 
 // Get channel name from chatStore
@@ -257,18 +277,20 @@ onUnmounted(() => {
 const scrollContainer = ref<HTMLElement | null>(null);
 
 watch(
-  [() => store.selected?.messages?.length, () => props.channelStatus],
-  ([newMessageLength, newChannelStatus], [oldMessageLength, oldChannelStatus]) => {
+  [() => store.selected?.messages?.length, () => props.channelStatus, () => store.selected],
+  ([newMessageLength, newChannelStatus, newSelected], [oldMessageLength, oldChannelStatus, oldSelected]) => {
     if (
       newMessageLength !== oldMessageLength ||
       (newChannelStatus && !oldChannelStatus) ||
       (scrollContainer.value && scrollContainer.value.scrollTop + scrollContainer.value.clientHeight >= scrollContainer.value.scrollHeight)
     ) {
-      // Use nextTick to wait for the DOM to update
       nextTick(() => {
         scrollToBottom();
       });
     }
+
+    // Call resetTextarea() when the 'selected' changes
+    resetTextarea();
   }
 );
 

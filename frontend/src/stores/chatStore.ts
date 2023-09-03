@@ -549,14 +549,6 @@ async function unmuteUser(channelId: string, userId: string) {
   } catch (error) {
     console.error(`Error unmute user:  ${userId}`, error);
   }
-
-  await axios
-  .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/unmute/${userId}`, 
-    { channelId: channelId, userId: userId, }, options)
-  .then(function (response: any) {
-    console.log(`Unmute Request: ${userId}, ${response.data}`);
-  })
-  .catch((err) => console.error(err));
 }
 
 async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
