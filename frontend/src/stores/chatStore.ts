@@ -129,8 +129,8 @@ export const chatStore = defineStore("chat", () => {
             headers: { Authorization: `Bearer ${user.access_token_server}` },
           });
           let messages = response.data;
-          const blockList = user.block.filter((block: Block) => block.blockedId !== user.id);
-          blockList.forEach(function (block: Block) { messages = messages.filter((message: ChatMessage) => block.blockedId !== message.userId); })
+          //const blockList = user.block.filter((block: Block) => block.blockedId !== user.id);
+          //blockList.forEach(function (block: Block) { messages = messages.filter((message: ChatMessage) => block.blockedId !== message.userId); })
 
           // Process the messages as needed
           selected.value.messages = messages;

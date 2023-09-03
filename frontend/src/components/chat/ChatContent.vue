@@ -98,9 +98,9 @@
     </div>
 
     <div class="card-body msg_card_body" ref="scrollContainer">
-      <div v-for="(message, index) in selected?.messages" :key="index">
+      <div v-for="(message, index) in filteredMessages" :key="index">
         <div>
-          <ChatContentMessages :message="message" :displayUser="index == 0 || message.user.nickname !=  selected?.messages[index - 1].user.nickname"/>
+          <ChatContentMessages :message="message" :displayUser="index === 0 || (message && message.user && message.user.nickname !== (filteredMessages[index - 1]?.user?.nickname || ''))"/>
         </div>
       </div>
     </div>
@@ -135,7 +135,7 @@ import { storeToRefs } from "pinia";
 import { userStore } from "@/stores/userStore";
 import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref, computed } from "vue";
 import defaultUser from "@/assets/chat/avatar.png";
 import chat_avatar from "@/assets/chat/chat_avatar.png";
 
@@ -152,6 +152,22 @@ console.log("Socket criado na instancia do componente: ", chatSocket);
 //const defaultUser = "src/assets/chat/avatar.png";
 let defaultAvatar = ref(chat_avatar);
 
+const filteredMessages = computed(() => {
+  const selectedChannel = selected;
+
+  if (!selectedChannel) {
+    return [];
+  }
+
+  const blockedUserIds = userStore().user.block.map((block) => block.blockedId);
+
+  return (selectedChannel.value.messages || []).filter((message: ChatMessage) => {
+    const isBlockedUser = blockedUserIds.includes(message.userId);
+    
+    return !isBlockedUser;
+  });
+});
+
 //Check if the user is the owner of channel
 const imOwner = () => {
   if (selected.value?.ownerId == user.user.id)
@@ -162,7 +178,7 @@ const imOwner = () => {
 //Check if the user is muted in channel
 const imMuted = () => {
   const curUser = selected.value.users.find((userChannel: ChatUser) => userChannel.id == userStore().user.id);
-    if (curUser.isMuted) {
+    if (curUser && curUser.isMuted) {
       resetTextarea();
       return true;
     }
