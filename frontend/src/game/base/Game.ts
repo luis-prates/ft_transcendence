@@ -27,6 +27,10 @@ export class Game {
   public socket: Socket;
   private boundUpdate: any;
   public static isDragover: boolean = false;
+  public static lastPosition: {
+    name: string,
+    position: { x: number, y: number },
+  } | undefined = undefined;
 
   constructor(map: Map, player: Player) {
     //For What?

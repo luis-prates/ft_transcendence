@@ -1,5 +1,5 @@
 import type { GameObject, GameObjectType } from "@/game/base/GameObject";
-import { Map } from "@/game";
+import { Game, Map } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
 import type { Socket } from "socket.io-client";
 
@@ -37,6 +37,7 @@ export class Door implements GameObject {
   }
 
   interaction(gameObject: GameObject): void {
+    Game.lastPosition = undefined;
     this.lobbySocket.emit("join_map", {
       userId: gameObject.objectId, objectId: gameObject.objectId, map: {
         name: this.mapName,

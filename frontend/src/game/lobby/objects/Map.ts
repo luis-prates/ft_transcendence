@@ -61,8 +61,9 @@ export class Map implements GameObject {
   setData(data: any) {
     this.isLoaded = false;
     return new Promise((resolve) => {
-      console.log(data);
+
       this.datas = data?.datas || [];
+      this.objectId = data?.objectId || 0;
       this.layer_1.image.src = data.layer_1.image;
       this.layer_1.opacity = data.layer_1.opacity;
       this.layer_2.image.src = data.layer_2.image;
