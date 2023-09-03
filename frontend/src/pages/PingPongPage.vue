@@ -32,11 +32,12 @@ let accumulatedTime = 0;
 const frameTime = 1000 / frameRate;
 
 onMounted(function () {
-	if (socket == undefined) {
-		console.log("socket is undefined");
-		Router.push('/lobby');
-		return;
-	}
+	// if (socket == undefined) {
+    //     socket = socketClass.getGameSocket();
+	// 	// console.log("socket is undefined");
+	// 	// Router.push('/lobby');
+	// 	// return;
+	// }
   const canvas = document.getElementById("canvas1") as HTMLCanvasElement;
   const button = document.getElementById("buttonLeave") as HTMLButtonElement;;
   const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -44,14 +45,18 @@ onMounted(function () {
   canvas.height = 750;
 
   const user = userStore().user;
-	socketClass.setGameSocket({
-		query: {
-			userId: user.id,
-		}
-	});
-	socket = socketClass.getGameSocket();
+  if (socket == undefined) {
+		console.log("socket is undefined");
+		socketClass.setGameSocket({
+		  query: {
+			  userId: user.id,
+			}
+		});
+		socket = socketClass.getGameSocket();
+  }
 	socket.on("error", (errorMessage: string) => {
 		if (errorMessage.includes("Game does not exist")) {
+			console.log("Game does not exist");
 			Router.push(`/lobby`);
 			socket.disconnect();
 		}
@@ -130,6 +135,7 @@ onMounted(function () {
     console.log(game);
     game.audio("music_play");
 
+    game.maxScore = e.data.maxScore;
     game.table.color = e.data.table;
     game.table.skin.src = e.data.tableSkin ? e.data.tableSkin : "";
 
@@ -284,8 +290,52 @@ onMounted(function () {
     socket.off("end_game");
     game?.audio("music_stop");
     socket?.disconnect();
+	socketClass.clearGameSocket();
     window.removeEventListener('resize', updateButtonSizeAndPosition);
     button.removeEventListener('click', leaveTheGame);
+
+    if ((game.playerNumber == 1 || game.playerNumber == 2) && game.status != Status.Finish)
+    {
+      const player_1 = game.playerNumber == 1 ? game.player1 : game.player2;
+      const player_2 = player_1 == game.player1  ? game.player2 : game.player1;
+
+      const history_game: GAME = {
+        winnerId: player_2.id,
+        winnerNickname: player_2.nickname,
+        winnerScore: game.maxScore,
+        loserId: player_1.id,
+        loserNickname: player_1.nickname,
+        loserScore: player_1.score,
+        gameType: "PUBLIC",
+        id: "0",
+        players: [],
+      }
+      
+      const player1_historic: {
+        id: number;
+        nickname: string;
+        image: string;
+      } = {
+        id: game.player1.id,
+        nickname: game.player1.nickname,
+        image: game.player1.avatar.src,
+      };
+
+      const player2_historic: {
+        id: number;
+        nickname: string;
+        image: string;
+      } = {
+        id: game.player2.id,
+        nickname: game.player2.nickname,
+        image: game.player2.avatar.src,
+      };
+      history_game.players.push(player1_historic);
+      history_game.players.push(player2_historic);
+
+      user.infoPong.historic.unshift(history_game as never);
+    }
+
   });
 
   function animate() {

@@ -5,13 +5,7 @@ import { Game } from "@/game/base/Game";
 import type { GameObject, Rectangle } from "@/game/base/GameObject";
 import { type Ref } from "vue";
 import { userStore, type GAME } from "@/stores/userStore";
-import { LeaderBoard } from "@/game/Menu/LeaderBoard";
-import { Profile } from "@/game/Menu/Profile";
-import { YourProfile } from "@/game/Menu/YourProfile";
-import { ConfirmButton } from "@/game/Menu/ConfirmButton";
-import { Shop } from "@/game/Menu/Shop";
 import type { Socket } from "socket.io-client";
-import { YourMenu } from "@/game/Menu/YourMenu";
 
 export class Player extends Character {
   select: GameObject | undefined = undefined;
@@ -71,9 +65,8 @@ export class Player extends Character {
     this.menu.value?.setAttribute("style", "display: none");
     if (button == 0) {
       this.select = Game.MouseColision(x, y);
-      if (this.select == this) {
-        Game.instance.addMenu(new YourProfile(this).menu);
-      } else if (this.select && this.select != this && this.select.interaction) {
+      if (this.select == this) userStore().userSelected = "me";
+      else if (this.select && this.select != this && this.select.interaction) {
         this.agent.setDistinctionObject(this.select, (gameObject) => {
           if (gameObject && gameObject.interaction) gameObject.interaction(this);
         });
@@ -83,7 +76,7 @@ export class Player extends Character {
     }
   }
 
-  onSelected(): void {}
+  onSelected(): void { }
 
   public setLookAt(gameObject: GameObject): void {
     super.setLookAt(gameObject);
@@ -109,10 +102,10 @@ export class Player extends Character {
         return false;
       }
     }
-
     return true;
   }
+
   public isRectangleInside(rect1: Rectangle, rect2: Rectangle): boolean {
-    return rect1.x >= rect2.x && rect1.x <= rect2.x + rect2.w && rect1.y >= rect2.y && rect1.y <= rect2.y + rect2.h;
+    return (rect1.x >= rect2.x && (rect1.x) <= rect2.x + rect2.w && rect1.y >= rect2.y && (rect1.y) <= rect2.y + rect2.h);
   }
 }

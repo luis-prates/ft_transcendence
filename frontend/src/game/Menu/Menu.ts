@@ -56,6 +56,19 @@ export class Menu implements GameObject {
     if (!this.visible) return;
     this.elements.forEach((element) => {
       if (element.visible) element.draw(contex);
+    /*  if (element.visible)
+      {
+        if (element.parent)
+        {
+          const rect: Rectangle = {x: element.rectangle.x, y: element.rectangle.y, w: element.rectangle.w, h: element.rectangle.h};
+          element.rectangle.x += element.parent.rectangle.x;
+          element.rectangle.y += element.parent.rectangle.y;
+          element.draw(contex);
+          element.rectangle = rect;
+        }
+        else
+          element.draw(contex);
+      }*/
     });
   }
 
@@ -81,11 +94,10 @@ export class Menu implements GameObject {
 
   setData(data: any) {}
 
-  setTimeOut(timeOut: number)
-  {
+  setTimeOut(timeOut: number) {
     setTimeout(() => {
       Game.instance.removeMenu(this);
-  }, timeOut);
+    }, timeOut);
   }
 
   public add(parent?: ElementUI, ...elements: ElementUI[]) {
@@ -170,11 +182,21 @@ export class Menu implements GameObject {
     //   width = element.parent.rectangle.w;
     //   height = element.parent.rectangle.h;
     // }
+    
+    
     if (typeof element.resizing.x == "string" && element.resizing.x.includes("%")) element.rectangle.x = (parseFloat(element.resizing.x) * width) / 100;
     if (typeof element.resizing.y == "string" && element.resizing.y.includes("%")) element.rectangle.y = (parseFloat(element.resizing.y) * height) / 100;
     if (typeof element.resizing.w == "string" && element.resizing.w.includes("%")) element.rectangle.w = (parseFloat(element.resizing.w) * width) / 100;
     if (typeof element.resizing.h == "string" && element.resizing.h.includes("%")) element.rectangle.h = (parseFloat(element.resizing.h) * height) / 100;
-
+    
+   /* if (!element.parent)
+    {
+      //TODO se for menor que a tela
+      //Problema no click tambem
+      /*if (window.innerWidth < element.rectangle.w)
+        element.rectangle.w = window.innerWidth;
+      element.rectangle.x = (window.innerWidth - element.rectangle.w) / 2;
+    }*/
     // if (element.parent) {
     //   element.rectangle.x += element.parent.rectangle.x;
     //   element.rectangle.y += element.parent.rectangle.y;

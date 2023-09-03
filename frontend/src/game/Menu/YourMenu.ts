@@ -49,18 +49,27 @@ export class YourMenu {
 
     this.socket = socketClass.getLobbySocket();
 
-    this.menu.add(this.background, this.createButton("leave", 37.5 + 0.5, 0.5, "Leave", 9));
-    this.menu.add(this.background, this.createButton("message", 37.5 + 5.5, 0.5, "Messages", 9));
-    this.menu.add(this.background, this.createButton("friends", 37.5 + 10.5, 0.5, "Friends", 9));
-    this.menu.add(this.background, this.createButton("battle", 37.5 + 15.5, 0.5, "Battles", 9));
-    this.menu.add(this.background, this.createButton("leaderboard", 37.5 + 20.5, 0.5, "LeaderBoard", 9));
+    // this.menu.add(this.background, this.createButton("leave", 37.5 + 0.5, 0.5, "Leave", 0));
+    // this.menu.add(this.background, this.createButton("message", 37.5 + 5.5, 0.5, "Messages", 1 * 80));
+    // this.menu.add(this.background, this.createButton("friends", 37.5 + 10.5, 0.5, "Friends", 2 * 80));
+    // this.menu.add(this.background, this.createButton("battle", 37.5 + 15.5, 0.5, "Battles", 3 * 80));
+    // this.menu.add(this.background, this.createButton("leaderboard", 37.5 + 20.5, 0.5, "LeaderBoard", 4 * 80));
+
+    this.menu.add(this.background, this.createButton("leave", 5 + 0, 0.5, "Leave"));
+    this.menu.add(this.background, this.createButton("message", 5 + 1 * 80, 0.5, "Messages"));
+    this.menu.add(this.background, this.createButton("friends", 5 + 2 * 80, 0.5, "Friends"));
+    this.menu.add(this.background, this.createButton("battle", 5 + 3 * 80, 0.5, "Battles"));
+    this.menu.add(this.background, this.createButton("leaderboard", 5 + 4 * 80, 0.5, "LeaderBoard"));
+
+
   }
 
   private createBackground(): ElementUI {
     const background: ElementUI = {
-      type: "image",
-      rectangle: { x: "37.5%", y: "0%", w: "25%", h: "8%" },
+      type: "menu",
+      rectangle: { x: "37.5%", y: "0%", w: 400, h: 80 },
       draw: (ctx: any) => {
+
         /*const backgroundColor = "rgba(210, 180, 140, 0.6)"; // Cor de fundo castanho
         const borderColor = "#8B4513"; // Cor de contorno mais escuro
         const pos = background.rectangle;
@@ -79,7 +88,7 @@ export class YourMenu {
     return background;
   }
 
-  private createButton(type: string, x: number, y: number, label: string, width: number): ElementUI {
+	private createButton(type: string, x: number, y: number, label: string): ElementUI {
     let img: HTMLImageElement;
     if (type == "message") img = this.img_message;
     else if (type == "friends") img = this.img_friendImage;
@@ -90,13 +99,14 @@ export class YourMenu {
     const numberOfFriendRequest = this.user.friendsRequests.filter((friendship) => friendship.requesteeId === this.user.id).length;
     this.notification = numberOfFriendRequest == 0 ? "" : numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99";
 
-    const button: ElementUI = {
-      type: type,
-      rectangle: { x: x + "%", y: y + "%", w: "4%", h: "7%" },
-      draw: (ctx: CanvasRenderingContext2D) => {
-        ctx.fillStyle = "rgba(100, 100, 100, 0.6)";
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 2;
+	  const button: ElementUI = {
+		type: type,
+		rectangle: { x: x, y: 5, w: 70, h: 70 },
+		draw: (ctx: CanvasRenderingContext2D) => {
+
+      ctx.fillStyle = "rgba(100, 100, 100, 0.6)";
+			ctx.strokeStyle = "black";
+			ctx.lineWidth = 2;
 
         this.roundRect(ctx, button.rectangle.x, button.rectangle.y, button.rectangle.w, button.rectangle.h, 10);
 

@@ -1,18 +1,15 @@
-import { Game, Map, Menu, Npc, type ElementUI, type Player } from "@/game";
-import { io, type Socket } from "socket.io-client";
-import { env } from "../../env.ts";
-import { userStore } from "../../stores/userStore";
+import { Game, Map, type Player } from "@/game";
+import { type Socket } from "socket.io-client";
 import { socketClass } from "../../socket/SocketClass";
 
 export class Lobby extends Game {
   private list_update_gameobject: any[] = [];
-  private user = userStore().user;
   public lobbySocket: Socket = socketClass.getLobbySocket();
 
   constructor(map: Map, player: Player) {
     super(map, player);
-    this.addGameObject(new Npc());
-    this.lobbySocket.on("new_gameobject", (data: any) => {
+    //this.addGameObject(new Npc());
+	this.lobbySocket.on("new_gameobject", (data: any) => {
       this.addGameObjectData(data);
       console.log("new_gameobject", data);
     });

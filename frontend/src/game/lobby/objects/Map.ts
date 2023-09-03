@@ -97,10 +97,14 @@ export class Map implements GameObject {
     });
   }
 
+  keydown(key: string): void { }
+
   draw(contex: CanvasRenderingContext2D): void {
+
     contex.strokeStyle = "rgb(30, 39, 210)";
     contex.strokeRect(this.x, this.y, this.w, this.h);
     if (this.isLoaded) {
+
       // If the cached canvas doesn't exist or the layer's size has changed, create a new cached canvas
       if (!this.cachedMapObjs || this.cachedMapObjs.width !== this.w || this.cachedMapObjs.height !== this.h) {
         this.cachedMapObjs = document.createElement("canvas");
@@ -160,7 +164,7 @@ export class Map implements GameObject {
     }
   }
 
-  mouseClick(x: number, y: number, button: number): void {}
+  mouseClick(x: number, y: number, button: number): void { }
 
   async saveMap() {
     const data = {
@@ -190,8 +194,9 @@ export class Map implements GameObject {
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = "desenho.json";
+    link.download = "map.json";
     link.click();
+
     console.log("Salvando mapa...\n");
   }
 

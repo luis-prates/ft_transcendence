@@ -32,8 +32,8 @@ export class ChatController {
 	@Get(':channelId/messages')
 	@UseGuards(RolesGuard)
 	@Roles('admin', 'owner', 'member')
-	async getMessagesByChannel(@Param('channelId') channelId: string) {
-		return this.chatService.getMessagesByChannel(Number(channelId));
+	async getMessagesByChannel(@Param('channelId') channelId: string, @Request() req: any) {
+		return this.chatService.getMessagesByChannel(Number(channelId), req.user.userId);
 	}
 
 	// Create a channel

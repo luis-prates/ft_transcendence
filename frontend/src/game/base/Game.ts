@@ -1,8 +1,6 @@
 import { Camera, Player, Menu, type GameObject, Map, listClass } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
 import { userStore } from "@/stores/userStore";
-import { CreateGame } from "../Menu/CreateGame";
-import { YourMenu } from "../Menu/YourMenu";
 import type { Socket } from "socket.io-client";
 
 export class Game {
@@ -22,7 +20,7 @@ export class Game {
   protected camera: Camera;
   protected map: Map;
   protected player: Player;
-  public your_menu;
+  //public your_menu;
   public isRunning;
   public socket: Socket;
   private boundUpdate: any;
@@ -48,16 +46,16 @@ export class Game {
     this.canvas.addEventListener("contextmenu", this.mouseClick.bind(this));
     Game.instance = this;
     //Your Menu
-    this.your_menu = new YourMenu();
-    Game.instance.addMenu(this.your_menu.menu);
+    //this.your_menu = new YourMenu();
+    //Game.instance.addMenu(this.your_menu.menu);
     // Adicione os event listeners para os eventos de drag e drop
     this.canvas.addEventListener("dragover", (event) => {
       Game.isDragover = true;
-      event.preventDefault();
+      event.preventDefault()
     });
     this.canvas.addEventListener("dragleave", (event) => {
       Game.isDragover = false;
-      event.preventDefault();
+      event.preventDefault()
     });
     this.canvas.addEventListener("drop", (event) => {
       if (event.dataTransfer && event.dataTransfer.types.includes("text/uri-list")) {
@@ -73,8 +71,12 @@ export class Game {
           x: Math.floor((event.clientX - rect.left + this.camera.x) / Map.SIZE) * Map.SIZE,
           y: Math.floor((event.clientY - rect.top + this.camera.y) / Map.SIZE) * Map.SIZE,
         };
-        // Game.instance.addMenu(new CreateGame(data).menu);
-        if (this.player.isRectangleInsideTable({ x: data.x, y: data.y, w: Map.SIZE, h: Map.SIZE * 2 })) Game.instance.addMenu(new CreateGame(data).menu);
+//        Game.instance.addMenu(new CreateGame(data).menu);
+        if (this.player.isRectangleInsideTable({ x: data.x, y: data.y, w: Map.SIZE, h: (Map.SIZE * 2) }))
+        {
+//          Game.instance.addMenu(new CreateGame(data).menu);
+          userStore().newGame = data;
+        }
       }
       Game.isDragover = false;
       event.preventDefault();
@@ -156,13 +158,14 @@ export class Game {
 
   addGameObject(gameObject: GameObject): GameObject {
     this.gameObjets.push(gameObject);
-    if (gameObject.type == "character" || gameObject.type == "player") console.log("Add: ", gameObject);
+    //if (gameObject.type == "character" || gameObject.type == "player") console.log("Add: ", gameObject);
     if (gameObject.mouseClick) this.mouseEvents.push(gameObject.mouseClick.bind(gameObject));
     if (gameObject.update) this.gameObjetsUpdate.push(gameObject);
     return gameObject;
   }
 
   addGameObjectData(data: any): GameObject {
+    //console.log("Add: ", data);
     return this.addGameObject(new listClass[data.className](data));
   }
 
@@ -180,10 +183,11 @@ export class Game {
     window.removeEventListener("keyup", this.keyUp);
   }
 
+  //TODO NOTIFICATION
   public gameNotification() {
     const user = userStore().user;
     const numberOfFriendRequest = user.friendsRequests.filter((friendship) => friendship.requesteeId === user.id).length;
-    this.your_menu.notification = numberOfFriendRequest == 0 ? "" : numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99";
+    //this.your_menu.notification = numberOfFriendRequest == 0 ? "" : numberOfFriendRequest <= 99 ? numberOfFriendRequest.toString() : "99";
   }
 
   public static MouseColision(x: number, y: number): GameObject | undefined {

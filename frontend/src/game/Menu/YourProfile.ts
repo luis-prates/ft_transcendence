@@ -10,7 +10,7 @@ import sound_close_tab from "@/assets/audio/close.mp3";
 
 //Image
 import avatarDefault from "@/assets/images/pingpong/avatar_default.jpg";
-import avatares from "@/assets/images/lobby/115990-9289fbf87e73f1b4ed03565ed61ae28e.jpg";
+import avatares from "@/assets/images/lobby/avatares.jpg";
 import pencil from "@/assets/images/lobby/pencil.png";
 import green_sign from "@/assets/images/lobby/menu/green_sign.png";
 import { Profile } from "./Profile";

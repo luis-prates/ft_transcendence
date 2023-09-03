@@ -1,13 +1,23 @@
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import { defineStore } from "pinia";
 import { env } from "../env";
 import axios from "axios";
 import type { TypeSkin } from "@/game/ping_pong/Skin";
 import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
-import { ConfirmButton, STATUS_CONFIRM } from "@/game/Menu/ConfirmButton";
-import { Game } from "@/game/base/Game";
 import { chatStore, type ChatMessage } from "./chatStore";
+// import { Lobby } from "@/game/lobby/Lobby";
+
+export enum STATUS_CONFIRM {
+  PRODUCT,
+  CHALLENGE,
+  CHALLENGE_YOU,
+  FRIEND,
+  FRIEND_REQUEST,
+  BLOCK,
+  NOTIFICATION,
+  ERROR,
+}
 
 export enum GameStatus {
   NOT_STARTED = "NOT_STARTED",
@@ -80,6 +90,7 @@ export interface User {
   refreshToken: string;
   isLogin: boolean;
   id: number;
+  status: UserStatus;
   email: string;
   name: string;
   nickname: string; //nickName in the Game
@@ -94,6 +105,10 @@ export interface User {
 }
 
 export const userStore = defineStore("user", function () {
+  const userSelected = ref<any | undefined>(undefined);
+  const npcSelected = ref<any | undefined>(undefined);
+  const newGame = ref<any | undefined>(undefined);
+
   const randomColor = () => {
     const letters = "0123456789ABCDEF";
     let color = "#";
@@ -153,14 +168,14 @@ export const userStore = defineStore("user", function () {
         user.name = response.data.name;
         user.nickname = response.data.nickname;
         user.email = response.data.email;
-        user.status = response.data.status;
+        // user.status = response.data.status;
         user.image = response.data.image;
         user.money = response.data.money;
         user.avatar = response.data.avatar;
         user.infoPong.level = response.data.level;
         user.infoPong.xp = response.data.xp;
         user.infoPong.color = response.data.color;
-        user.infoPong.skin.default.tableColor = response.data.tableColorEquipped;
+        user.infoPong.skin.default.tableColor = response.data.tableColorEquipped ? response.data.tableColorEquipped : "#1e8c2f";
         user.infoPong.skin.default.tableSkin = response.data.tableSkinEquipped;
         user.infoPong.skin.default.paddle = response.data.paddleSkinEquipped;
         user.infoPong.skin.tables = response.data.tableSkinsOwned;
@@ -216,7 +231,7 @@ export const userStore = defineStore("user", function () {
 
         user.access_token_server = response.data.access_token;
         user.id = response.data.dto.id;
-        user.status = response.data.dto.status;
+        // user.status = response.data.dto.status;
         user.name = response.data.dto.name;
         user.email = response.data.dto.email;
         user.nickname = response.data.dto.nickname;
@@ -226,7 +241,7 @@ export const userStore = defineStore("user", function () {
         user.infoPong.level = response.data.dto.level;
         user.infoPong.xp = response.data.dto.xp;
         user.infoPong.color = response.data.dto.color;
-        user.infoPong.skin.default.tableColor = response.data.dto.tableColorEquipped;
+        user.infoPong.skin.default.tableColor = response.data.dto.tableColorEquipped ? response.data.dto.tableColorEquipped : "#1e8c2f";
         user.infoPong.skin.default.tableSkin = response.data.dto.tableSkinEquipped;
         user.infoPong.skin.default.paddle = response.data.dto.paddleSkinEquipped;
         user.infoPong.skin.tables = response.data.dto.tableSkinsOwned;
@@ -261,8 +276,25 @@ export const userStore = defineStore("user", function () {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
       body: new URLSearchParams(body),
     };
+		  //TODO: update avatar for everybody
+
     await fetch(env.BACKEND_SERVER_URL + "/users/update_profile", options)
-      .then(async (response) => console.log(await response.json()))
+      // .then(async function (response: any) {
+      //   if (response.ok) {
+      //     const lobbySocket: Socket = socketClass.getLobbySocket();
+      //     const player = Lobby.getPlayer();
+      //     lobbySocket.emit("update_gameobject", {
+      //       className: "Character",
+      //       objectId: player.objectId,
+      //       name: player.name,
+      //       x: player.x,
+      //       y: player.y,
+      //       avatar: user.avatar,
+      //       nickname: user.nickname,
+      //       animation: { name: player.animation.name, isStop: false },
+      //     });
+      //   }
+      // })
       .catch((err) => console.error(err));
   }
 
@@ -283,11 +315,25 @@ export const userStore = defineStore("user", function () {
             if (game.loserId == user.id) game.loserNickname = newNickname;
             else game.winnerNickname = newNickname;
           });
+
+		  //TODO: update avatar for everybody
+          // const lobbySocket: Socket = socketClass.getLobbySocket();
+          // const player = Lobby.getPlayer();
+          // lobbySocket.emit("update_gameobject", {
+          //   className: "Character",
+          //   objectId: player.objectId,
+          //   name: player.name,
+          //   x: player.x,
+          //   y: player.y,
+          //   avatar: user.avatar,
+          //   nickname: user.nickname,
+          //   animation: { name: player.animation.name, isStop: false },
+          // });
         }
         return response.ok;
       })
       .catch(function (err: any) {
-        console.error("COMIDAAA", err);
+        console.error(err);
         return false;
       });
   }
@@ -309,10 +355,10 @@ export const userStore = defineStore("user", function () {
       .catch((err) => console.error(err));
   }
 
-  async function updateTableDefault(tableColor: string, tableSkin: string) {
+  async function updateTableDefault(tableColor: string, tableSkin?: string) {
     let body = {} as any;
     body.color = tableColor;
-    body.skin = tableSkin;
+    body.skin = tableSkin ? tableSkin : "";
 
     const options = {
       method: "PATCH",
@@ -775,39 +821,22 @@ export const userStore = defineStore("user", function () {
 
   function challengeUser(challangedUserID: number, challangedUserNickname: string): string {
     const lobbySocket = socketClass.getLobbySocket();
-    const confirmButton = new ConfirmButton(challangedUserNickname, STATUS_CONFIRM.CHALLENGE);
-    confirmButton.show((value) => {
-      if (value == "CONFIRM") {
-        lobbySocket.emit("invite_game", {
-          //Desafiador
-          challengerId: user.id,
-          challengerNickname: user.nickname,
-          //Desafiado
-          challengedId: challangedUserID,
-          challengedNickname: challangedUserNickname,
-        });
 
-        lobbySocket.on("invite_request_game", (e: any) => {
-          const confirmButton = new ConfirmButton(e.playerName, STATUS_CONFIRM.CHALLENGE_YOU);
-          Game.instance.addMenu(confirmButton.menu);
-          confirmButton.show((value) => {
-            if (value == "CONFIRM") {
-              lobbySocket.emit("challenge_game", {
-                challenged: user.id,
-                challenger: e.playerId,
-              });
-            }
-          });
-        });
-
-        lobbySocket.on("invite_confirm_game", (message: string) => {
-          const confirmButton = new ConfirmButton(message, STATUS_CONFIRM.NOTIFICATION, 5000);
-          Game.instance.addMenu(confirmButton.menu);
-          lobbySocket.off("invite_confirm_game");
-        });
-        return "CONFIRM";
-      } else return "CANCEL";
+    lobbySocket.emit("invite_game", {
+      //Desafiador
+      challengerId: user.id,
+      challengerNickname: user.nickname,
+      //Desafiado
+      challengedId: challangedUserID,
+      challengedNickname: challangedUserNickname,
     });
+
+    lobbySocket.on("invite_confirm_game", (message: string) => {
+      // const confirmButton = new ConfirmButton(message, STATUS_CONFIRM.NOTIFICATION, 5000);
+      // Game.instance.addMenu(confirmButton.menu);
+      lobbySocket.off("invite_confirm_game");
+    });
+
     return "";
   }
 
@@ -817,6 +846,9 @@ export const userStore = defineStore("user", function () {
 
   return {
     user,
+    userSelected,
+    npcSelected,
+    newGame,
     login,
     loginTest,
 
@@ -859,7 +891,6 @@ export const userStore = defineStore("user", function () {
     twoFATurnOff,
 
     firstTimePrompt,
-
     logout,
   };
 });

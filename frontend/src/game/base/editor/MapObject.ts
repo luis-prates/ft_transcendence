@@ -8,6 +8,7 @@ export class MapObject extends Map {
   public static selection: Rectangle | null = null;
   public static debugView = ref(true);
   public static datas: { gamaObject: GameObject; data: any }[] = [];
+  public static file: File | null = null;
   private gameObjetSelect: GameObject | null = null;
 
   public static startPossition: { x: number; y: number } = { x: 153, y: 738 };
@@ -100,24 +101,41 @@ export class MapObject extends Map {
           this.layer_3.objects = this.layer_3.objects.filter((obj) => !(x >= obj.x && x <= obj.x + obj.w && y >= obj.y && y <= obj.y + obj.h));
         }
       }
-    } else if (MapObject.action.value === 1) {
+    } else if (MapObject.action.value == 1) {
       this.setStartPossition(x, y);
       console.log(MapObject.startPossition);
-    } else if (MapObject.action.value === 3) {
+    } else if (MapObject.action.value == 3) {
       this.setGameObjects(x, y, button, { className: "Tree" });
-    } else if (MapObject.action.value === 4) {
+    } else if (MapObject.action.value == 4) {
       this.setGameObjectss(Math.floor(x / Map.SIZE) * Map.SIZE, Math.floor(y / Map.SIZE) * Map.SIZE, button);
+    } else if (MapObject.action.value == 6) {
+      const mapName = this.checkColision(x, y) ? "" : window.prompt("Map:");
+      if (!mapName) return;
+      this.setGameObjects(x, y, button, { className: "Door", mapName: mapName });
+    } else if (MapObject.action.value == 7) {
+      const nickname = this.checkColision(x, y) ? "NULL" : window.prompt("nickname:");
+      if (!nickname) return;
+      const typeNpc = this.checkColision(x, y) ? "NULL" : window.prompt("type:");
+      this.setGameObjects(x, y, button, { className: "Npc", nickname, typeNpc }, (gameObject: Npc) => {
+        const avatar = gameObject.avatar + 1;//TODO REVIEW
+        gameObject.setData({ avatar: avatar > 7 ? 0 : avatar });
+        const data = MapObject.datas.find((data) => data.gamaObject == gameObject);
+        if (data) data.data["avatar"] = gameObject.avatar;
+        console.log(gameObject);
+      });
     }
   }
 
-  public setGameObjects(x: number, y: number, button: number, data: any) {
+  public setGameObjects(x: number, y: number, button: number, data: any, selection?: (gameObject: GameObject) => void) {
     x = Math.floor(x / Map.SIZE) * Map.SIZE;
     y = Math.floor(y / Map.SIZE) * Map.SIZE;
     data.x = x;
     data.y = y;
     const gameObject = Game.MouseColision(x, y);
-    if (button == 0 && !gameObject) Game.instance.addGameObjectData(data);
-    else if (button == 2) {
+    if (button == 0) {
+      if (gameObject && (this.gameObjetSelect = gameObject) && selection) selection(gameObject);
+      else if (!gameObject) Game.instance.addGameObjectData(data);
+    } else if (button == 2) {
       if (gameObject && gameObject.type != "player") Game.instance.removeGameObject(gameObject);
     }
   }
