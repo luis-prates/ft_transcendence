@@ -646,7 +646,9 @@ defineExpose({
   background-color: #000000;
   cursor: pointer; 
 }
-
+#mx-menu-default-container > div > div > div.mx-context-menu-items > div:nth-child(6) > div.mx-context-menu.custom-context-menu.light {
+   top: -60px !important;
+}
 .custom-context-menu .label {
   color: white;
 }
