@@ -32,7 +32,7 @@
       </div>
       <div v-else class="card-body contacts_body">
         <div class="card-header">
-          <div class="input-group">
+          <div v-if="!(store.selected.type == 'DM')" class="input-group">
             <input id="searchUser" type="text" placeholder="Search..." name="" class="form-control search" v-model="searchUser" @input="handleSearchUser"/>
           </div>
         </div>
@@ -297,6 +297,24 @@ const handleContextMenuFriendUser = (e: any, user: ChatUser)  => {
   });
 };
 
+async function DMHandling(user : any){
+  console.log("DMHandling: ", user);
+  const isDMSent = await menu.sendDM(user);
+  if (isDMSent) {
+    
+    const currentUserId = userStore().user.id;
+    const otherUserId = user.id;
+    const dmChannel = chatStore().channels.find(channel =>
+      channel.type === "DM" &&
+      channel.users.some(user => user.id === currentUserId) &&
+      channel.users.some(user => user.id === otherUserId)
+    );
+
+    if (dmChannel)
+      openChannel(dmChannel);
+  }
+}
+
 const handleContextMenuUser = (e: any, user: ChatUser)  => {
   const items = [
     { 
@@ -308,20 +326,7 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
       { 
         label: "Send DM", 
         onClick: async () => {
-        const isDMSent = await menu.sendDM(user);
-        if (isDMSent) {
-          
-          const currentUserId = userStore().user.id;
-          const otherUserId = user.id;
-          const dmChannel = chatStore().channels.find(channel =>
-            channel.type === "DM" &&
-            channel.users.some(user => user.id === currentUserId) &&
-            channel.users.some(user => user.id === otherUserId)
-          );
-
-          if (dmChannel)
-            openChannel(dmChannel);
-        }
+          DMHandling(user);
         },
       },
       { 
@@ -359,10 +364,23 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
       }] : []),
       //para admins do channel
       ...(imAdmin.value && (user.isAdmin == false) && (user.id != userStore().user.id) ? [
+      ...(user.isMuted == false ? [{ 
+        label: "Mute", 
+        children: [
+            { label: "1  min", onClick: () => {store.muteUser(selected?.value.objectId, user.id, 1)} },
+            { label: "5  min", onClick: () => {store.muteUser(selected?.value.objectId, user.id, 5)} },
+            { label: "15 min", onClick: () => {store.muteUser(selected?.value.objectId, user.id, 15)} },
+            { label: "30 min", onClick: () => {store.muteUser(selected?.value.objectId, user.id, 30)} },
+            { label: "60 min", onClick: () => {store.muteUser(selected?.value.objectId, user.id, 60)} },
+          ]
+      }] : [
       { 
-        label: menu.getMute(user), 
-        onClick: () => muteOrUnmute(user),
-      },
+        label: "UnMute", 
+        onClick: () => {
+          store.unmuteUser(selected?.value.objectId, user.id);
+        }
+      }
+      ]),
       { 
         label: "Kick", 
         onClick: () => kickUser(user),
@@ -449,17 +467,6 @@ function makeOrDemoteAdmin (userChannel: ChatUser){
     chatStore().makeAdmin(channel, userChannel);
 }
 
-function muteOrUnmute (userChannel: ChatUser){
-  const channel = chatStore().selected as channel;
-
-  if (!channel)
-    return ;
-  if (userChannel.isMuted)
-    chatStore().unmuteUser(channel, userChannel);
-  else
-    chatStore().muteUser(channel, userChannel);
-}
-
 function kickUser (userChannel: ChatUser){
   const channel = chatStore().selected as channel;
 
@@ -468,6 +475,7 @@ function kickUser (userChannel: ChatUser){
 }
 
 const openChannel = async function (channel: channel) {
+  store.selected = channel;
   if (store.isUserInSelectedChannel(userStore().user.id))
   {
     store.getMessages(channel);
@@ -486,12 +494,21 @@ const openChannel = async function (channel: channel) {
   }
   else
   {
-    if (channel.type == "PUBLIC"){
+    if (channel.type == "PUBLIC" || channel.type == "DM"){
       await store.joinChannel(channel.objectId);
       store.getMessages(channel);
       instance?.emit('update-create-channel', false);
       instance?.emit('protected-channel', false);
       instance?.emit("update-channel-status", true);
+      usersInChannelSelect.value = channel.users;
+      bannedUsersInChannelSelect.value = channel.banList;
+      usersFilters.value = channel.users;
+      bannedUsersFilters.value = channel.banList;
+      friendListFilter.value = userStore().user.friends.filter((friend) => {
+        const isNotInSelectedUsers = !store.selected.users.some((selectedUser:any) => selectedUser.id === friend.id);
+        const isNotInBanList = !store.selected.banList.some((bannedUser:any) => bannedUser.id === friend.id);
+        return isNotInSelectedUsers && isNotInBanList;
+      });
     }
     else{
       console.log("I will try to put the password!");
@@ -538,7 +555,7 @@ const toggleStatus = () => {
 };
 
 // Variável para controlar o estado do chat
-let isChatHidden = true;
+let isChatHidden = ref(true);
 
 onMounted(() => {
   toggleChat();
@@ -554,6 +571,13 @@ onMounted(() => {
     onUnmounted(() => {
       cardBody.removeEventListener('scroll', handleScroll);
     });
+
+    Menu.chatListRef = (user: ChatUser) => {
+      console.log("chatListRef: ", user);
+      if (!isChatHidden.value)
+        toggleChat();
+      DMHandling(user)
+  };
 });
 
 const buttonString = ref("⇑"); // Set initial button text
@@ -564,7 +588,7 @@ const toggleChat = () => {
   const searchUser = document.getElementById('searchUser') as HTMLInputElement;
   const searchChannel = document.getElementById('searchChannel') as HTMLInputElement;
 
-  if (isChatHidden) {
+  if (isChatHidden.value) {
     // Ocultar o chat
     if (props.channelStatus) {
       instance?.emit('update-channel-status', false);
@@ -582,8 +606,8 @@ const toggleChat = () => {
     getFilteredChannels();
   }
   // Update the button text based on isChatHidden
-  buttonString.value = isChatHidden ? "⇑" : "⇓";
-  isChatHidden = !isChatHidden;//
+  buttonString.value = isChatHidden.value ? "⇑" : "⇓";
+  isChatHidden.value = !isChatHidden.value;//
   instance?.emit('update-create-channel', false);
   instance?.emit("protected-channel", false);
 
@@ -620,13 +644,32 @@ defineExpose({
 
 .custom-context-menu {
   background-color: #000000;
-  color: #ffffff;
   cursor: pointer; 
 }
-
-.custom-context-menu .label {
-  color: #FFFFFF;
+#mx-menu-default-container > div > div > div.mx-context-menu-items > div:nth-child(6) > div.mx-context-menu.custom-context-menu.light {
+   top: -60px !important;
 }
-.mx-context-menu-item-wrapper :hover {
-background-color: rgb(57, 57, 57);}
+.custom-context-menu .label {
+  color: white;
+}
+
+/* .custom-context-menu .label :hover{
+  color: gray !important;
+} */
+.mx-context-menu-item:hover
+{
+  background-color: rgb(57, 57, 57);
+}
+
+.mx-context-menu-item.open
+{
+  background-color: rgb(57, 57, 57);
+}
+
+.mx-context-menu-item.open:hover
+{
+  background-color: rgb(57, 57, 57);
+}
+
+
 </style>

@@ -54,13 +54,44 @@ onMounted(() => {
     console.log(`Received message from ${senderId} in channel ${channelId}: ${message}`);
     store.addMessage({channelId: channelId, content: message, id: "1", user: "user_" + senderId.toString(), userId: senderId})
     console.log("Channels: do socket ", store.channels);
-    //store.addMessage(channelId, message);
   });
 
   socket.on('channel-created', (eventData: { newChannel: any, message: any }) => {
     const { newChannel, message } = eventData;
     store.addChannel(newChannel, message);
     chatListRef.value?.getFilteredChannels();
+  });
+
+  socket.on('user-muted', (eventData) => {
+    const { channelId, userId, message } = eventData;
+
+    const curChannel = store.channels.find((channel: channel) => channel.objectId == channelId);
+    if (curChannel &&  message.includes("You have been muted in channel")) {
+      const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userStore().user.id);
+      if (curUser)
+        curUser.isMuted = true;
+    }
+    else if (curChannel) {
+      const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userId);
+      if (curUser)
+        curUser.isMuted = true;
+    }
+  });
+
+  socket.on('user-unmuted', (eventData) => {
+    const { channelId, userId, message } = eventData;
+
+    const curChannel = store.channels.find((channel: channel) => channel.objectId == channelId);
+    if (curChannel &&  message.includes("You have been unmuted in channel")) {
+      const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userStore().user.id);
+      if (curUser)
+        curUser.isMuted = false;
+    }
+    else if (curChannel) {
+      const curUser = curChannel.users.find((userChannel: ChatUser) => userChannel.id == userId);
+      if (curUser)
+        curUser.isMuted = false;
+    }
   });
 
   socket.on('user-removed', (eventData: { channelId: any, message: any, user: any }) => {
@@ -169,6 +200,7 @@ onMounted(() => {
       curChannel.avatar = editedChannel.avatar ? editedChannel.avatar : "";
       curChannel.name = editedChannel.name;
       curChannel.type = editedChannel.type;
+      chatListRef.value?.getFilteredChannels();
     }
   });
 

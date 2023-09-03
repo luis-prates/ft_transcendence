@@ -27,14 +27,15 @@
           <label for="channelAvatar">Avatar (Image)</label>
           <input type="file" id="channelAvatar" class="form-control" accept="image/*" @change="handleAvatarChange">
         </div>
-        <div class="form-group" v-if="channelType !== 'PRIVATE'">
+        <div class="form-group" v-if="channelType !== 'PRIVATE' && channelType !== 'PUBLIC'">
           <label for="channelPassword">Password</label>
-          <input type="password" id="channelPassword" class="form-control" v-model="channelPassword" pattern=".{0}|.{3,}" :title='"Password must be at least 3 characters long."'>
+          <input type="password" id="channelPassword" class="form-control" v-model="channelPassword" pattern=".{3,}" :title='"Password must be at least 3 characters long."' required>
         </div>
         <div class="form-group">
           <label for="channelType">*Channel Type</label>
           <select id="channelType" class="form-control" v-model="channelType" required>
             <option value="PUBLIC">Public</option>
+            <option value="PROTECTED">Protected</option>
             <option value="PRIVATE">Private</option>
           </select>
         </div>
@@ -97,14 +98,14 @@
     </div>
 
     <div class="card-body msg_card_body" ref="scrollContainer">
-      <div v-for="(message, index) in selected?.messages" :key="index">
+      <div v-for="(message, index) in filteredMessages" :key="index">
         <div>
-          <ChatContentMessages :message="message" :displayUser="index == 0 || message.user.nickname !=  selected?.messages[index - 1].user.nickname"/>
+          <ChatContentMessages :message="message" :displayUser="index === 0 || (message && message.user && message.user.nickname !== (filteredMessages[index - 1]?.user?.nickname || ''))"/>
         </div>
       </div>
     </div>
 
-    <div class="card-footer">
+    <div v-if=!imMuted() class="card-footer">
       <div class="input-group">
         <textarea v-model="text" name="" @keyup.enter="send" class="form-control type_msg" placeholder="Type your message..." style="resize: none"></textarea>
         <div class="input-group-append">
@@ -112,6 +113,11 @@
             <img class="send_img" src="@/assets/chat/send.png" title="Send" />
           </span>
         </div>
+      </div>
+    </div>
+    <div v-else class="card-footer">
+      <div class="input-group">
+        <textarea v-model="text" name="" class="form-control type_msg" placeholder="You are Muted in this channel..." style="resize: none" readonly></textarea>
       </div>
     </div>
   </div>
@@ -124,12 +130,12 @@ import "bootstrap/dist/js/bootstrap.min.js";
 import "./App.css";
 import ChatContentMessages from "./ChatContentMessages.vue";
 import { nextTick, getCurrentInstance, watch } from "vue";
-import { chatStore, type channel, type ChatMessage } from "@/stores/chatStore";
+import { chatStore, type channel, type ChatUser, type ChatMessage } from "@/stores/chatStore";
 import { storeToRefs } from "pinia";
 import { userStore } from "@/stores/userStore";
 import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref, computed } from "vue";
 import defaultUser from "@/assets/chat/avatar.png";
 import chat_avatar from "@/assets/chat/chat_avatar.png";
 
@@ -146,11 +152,42 @@ console.log("Socket criado na instancia do componente: ", chatSocket);
 //const defaultUser = "@/assets/chat/avatar.png";
 let defaultAvatar = ref(chat_avatar);
 
+const filteredMessages = computed(() => {
+  const selectedChannel = selected;
+
+  if (!selectedChannel) {
+    return [];
+  }
+
+  const blockedUserIds = userStore().user.block.map((block) => block.blockedId);
+
+  return (selectedChannel.value.messages || []).filter((message: ChatMessage) => {
+    const isBlockedUser = blockedUserIds.includes(message.userId);
+    
+    return !isBlockedUser;
+  });
+});
+
 //Check if the user is the owner of channel
 const imOwner = () => {
   if (selected.value?.ownerId == user.user.id)
     return true;
   return false;
+}
+
+//Check if the user is muted in channel
+const imMuted = () => {
+  const curUser = selected.value.users.find((userChannel: ChatUser) => userChannel.id == userStore().user.id);
+    if (curUser && curUser.isMuted) {
+      resetTextarea();
+      return true;
+    }
+  return false;
+}
+
+// Function to reset the textarea content
+function resetTextarea() {
+  text.value = ""; // Reset the content to an empty string
 }
 
 // Get channel name from chatStore
@@ -256,18 +293,20 @@ onUnmounted(() => {
 const scrollContainer = ref<HTMLElement | null>(null);
 
 watch(
-  [() => store.selected?.messages?.length, () => props.channelStatus],
-  ([newMessageLength, newChannelStatus], [oldMessageLength, oldChannelStatus]) => {
+  [() => store.selected?.messages?.length, () => props.channelStatus, () => store.selected],
+  ([newMessageLength, newChannelStatus, newSelected], [oldMessageLength, oldChannelStatus, oldSelected]) => {
     if (
       newMessageLength !== oldMessageLength ||
       (newChannelStatus && !oldChannelStatus) ||
       (scrollContainer.value && scrollContainer.value.scrollTop + scrollContainer.value.clientHeight >= scrollContainer.value.scrollHeight)
     ) {
-      // Use nextTick to wait for the DOM to update
       nextTick(() => {
         scrollToBottom();
       });
     }
+
+    // Call resetTextarea() when the 'selected' changes
+    resetTextarea();
   }
 );
 
@@ -366,8 +405,8 @@ const createNewChannel = async () => {
   try {
     // Retrieve the form values and do something with them
     const name = channelName.value;
-    const password = channelType.value == "PUBLIC" ? channelPassword.value : undefined;
-    const type = password ? "PROTECTED" : channelType.value;
+    const password = channelType.value == "PROTECTED" ? channelPassword.value : undefined;
+    const type = channelType.value;
     const avatar = avatarBase64.value ? avatarBase64.value : ""; // This is the File object
 
     // Perform your logic here, e.g., make an API call to create the channel
@@ -390,13 +429,24 @@ const createNewChannel = async () => {
       channelName.value = '';
       channelPassword.value = '';
       channelType.value = 'PUBLIC';
-      channelAvatar.value = null;
+      avatarBase64.value = "";
       errorMessage.value = '';
+      channelAvatar.value = null;
+      defaultAvatar.value = chat_avatar;
     } else if (response == "409"){
       // Handle channel creation failure here
       errorMessage.value = 'Failed to create channel. Channel name is already taken';
       // Display error message in the form or take any other action
       return ;
+    }
+    else {
+      channelName.value = '';
+      channelPassword.value = '';
+      channelType.value = 'PUBLIC';
+      avatarBase64.value = "";
+      channelAvatar.value = null;
+      errorMessage.value = '';
+      defaultAvatar.value = chat_avatar;
     }
     instance?.emit("update-create-channel", false);
   } catch (error) {
@@ -409,7 +459,7 @@ const updateChannel = async () => {
   try {
     const name = (channelName.value == store.selected.name) ? null : channelName.value;
     const password = channelType.value != "PROTECTED" ? undefined : channelPassword.value;
-    const type = password ? "PROTECTED" : channelType.value;
+    const type = channelType.value ? channelType.value : null;
     const avatar = avatarBase64.value ? avatarBase64.value : null;
 
     const editChannelDto = {
@@ -427,8 +477,10 @@ const updateChannel = async () => {
       channelName.value = '';
       channelPassword.value = '';
       channelType.value = 'PUBLIC';
-      channelAvatar.value = null;
+      avatarBase64.value = "";
       errorMessage.value = '';
+      channelAvatar.value = null;
+      defaultAvatar.value = chat_avatar;
       instance?.emit("update-create-channel", false);
     } else {
       console.log("Error response: ", response);
