@@ -38,6 +38,9 @@ export class UserService {
 					throw new ForbiddenException('Table skin not owned');
 				}
 			}
+
+			let nicknameIsChange: boolean = false;
+
 			if (dto.nickname && user.nickname !== dto.nickname) {
 				user = await this.prisma.user.findUnique({
 					where: {
@@ -48,11 +51,12 @@ export class UserService {
 					throw new ForbiddenException('Nickname already taken');
 				}
 
-				this.server.emit('updateNickname', {
-					id: userId,
-					nickname: dto.nickname,
-				});
+				nicknameIsChange = true;
 			}
+
+			let imageIsChange: boolean = false;
+			if (dto.image && user.image !== dto.image) imageIsChange = true;
+
 			user = await this.prisma.user.update({
 				where: {
 					id: userId,
@@ -63,6 +67,22 @@ export class UserService {
 			});
 
 			delete user.twoFASecret;
+
+			if (imageIsChange)
+			{
+				this.server.emit('updateImage', {
+				id: userId,
+				image: dto.image,
+				});
+			}
+
+			if (nicknameIsChange)
+			{
+				this.server.emit('updateNickname', {
+					id: userId,
+					nickname: dto.nickname,
+				});
+			}
 
 			return user;
 		} catch (error) {
