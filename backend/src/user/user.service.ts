@@ -9,7 +9,7 @@ export class UserService {
 	private server: Server;
 	private readonly logger = new Logger(UserService.name);
 
-	constructor(private prisma: PrismaService) {}
+	constructor(private prisma: PrismaService) { }
 
 	setServer(server: Server) {
 		this.server = server;
@@ -68,16 +68,14 @@ export class UserService {
 
 			delete user.twoFASecret;
 
-			if (imageIsChange)
-			{
+			if (imageIsChange) {
 				this.server.emit('updateImage', {
-				id: userId,
-				image: dto.image,
+					id: userId,
+					image: dto.image,
 				});
 			}
 
-			if (nicknameIsChange)
-			{
+			if (nicknameIsChange) {
 				this.server.emit('updateNickname', {
 					id: userId,
 					nickname: dto.nickname,
@@ -113,11 +111,11 @@ export class UserService {
 				},
 			});
 
-			if (user.status == status) {
+			if (user?.status == status) {
 				console.log('Status already updated!');
 				return;
 			}
-			this.logger.debug(`Current user status: ${user.status}. Next status ${status}`);
+			this.logger.debug(`Current user status: ${user?.status}. Next status ${status}`);
 
 			user = await this.prisma.user.update({
 				where: {

@@ -1,5 +1,5 @@
 import type { GameObject, GameObjectType } from "@/game/base/GameObject";
-import { Lobby, Map } from "@/game";
+import { Game, Lobby, Map } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
 import type { Socket } from "socket.io-client";
 
@@ -21,7 +21,7 @@ export class Door implements GameObject {
   }
 
   draw(contex: CanvasRenderingContext2D): void {
-    
+
   }
 
   setData(data: any): void {
@@ -34,6 +34,7 @@ export class Door implements GameObject {
 
   interaction(gameObject: GameObject): void {
     Lobby.isLoaded.value = false;
+    Game.lastPosition = undefined;
     this.lobbySocket.emit("join_map", {
       userId: gameObject.objectId, objectId: gameObject.objectId, map: {
         name: this.mapName,

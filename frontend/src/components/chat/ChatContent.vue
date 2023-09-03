@@ -292,7 +292,6 @@ const handleAvatarChange = (event: Event) => {
       .then((base64String) => {
         avatarBase64.value = base64String;
         defaultAvatar.value = URL.createObjectURL(file);
-        console.log("Base64 string:", base64String);
       })
       .catch((error) => {
         console.error("Error converting file to base64:", error);
@@ -370,7 +369,6 @@ const createNewChannel = async () => {
     const password = channelType.value == "PUBLIC" ? channelPassword.value : undefined;
     const type = password ? "PROTECTED" : channelType.value;
     const avatar = avatarBase64.value ? avatarBase64.value : ""; // This is the File object
-    console.log("Avatar base64 string:", avatar);
 
     // Perform your logic here, e.g., make an API call to create the channel
     // You can use the values (name, password, type, avatar) as needed
