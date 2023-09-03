@@ -27,7 +27,7 @@ model User {
 	// Info Ping Pong
 	level					Int @default(1)
 	xp						Int @default(0)
-	color					String @default("blue") // this sets the color for player name, player ball and player padel
+	color					String @default("#0000ff") // this sets the color for player name, player ball and player padel
 	tableColorEquipped		String @default("")
 	tableSkinEquipped		String @default("")
 	paddleSkinEquipped		String @default("")

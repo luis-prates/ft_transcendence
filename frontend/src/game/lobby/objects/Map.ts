@@ -1,5 +1,5 @@
 import type { GameObject, GameObjectType } from "../../base/GameObject";
-import { Game, type Rectangle } from "@/game";
+import { Game, Lobby, type Rectangle } from "@/game";
 
 export interface layer_1 {
   image: HTMLImageElement;
@@ -60,6 +60,7 @@ export class Map implements GameObject {
 
   setData(data: any) {
     this.isLoaded = false;
+    Lobby.mapObjectId = data?.objectId;
     return new Promise((resolve) => {
       console.log(data);
       this.datas = data?.datas || [];

@@ -609,6 +609,11 @@ export const userStore = defineStore("user", function () {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
 
+	if (userId == 6969) {
+		console.warn("You can't block the bot!");
+		return;
+	}
+
     await fetch(env.BACKEND_SERVER_URL + "/blocklist/block/" + userId, options)
       .then(async function (response: any) {
         //Add in Store

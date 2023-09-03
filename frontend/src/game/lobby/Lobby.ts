@@ -1,22 +1,32 @@
 import { Game, Map, type Player } from "@/game";
 import { type Socket } from "socket.io-client";
 import { socketClass } from "../../socket/SocketClass";
+import { ref } from "vue";
 
 export class Lobby extends Game {
+
+  public static isLoaded = ref(false);
+  public static mapObjectId: string;
   private list_update_gameobject: any[] = [];
   public lobbySocket: Socket = socketClass.getLobbySocket();
 
   constructor(map: Map, player: Player) {
     super(map, player);
     //this.addGameObject(new Npc());
-	this.lobbySocket.on("new_gameobject", (data: any) => {
+	this.lobbySocket.on("new_gameobject", (data: any, mapObjectId: string) => {
+    if (Lobby.mapObjectId == mapObjectId)
       this.addGameObjectData(data);
-      console.log("new_gameobject", data);
+      //console.log("new_gameobject", data);
     });
 
-    this.lobbySocket.on("update_gameobject", (data: any) => this.list_update_gameobject.push(data));
+    this.lobbySocket.on("update_gameobject", (data: any, mapObjectId: string) => {
+      if (Lobby.mapObjectId == mapObjectId)
+        this.list_update_gameobject.push(data)
+      //console.log("mapObjectId: ", mapObjectId, " Lobby.mapObjectId: ",  Lobby.mapObjectId)
 
-    this.lobbySocket.on("remove_gameobject", (data: any) => {
+    });
+
+    this.lobbySocket.on("remove_gameobject", (data: any, mapObjectId: string) => {
       for (let gameObject of this.gameObjets) {
         if (gameObject.objectId == data.objectId) {
           if (gameObject.destroy) gameObject.destroy();
