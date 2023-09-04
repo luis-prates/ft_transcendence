@@ -1,5 +1,16 @@
 version: '3.8'
 services:
+  init_certs:
+    image: alpine:latest
+    volumes:
+      - certs:/certs
+    command: >
+      /bin/sh -c "
+      apk --no-cache add openssl &&
+      if [ ! -f /certs/key.pem ]; then
+        openssl req -x509 -nodes -days 365 -subj '/C=PT/ST=Santarem/L=Abrantes/O=42lisboa/CN=lprates.42.fr' -newkey rsa:2048 -keyout /certs/nginx-selfsigned.key -out /certs/nginx-selfsigned.crt;
+      fi
+      "
   # Create frontend container
   frontend: # Name of our service
     build: ./frontend # path to dockerfile
@@ -16,12 +27,12 @@ services:
     restart: always # What to do if container crashes
     depends_on:
       - backend
+      - init_certs
     networks:
       - transcendence
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./nginx-selfsigned.crt:/etc/ssl/nginx-selfsigned.crt
-      - ./nginx-selfsigned.key:/etc/ssl/nginx-selfsigned.key
+      - certs:/etc/ssl
   # Create backend container
   backend:
     # Create backend container  
@@ -45,11 +56,11 @@ services:
     restart: always
     depends_on:
       - db
+      - init_certs
     networks:
       - transcendence
     volumes:
-      - ./nginx-selfsigned.crt:/etc/ssl/nginx-selfsigned.crt
-      - ./nginx-selfsigned.key:/etc/ssl/nginx-selfsigned.key
+      - certs:/etc/ssl/
   # Create database container
   db:
     image: postgres:alpine
@@ -66,8 +77,10 @@ services:
       - transcendence
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
 networks:
   transcendence:
 
 volumes:
   postgres_data:
+  certs:

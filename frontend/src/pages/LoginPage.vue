@@ -264,8 +264,9 @@ onMounted(() => {
 					return;
 				}
 			}
-			if (props.firstTime === true) {
+			if (props.firstTime === true && user?.isFirstTime == false) {
 				await handleFirstLogin();
+				userStore().user.isFirstTime = true;
 				await sleep(1000);
 			}
 

@@ -139,8 +139,6 @@ export class GameClass {
 
 	//Create Players and Watchers
 	addUsers(user: Player, isPlayer: boolean, playerInfo?: playerInfo) {
-		// DATA BASE VERIFICATION
-
 		if (isPlayer && this.player1 == null) {
 			this.player1 = new Player_Pong(this, 1, user, playerInfo);
 			//console.log('player1 connect', playerInfo);
@@ -171,6 +169,7 @@ export class GameClass {
 					color: this.player2.color,
 					skin: this.player2.skin,
 				},
+				watchers: this.watchers.length,
 			});
 			this.emitAll('game_view', this.watchers.length);
 		}
@@ -291,7 +290,7 @@ export class GameClass {
 			result: winner.nickname + ' Win!',
 			exp: 0,
 			money: 0,
-			watchers: 0,
+			watchers: this.watchers.length,
 		});
 
 		this.logger.debug(`Game End. Winner player ${winner.nickname}`);
