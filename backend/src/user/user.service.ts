@@ -42,12 +42,12 @@ export class UserService {
 			let nicknameIsChange: boolean = false;
 
 			if (dto.nickname && user.nickname !== dto.nickname) {
-				user = await this.prisma.user.findUnique({
+				const newUser = await this.prisma.user.findUnique({
 					where: {
 						nickname: dto.nickname,
 					},
 				});
-				if (user) {
+				if (newUser) {
 					throw new ForbiddenException('Nickname already taken');
 				}
 
@@ -55,7 +55,7 @@ export class UserService {
 			}
 
 			let imageIsChange: boolean = false;
-			if (dto.image && user.image !== dto.image) imageIsChange = true;
+			if (dto.image && user.image != dto.image) imageIsChange = true;
 
 			user = await this.prisma.user.update({
 				where: {
