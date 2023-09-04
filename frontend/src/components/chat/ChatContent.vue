@@ -232,6 +232,13 @@ function getChatAvatar() {
   const channelAvatar = ref(null);
 
 function editChannel() {
+	channelName.value = '';
+	channelPassword.value = '';
+	channelType.value = 'PUBLIC';
+	avatarBase64.value = "";
+	errorMessage.value = '';
+	channelAvatar.value = null;
+	defaultAvatar.value = chat_avatar;
   instance?.emit("update-channel-status", true);
   instance?.emit("update-create-channel", true);
   channelName.value = selected.value?.name as any;

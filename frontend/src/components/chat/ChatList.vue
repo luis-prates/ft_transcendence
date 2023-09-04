@@ -124,7 +124,7 @@ const showUsers = ref(true);
 const showBanUsers = ref(false);
 const showAddUsers = ref(false);
 
-const setShowUsers = (value:any) => {
+const setShowUsers = async (value:any) => {
   if (value == 1) {
     showUsers.value = true;
     showBanUsers.value = false;
@@ -136,7 +136,8 @@ const setShowUsers = (value:any) => {
     showAddUsers.value = false;
   }
   else if (value == 3) {
-    showUsers.value = false;
+	await userStore().getFriends()
+	showUsers.value = false;
     showBanUsers.value = false;
     showAddUsers.value = true;
   }
@@ -365,7 +366,7 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
         onClick: () => menu.getChallenge(user),
       }] : []),
       //para admins do channel
-      ...(imAdmin.value && (user.isAdmin == false) && (user.id != userStore().user.id) ? [
+      ...(imAdmin.value && (user.id != userStore().user.id) ? [
       ...(user.isMuted == false ? [{ 
         label: "Mute", 
         children: [
