@@ -115,6 +115,20 @@ export class ChatGateway implements OnGatewayConnection {
 				deletedChannel,
 				message: `Channel ${channelId} has been deleted`,
 			});
+
+      // Remove the channel from the channelIdToUserIds map
+      this.channelIdToUserIds.delete(channelId);
+
+      // loop over all users in the channel and remove them from the channel
+      for (const user of deletedChannel.users) {
+        const client: Socket = this.userIdToSocketMap.get(user.user.id);
+        if (!client) {
+          // if socketId not found, client is not currently connected and doesnt need the websocket event
+          continue;
+        }
+        client.leave(`channel-${channelId}`);
+        console.log(`User ${user.user.id} left a room: channel-${channelId}`);
+      }
 		});
 
 		// event for a user being added to a channel
@@ -162,12 +176,19 @@ export class ChatGateway implements OnGatewayConnection {
 			// remove the twoFASecret field from the user object
 			delete user.twoFASecret;
 
-			client.broadcast.to(`channel-${channelId}`).emit('user-added', {
-				channelId,
-				userId,
-				user,
-				message: `User ${userId} has been added to channel ${channelId}`,
-			});
+      this.server.emit('user-added', {
+        channelId,
+        userId,
+        user,
+        message: `User ${userId} has been added to channel ${channelId}`,
+      });
+
+			// client.broadcast.to(`channel-${channelId}`).emit('user-added', {
+			// 	channelId,
+			// 	userId,
+			// 	user,
+			// 	message: `User ${userId} has been added to channel ${channelId}`,
+			// });
 		});
 
 		this.chatService.events.on('user-removed-from-channel', async ({ channelId, userId, user }) => {
@@ -198,13 +219,21 @@ export class ChatGateway implements OnGatewayConnection {
 				message: `You have been removed from channel ${channelId}`,
 			});
 
+      // Send a message to all users connected to the chat socket that a user has been removed from a channel
+      this.server.emit('user-removed', {
+        channelId,
+        userId,
+        user,
+        message: `User ${userId} has been removed from channel ${channelId}`,
+      });
+
 			// Send a message to all users in the channel that a user has been removed
-			client.broadcast.to(`channel-${channelId}`).emit('user-removed', {
-				channelId,
-				userId,
-				user,
-				message: `User ${userId} has left the channel ${channelId}`,
-			});
+			// client.broadcast.to(`channel-${channelId}`).emit('user-removed', {
+			// 	channelId,
+			// 	userId,
+			// 	user,
+			// 	message: `User ${userId} has left the channel ${channelId}`,
+			// });
 		});
 
 		this.chatService.events.on('user-muted-in-channel', async ({ channelId, userId, muteDuration }) => {
