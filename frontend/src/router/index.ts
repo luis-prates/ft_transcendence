@@ -2,6 +2,7 @@ import { createWebHistory, createRouter, type RouteRecordNormalized, type RouteR
 import LoginPage from "@/pages/LoginPage.vue";
 import HomePage from "@/pages/HomePage.vue";
 import PingPongPage from "@/pages/PingPongPage.vue";
+import { Game } from "@/game";
 
 const routes_login = [
   {
@@ -59,6 +60,12 @@ class Router {
   }
 
   public static push(path: string) {
+    if (path.includes("/game?objectId")) {
+      Game.lastPosition = {
+        name: Game.Map.objectId?.toString(),
+        position: { x: Game.getPlayer().x, y: Game.getPlayer().y },
+      }
+    }
     router.push(path);
   }
 

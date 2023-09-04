@@ -29,7 +29,7 @@ export class Map implements GameObject {
   type: GameObjectType;
   isSelect: boolean = false;
   public static SIZE = 32;
-  objectId = 0;
+  objectId: any = 0;
   protected isLoaded = false;
   public layer_1: layer_1 = { image: new Image(), opacity: 1 };
   public layer_2: layer_2 = { image: new Image(), opacity: 1, grid: [] };
@@ -62,8 +62,9 @@ export class Map implements GameObject {
     this.isLoaded = false;
     Lobby.mapObjectId = data?.objectId;
     return new Promise((resolve) => {
-      console.log(data);
+
       this.datas = data?.datas || [];
+      this.objectId = data?.objectId || 0;
       this.layer_1.image.src = data.layer_1.image;
       this.layer_1.opacity = data.layer_1.opacity;
       this.layer_2.image.src = data.layer_2.image;
@@ -71,11 +72,6 @@ export class Map implements GameObject {
       this.layer_3.image.src = data.layer_3.image;
       this.layer_3.opacity = data.layer_3.opacity;
       this.layer_3.objects = data.layer_3.objects;
-      // this.layer_1.image.onerror = () => console.log("error 1 ", data.layer_1.image);
-      // this.layer_2.image.onerror = () => console.log("error 2 ", data.layer_2.image);
-      // this.layer_3.image.onerror = () => console.log("error 3 ", data.layer_3.image);
-      // this.layer_3.image.onload = () => console.log("layer_3");
-      // this.layer_2.image.onload = () => console.log("layer_2");
       this.layer_1.image.onload = () => {
         this.w = data?.width || this.layer_1.image.width;
         this.h = data?.height || this.layer_1.image.height;
@@ -151,7 +147,7 @@ export class Map implements GameObject {
         this.layer_3.context.drawImage(this.layer_3.image, 0, 0);
         const imageData = this.layer_3.context.getImageData(0, 0, this.layer_3.image.width, this.layer_3.image.height);
         const data = imageData.data;
-        const opacityFactor = 128 / 255; // Opacidade de 50%
+        const opacityFactor = (Game.Map.objectId as any) == "lobby" ? 128 / 255 : 1; // Opacidade de 50%
         // Modify the copied data
         for (let i = 3; i < data.length; i += 4) {
           data[i] = data[i] * opacityFactor;
