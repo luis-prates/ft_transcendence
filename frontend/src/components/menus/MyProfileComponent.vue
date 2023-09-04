@@ -393,7 +393,6 @@ async function updateProfile() {
     const paddle_update = (paddle != user.infoPong.skin.default.paddle) ? paddle : undefined;
     const isOkey: boolean = await userStore().updateProfile(avatar, undefined, color, paddle_update);
     
-    console.log("is okey: ", isOkey);
     if (isOkey)
     {
         const lobbySocket: Socket = socketClass.getLobbySocket();
