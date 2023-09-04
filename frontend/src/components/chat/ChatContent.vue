@@ -162,7 +162,7 @@ const filteredMessages = computed(() => {
   const blockedUserIds = userStore().user.block.map((block) => block.blockedId);
 
   return (selectedChannel.value.messages || []).filter((message: ChatMessage) => {
-    const isBlockedUser = blockedUserIds.includes(message.userId);
+    const isBlockedUser = blockedUserIds.includes(message.userId) && userStore().user.id !== message.userId;
     
     return !isBlockedUser;
   });

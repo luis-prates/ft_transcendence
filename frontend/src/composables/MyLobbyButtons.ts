@@ -1,4 +1,3 @@
-import { ref } from 'vue';
 import Router from "../router";
 import { socketClass } from "../socket/SocketClass";
 import type { Socket } from "socket.io-client";
