@@ -246,9 +246,7 @@ function handleFileChange(event: any) {
                 .then(base64String => {
                     const avatarImage = document.getElementById("avatarImage") as HTMLImageElement;
                     avatarImage.src = base64String;
-                    userStore().user.image = base64String;
-                    userStore().updateProfile();
-                    console.log("image uploaded!")
+                    userStore().updateProfile(undefined, base64String);
                 })
                 .catch(error => {
                     console.error('Error converting file to base64:', error);
@@ -390,15 +388,14 @@ function asSomeChange() {
 async function updateProfile() {
     const paddle = (currentPagePaddle.value < 0 ? "" : user.infoPong.skin.paddles[currentPagePaddle.value]);
 
-    if (current_avatar.value != user.avatar) user.avatar = current_avatar.value;
-    if (selectedColor.value != user.infoPong.color) user.infoPong.color = selectedColor.value;
-    if (paddle != user.infoPong.skin.default.paddle) user.infoPong.skin.default.paddle = paddle;
-    const isOkey: boolean = await userStore().updateProfile();
+    const avatar = (current_avatar.value != user.avatar) ? current_avatar.value : undefined;
+    const color = (selectedColor.value != user.infoPong.color) ? selectedColor.value : undefined;
+    const paddle_update = (paddle != user.infoPong.skin.default.paddle) ? paddle : undefined;
+    const isOkey: boolean = await userStore().updateProfile(avatar, undefined, color, paddle_update);
     
     console.log("is okey: ", isOkey);
     if (isOkey)
     {
-
         const lobbySocket: Socket = socketClass.getLobbySocket();
           const player = Lobby.getPlayer();
           lobbySocket.emit("update_gameobject", {
@@ -411,7 +408,6 @@ async function updateProfile() {
             nickname: user.nickname,
             animation: { name: player.animation.name, isStop: false },
           });
-        console.log("emitiu")
     }
 
 }
