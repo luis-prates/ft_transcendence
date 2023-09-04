@@ -541,19 +541,8 @@ export class ChatService {
 
 		// if the user is the owner and last member of the channel
 		if (channel.ownerId === user.id) {
-			if (channelUsers.length <= 1) {
-				await this.prisma.channelUser.deleteMany({
-					where: {
-						channelId: channelId,
-					},
-				});
-				await this.prisma.channel.delete({ where: { id: channelId } });
-				return;
-			} else {
-				// if the owner is not the last member
 				throw new ForbiddenException('Owner can not leave a channel. Promote someone else to owner first.');
 			}
-		}
 
 		// Remove user from channel
 		await this.prisma.channelUser.delete({
@@ -562,10 +551,26 @@ export class ChatService {
 			},
 		});
 
-		// Delete the channel if no users left
-		if (channelUsers.length === 1) {
-			await this.prisma.channel.delete({ where: { id: channelId } });
-		}
+		// Delete the channel if no users left and it is not the global channel
+    const globalChannel = await this.prisma.channel.findFirst({
+      where: {
+        name: 'global',
+      },
+    });
+
+    if (channelUsers.length === 1 && channel.id !== globalChannel.id) {
+      await this.prisma.message.deleteMany({
+        where: {
+          channelId: channelId,
+        },
+      });
+
+      await this.prisma.channel.delete({
+        where: {
+          id: channelId,
+        },
+      });
+    }
 
 		// get data of user to inform channel
 		const db_user = await this.prisma.user.findUnique({
