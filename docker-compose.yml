@@ -40,6 +40,7 @@ services:
       - FORTYTWO_CALLBACK_URL
       - FRONTEND_REDIRECT_URL
       - NODE_TLS_REJECT_UNAUTHORIZED
+      - SESSION_SECRET
     container_name: backend-docker
     restart: always
     depends_on:

@@ -276,8 +276,7 @@ export const userStore = defineStore("user", function () {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
       body: new URLSearchParams(body),
     };
-		  //TODO: update avatar for everybody
-
+	
     const response = await fetch(env.BACKEND_SERVER_URL + "/users/update_profile", options)
       .then(async function (response: any) {
         if (response.ok) {

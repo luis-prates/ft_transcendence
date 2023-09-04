@@ -27,7 +27,7 @@ async function bootstrap() {
 	app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 	app.use(
 		session({
-			secret: 'secret',
+			secret: process.env.SESSION_SECRET,
 			resave: false,
 			saveUninitialized: false,
 		}),

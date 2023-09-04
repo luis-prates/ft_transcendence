@@ -83,8 +83,7 @@ export class AuthController {
 
 		const responseObj = await this.authService.generateQrCodeDataURL(otpauthUrl);
 		//TODO: secret needs to be removed in production
-		//! secret is needed for testing
-		return { secret, responseObj };
+		return { responseObj };
 	}
 
 	//! not used currently, but left in case it's needed in the future
