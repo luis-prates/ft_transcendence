@@ -90,6 +90,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				);
 				this.logger.log(`Removed watcher ${userId} from game ${gameId}`);
 				client?.leave(`game-${gameId}-watcher`);
+				if (game != undefined)
+				{
+					const gameWatcher = game.watchers;
+					game.watchers = gameWatcher.filter(watcher => watcher.data?.objectId != convertedUserId);
+				}
 				game?.emitAll('game_view', game.watchers.length);
 			}
 		}

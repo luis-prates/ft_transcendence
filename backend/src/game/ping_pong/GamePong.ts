@@ -169,6 +169,7 @@ export class GameClass {
 					color: this.player2.color,
 					skin: this.player2.skin,
 				},
+				watchers: this.watchers.length,
 			});
 			this.emitAll('game_view', this.watchers.length);
 		}
