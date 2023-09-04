@@ -99,6 +99,9 @@ import TwoFactorComponent from "./TwoFactorComponent.vue"
 import avataresImages from "@/assets/images/lobby/avatares.jpg";
 import sound_close_tab from "@/assets/audio/close.mp3";
 import default_avatar from "@/assets/chat/avatar.png";
+import { socketClass } from "@/socket/SocketClass";
+import type { Socket } from "socket.io-client";
+import { Lobby } from "@/game/lobby/Lobby";
 
 const defaultAvatar = default_avatar;
 const avatares = avataresImages;
@@ -384,13 +387,33 @@ function asSomeChange() {
     return !(current_avatar.value != user.avatar || selectedColor.value != user.infoPong.color || (currentPagePaddle.value < 0 ? "" : user.infoPong.skin.paddles[currentPagePaddle.value]) != user.infoPong.skin.default.paddle)
 }
 
-function updateProfile() {
+async function updateProfile() {
     const paddle = (currentPagePaddle.value < 0 ? "" : user.infoPong.skin.paddles[currentPagePaddle.value]);
 
     if (current_avatar.value != user.avatar) user.avatar = current_avatar.value;
     if (selectedColor.value != user.infoPong.color) user.infoPong.color = selectedColor.value;
     if (paddle != user.infoPong.skin.default.paddle) user.infoPong.skin.default.paddle = paddle;
-    userStore().updateProfile();
+    const isOkey: boolean = await userStore().updateProfile();
+    
+    console.log("is okey: ", isOkey);
+    if (isOkey)
+    {
+
+        const lobbySocket: Socket = socketClass.getLobbySocket();
+          const player = Lobby.getPlayer();
+          lobbySocket.emit("update_gameobject", {
+            className: "Character",
+            objectId: player.objectId,
+            name: player.name,
+            x: player.x,
+            y: player.y,
+            avatar: user.avatar,
+            nickname: user.nickname,
+            animation: { name: player.animation.name, isStop: false },
+          });
+        console.log("emitiu")
+    }
+
 }
 
 onMounted(() => {
