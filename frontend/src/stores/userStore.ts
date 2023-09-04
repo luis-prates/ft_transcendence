@@ -265,36 +265,44 @@ export const userStore = defineStore("user", function () {
     return { firstTime: isFirstTime, isTwoFAEnabled: user.isTwoFAEnabled };
   }
 
-  async function updateProfile() {
+  async function updateProfile(avatar?: number, image?: string, color?: string, paddle?: string) : Promise<boolean> {
     let body = {} as any;
-    body.avatar = user.avatar;
-    body.image = user.image;
-    body.color = user.infoPong.color;
-    body.paddleSkinEquipped = user.infoPong.skin.default.paddle;
+    if (avatar != undefined)
+      body.avatar = avatar;
+    if (image != undefined)
+      body.image = image;
+    if (color != undefined)
+      body.color = color;
+    if (paddle != undefined)
+      body.paddleSkinEquipped = paddle;
 
     const options = {
       method: "PATCH",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
       body: new URLSearchParams(body),
     };
-    await fetch(env.BACKEND_SERVER_URL + "/users/update_profile", options)
+    const response = await fetch(env.BACKEND_SERVER_URL + "/users/update_profile", options)
       .then(async function (response: any) {
         if (response.ok) {
-          const lobbySocket: Socket = socketClass.getLobbySocket();
-          const player = Lobby.getPlayer();
-          lobbySocket.emit("update_gameobject", {
-            className: "Character",
-            objectId: player.objectId,
-            name: player.name,
-            x: player.x,
-            y: player.y,
-            avatar: user.avatar,
-            nickname: user.nickname,
-            animation: { name: player.animation.name, isStop: false },
-          });
+          if (avatar != undefined)
+            user.avatar = avatar;
+          if (image != undefined)
+            user.image = image;
+          if (color != undefined)
+            user.infoPong.color = color;
+          if (paddle != undefined)
+            user.infoPong.skin.default.paddle = paddle;
+          return true;
         }
       })
-      .catch((err) => console.error(err));
+      .catch( function (err) {
+        console.error(err)
+        return false;
+      } );
+      if (response != undefined)
+        return response;
+      else
+        return false;
   }
 
   async function updateNickname(newNickname: string): Promise<boolean> {

@@ -164,6 +164,9 @@ onMounted(function () {
     } else if (e.player === 2) {
       game.playerNumber = 2;
     }
+    else {
+      game.watchersNumber = e.watchers;
+    }
   });
 
   socket.on("game_update_status", (status: any) => {

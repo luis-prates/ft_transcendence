@@ -65,6 +65,7 @@ export interface GameStart {
   data: any;
   player1: PlayerData;
   player2: PlayerData;
+  watchers: number;
 }
 
 interface PlayerData {

@@ -99,6 +99,9 @@ import TwoFactorComponent from "./TwoFactorComponent.vue"
 import avataresImages from "@/assets/images/lobby/avatares.jpg";
 import sound_close_tab from "@/assets/audio/close.mp3";
 import default_avatar from "@/assets/chat/avatar.png";
+import { socketClass } from "@/socket/SocketClass";
+import type { Socket } from "socket.io-client";
+import { Lobby } from "@/game/lobby/Lobby";
 
 const defaultAvatar = default_avatar;
 const avatares = avataresImages;
@@ -243,9 +246,7 @@ function handleFileChange(event: any) {
                 .then(base64String => {
                     const avatarImage = document.getElementById("avatarImage") as HTMLImageElement;
                     avatarImage.src = base64String;
-                    userStore().user.image = base64String;
-                    userStore().updateProfile();
-                    console.log("image uploaded!")
+                    userStore().updateProfile(undefined, base64String);
                 })
                 .catch(error => {
                     console.error('Error converting file to base64:', error);
@@ -384,13 +385,30 @@ function asSomeChange() {
     return !(current_avatar.value != user.avatar || selectedColor.value != user.infoPong.color || (currentPagePaddle.value < 0 ? "" : user.infoPong.skin.paddles[currentPagePaddle.value]) != user.infoPong.skin.default.paddle)
 }
 
-function updateProfile() {
+async function updateProfile() {
     const paddle = (currentPagePaddle.value < 0 ? "" : user.infoPong.skin.paddles[currentPagePaddle.value]);
 
-    if (current_avatar.value != user.avatar) user.avatar = current_avatar.value;
-    if (selectedColor.value != user.infoPong.color) user.infoPong.color = selectedColor.value;
-    if (paddle != user.infoPong.skin.default.paddle) user.infoPong.skin.default.paddle = paddle;
-    userStore().updateProfile();
+    const avatar = (current_avatar.value != user.avatar) ? current_avatar.value : undefined;
+    const color = (selectedColor.value != user.infoPong.color) ? selectedColor.value : undefined;
+    const paddle_update = (paddle != user.infoPong.skin.default.paddle) ? paddle : undefined;
+    const isOkey: boolean = await userStore().updateProfile(avatar, undefined, color, paddle_update);
+    
+    if (isOkey)
+    {
+        const lobbySocket: Socket = socketClass.getLobbySocket();
+          const player = Lobby.getPlayer();
+          lobbySocket.emit("update_gameobject", {
+            className: "Character",
+            objectId: player.objectId,
+            name: player.name,
+            x: player.x,
+            y: player.y,
+            avatar: user.avatar,
+            nickname: user.nickname,
+            animation: { name: player.animation.name, isStop: false },
+          });
+    }
+
 }
 
 onMounted(() => {
