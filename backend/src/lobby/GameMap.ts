@@ -66,10 +66,10 @@ export class GameMap {
 
 	public emitAll(event: string, data: any, player: Player, ignorePlayer: boolean): void {
 		if (ignorePlayer) {
-			player.getSocket().to('lobby').emit(event, data);
+			player.getSocket().to('lobby').emit(event, data, player.map?.objectId);
 		} else {
-			player.getSocket().to('lobby').emit(event, data);
-			player.getSocket().emit(event, data);
+			player.getSocket().to('lobby').emit(event, data, player.map?.objectId);
+			player.getSocket().emit(event, data, player.map?.objectId);
 		}
 	}
 
