@@ -488,23 +488,30 @@ export class ChatGateway implements OnGatewayConnection {
 			const userIdsInChannel = this.channelIdToUserIds.get(channelId);
 			if (userIdsInChannel) {
 				for (const userId of userIdsInChannel) {
-					if (!(await this.chatService.isUserBlocked(senderId, userId))) {
-						console.log('UserId: ' + userId + 'received a message: ' + message);
+					console.log('UserId: ' + userId + 'received a message: ' + message);
 						const socket = this.userIdToSocketMap.get(userId);
 						socket?.emit('message', {
 							channelId: channelId,
 							senderId: senderId,
 							message: message,
 						});
-					} else {
-						console.log(
-							'userId: ' +
-								userId +
-								' has blocked senderId: ' +
-								senderId +
-								' and does not receive the message',
-						);
-					}
+					// if (!(await this.chatService.isUserBlocked(senderId, userId))) {
+					// 	console.log('UserId: ' + userId + 'received a message: ' + message);
+					// 	const socket = this.userIdToSocketMap.get(userId);
+					// 	socket?.emit('message', {
+					// 		channelId: channelId,
+					// 		senderId: senderId,
+					// 		message: message,
+					// 	});
+					// } else {
+					// 	console.log(
+					// 		'userId: ' +
+					// 			userId +
+					// 			' has blocked senderId: ' +
+					// 			senderId +
+					// 			' and does not receive the message',
+					// 	);
+					// }
 				}
 			}
 		} catch (error) {

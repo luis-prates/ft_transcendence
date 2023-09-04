@@ -634,13 +634,13 @@ export const userStore = defineStore("user", function () {
           console.log("Block User:", userNickname, user.block);
 
           //Block Messages from this User Block
-          let channels = chatStore().channels;
-          const blockList = user.block.filter((block: Block) => block.blockedId !== user.id);
-          blockList.forEach(function (block: Block) {
-            channels.forEach(function (channel: any) {
-              channel.messages = channel.messages.filter((message: ChatMessage) => block.blockedId !== message.userId);
-            });
-          });
+          // let channels = chatStore().channels;
+          // const blockList = user.block.filter((block: Block) => block.blockedId !== user.id);
+          // blockList.forEach(function (block: Block) {
+          //   channels.forEach(function (channel: any) {
+          //     channel.messages = channel.messages.filter((message: ChatMessage) => block.blockedId !== message.userId);
+          //   });
+          // });
 
           //Emit
           const lobbySocket: Socket = socketClass.getLobbySocket();
