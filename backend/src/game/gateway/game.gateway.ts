@@ -96,6 +96,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 					game.watchers = gameWatcher.filter(watcher => watcher.data?.objectId != convertedUserId);
 				}
 				game?.emitAll('game_view', game.watchers.length);
+				await this.userService.status(userId, UserStatus.ONLINE);
 			}
 		}
 	}

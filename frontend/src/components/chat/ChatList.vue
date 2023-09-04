@@ -61,7 +61,9 @@
           </div>
           <div v-else-if="showAddUsers">
             <li v-for="(friendUser, id) in friendListFilter" :key="id">
-              <ChatListUsers :user="friendUser" @click="selectUser(friendUser)" @contextmenu="handleContextMenuFriendUser($event, friendUser)" />
+			  <div v-if="!(store.isUserInSelectedChannel(friendUser.id))">
+                <ChatListUsers :user="friendUser" @click="selectUser(friendUser)" @contextmenu="handleContextMenuFriendUser($event, friendUser)" />
+              </div>
             </li>
           </div>
         </ul>
@@ -478,6 +480,7 @@ const openChannel = async function (channel: channel) {
   store.selected = channel;
   if (store.isUserInSelectedChannel(userStore().user.id))
   {
+	setShowUsers(1);
     store.getMessages(channel);
     instance?.emit('update-create-channel', false);
     instance?.emit('protected-channel', false);
@@ -495,6 +498,7 @@ const openChannel = async function (channel: channel) {
   else
   {
     if (channel.type == "PUBLIC" || channel.type == "DM"){
+		setShowUsers(1);
       await store.joinChannel(channel.objectId);
       store.getMessages(channel);
       instance?.emit('update-create-channel', false);
