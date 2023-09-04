@@ -366,7 +366,7 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
         onClick: () => menu.getChallenge(user),
       }] : []),
       //para admins do channel
-      ...(imAdmin.value && (user.id != userStore().user.id) ? [
+      ...((userStore().user.id == selected?.value.ownerId && user.id != userStore().user.id) || imAdmin.value && (user.isAdmin == false)  && selected?.value.ownerId != user.id && (user.id != userStore().user.id) ? [
       ...(user.isMuted == false ? [{ 
         label: "Mute", 
         children: [

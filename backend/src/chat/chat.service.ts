@@ -993,7 +993,7 @@ export class ChatService {
 	}
 
 	// Ban a user
-	async banUser(channelId: number, bannedUserId: number, banningUserId: number) {
+	async banUser(channelId: number, bannedUserId: number, banningUser: any) {
 		const channel = await this.prisma.channel.findUnique({
 			where: {
 				id: channelId,
@@ -1039,7 +1039,7 @@ export class ChatService {
     }
 
     // Admins can be banned only by the owner but not by other admins
-    if (bannedUser.isAdmin && channel.ownerId !== banningUserId) {
+    if (bannedUser.isAdmin && channel.ownerId !== banningUser.id) {
       throw new ForbiddenException('Cannot ban an admin unless your are owner');
     }
 

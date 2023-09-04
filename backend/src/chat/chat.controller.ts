@@ -157,7 +157,7 @@ export class ChatController {
 	@UseGuards(RolesGuard)
 	@Roles('admin', 'owner')
 	async banUser(@Param('channelId') channelId: string, @Param('userId') userId: string, @Request() req: any) {
-		return this.chatService.banUser(Number(channelId), Number(userId), req.user.userId);
+		return this.chatService.banUser(Number(channelId), Number(userId), req.user);
 	}
 
 	// Unban a user from the channel
