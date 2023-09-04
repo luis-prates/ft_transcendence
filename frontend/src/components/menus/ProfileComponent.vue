@@ -62,6 +62,9 @@ import yourFriendImage from "@/assets/images/lobby/menu/your_friend.png";
 import messageImage from "@/assets/images/lobby/menu/message.png";
 import sound_close_tab from "@/assets/audio/close.mp3";
 import default_avatar from "@/assets/chat/avatar.png";
+import { Menu } from "../chat/Menu";
+import { chatStore, type ChatUser } from "@/stores/chatStore";
+import { storeToRefs } from "pinia";
 
 const defaultAvatar = default_avatar;
 
@@ -166,10 +169,9 @@ function challengeUser() {
     }, 5000);
 };
 
-function sendMessage() {
-
-    //TODO
-
+async function sendMessage() {
+    await chatStore().getChannels();
+    Menu.chatListRef({id: user.id} as ChatUser);
 }
 
 function getStatus() {
