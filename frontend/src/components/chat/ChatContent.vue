@@ -138,6 +138,7 @@ import { socketClass } from "@/socket/SocketClass";
 import { onMounted, onUnmounted, ref, computed } from "vue";
 import defaultUser from "@/assets/chat/avatar.png";
 import chat_avatar from "@/assets/chat/chat_avatar.png";
+import { Menu } from "../chat/Menu";
 
 
 const store = chatStore();
@@ -378,12 +379,7 @@ const joinProtected  = async () => {
     const response = await store.joinChannel(channelId, password);
 
     if (!response) {
-        // Reset form inputs
-        channelPassword.value = '';
-        errorMessage.value = '';
-        instance?.emit("protected-channel", false);
-        instance?.emit("update-channel-status", true);
-        store.getMessages(store.selected);
+        Menu?.openChannel();
       } else if (response.error == "INCORRECT_PASSWORD"){
         // Handle channel creation failure here
         errorMessage.value = 'Incorrect password. Please try again.';

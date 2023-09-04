@@ -7,6 +7,7 @@
   export class Menu
   {
 
+	public static openChannel: () => void;
   public static  chatListRef: (user: ChatUser) => void;
   store = chatStore()
   selected = storeToRefs(chatStore()).selected;

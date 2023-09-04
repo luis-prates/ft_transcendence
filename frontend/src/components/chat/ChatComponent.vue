@@ -131,6 +131,7 @@ onMounted(() => {
     console.log("Acionou o evento: eventData" , eventData);
     const { channelId, user } = eventData;
     store.userToChannel(channelId, user);
+	chatListRef.value?.getFilteredChannels();
   });
 
   //Mute

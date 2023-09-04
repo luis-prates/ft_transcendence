@@ -582,6 +582,22 @@ onMounted(() => {
         toggleChat();
       DMHandling(user)
   };
+  Menu.openChannel = () => {
+	setShowUsers(1);
+    store.getMessages(store.selected);
+    instance?.emit('update-create-channel', false);
+    instance?.emit('protected-channel', false);
+    instance?.emit("update-channel-status", true);
+    usersInChannelSelect.value = store.selected.users;
+    bannedUsersInChannelSelect.value = store.selected.banList;
+    usersFilters.value = store.selected.users;
+    bannedUsersFilters.value = store.selected.banList;
+    friendListFilter.value = userStore().user.friends.filter((friend) => {
+      const isNotInSelectedUsers = !store.selected.users.some((selectedUser:any) => selectedUser.id === friend.id);
+      const isNotInBanList = !store.selected.banList.some((bannedUser:any) => bannedUser.id === friend.id);
+      return isNotInSelectedUsers && isNotInBanList;
+    });
+  };
 });
 
 const buttonString = ref("⇑"); // Set initial button text
