@@ -12,13 +12,15 @@ export function MyLobbyButtons() {
 
   const onLeaveClick = () => {
     // Handle Leave click
-    const socket: Socket = socketClass.getLobbySocket();
+    const lobbySocket: Socket = socketClass.getLobbySocket();
+    const chatSocket: Socket = socketClass.getChatSocket();
     
     console.log("onLeaveClick");
     userStore().logout();
     //Router.setRoute(Router.ROUTE_LOGIN)
     Router.push(`/`);
-    socket.disconnect();
+    lobbySocket?.disconnect();
+	chatSocket?.disconnect();
   }
 
   // Handle Messages click
