@@ -8,15 +8,15 @@
 		<form>
 			<h2>Sign In</h2>
 			<div class="inputBox">
-				<input type="number" required="true" v-model="objectId" placeholder=" " >
-				<span>User Id (for testing)</span>
+				<input type="text" required="true" placeholder=" " maxlength="5" v-model="objectId"  @input="cleanInput"  >
+				<span>User Id</span>
 				<i></i>
 			</div>
-			<div class="inputBox">
+			<!-- <div class="inputBox">
 				<input type="email" required="true" placeholder=" " >
 				<span>Email Test</span>
 				<i></i>
-			</div>
+			</div> -->
 			<!-- <div class="links">
 				<a href="#">Forgot password</a>
 				<a href="#">Signup</a>
@@ -96,6 +96,17 @@ function encodeImageToBase64(filePath: string) {
       const base64String = btoa(String.fromCharCode(...new Uint8Array(buffer)));
       return `data:image/png;base64,${base64String}`;
     });
+}
+
+function cleanInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const inputValue = input.value;
+    const sanitizedValue = inputValue.replace(/[^A-Za-z_0-9-]+/g, '');
+    const firstChar = sanitizedValue.charAt(0);
+    if (/[0-9]/.test(firstChar))
+		input.value = sanitizedValue;
+    else
+		input.value = sanitizedValue.substring(1);
 }
 
 let onModalClose: (value: boolean) => void;
