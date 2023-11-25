@@ -129,6 +129,17 @@ function encodeImageToBase64(filePath: string) {
     });
 }
 
+function cleanInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const inputValue = input.value;
+    const sanitizedValue = inputValue.replace(/[^A-Za-z_0-9-]+/g, '');
+    const firstChar = sanitizedValue.charAt(0);
+    if (/[0-9]/.test(firstChar))
+		input.value = sanitizedValue;
+    else
+		input.value = sanitizedValue.substring(1);
+}
+
 let onModalClose: (value: boolean) => void;
 
 let modalClosePromise = new Promise((resolve) => {
