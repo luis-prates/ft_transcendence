@@ -1,8 +1,6 @@
 import { Camera, Player, Menu, type GameObject, Map, listClass } from "@/game";
 import { socketClass } from "@/socket/SocketClass";
 import { userStore } from "@/stores/userStore";
-import { CreateGame } from "../Menu/CreateGame";
-import { YourMenu } from "../Menu/YourMenu";
 import type { Socket } from "socket.io-client";
 
 export class Game {
@@ -36,7 +34,6 @@ export class Game {
     //For What?
     this.boundUpdate = this.update.bind(this);
     this.socket = socketClass.getGameSocket();
-    console.log("Map: ", map.w, " / ", map.h);
     this.camera = new Camera(player, map);
     this.canvas.width = map.w;
     this.canvas.height = map.h;
@@ -74,10 +71,11 @@ export class Game {
       if (event.dataTransfer && event.dataTransfer.types.includes("text/uri-list")) {
         // Get the ID of the dragged component
         const componentId = event.dataTransfer.getData("text/uri-list");
-        if (!componentId.includes("assets/images/lobby/table_2aaa15.png"))
+        if (!componentId.includes("table_2aaa15")) {
+          console.log("Invalid component dropped")
           return;
-        console.log("componentId: ", componentId);
-        const color = componentId.includes("assets/images/lobby/table_") ? "#" + componentId.substring(componentId.indexOf("_") + 1, componentId.indexOf(".")) : "green";
+         }
+        const color = componentId.includes("table_2aaa15") ? "#" + componentId.substring(componentId.indexOf("_") + 1, componentId.indexOf(".")) : "green";
         const rect = this.canvas.getBoundingClientRect();
         const data = {
           className: "Table",

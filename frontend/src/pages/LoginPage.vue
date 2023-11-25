@@ -3,21 +3,22 @@
 	<CustomModal @closeModal="modalClosed" v-model:message="customMessage" :type="modalType" ref="customModalRef" />
 	<TwoFactorPrompt ref="twoFactorPromptRef" @submit="twoFactorSubmit" />
 	<FirstLoginPrompt ref="firstLoginPromptRef" v-model:type="firstLoginType" :prefilledCode="prefilledCode" :errorMessage="invalidPatch" @submit="firstLoginSubmit" />
+	<div class="loginPage" href>
 	<div class="loginElement" href>
 		<span class="borderLine"></span>
 		<form>
-			<h2>Sign In</h2>
+			<h2>Welcome to Transcendence</h2>
 			<div class="inputBox">
-				<input type="text" required="true" placeholder=" " maxlength="5" v-model="objectId"  @input="cleanInput"  >
-				<span>User Id</span>
+				<input type="text" required="true" placeholder=" " maxlength="4" v-model="objectId"  @input="cleanInput"  >
+				<span>Guest</span>
 				<i></i>
 			</div>
 			<!-- <div class="inputBox">
 				<input type="email" required="true" placeholder=" " >
 				<span>Email Test</span>
 				<i></i>
-			</div> -->
-			<!-- <div class="links">
+			</div>
+			<div class="links">
 				<a href="#">Forgot password</a>
 				<a href="#">Signup</a>
 			</div> -->
@@ -25,8 +26,37 @@
 				<input type="submit" value="Login" @click="tes($event)" :disabled="!objectId">
 				<a class="login" :href="env.REDIRECT_URI_42_API" target="_self">Login with</a>
 			</div>
+			<div class="credits">
+				<span class="by">Made by:</span> 
+				<a href="https://github.com/Eduuxx94" class="name" target="_blank">ede-alme</a> 
+				<a href="https://github.com/zico15" class="name" target="_blank">edos-san</a> 
+				<a href="https://github.com/Hevhove" class="name" target="_blank">hvan-hov</a> 
+				<a href="https://github.com/luis-prates" class="name" target="_blank">lprates</a> 
+				<a href="https://github.com/RubenTeles" class="name" target="_blank">rteles</a>
+			</div>
 		</form>
 	</div>
+	<div class="madeWith" href>
+		<a href="https://vuejs.org/" class="logo" target="_blank">
+			<img src="@/assets/images/login/Vue_Logo.svg" alt="Vue Logo">
+		</a> 
+		<a href="https://vitejs.dev/" class="logo" target="_blank">
+			<img src="@/assets/images/login/vite_logo.svg" alt="Vite Logo">
+		</a> 
+		<a href="https://socket.io/" class="logo" target="_blank">
+			<img src="@/assets/images/login/socketio_logo.svg" alt="Socket.io Logo">
+		</a> 
+		<a href="https://www.typescriptlang.org/" class="logo" target="_blank">
+			<img src="@/assets/images/login/Typescript_logo_2020.svg" alt="Typescript Logo">
+		</a> 
+		<a href="https://nestjs.com/" class="logo" target="_blank">
+			<img src="@/assets/images/login/NestJS_logo.svg" alt="NestJs Logo">
+		</a>
+		<a href="https://www.prisma.io/" class="logo" target="_blank">
+			<img src="@/assets/images/login/prisma-logo-icon.svg" alt="Prisma Logo">
+		</a>
+	</div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -41,6 +71,7 @@ import CustomModal from '@/components/utils/CustomModal.vue'
 import axios from "axios";
 import TwoFactorPrompt from '@/components/login/TwoFactorPrompt.vue'
 import FirstLoginPrompt from "@/components/login/FirstLoginPrompt.vue";
+import userDefaultAvatar from '@/assets/images/pingpong/avatar_default.jpg'
 
 const props = defineProps({
 	token: String,
@@ -96,17 +127,6 @@ function encodeImageToBase64(filePath: string) {
       const base64String = btoa(String.fromCharCode(...new Uint8Array(buffer)));
       return `data:image/png;base64,${base64String}`;
     });
-}
-
-function cleanInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const inputValue = input.value;
-    const sanitizedValue = inputValue.replace(/[^A-Za-z_0-9-]+/g, '');
-    const firstChar = sanitizedValue.charAt(0);
-    if (/[0-9]/.test(firstChar))
-		input.value = sanitizedValue;
-    else
-		input.value = sanitizedValue.substring(1);
 }
 
 let onModalClose: (value: boolean) => void;
@@ -180,7 +200,7 @@ function tes(event: any) {
 	store.user.nickname = "user_" + objectId.value;
 	store.user.money = 0;
 	store.user.email = "user_" + objectId.value + "@gmail.com";
-	encodeImageToBase64('src/assets/images/pingpong/avatar_default.jpg')
+	encodeImageToBase64(userDefaultAvatar)
 		.then(base64Image => {
 			store.user.image = base64Image;
 		})
@@ -246,8 +266,9 @@ onMounted(() => {
 					return;
 				}
 			}
-			if (props.firstTime === true) {
+			if (props.firstTime === true && user?.isFirstTime == false) {
 				await handleFirstLogin();
+				userStore().user.isFirstTime = true;
 				await sleep(1000);
 			}
 

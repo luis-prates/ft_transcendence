@@ -94,7 +94,7 @@ onMounted(async () => {
         const leaderboardData = await userStore().getLeaderboard();
         users.value = leaderboardData;
         yourRank.value = leaderboardData.find((player: any) => player.userId == userStore().user.id);
-        console.log("your Rank: ", yourRank)
+        //console.log("your Rank: ", yourRank)
     } catch (error) {
         console.error('Erro ao obter a leaderboard:', error);
     }

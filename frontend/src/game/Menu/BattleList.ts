@@ -41,7 +41,7 @@ export class BattleList {
 
           this.pagination_battles = new PaginationMenu(games, 7, 1);
 
-          console.log("games: ", games); // Faça o que desejar com o array de usuários
+          //console.log("games: ", games); // Faça o que desejar com o array de usuários
 
           this.menu.add(this.background);
           this.menu.add(this.createButtonExit(30.5, 11));

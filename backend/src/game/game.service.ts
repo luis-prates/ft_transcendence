@@ -52,15 +52,12 @@ export class GameService {
 			},
 		});
 		const playerOne = this.playerService.getPlayer(body.players[0]);
-
-		this.logger.debug(`createGame is called with body`);
 		body.gameRequest.objectId = game.id;
 		this.games.push(
 			new GameClass(body.gameRequest, this, this.userService, () => {
 				// this.events.emit('gameEnded', game);
 				// remove game from games array
 				this.games = this.games.filter(g => g.data.objectId !== body.gameRequest.objectId);
-				this.logger.log(`Game ${game.id} ended and removed.`);
 				playerOne?.map?.removeGameObject(playerOne, body.gameRequest.objectId);
 			}),
 		);
@@ -68,9 +65,6 @@ export class GameService {
 		if (body.gameRequest.bot === true) {
 			this.addGameUser(game.id, infoBot);
 		}
-
-		this.logger.debug('GameClass Object created in memory');
-
 		//! perhaps this should be in the gateway?
 		// // entry_game equivalent
 		// this.logger.log(`Player 1 entered Game ${game.id}.`);
@@ -133,7 +127,6 @@ export class GameService {
 					bot: false,
 				},
 			} as GameDto)) as any;
-			console.log(gameCreated);
 			return gameCreated.id;
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -245,7 +238,7 @@ export class GameService {
 			});*/
 
 			leaderboardReturn.push({
-				rank: 0,
+				rank: 1,
 				userId: user.id,
 				nickname: user.nickname,
 				image: user.image,
@@ -257,8 +250,8 @@ export class GameService {
 
 		leaderboardReturn.sort((a, b) => b.points - a.points);
 
-		let last_points = -1;
-		let last_rank = -1;
+		let last_points = 0;
+		let last_rank = 1;
 		leaderboardReturn.forEach((user, index) => {
 			let cur_rank = index + 1;
 			if (index == 0) {
@@ -446,7 +439,6 @@ export class GameService {
 		if (index !== -1) {
 			this.games.splice(index, 1);
 		}
-		this.logger.log(`Delete Game ${gameId}`);
 		return this.prisma.game.delete({
 			where: {
 				id: gameId,

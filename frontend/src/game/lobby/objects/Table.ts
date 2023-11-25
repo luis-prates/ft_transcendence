@@ -60,7 +60,7 @@ export class Table implements GameObject {
     for (let ponto of this.pontoEvento) {
       if (ponto.isFree && _ponto.x === this.x && _ponto.y === this.y) {
         ponto.isFree = false;
-        console.log("ponto: ", ponto);
+        //console.log("ponto: ", ponto);
         _ponto = { x: this.x + ponto.x, y: this.y + ponto.y };
       } else ponto.isFree = true;
     }

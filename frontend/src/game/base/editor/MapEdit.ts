@@ -41,7 +41,6 @@ export class MapEdit extends Lobby {
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = Math.floor((event.clientX - rect.left) / Map.SIZE) * Map.SIZE;
     const mouseY = Math.floor((event.clientY - rect.top) / Map.SIZE) * Map.SIZE;
-    console.log(mouseX, mouseY);
     MapObject.selection = {
       x: mouseX,
       y: mouseY,

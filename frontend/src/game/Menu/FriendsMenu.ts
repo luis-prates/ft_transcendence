@@ -27,7 +27,7 @@ export class FriendsMenu {
   constructor() {
     this.pagination_friends = new PaginationMenu(this.friends, 10, 1);
 
-    console.log("friends: ", this.friends); // Faça o que desejar com o array de usuários
+    //console.log("friends: ", this.friends); // Faça o que desejar com o array de usuários
 
     this.menu.add(this.background);
     this.menu.add(this.createButtonExit(30.5, 11));

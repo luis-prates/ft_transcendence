@@ -30,7 +30,7 @@ export class MapObject extends Map {
     this.isLoaded = false;
     MapObject.datas = [];
     return super.setData(data).then(() => {
-      console.log(data.start_position);
+      //console.log(data.start_position);
       if (data.start_position) MapObject.startPossition = data.start_position;
       // this.setStartPossition(MapObject.startPossition.x, MapObject.startPossition.y);
     });
@@ -83,7 +83,7 @@ export class MapObject extends Map {
 
   mouseClick(x: number, y: number, button: number): void {
     this.gameObjetSelect = null;
-    console.log("event.offsetX, event.offsetY, event.button");
+    //console.log("event.offsetX, event.offsetY, event.button");
     if (MapObject.action.value === 0 || MapObject.action.value === 5) {
       if (MapObject.selection === null) MapObject.selection = { x: x, y: y, w: Map.SIZE, h: Map.SIZE };
       MapObject.selection.w = MapObject.selection?.w == 0 ? Map.SIZE : MapObject.selection?.w;
@@ -103,7 +103,7 @@ export class MapObject extends Map {
       }
     } else if (MapObject.action.value == 1) {
       this.setStartPossition(x, y);
-      console.log(MapObject.startPossition);
+      //console.log(MapObject.startPossition);
     } else if (MapObject.action.value == 3) {
       this.setGameObjects(x, y, button, { className: "Tree" });
     } else if (MapObject.action.value == 4) {
@@ -121,7 +121,7 @@ export class MapObject extends Map {
         gameObject.setData({ avatar: avatar > 7 ? 0 : avatar });
         const data = MapObject.datas.find((data) => data.gamaObject == gameObject);
         if (data) data.data["avatar"] = gameObject.avatar;
-        console.log(gameObject);
+        //console.log(gameObject);
       });
     }
   }
@@ -225,6 +225,6 @@ export class MapObject extends Map {
     link.href = url;
     link.download = "desenho.json";
     link.click();
-    console.log("Salvando mapa...\n");
+    //console.log("Salvando mapa...\n");
   }
 }

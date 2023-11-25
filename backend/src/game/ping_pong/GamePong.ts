@@ -132,7 +132,7 @@ export class GameClass {
 				},
 			});
 		}
-		console.log('emit_start_game');
+		//console.log('emit_start_game');
 		this.startGame();
 		this.gameLoop();
 	}

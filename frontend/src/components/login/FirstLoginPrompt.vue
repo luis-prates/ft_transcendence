@@ -126,7 +126,7 @@ export default defineComponent({
 				.catch((error) => {
 					console.error("Error converting file to base64:", error);
 				});
-				console.log(file);
+				//console.log(file);
 			})
 			.catch(console.error);
 		};

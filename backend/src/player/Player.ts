@@ -40,7 +40,7 @@ export class Player {
 	private readonly logger = new Logger(Player.name);
 
 	constructor(socket: Socket, payload: any, private playerService?: PlayerService) {
-		console.log('new player with data:', payload);
+		//console.log('new player with data:', payload);
 		this.setSocket(socket);
 		this.data.objectId = payload.objectId;
 		this.data.avatar = payload.avatar;

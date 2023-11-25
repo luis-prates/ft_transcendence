@@ -7,6 +7,7 @@
   export class Menu
   {
 
+    public static openChannel: () => void;
   public static  chatListRef: (user: ChatUser) => void;
   store = chatStore()
   selected = storeToRefs(chatStore()).selected;
@@ -35,20 +36,20 @@
 
 sendDM = async (user : ChatUser) => {
   const userID = user.id;
-  console.log("Tamanho dos channels: ", this.store.channels.length);
-  console.log("Os channels: ", this.store.channels);
+  //console.log("Tamanho dos channels: ", this.store.channels.length);
+  //console.log("Os channels: ", this.store.channels);
   const channelExist = this.store.channels.find((channelStore: channel) => channelStore.type == "DM" 
   && channelStore.users.some((userChannel: ChatUser) => userChannel.id == userStore().user.id)
   && channelStore.users.some((userChannel: ChatUser) => userChannel.id == userID));
       
   if (channelExist)
   {
-    console.log("This DM is already exist!");
+    //console.log("This DM is already exist!");
     return channelExist;
   }
   else
   {
-    console.log(" DM NÃO exite por isso vai criar uma!");
+    //console.log(" DM NÃO exite por isso vai criar uma!");
     try {
       const newChannel = {
         objectId: 1,
@@ -65,15 +66,15 @@ sendDM = async (user : ChatUser) => {
       const response = await this.store.createChannel(newChannel);
       
       if (!response) {
-        console.log("Erro inesperado!");
+        //console.log("Erro inesperado!");
         return response;
       } else if (response == "409"){
-        console.log('Failed to create DM. DM already exists');
+        //console.log('Failed to create DM. DM already exists');
         return false;
     }
     return response;
   } catch (error) {
-    console.error(error);
+    //console.error(error);
   }
   return false;
 }
@@ -215,7 +216,7 @@ sendDM = async (user : ChatUser) => {
       this.instance?.emit('openChannel', channel);
     }
     else if (item == 2){
-      console.log("O id do channel onde vai dar elave: ", this.selected.value.objectId)
+      //console.log("O id do channel onde vai dar elave: ", this.selected.value.objectId)
       this.store.leaveChannel(this.selected.value.objectId);
     }
     if (this.isMenuOpen)

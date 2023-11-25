@@ -29,12 +29,10 @@ function onFileChanged(event: any) {
   reader.readAsDataURL(file);
   reader.onload = () => {
     user.image = reader.result as string;
-    console.log("onFileChanged", reader.result);
   };
 }
 
 function onSubmit() {
-  // console.log("onSubmit", user.image);
   store.update(user);
 }
 </script>

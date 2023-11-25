@@ -45,11 +45,11 @@ export class FriendshipService {
 			}),
 		]);
 
-		console.log(
+		/*console.log(
 			`${(await updatedFriendship).requestorName} and ${
 				(await updatedFriendship).requesteeName
 			} are now friends.`,
-		);
+		);*/
 		await this.prisma.friendRequest.delete({
 			where: {
 				requestorId_requesteeId: {
@@ -75,7 +75,7 @@ export class FriendshipService {
 			},
 		});
 
-		console.log(`${(await request).requestorName} rejected ${(await request).requesteeName}'s friend request.`);
+		//console.log(`${(await request).requestorName} rejected ${(await request).requesteeName}'s friend request.`);
 
 		// delete friend request
 		await this.prisma.friendRequest.delete({
@@ -107,7 +107,7 @@ export class FriendshipService {
 			},
 		});
 
-		console.log(`${requestor.nickname} sent a friend request to ${targetFriend.nickname}.`);
+		//console.log(`${requestor.nickname} sent a friend request to ${targetFriend.nickname}.`);
 
 		return friendship;
 	}
@@ -140,9 +140,9 @@ export class FriendshipService {
 			},
 		});
 
-		console.log(
+		/*console.log(
 			`${(await friendship).requestorName} cancelled the friend request sent to ${targetFriend.nickname}.`,
-		);
+		);*/
 
 		return friendship;
 	}
@@ -175,7 +175,7 @@ export class FriendshipService {
 			}),
 		]);
 
-		console.log(`${(await deleteFriend1).nickname} and ${(await deleteFriend2).nickname} are no longer friends.`);
+		//console.log(`${(await deleteFriend1).nickname} and ${(await deleteFriend2).nickname} are no longer friends.`);
 
 		return deleteFriend1;
 	}

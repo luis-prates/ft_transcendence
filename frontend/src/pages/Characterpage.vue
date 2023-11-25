@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import body from "@/assets/images/character/body/male/dark.png";
+// import body from "@/assets/images/character/body/male/dark.png";
 </script>
 
 <style scoped>

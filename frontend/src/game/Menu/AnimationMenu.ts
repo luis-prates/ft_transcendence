@@ -23,7 +23,7 @@ export class AnimationMenu {
 		this.menu = menu;*/
 		this.type = Type_Animation.Start;
 
-		console.log(this)
+		//console.log(this)
 	}
 
 	public animation_horizontal_end(end_pos: number, menu: ElementUI) : boolean
@@ -44,7 +44,7 @@ export class AnimationMenu {
 		{
 			menu.rectangle.x = menu.rectangle.x - 10 > start_pos ? menu.rectangle.x - 10 : start_pos;
 			// this.menu.rectangle.x = this.menu.rectangle.x - this.menu.rectangle.x * 0.005 > this.start_pos ? this.menu.rectangle.x - this.menu.rectangle.x * 0.005 : this.start_pos;
-			console.log(start_pos)
+			//console.log(start_pos)
 			return false;
 		}
 		else

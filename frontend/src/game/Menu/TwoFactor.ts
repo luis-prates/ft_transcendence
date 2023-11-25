@@ -19,10 +19,10 @@ export class TwoFactor {
   async getQrImage() {
     try {
       const data = await userStore().twoFAGenerate();
-      console.log(data);
+     // console.log(data);
       this.qrImage.src = data;
     } catch (error) {
-      console.error("Error converting file to base64:", error);
+      //console.error("Error converting file to base64:", error);
       this.menu.close();
     }
   }

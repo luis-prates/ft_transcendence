@@ -73,17 +73,17 @@ function loadMap(event: any) {
     MapObject.file = file;
   } else {
     MapObject.file = null;
-    console.log("file: ", file);
+    //console.log("file: ", file);
   }
 }
 
 function loadLobby(data: any) {
-  console.log("json: ", data);
+  //console.log("json: ", data);
   if (lobby) lobby.destructor();
   socket.emit("join_map", { userId: store.user.id, objectId: store.user.id, map: { name: "lobby" } });
   const map = new MapObject();
   map.setData(data).then(() => {
-    console.log("Map: Dados carregados");
+    //console.log("Map: Dados carregados");
     lobby = new MapEdit(map);
     if (game.value === undefined) return;
     game.value.appendChild(lobby.canvas);

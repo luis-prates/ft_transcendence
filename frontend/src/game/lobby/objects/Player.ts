@@ -27,7 +27,7 @@ export class Player extends Character {
     this.name = "Player_" + Date.now();
     this.nickname = data.nickname;
     this.avatar = data.avatar;
-    console.log("Player", data);
+    //console.log("Player", data);
     this.socket.emit("new_player", {
       objectId: this.objectId,
       name: this.name,
@@ -87,27 +87,25 @@ export class Player extends Character {
     this.agent.setPath([]);
   }
 
-  interaction(gameObject: GameObject): void {
-  }
+  interaction(gameObject: GameObject): void {}
 
-  public getRetanguloTable(): Rectangle {
-    const x1 = Math.floor(this.x / Map.SIZE) * Map.SIZE
-    const y1 = Math.floor(this.y / Map.SIZE) * Map.SIZE
-    return ({ x: x1 - (Map.SIZE * 3), y: y1 - (Map.SIZE * 3), w: Map.SIZE * 6, h: Map.SIZE * 6 });
+  public getRectangleTable(): Rectangle {
+    const x1 = Math.floor(this.x / Map.SIZE) * Map.SIZE;
+    const y1 = Math.floor(this.y / Map.SIZE) * Map.SIZE;
+    return { x: x1 - Map.SIZE * 3, y: y1 - Map.SIZE * 3, w: Map.SIZE * 6, h: Map.SIZE * 6 };
   }
 
   public isRectangleInsideTable(rect1: Rectangle): boolean {
-    if (!this.isRectangleInside(rect1, this.getRetanguloTable())) return false;
+    if (!this.isRectangleInside(rect1, this.getRectangleTable())) return false;
     for (let gameObject of Game.instance.gameObjets) {
       if (Game.isColision(gameObject, rect1 as any)) {
-        return false
-      };
-    };
-
+        return false;
+      }
+    }
     return true;
   }
+
   public isRectangleInside(rect1: Rectangle, rect2: Rectangle): boolean {
     return (rect1.x >= rect2.x && (rect1.x) <= rect2.x + rect2.w && rect1.y >= rect2.y && (rect1.y) <= rect2.y + rect2.h);
   }
-
 }

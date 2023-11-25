@@ -12,7 +12,7 @@ export class Camera {
 
   constructor(player: GameObject, map: Map) {
     this.map = map;
-    console.log("map: ", map.w, map.h);
+    //console.log("map: ", map.w, map.h);
     this.player = player;
     this.x = 0;
     this.y = 0;

@@ -58,7 +58,7 @@ const time = props.message.createdAt;
 
 // Get your own nickname from the player data
 const getMyUserId = () => {
-  console.log(user.user.id);
+  //console.log(user.user.id);
   return user.user.id;
 };
 

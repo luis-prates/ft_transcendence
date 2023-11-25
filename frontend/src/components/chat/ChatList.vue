@@ -15,13 +15,13 @@
         <!-- Add chat list items here -->
         <div class="chat_filter">
           <button id="dmButton" class="chat_filter_button" @click="changeFilter('dm')">
-            <img class="chat_filter_img" src="src/assets/chat/dm_messages.png" title="Direct Messages" />
+            <img class="chat_filter_img" src="@/assets/chat/dm_messages.png" title="Direct Messages" />
           </button>
           <button id="insideButton" class="chat_filter_button" @click="changeFilter('inside')">
-            <img class="chat_filter_img" src="src/assets/chat/my_channels.png" title="My Channels" />
+            <img class="chat_filter_img" src="@/assets/chat/my_channels.png" title="My Channels" />
           </button>
           <button id="allButton" class="chat_filter_button" @click="changeFilter('all')">
-            <img class="chat_filter_img" src="src/assets/chat/all_channels.png" title="Other Channels" />
+            <img class="chat_filter_img" src="@/assets/chat/all_channels.png" title="Other Channels" />
           </button>
         </div>
         <ul class="contacts" @click="toggleStatus">
@@ -40,13 +40,13 @@
         <ul class="contacts">
           <div v-if="imAdmin" class="chat_filter">
             <button @click="setShowUsers(1)"  class="chat_filter_button">
-              <img class="chat_filter_img" src="src/assets/chat/userslist.png" title="Users" />
+              <img class="chat_filter_img" src="@/assets/chat/userslist.png" title="Users" />
             </button>
             <button @click="setShowUsers(2)"  class="chat_filter_button">
-              <img class="chat_filter_img" src="src/assets/chat/blacklist.png" title="Users Banned" />
+              <img class="chat_filter_img" src="@/assets/chat/blacklist.png" title="Users Banned" />
             </button>
             <button @click="setShowUsers(3)"  class="chat_filter_button">
-              <img class="chat_filter_img" src="src/assets/chat/add_user.png" title="Add User" />
+              <img class="chat_filter_img" src="@/assets/chat/add_user.png" title="Add User" />
             </button>
           </div>
           <div v-if="showUsers">
@@ -61,7 +61,9 @@
           </div>
           <div v-else-if="showAddUsers">
             <li v-for="(friendUser, id) in friendListFilter" :key="id">
-              <ChatListUsers :user="friendUser" @click="selectUser(friendUser)" @contextmenu="handleContextMenuFriendUser($event, friendUser)" />
+			  <div v-if="!(store.isUserInSelectedChannel(friendUser.id))">
+                <ChatListUsers :user="friendUser" @click="selectUser(friendUser)" @contextmenu="handleContextMenuFriendUser($event, friendUser)" />
+              </div>
             </li>
           </div>
         </ul>
@@ -122,7 +124,7 @@ const showUsers = ref(true);
 const showBanUsers = ref(false);
 const showAddUsers = ref(false);
 
-const setShowUsers = (value:any) => {
+const setShowUsers = async (value:any) => {
   if (value == 1) {
     showUsers.value = true;
     showBanUsers.value = false;
@@ -134,7 +136,8 @@ const setShowUsers = (value:any) => {
     showAddUsers.value = false;
   }
   else if (value == 3) {
-    showUsers.value = false;
+	await userStore().getFriends()
+	showUsers.value = false;
     showBanUsers.value = false;
     showAddUsers.value = true;
   }
@@ -203,7 +206,7 @@ function getFilteredChannels()
   const channelName = (channel?.name ?? '').toLowerCase();
   return channelName.includes(searchValue);
   });
-  console.log("FILTRO COM SEARCH", channelsFilters);
+  //console.log("FILTRO COM SEARCH", channelsFilters);
 
   return channelsFilters;
 }
@@ -298,7 +301,7 @@ const handleContextMenuFriendUser = (e: any, user: ChatUser)  => {
 };
 
 async function DMHandling(user : any){
-  console.log("DMHandling: ", user);
+  //console.log("DMHandling: ", user);
   const isDMSent = await menu.sendDM(user);
   if (isDMSent) {
     
@@ -363,7 +366,7 @@ const handleContextMenuUser = (e: any, user: ChatUser)  => {
         onClick: () => menu.getChallenge(user),
       }] : []),
       //para admins do channel
-      ...(imAdmin.value && (user.isAdmin == false) && (user.id != userStore().user.id) ? [
+      ...((userStore().user.id == selected?.value.ownerId && user.id != userStore().user.id) || imAdmin.value && (user.isAdmin == false)  && selected?.value.ownerId != user.id && (user.id != userStore().user.id) ? [
       ...(user.isMuted == false ? [{ 
         label: "Mute", 
         children: [
@@ -417,7 +420,7 @@ let profile: any;
 const selectUser = (user: ChatUser) => {
 //instance?.emit("update-create-channel", false);
 
-console.log("user Selecionado:", user.nickname);
+//console.log("user Selecionado:", user.nickname);
 if (selected.value != user && isMenuOpen.value) {
     toggleMenu();
   }
@@ -478,6 +481,7 @@ const openChannel = async function (channel: channel) {
   store.selected = channel;
   if (store.isUserInSelectedChannel(userStore().user.id))
   {
+	setShowUsers(1);
     store.getMessages(channel);
     instance?.emit('update-create-channel', false);
     instance?.emit('protected-channel', false);
@@ -495,6 +499,7 @@ const openChannel = async function (channel: channel) {
   else
   {
     if (channel.type == "PUBLIC" || channel.type == "DM"){
+		setShowUsers(1);
       await store.joinChannel(channel.objectId);
       store.getMessages(channel);
       instance?.emit('update-create-channel', false);
@@ -511,7 +516,7 @@ const openChannel = async function (channel: channel) {
       });
     }
     else{
-      console.log("I will try to put the password!");
+      //console.log("I will try to put the password!");
       instance?.emit("protected-channel", true);
       // store.joinChannel(channel.objectId, "privado")
     }
@@ -521,11 +526,11 @@ const openChannel = async function (channel: channel) {
 //Creating a new channel:
 const createChannel = () => {
   if (!props.channelStatus) {
-    console.log("Vai criar um novo channel");
+    //console.log("Vai criar um novo channel");
     instance?.emit("update-create-channel", true);
   }
   else {
-    console.log("Vai adicionar um novo user ao channel");
+    //console.log("Vai adicionar um novo user ao channel");
   }
   //instance?.emit("update-channel-status", newStatus);
 };
@@ -573,10 +578,26 @@ onMounted(() => {
     });
 
     Menu.chatListRef = (user: ChatUser) => {
-      console.log("chatListRef: ", user);
+      //console.log("chatListRef: ", user);
       if (!isChatHidden.value)
         toggleChat();
       DMHandling(user)
+  };
+  Menu.openChannel = () => {
+	setShowUsers(1);
+    store.getMessages(store.selected);
+    instance?.emit('update-create-channel', false);
+    instance?.emit('protected-channel', false);
+    instance?.emit("update-channel-status", true);
+    usersInChannelSelect.value = store.selected.users;
+    bannedUsersInChannelSelect.value = store.selected.banList;
+    usersFilters.value = store.selected.users;
+    bannedUsersFilters.value = store.selected.banList;
+    friendListFilter.value = userStore().user.friends.filter((friend) => {
+      const isNotInSelectedUsers = !store.selected.users.some((selectedUser:any) => selectedUser.id === friend.id);
+      const isNotInBanList = !store.selected.banList.some((bannedUser:any) => bannedUser.id === friend.id);
+      return isNotInSelectedUsers && isNotInBanList;
+    });
   };
 });
 

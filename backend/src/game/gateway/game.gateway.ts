@@ -96,6 +96,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 					game.watchers = gameWatcher.filter(watcher => watcher.data?.objectId != convertedUserId);
 				}
 				game?.emitAll('game_view', game.watchers.length);
+				await this.userService.status(userId, UserStatus.ONLINE);
 			}
 		}
 	}
@@ -115,7 +116,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			? this.socketService.gameIdToWatcherId.get(gameId).includes(userId)
 			: false;
 		if (isInTheGamePlayer || isInTheGameWatcher) {
-			console.log(`The Client is connected AGAIN!: ${client.id}`);
+			//console.log(`The Client is connected AGAIN!: ${client.id}`);
 			return;
 		}
 		const player = this.playerService.getPlayer(userId);

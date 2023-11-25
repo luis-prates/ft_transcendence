@@ -35,11 +35,6 @@ function toggleTesss() {
 }
 
 onMounted(() => {
-  // if (!socket)
-  // {
-  //   socketClass.setChatSocket({ query: { userId: user.user.id } });
-  // }
-  // socket = socketClass.getChatSocket();  
   store.getChannels();
   
   /* socket.on("join_chat", (data: channel) => {
@@ -48,17 +43,17 @@ onMounted(() => {
   });*/
 
   socket.onAny((eventName, eventData) => {
-    console.log("Received event: ", eventName);
-    console.log("Event data: ", eventData);
+    //console.log("Received event: ", eventName);
+    //console.log("Event data: ", eventData);
   });
 
   socket.on('message', (data: { channelId: number, senderId: number, message: string }) => {
     const { channelId, senderId, message } = data;
     
-    console.log("Received message", data);
-    console.log(`Received message from ${senderId} in channel ${channelId}: ${message}`);
+    //console.log("Received message", data);
+    //console.log(`Received message from ${senderId} in channel ${channelId}: ${message}`);
     store.addMessage({channelId: channelId, content: message, id: "1", user: "user_" + senderId.toString(), userId: senderId})
-    console.log("Channels: do socket ", store.channels);
+    //console.log("Channels: do socket ", store.channels);
   });
 
   socket.on('channel-created', (eventData: { newChannel: any, message: any }) => {
@@ -122,7 +117,7 @@ onMounted(() => {
   );
   if (curChannelIndex !== -1) {
     store.channels.splice(curChannelIndex, 1);
-    console.log("A lista depois de apagar o channel:", store.channels)
+    //console.log("A lista depois de apagar o channel:", store.channels)
     chatListRef.value?.getFilteredChannels();
   }
   });
@@ -133,14 +128,15 @@ onMounted(() => {
   });
   //TODO, user-added acionado 3x
   socket.on("user-added", (eventData) => {
-    console.log("Acionou o evento: eventData" , eventData);
+    //console.log("Acionou o evento: eventData" , eventData);
     const { channelId, user } = eventData;
     store.userToChannel(channelId, user);
+  	chatListRef.value?.getFilteredChannels();
   });
 
   //Mute
   socket.on("user-muted-in-channel", (eventData) => {
-    console.log("Mute" , eventData);
+    //console.log("Mute" , eventData);
     const { channelId, userId, user } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
@@ -150,7 +146,7 @@ onMounted(() => {
 
   //Unmute
   socket.on("user-unmuted-in-channel", (eventData) => {
-    console.log("UnMuted" , eventData);
+    //console.log("UnMuted" , eventData);
     const { channelId, userId, user } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
@@ -160,7 +156,7 @@ onMounted(() => {
 
   //Make Admin
   socket.on("user-promoted-in-channel", (eventData) => {
-    console.log("Admin" , eventData);
+    //console.log("Admin" , eventData);
     const { channelId, userId } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
@@ -170,7 +166,7 @@ onMounted(() => {
 
   //Demote
   socket.on("user-demoted-in-channel", (eventData) => {
-    console.log("Demote" , eventData);
+    //console.log("Demote" , eventData);
     const { channelId, userId } = eventData;
 
     const curUser = getUserInChannel(channelId, userId);
@@ -211,7 +207,7 @@ onMounted(() => {
 
   //Kick
   socket.on("user-removed-from-channel", (eventData) => {
-    console.log("Kick" , eventData);
+    //console.log("Kick" , eventData);
     const { channelId, userId, user } = eventData;
 
     const curChannel = chatStore().channels.find((channel: channel) => channel.objectId == channelId);
@@ -227,7 +223,7 @@ onMounted(() => {
   //ban
   socket.on("user-banned-in-channel", (eventData) => {
     const { channelId, userId, message } = eventData;
-    console.log(message);
+    //console.log(message);
 
     if (store.selected &&  store.selected.objectId == channelId && userId == userStore().user.id){
       updateChannelStatus(false);
@@ -246,7 +242,7 @@ onMounted(() => {
   //unban
   socket.on("user-unbanned-in-channel", (eventData) => {
     const { channelId, userId, message } = eventData;
-    console.log(message);
+    //console.log(message);
 
     const curChannel = chatStore().channels.find((channel: channel) => channel.objectId === channelId);
     if (curChannel) {
@@ -342,7 +338,7 @@ const protectedChannel = (newStatus: boolean) => {
 
 // Method to update createChannel var when emitted from child component
 const updateCreateChannel = (newStatus: boolean) => {
-  console.log("chamou a funcao!");
+  //console.log("chamou a funcao!");
   createChannel.value = newStatus;
 };
 </script>

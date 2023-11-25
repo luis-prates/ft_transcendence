@@ -123,6 +123,10 @@ function getImageFriend() {
 };
 
 function friendRequest() {
+	if (user.id == 6969) {
+		console.warn("You can't add the bot as a friend");
+		return;
+	}
     const label = getFriend();
     if (label == "Add Friend")
         userStore().sendFriendRequest(user.id, user.nickname);
@@ -161,6 +165,10 @@ function blockUser() {
 }
 
 function challengeUser() {
+	if (user.id == 6969) {
+		console.warn("You can't challenge the bot");
+		return;
+	}
     userStore().challengeUser(user.id, user.nickname);
     const challenge_button = document.getElementById("challengeButton") as HTMLButtonElement;
     challenge_button.disabled = true;

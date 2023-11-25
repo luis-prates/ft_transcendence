@@ -69,10 +69,10 @@ export const chatStore = defineStore("chat", () => {
     });
     if (!channelSelected) {
       channels.push(channel);
-      console.log("O channel foi adicionado: " , channel);
+      //console.log("O channel foi adicionado: " , channel);
     }
     else {
-      console.log("Channel already exists!");
+      //console.log("Channel already exists!");
     }
   }
 
@@ -86,8 +86,8 @@ export const chatStore = defineStore("chat", () => {
 
   function addMessage(message: ChatMessage) {
     const channelSelected = channels.find((c: channel) => c.objectId === message.channelId);
-    console.log("channelSelected: ", channelSelected);
-    console.log("ObjectId: ", message.channelId);
+    //console.log("channelSelected: ", channelSelected);
+    //console.log("ObjectId: ", message.channelId);
     if (channelSelected && message) {
       message.createdAt = new Date().toString();
 
@@ -100,9 +100,9 @@ export const chatStore = defineStore("chat", () => {
         getMessages(channelSelected);
       }
       channelSelected.messages.push(message);
-      console.log("Vai adicionar a messagem ao chat");
+      //console.log("Vai adicionar a messagem ao chat");
     }
-    console.log("Os channels do store: ", channels);
+    //console.log("Os channels do store: ", channels);
   }
 
   function activateMessage(message: ChatMessage) {
@@ -134,7 +134,7 @@ export const chatStore = defineStore("chat", () => {
 
           // Process the messages as needed
           selected.value.messages = messages;
-          console.log("RESPOSTA DO SERVER: ", messages);
+          //console.log("RESPOSTA DO SERVER: ", messages);
         }
       } catch (error) {
         console.error(error);
@@ -158,7 +158,7 @@ export const chatStore = defineStore("chat", () => {
       .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/${command}/${userId}`, 
         { channelId: channelId, userId: userId, }, options)
       .then(function (response: any) {
-        console.log(`User:${userId} was ${command} : ${response.data}`);
+        //console.log(`User:${userId} was ${command} : ${response.data}`);
       })
       .catch((err) => console.error(err));
   }
@@ -171,7 +171,7 @@ export const chatStore = defineStore("chat", () => {
     try {
       const response = await axios.get(env.BACKEND_SERVER_URL + "/chat/channels", options);
       const responseData = response.data;
-      console.log("response: ", responseData);
+      //console.log("response: ", responseData);
 
       // Transform the response data into an array of channels
       const transformedChannels = responseData.map((channelData: any) => {
@@ -209,7 +209,7 @@ export const chatStore = defineStore("chat", () => {
 
       // Update the channels array with the transformed data
       channels.splice(0, channels.length, ...transformedChannels);
-      console.log("RESULTADO DO GETCHANNELS: ", channels);
+      //console.log("RESULTADO DO GETCHANNELS: ", channels);
     } catch (error) {
       console.error(error);
     }
@@ -225,7 +225,7 @@ export const chatStore = defineStore("chat", () => {
         await axios.delete(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/leave`, options);
   
         // Process the response if needed
-        console.log("Left the channel successfully");
+        //console.log("Left the channel successfully");
   
       } catch (error) {
         console.error(error);
@@ -240,7 +240,7 @@ export const chatStore = defineStore("chat", () => {
   
     try {
       await axios.delete(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}`, options);
-        console.log("Channel deleted successfully");
+        //console.log("Channel deleted successfully");
       // You can update your local state or perform any other actions after successful deletion.
     } catch (error) {
       console.error("Error deleting channel:", error);
@@ -259,7 +259,7 @@ export const chatStore = defineStore("chat", () => {
     };
   
     try {
-      console.log("Vai editar o channel: ", channelId);
+      //console.log("Vai editar o channel: ", channelId);
       const response = await fetch(`${env.BACKEND_SERVER_URL}/chat/channels/edit/${channelId}`, options);
   
       if (response.ok) {
@@ -285,7 +285,7 @@ export const chatStore = defineStore("chat", () => {
       password: channel.password ? channel.password : undefined,
       avatar: channel.avatar,
     };
-    console.log("createChannelDto:", createChannelDto);
+    //console.log("createChannelDto:", createChannelDto);
 
     const options = {
       method: "POST",
@@ -298,7 +298,7 @@ export const chatStore = defineStore("chat", () => {
     try {
       const response = await fetch(`${env.BACKEND_SERVER_URL}/chat/channels`, options);
       const data = await response.json();
-      console.log("CREATE CHANNEL:", data);
+      //console.log("CREATE CHANNEL:", data);
 
       if (response.ok) {
         return response;
@@ -322,7 +322,7 @@ export const chatStore = defineStore("chat", () => {
     if (password) {
       joinChannelDto.password = password;
     }
-    console.log("joinChannelDto:", joinChannelDto);
+    //console.log("joinChannelDto:", joinChannelDto);
 
     const options = {
       method: "POST",
@@ -335,7 +335,7 @@ export const chatStore = defineStore("chat", () => {
     try {
       const response = await fetch(`${env.BACKEND_SERVER_URL}/chat/channels/${channelId}/join`, options);
       //const data = await response.json();
-      //console.log("JOINED CHANNEL:", data);
+      ////console.log("JOINED CHANNEL:", data);
 
       // Check if the response indicates a successful operation
       if (response.ok) {
@@ -423,10 +423,10 @@ function userToChannel(channelId: any, user: ChatUser) {
 }
 
 async function makeAdmin(channel: channel, userChat: ChatUser) {
-  console.log("CHANNEL:", channel)
+  //console.log("CHANNEL:", channel)
   if (channel.ownerId != user.id)
   {
-    console.log("You aren't a OWNER!");
+    //console.log("You aren't a OWNER!");
   }
 
   const options = {
@@ -441,7 +441,7 @@ async function makeAdmin(channel: channel, userChat: ChatUser) {
     .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/admin/${userChat.id}`, 
       { channelId: channel.objectId, userId: userChat.id, }, options)
     .then(function (response: any) {
-      console.log(`Make Adminstrator : ${response.data}`);
+      //console.log(`Make Adminstrator : ${response.data}`);
       userChat.isAdmin = true;
     })
     .catch((err) => console.error(err));
@@ -463,7 +463,7 @@ async function demoteAdmin(channel: channel, userChat: ChatUser) {
   .post(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/users/${userChat.id}/demote`, 
     { channelId: channel.objectId, userId: userChat.id, }, options)
   .then(function (response: any) {
-    console.log(`Demote Adminstrator : ${response.data}`);
+    //console.log(`Demote Adminstrator : ${response.data}`);
     userChat.isAdmin = false;
   })
   .catch((err) => console.error(err));
@@ -490,7 +490,7 @@ async function makeOwner(channelId:string, userId:string) {
       options
     );
 
-    console.log(`Made user ${userId} the owner of channel ${channelId}`);
+    //console.log(`Made user ${userId} the owner of channel ${channelId}`);
   } catch (error) {
     console.error("Error making user owner:", error);
   }
@@ -545,7 +545,7 @@ async function unmuteUser(channelId: string, userId: string) {
       options
     );
 
-    console.log(`You unmuted user: ${userId} from channel ${channelId}`);
+    //console.log(`You unmuted user: ${userId} from channel ${channelId}`);
   } catch (error) {
     console.error(`Error unmute user:  ${userId}`, error);
   }
@@ -555,7 +555,7 @@ async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
  
   if (userChat.isAdmin)
   {
-    console.log("Is admin!");
+    //console.log("Is admin!");
   }
 
   const options = {
@@ -563,12 +563,12 @@ async function kickUserFromChannel(channel: channel, userChat: ChatUser) {
     headers: { Authorization: `Bearer ${user.access_token_server}`, },
   };
 
-  console.log("ENVIO;", channel.objectId, ", ", userChat.id)
+  //console.log("ENVIO;", channel.objectId, ", ", userChat.id)
 
   await axios
     .delete(`${env.BACKEND_SERVER_URL}/chat/channels/${channel.objectId}/users/${userChat.id}`, options)
     .then(function (response: any) {
-      console.log(`KickUser : ${userChat.nickname}, ${response.data}`);
+      //console.log(`KickUser : ${userChat.nickname}, ${response.data}`);
       userChat.isMuted = false;
     })
     .catch((err) => console.error(err));

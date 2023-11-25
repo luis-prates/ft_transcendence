@@ -37,7 +37,6 @@ function closeBallon() {
 }
 
 function nextSpeechOrClose() {
-    console.log("message leng:", props.message.length, " current: ", currentMessageIndex.value)
 
     if (currentMessageIndex.value < props.message.length - 1) {
         currentMessageIndex.value++;
@@ -48,7 +47,6 @@ function nextSpeechOrClose() {
 
 function handleClickOutside(event: MouseEvent) {
     // if (!isInsideComponent.value) {
-    //     console.log("fechou aqui");
     //     closeBallon();
     // }
 }
@@ -94,7 +92,7 @@ onUnmounted(() => {
     top: 50%;
     left: 1%;
     transform: translateY(-50%);
-    background-image: url('src/assets/images/lobby/avatares.jpg');
+    background-image: url('/src/assets/images/lobby/avatares.jpg');
     background-size: 2000% 2000%;
     background-position-x: -835px;
     background-position-y: -40px;

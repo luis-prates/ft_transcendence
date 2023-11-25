@@ -109,14 +109,14 @@ onMounted(() => {
   notification.value = userStore().user.friendsRequests.filter((friendship) => friendship.requesteeId === userStore().user.id).length;
   Lobby.isLoaded.value = false;
   if (socket == undefined) {
-    console.log("socket is undefined");
+    //console.log("socket is undefined");
     Router.push("/");
     return;
   }
 
   socket.emit("join_map", { userId: store.user.id, objectId: store.user.id, map: Game.lastPosition || { name: "lobby" } });
   socket.on("load_map", (data: any) => {
-    console.log("load_map", data);
+    //console.log("load_map", data);
     setTimeout(() => {
       if (lobby) lobby.destructor();
       const map = new Map();
@@ -131,7 +131,7 @@ onMounted(() => {
           Lobby.isLoaded.value = true;
           lobby.update();
         }
-        console.log("isConcted.value : ", Lobby.isLoaded.value);
+        //console.log("isConcted.value : ", Lobby.isLoaded.value);
       });
     }, 1000);
   });
@@ -149,7 +149,7 @@ onMounted(() => {
     );
   });
   socket.on("challenge_game", (gameId: string) => {
-    console.log("Challenge begin!");
+    //console.log("Challenge begin!");
     socket.off("invite_confirm_game");
     Router.push(`/game?objectId=${gameId}`);
   });
@@ -165,7 +165,7 @@ onMounted(() => {
   socket.on("unblock_user", (event: Block) => {
     user.block = user.block.filter((block: Block) => block.blockerId !== event.blockerId);
 
-    console.log("Unblock!", event, "Block List:", user.block);
+    //console.log("Unblock!", event, "Block List:", user.block);
   });
 
   //Send Friend Request
@@ -256,7 +256,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  console.log("unmounted");
+  //console.log("unmounted");
   socket?.off("load_map");
   lobby?.destructor();
 });
@@ -269,7 +269,7 @@ function salvarDesenhoComoImagem() {
   // link.download = "desenho.png";
   // link.click();
   Game.Map.saveMap();
-  console.log("salvarDesenhoComoImagem");
+  //console.log("salvarDesenhoComoImagem");
 }
 
 function test() {

@@ -13,7 +13,6 @@ export function MyLobbyButtons() {
     // Handle Leave click
     const socket: Socket = socketClass.getLobbySocket();
     
-    console.log("onLeaveClick");
     userStore().logout();
     //Router.setRoute(Router.ROUTE_LOGIN)
     Router.push(`/`);

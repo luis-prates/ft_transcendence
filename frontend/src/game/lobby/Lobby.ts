@@ -1,7 +1,5 @@
-import { Game, Map, Menu, Npc, type ElementUI, type Player } from "@/game";
-import { io, type Socket } from "socket.io-client";
-import { env } from "../../env";
-import { userStore } from "../../stores/userStore";
+import { Game, Map, type Player } from "@/game";
+import { type Socket } from "socket.io-client";
 import { socketClass } from "../../socket/SocketClass";
 import { ref } from "vue";
 
@@ -10,7 +8,6 @@ export class Lobby extends Game {
   public static isLoaded = ref(false);
   public static mapObjectId: string;
   private list_update_gameobject: any[] = [];
-  private user = userStore().user;
   public lobbySocket: Socket = socketClass.getLobbySocket();
 
   constructor(map: Map, player: Player) {

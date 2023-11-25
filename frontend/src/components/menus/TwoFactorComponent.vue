@@ -74,7 +74,6 @@ function handleSubmit(event: any) {
 async function getQrImage() {
     try {
         const data = await userStore().twoFAGenerate();
-        console.log(data);
         srcImage.value = data;
     } catch (error) {
         console.error("Error converting file to base64:", error);
@@ -101,7 +100,6 @@ function handleCancelClick() {
 
     inputTwoFactor.value = "";
     instance?.emit("two-factor-status");
-    console.log("Cancel button clicked");
 }
 
 function getTittle() {

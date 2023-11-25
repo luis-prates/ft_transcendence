@@ -1,14 +1,12 @@
-import { getCurrentInstance, reactive, ref } from "vue";
+import { reactive, ref } from "vue";
 import { defineStore } from "pinia";
 import { env } from "../env";
 import axios from "axios";
 import type { TypeSkin } from "@/game/ping_pong/Skin";
 import type { Socket } from "socket.io-client";
 import { socketClass } from "@/socket/SocketClass";
-import { ConfirmButton } from "@/game/Menu/ConfirmButton";
-import { Game } from "@/game/base/Game";
 import { chatStore, type ChatMessage } from "./chatStore";
-import { Lobby } from "@/game/lobby/Lobby";
+// import { Lobby } from "@/game/lobby/Lobby";
 
 export enum STATUS_CONFIRM {
   PRODUCT,
@@ -152,6 +150,7 @@ export const userStore = defineStore("user", function () {
     friendsRequests: Array(),
     block: Array(),
     isTwoFAEnabled: false,
+	isFirstTime: false
   });
 
   async function login(authorizationCode: string | undefined) {
@@ -229,7 +228,7 @@ export const userStore = defineStore("user", function () {
 
       // axios.request(options)
       .then(function (response: any) {
-        console.log("response: ", response.data);
+        //console.log("response: ", response.data);
 
         user.access_token_server = response.data.access_token;
         user.id = response.data.dto.id;
@@ -255,12 +254,13 @@ export const userStore = defineStore("user", function () {
         getBlockedUsers();
         getBlockedBy();
         getUserGames(user.id);
+		user.isLogin = true;
       })
       .catch(function (error) {
         console.error(error);
+		user.isLogin = false;
       });
-    user.isLogin = true;
-    console.log("USER: ", user);
+    //console.log("USER: ", user);
     // .finally(() => window.location.href = window.location.origin);
     return { firstTime: isFirstTime, isTwoFAEnabled: user.isTwoFAEnabled };
   }
@@ -323,18 +323,19 @@ export const userStore = defineStore("user", function () {
             else game.winnerNickname = newNickname;
           });
 
-          const lobbySocket: Socket = socketClass.getLobbySocket();
-          const player = Lobby.getPlayer();
-          lobbySocket.emit("update_gameobject", {
-            className: "Character",
-            objectId: player.objectId,
-            name: player.name,
-            x: player.x,
-            y: player.y,
-            avatar: user.avatar,
-            nickname: user.nickname,
-            animation: { name: player.animation.name, isStop: false },
-          });
+		  //TODO: update avatar for everybody
+          // const lobbySocket: Socket = socketClass.getLobbySocket();
+          // const player = Lobby.getPlayer();
+          // lobbySocket.emit("update_gameobject", {
+          //   className: "Character",
+          //   objectId: player.objectId,
+          //   name: player.name,
+          //   x: player.x,
+          //   y: player.y,
+          //   avatar: user.avatar,
+          //   nickname: user.nickname,
+          //   animation: { name: player.animation.name, isStop: false },
+          // });
         }
         return response.ok;
       })
@@ -387,7 +388,7 @@ export const userStore = defineStore("user", function () {
 
       // axios.request(options)
       .then(function (response: any) {
-        console.log("Users: ", response.data);
+        //console.log("Users: ", response.data);
         return response.data;
       })
       .catch(function (error) {
@@ -406,7 +407,7 @@ export const userStore = defineStore("user", function () {
 
       // axios.request(options)
       .then(function (response: any) {
-        console.log("Profile: ", response.data);
+        //console.log("Profile: ", response.data);
         return response.data;
       })
       .catch(function (error) {
@@ -420,7 +421,7 @@ export const userStore = defineStore("user", function () {
     if (user.email != userUpdate.email) body.email = userUpdate.email;
     if (user.nickname != userUpdate.nickname) body.nickname = userUpdate.nickname;
     if (user.image != userUpdate.image) body.image = userUpdate.image;
-    console.log("body\n", body, "\nuser\n", user.access_token_server);
+    //console.log("body\n", body, "\nuser\n", user.access_token_server);
     const options = {
       method: "PATCH",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
@@ -443,7 +444,7 @@ export const userStore = defineStore("user", function () {
 
       // axios.request(options)
       .then(function (response: any) {
-        console.log("Friends: ", response.data.friends);
+        //console.log("Friends: ", response.data.friends);
         user.friends = response.data.friends;
         return response.data;
       })
@@ -461,7 +462,7 @@ export const userStore = defineStore("user", function () {
     return await axios
       .get(env.BACKEND_SERVER_URL + "/friendship/requests/", options)
       .then(function (response: any) {
-        console.log("FriendsRequests: ", response.data);
+        //console.log("FriendsRequests: ", response.data);
         user.friendsRequests = response.data;
         return response.data;
       })
@@ -479,8 +480,8 @@ export const userStore = defineStore("user", function () {
     await fetch(env.BACKEND_SERVER_URL + "/friendship/send/" + userId, options)
       .then(async function (response: any) {
         //Add Store()
-        console.log(response);
-        console.log(user.friendsRequests);
+        //console.log(response);
+        //console.log(user.friendsRequests);
 
         const request = {
           requesteeId: userId,
@@ -508,7 +509,7 @@ export const userStore = defineStore("user", function () {
         //Add Store()
         const index = user.friendsRequests.findIndex((friendship) => friendship.requesteeId === userId);
         if (index !== -1) user.friendsRequests.splice(index, 1);
-        console.log("friendRequest: ", user.friendsRequests);
+        //console.log("friendRequest: ", user.friendsRequests);
 
         //Emit
         const lobbySocket: Socket = socketClass.getLobbySocket();
@@ -533,7 +534,7 @@ export const userStore = defineStore("user", function () {
           id: userId,
           nickname: userNickname,
         });
-        console.log(user.friends);
+        //console.log(user.friends);
 
         //Emit
         const lobbySocket: Socket = socketClass.getLobbySocket();
@@ -564,7 +565,7 @@ export const userStore = defineStore("user", function () {
           requesteeName: user.nickname,
           requestorId: userId,
         });
-        console.log("Reject: ", userId, ": ", user.friendsRequests);
+        //console.log("Reject: ", userId, ": ", user.friendsRequests);
       })
       .catch((err) => console.error(err));
   }
@@ -579,7 +580,7 @@ export const userStore = defineStore("user", function () {
       .then(async function (response: any) {
         const index = user.friends.findIndex((friendship) => friendship.id === userId);
         if (index !== -1) user.friends.splice(index, 1);
-        console.log("Unfriend: ", userId, ": ", user.friends);
+        //console.log("Unfriend: ", userId, ": ", user.friends);
 
         //Emit
         const lobbySocket: Socket = socketClass.getLobbySocket();
@@ -601,7 +602,7 @@ export const userStore = defineStore("user", function () {
       .get(env.BACKEND_SERVER_URL + "/blocklist/", options)
       .then(function (response: any) {
         user.block.push(...response.data);
-        console.log("Block: ", response.data);
+        //console.log("Block: ", response.data);
         return response.data;
       })
       .catch(function (error) {
@@ -614,6 +615,11 @@ export const userStore = defineStore("user", function () {
       method: "POST",
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
+
+	if (userId == 6969) {
+		console.warn("You can't block the bot!");
+		return;
+	}
 
     await fetch(env.BACKEND_SERVER_URL + "/blocklist/block/" + userId, options)
       .then(async function (response: any) {
@@ -631,7 +637,7 @@ export const userStore = defineStore("user", function () {
               blockerId: user.id,
             });
           }
-          console.log("Block User:", userNickname, user.block);
+          //console.log("Block User:", userNickname, user.block);
 
           //Block Messages from this User Block
           // let channels = chatStore().channels;
@@ -664,7 +670,7 @@ export const userStore = defineStore("user", function () {
       .then(async function (response: any) {
         //Add in Store
         user.block = user.block.filter((block: any) => block.blockedId != userId);
-        console.log("UnBlock: ", userId, ": ", user.block);
+        //console.log("UnBlock: ", userId, ": ", user.block);
 
         //Emit
         const lobbySocket: Socket = socketClass.getLobbySocket();
@@ -687,8 +693,8 @@ export const userStore = defineStore("user", function () {
       .get(env.BACKEND_SERVER_URL + "/blocklist/blockedBy", options)
       .then(function (response: any) {
         user.block.push(...response.data);
-        console.log("Who Blocked Me: ", response.data);
-        console.log("Block List", user.block);
+        //console.log("Who Blocked Me: ", response.data);
+        //console.log("Block List", user.block);
         return response.data;
       })
       .catch(function (error) {
@@ -705,7 +711,7 @@ export const userStore = defineStore("user", function () {
     return await axios
       .get(env.BACKEND_SERVER_URL + "/game/user/" + userId, options)
       .then(function (response: any) {
-        console.log("Games: ", response.data);
+        //console.log("Games: ", response.data);
         if (user.id == userId) user.infoPong.historic = response.data;
         return response.data;
       })
@@ -726,7 +732,7 @@ export const userStore = defineStore("user", function () {
 
       // axios.request(options)
       .then(function (response: any) {
-        console.log("Games: ", response.data);
+        //console.log("Games: ", response.data);
         return response.data;
       })
       .catch(function (error) {
@@ -743,7 +749,7 @@ export const userStore = defineStore("user", function () {
     return await axios
       .get(env.BACKEND_SERVER_URL + "/game/leaderboard", options)
       .then(function (response: any) {
-        console.log("LeaderBoard: ", response.data);
+        //console.log("LeaderBoard: ", response.data);
         return response.data;
       })
       .catch(function (error) {
@@ -764,7 +770,7 @@ export const userStore = defineStore("user", function () {
     return await axios
       .post(env.BACKEND_SERVER_URL + "/game/create", body, options)
       .then(function (response: any) {
-        console.log(`GAME: ${response.data}`);
+        //console.log(`GAME: ${response.data}`);
         return response.data;
       })
       .catch(function (error) {
@@ -780,7 +786,7 @@ export const userStore = defineStore("user", function () {
     return await axios
       .post(env.BACKEND_SERVER_URL + "/auth/2fa/generate", undefined, options)
       .then(function (response: any) {
-        console.log(`2Fa: ${response.data}`);
+        //console.log(`2Fa: ${response.data}`);
         return response.data.responseObj;
       })
       .catch(function (error) {
@@ -793,11 +799,11 @@ export const userStore = defineStore("user", function () {
     const options = {
       headers: { Authorization: `Bearer ${user.access_token_server}` },
     };
-    console.log("code:", twoFactorCode);
+    //console.log("code:", twoFactorCode);
     return await axios
       .post(env.BACKEND_SERVER_URL + "/auth/2fa/turn-on", { twoFACode: twoFactorCode }, options)
       .then(function (response: any) {
-        console.log(`2Fa ON: ${response.data}`);
+        //console.log(`2Fa ON: ${response.data}`);
         user.isTwoFAEnabled = true;
         return response.data;
       })
@@ -815,7 +821,7 @@ export const userStore = defineStore("user", function () {
     return await axios
       .post(env.BACKEND_SERVER_URL + "/auth/2fa/turn-off", { twoFACode: twoFactorCode }, options)
       .then(function (response: any) {
-        console.log(`2Fa OFF: ${response.data}`);
+        //console.log(`2Fa OFF: ${response.data}`);
         user.isTwoFAEnabled = false;
         return response.data;
       })

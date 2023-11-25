@@ -35,7 +35,7 @@ export class PrismaService extends PrismaClient {
 					type: ChannelType.PUBLIC,
 				},
 			});
-			console.log('Global channel created');
+			//console.log('Global channel created');
 		}
 	}
 

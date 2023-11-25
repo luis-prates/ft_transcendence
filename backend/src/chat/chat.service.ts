@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateChannelDto, EditChannelDto, JoinChannelDto } from './dto';
@@ -335,7 +334,7 @@ export class ChatService {
 			} else if (error instanceof ConflictException || error instanceof BadRequestException) {
 				throw error;
 			} else {
-				console.log('Error: ', error);
+				// console.log('Error: ', error);
 				throw new BadRequestException('Something went wrong');
 			}
 			// add more error codes here if needed
@@ -434,9 +433,12 @@ export class ChatService {
 		});
 
 		// Prevent an admin from kicking another admin or the owner.
-		if (actingUserInChannel.isAdmin && (removeUser.isAdmin || removedUserId === channel.ownerId)) {
-			throw new ForbiddenException('You do not have permission to remove this user from the channel');
-		}
+    // The owner can still kick admins.
+    if (actingUserInChannel.isAdmin && actingUserId !== channel.ownerId) {
+      if (removeUser.isAdmin) {
+        throw new ForbiddenException('You do not have permission to remove this user');
+      }
+    }
 
 		await this.prisma.channelUser.delete({
 			where: {
@@ -604,10 +606,14 @@ export class ChatService {
 			throw new BadRequestException('User is already muted');
 		}
 
-		// if user is owner or admin, throw error
-		if (channelUser.isAdmin) {
-			throw new ForbiddenException('Cannot mute an admin');
-		}
+		// if muted user is owner, throw error
+    const channel = await this.prisma.channel.findUnique({
+      where: { id: channelId },
+    });
+
+    if (channel.ownerId === userId) {
+      throw new BadRequestException('Cannot mute the owner of the channel');
+    }
 
 		// If mute timer is over 1 day, throw error
 		if (muteDuration > 1440) {
@@ -987,7 +993,7 @@ export class ChatService {
 	}
 
 	// Ban a user
-	async banUser(channelId: number, bannedUserId: number) {
+	async banUser(channelId: number, bannedUserId: number, banningUser: any) {
 		const channel = await this.prisma.channel.findUnique({
 			where: {
 				id: channelId,
@@ -998,10 +1004,13 @@ export class ChatService {
 			throw new NotFoundException('Channel not found');
 		}
 
-		const bannedUser = await this.prisma.user.findUnique({
-			where: {
-				id: bannedUserId,
-			},
+		const bannedUser = await this.prisma.channelUser.findUnique({
+      where: {
+        userId_channelId: {
+          channelId: channelId,
+          userId: bannedUserId,
+        },
+      },
 		});
 
 		if (!bannedUser) {
@@ -1024,19 +1033,15 @@ export class ChatService {
 			throw new BadRequestException('User is already banned');
 		}
 
-		// If user is owner or admin, throw error
-		const channelUser = await this.prisma.channelUser.findUnique({
-			where: {
-				userId_channelId: {
-					channelId: channelId,
-					userId: bannedUserId,
-				},
-			},
-		});
+    // If user to be banned is owner, throw error
+    if (channel.ownerId === bannedUserId) {
+      throw new ForbiddenException('Cannot ban the owner of the channel');
+    }
 
-		if (channelUser && channelUser.isAdmin) {
-			throw new ForbiddenException('Cannot ban an admin');
-		}
+    // Admins can be banned only by the owner but not by other admins
+    if (bannedUser.isAdmin && channel.ownerId !== banningUser.id) {
+      throw new ForbiddenException('Cannot ban an admin unless your are owner');
+    }
 
 		// Remove the user from the channel
 		await this.prisma.channelUser.delete({

@@ -81,7 +81,7 @@ export class Profile {
 
 			index = this.your_user.block.findIndex((block) => block.blockedId == this.user.id);
 			this.isBlocked = index == -1 ? false : true;
-			console.log("is Block: ", this.isBlocked)
+			//console.log("is Block: ", this.isBlocked)
 
 			this.menu.add(this.background, this.createButton("block", 23.25, 26, "Block", 9));
 		
@@ -276,10 +276,10 @@ export class Profile {
 					name: undefined,
 					avatar: undefined,
 					password: undefined,
-					messages: [], // initialize with an empty array of messages
-					users: [this.user.id], // initialize with an empty array of users
+					messages: [],
+					users: [this.user.id],
 					type: "DM"
-				} as channel);
+				} as unknown as channel);
 				
 			}
 			else if (type == "block") {

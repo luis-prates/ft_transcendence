@@ -79,7 +79,7 @@ onMounted(() => {
 });
 
 watch(() => userStore().userSelected, (newValue, oldValue) => {
-    console.log("userSelected changed:", newValue, oldValue);
+    //console.log("userSelected changed:", newValue, oldValue);
     if (newValue) {
         if (newValue == "me") {
             closeProfile();
@@ -119,7 +119,7 @@ watch(() => userStore().userSelected, (newValue, oldValue) => {
 
 
 watch(() => userStore().newGame, (newValue, oldValue) => {
-    console.log("newGame:", newValue, oldValue);
+    //console.log("newGame:", newValue, oldValue);
     if (newValue) {
         closeMenu();
         createGameData = newValue;

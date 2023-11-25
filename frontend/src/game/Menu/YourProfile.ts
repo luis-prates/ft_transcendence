@@ -342,7 +342,7 @@ export class YourProfile {
           
             if (response.ok) {
               const data = await response.json();
-              console.log("response data:", data);
+              //console.log("response data:", data);
               this.avatarImage.src = data.data.display_url;
             } else {
               throw new Error("Erro na requisição");

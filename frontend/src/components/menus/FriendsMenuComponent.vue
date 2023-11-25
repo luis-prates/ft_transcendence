@@ -10,7 +10,7 @@
 						<span id="user-status" :class="getStatus(friend.status)"></span>
 						<p class="friend_nickname">{{ friend.nickname }}</p>
 					</div>
-					<button class="friend_message" @click="sendDm">
+					<button class="friend_message" @click="sendDm(friend.id)">
 						<img class="friend_message button" :src="message_image">
 					</button>
 				</div>
@@ -33,6 +33,8 @@ import default_Avatar from "@/assets/chat/avatar.png";
 import friendImage from "@/assets/images/lobby/menu/your_friend.png";
 import messageImage from "@/assets/chat/dm_messages.png";
 import avatarDefault from "@/assets/chat/avatar.png";
+import { Menu } from "../chat/Menu";
+import { chatStore, type ChatUser } from "@/stores/chatStore";
 
 const defaultAvatar = default_Avatar;
 const message_image = messageImage;
@@ -82,13 +84,19 @@ function closerBoard() {
 	instance?.emit("close-friends");
 }
 
-function sendDm() {
-	// TODO SEND DM
-	console.log("send DM");
+async function sendDm(friendId: number) {
+    await chatStore().getChannels();
+    Menu.chatListRef({id: friendId} as ChatUser);
 }
 
-onMounted(async () => {
 
+onMounted(async () => {
+    try {
+        await userStore().getFriends();
+		users.value = userStore().user.friends;
+    } catch (error) {
+        console.error('Error on updating friends:', error);
+    }
 });
 </script>
 

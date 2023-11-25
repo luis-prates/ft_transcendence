@@ -157,7 +157,6 @@ function clickQrCode() {
 }
 
 function changeTwoFactorStatus() {
-    console.log("CHANGE TWO")
     showTwoFactor.value = false;
 }
 
@@ -204,39 +203,6 @@ function changePage(step: number) {
         close_sound.play();
     }
 }
-
-// async function handleFileChange(event: any) {
-//     if (event.target) {
-//         let fileForm = new FormData();
-//         const selectedFile = event.target.files[0];
-
-//         fileForm.append("image", selectedFile, selectedFile.name);
-//         try {
-//             const response = await fetch("https://api.imgbb.com/1/upload?key=d9a1c108b92558d90d3b1bd9f59a507c", {
-//                 method: "POST",
-//                 body: fileForm,
-//             });
-
-//             if (response.ok) {
-
-
-//                 const data = await response.json();
-//                 console.log("response data:", data);
-//                 const avatarImage = document.getElementById("avatarImage") as HTMLImageElement;
-//                 avatarImage.src = data.data.display_url;
-
-//                 user.image = data.data.display_url;
-//                 userStore().updateProfile();
-//             } else {
-//                 throw new Error("Erro na requisição");
-//             }
-//         } catch (error) {
-//             console.error(error);
-//             new ConfirmButton(error, STATUS_CONFIRM.ERROR, 10);
-//         }
-//     }
-// }
-
 
 function handleFileChange(event: any) {
     if (event.target) {
@@ -295,8 +261,21 @@ async function updateNickname() {
     const inputName = document.getElementById("inputName") as HTMLInputElement;
     const new_nickname = inputName.value;
     if (new_nickname != user.nickname) {
-        if (await userStore().updateNickname(new_nickname))
+        if (await userStore().updateNickname(new_nickname)) {
+		  const lobbySocket: Socket = socketClass.getLobbySocket();
+          const player = Lobby.getPlayer();
+          lobbySocket.emit("update_gameobject", {
+            className: "Character",
+            objectId: player.objectId,
+            name: player.name,
+            x: player.x,
+            y: player.y,
+            avatar: user.avatar,
+            nickname: user.nickname,
+            animation: { name: player.animation.name, isStop: false },
+          });
             cancelEdit();
+		}
         else
             inputName.style.borderColor = "red";
     }
@@ -721,7 +700,7 @@ onMounted(() => {
     /* Largura do quadro do sprite */
     height: 64px;
     /* Altura do quadro do sprite */
-    background-image: url('src/assets/images/lobby/avatares.jpg');
+    background-image: url('/src/assets/images/lobby/avatares.jpg');
     background-position: -8px -14px;
 }
 
@@ -762,7 +741,7 @@ onMounted(() => {
     height: 213px;
     top: 5%;
     left: 50%;
-    background-image: url('src/assets/images/lobby/avatares.jpg');
+    background-image: url('/src/assets/images/lobby/avatares.jpg');
     background-size: 1000% 900%;
     background-position-x: -79px;
     background-position-y: -25px;

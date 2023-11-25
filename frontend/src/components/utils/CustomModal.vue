@@ -57,7 +57,6 @@ export default defineComponent({
 		};
 
 		const close = () => {
-			console.log('close');
 			emit('closeModal');
 		};
 

@@ -74,7 +74,6 @@ export class AnimationController {
       this.frame += this.speed * Game.deltaTime;
       if (this.frame >= this.animation[this.currentAnimation].frames.length) {
         this.frame = 0;
-        //console.log("this.isRepeat", this.isRepeat);
         this.setStop(!this.isRepeat);
       }
     }

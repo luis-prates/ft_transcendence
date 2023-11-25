@@ -121,7 +121,7 @@ export class Map implements GameObject {
       }
     }
     if (Game.isDragover) {
-      const rec: Rectangle = Game.getPlayer().getRetanguloTable();
+      const rec: Rectangle = Game.getPlayer().getRectangleTable();
       // verde opaco
       contex.fillStyle = "rgba(0, 255, 0, 0.5)";
       contex.fillRect(rec.x, rec.y, rec.w, rec.h);
@@ -194,7 +194,7 @@ export class Map implements GameObject {
     link.download = "map.json";
     link.click();
 
-    console.log("Salvando mapa...\n");
+    //console.log("Salvando mapa...\n");
   }
 
   public isCollision(gameObject: GameObject): boolean {
@@ -202,10 +202,10 @@ export class Map implements GameObject {
     const y = Math.floor(gameObject.y / Map.SIZE);
     const w = Math.floor(gameObject.w / Map.SIZE);
     const h = Math.floor(gameObject.h / Map.SIZE);
-    console.log("map: isCollision: x: " + x + " y: " + y + " w: " + w + " h: " + h);
+    //console.log("map: isCollision: x: " + x + " y: " + y + " w: " + w + " h: " + h);
     for (let j = y; j < y + h; j++) {
       for (let i = x; i < x + w; i++) {
-        console.log("map: isCollision: i: " + i + " j: " + j, "grid: " + Game.grid[i][j]);
+        //console.log("map: isCollision: i: " + i + " j: " + j, "grid: " + Game.grid[i][j]);
         if (Game.grid[i][j] == 1) {
           return true;
         }

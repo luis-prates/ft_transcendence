@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Player } from './Player';
 import { PrismaService } from '../prisma/prisma.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class PlayerService {
@@ -22,6 +24,7 @@ export class PlayerService {
 			})
 			.then(user => {
 				if (!user) {
+					const marvinImagePath = path.resolve(__dirname, '..', 'public', 'images', 'marvin.jpg');
 					this.prismaService.user
 						.create({
 							data: {
@@ -29,7 +32,7 @@ export class PlayerService {
 								name: 'Marvin',
 								nickname: 'Marvin',
 								email: 'marvin@marvin.com',
-								image: 'src/assets/images/pingpong/marvin.jpg',
+								image: this.convertFileToBase64(marvinImagePath),
 							},
 						})
 						.then(user => {
@@ -146,10 +149,10 @@ export class PlayerService {
 			this.sockets.delete(payload.userId);
 		}
 
-		console.log('count', this.getPlayerCount());
+		//console.log('count', this.getPlayerCount());
 		// Then you can add the new player data associated with the new socket
 		const player = this.createPlayer(socket, payload);
-		console.log('count', this.getPlayerCount());
+		//console.log('count', this.getPlayerCount());
 		return player;
 	}
 
@@ -161,7 +164,7 @@ export class PlayerService {
 
 		// If this socket was already in the map, remove the old socket data
 		if (this.sockets.has(payload.userId)) {
-			console.log('SOCKETTT REMOVED!');
+			//console.log('SOCKETTT REMOVED!');
 			this.sockets.delete(payload.userId);
 		}
 
@@ -171,5 +174,10 @@ export class PlayerService {
 		// this.logger.debug('player: ' + JSON.stringify(player));
 		// this.logger.debug('socket: ' + JSON.stringify(socket));
 		return player;
+	}
+	
+	private convertFileToBase64(file: string): string {
+		const fileContent = fs.readFileSync(file, { encoding: 'base64' });
+		return 'data:image/jpg;base64,' + fileContent;
 	}
 }

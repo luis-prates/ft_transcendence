@@ -94,5 +94,41 @@ export class Npc extends Character {
       userStore().npcSelected = this;
       userStore().userSelected = "npc";
     }
+	else if (this.typeNpc == "manel")
+    {
+      this.message = ["Hi! I'm Manel, the Security Guard for 42 Lisboa! Welcome!"];
+      userStore().npcSelected = this;
+      userStore().userSelected = "npc";
+    }
+	else if (this.typeNpc == "eduardo")
+    {
+      this.message = ["Hi! I'm Eduardo, one of the members of this project! Thank you for joining us!"];
+      userStore().npcSelected = this;
+      userStore().userSelected = "npc";
+    }
+	else if (this.typeNpc == "ezequiel")
+    {
+      this.message = ["Hi! I'm Ezequiel, one of the members of this project! Thank you for joining us!"];
+      userStore().npcSelected = this;
+      userStore().userSelected = "npc";
+    }
+	else if (this.typeNpc == "hendrik")
+    {
+      this.message = ["Hi! I'm Hendrik, one of the members of this project! Thank you for joining us!"];
+      userStore().npcSelected = this;
+      userStore().userSelected = "npc";
+    }
+	else if (this.typeNpc == "luis")
+    {
+      this.message = ["How you doin'? I'm Luis, one of the members of this project! Thank you for joining us!"];
+      userStore().npcSelected = this;
+      userStore().userSelected = "npc";
+    }
+	else if (this.typeNpc == "ruben")
+    {
+      this.message = ["Hi! I'm Ruben, one of the members of this project! Thank you for joining us!"];
+      userStore().npcSelected = this;
+      userStore().userSelected = "npc";
+    }
   }
 }

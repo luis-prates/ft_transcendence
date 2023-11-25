@@ -11,7 +11,7 @@
         </div>
         <div class="video_cam">
           <button @click="toggleStatus" class="close_chat">
-            <img class="close_chat_img" src="src/assets/chat/close_channel.png" title="Close" />
+            <img class="close_chat_img" src="@/assets/chat/close_channel.png" title="Close" />
           </button>
         </div>
       </div>
@@ -58,7 +58,7 @@
         </div>
         <div class="video_cam">
           <button @click="toggleStatus" class="close_chat">
-            <img class="close_chat_img" src="src/assets/chat/close_channel.png" title="Close" />
+            <img class="close_chat_img" src="@/assets/chat/close_channel.png" title="Close" />
           </button>
         </div>
       </div>
@@ -88,10 +88,10 @@
         </div>
         <div class="video_cam">
           <button v-if=imOwner() @click="editChannel" class="config_chat">
-            <img class="config_chat_img" src="src/assets/chat/edit_channel.png" title="Edit" />
+            <img class="config_chat_img" src="@/assets/chat/edit_channel.png" title="Edit" />
           </button>
           <button @click="toggleStatus" class="close_chat">
-            <img class="close_chat_img" src="src/assets/chat/close_channel.png" title="Close" />
+            <img class="close_chat_img" src="@/assets/chat/close_channel.png" title="Close" />
           </button>
         </div>
       </div>
@@ -110,7 +110,7 @@
         <textarea v-model="text" name="" @keyup.enter="send" class="form-control type_msg" placeholder="Type your message..." style="resize: none"></textarea>
         <div class="input-group-append">
           <span class="input-group-text send_btn" @click="send"><i class="fas fa-location-arrow"></i>
-            <img class="send_img" src="src/assets/chat/send.png" title="Send" />
+            <img class="send_img" src="@/assets/chat/send.png" title="Send" />
           </span>
         </div>
       </div>
@@ -138,6 +138,7 @@ import { socketClass } from "@/socket/SocketClass";
 import { onMounted, onUnmounted, ref, computed } from "vue";
 import defaultUser from "@/assets/chat/avatar.png";
 import chat_avatar from "@/assets/chat/chat_avatar.png";
+import { Menu } from "../chat/Menu";
 
 
 const store = chatStore();
@@ -146,10 +147,10 @@ const { selected } = storeToRefs(store);
 
 // socketClass.setChatSocket({ query: { userId: user.user.id } });
 const chatSocket: Socket = socketClass.getChatSocket();
-console.log("Socket criado na instancia do componente: ", chatSocket);
+//console.log("Socket criado na instancia do componente: ", chatSocket);
 
-//const defaultAvatar = "src/assets/chat/chat_avatar.png";
-//const defaultUser = "src/assets/chat/avatar.png";
+//const defaultAvatar = "@/assets/chat/chat_avatar.png";
+//const defaultUser = "@/assets/chat/avatar.png";
 let defaultAvatar = ref(chat_avatar);
 
 const filteredMessages = computed(() => {
@@ -231,6 +232,13 @@ function getChatAvatar() {
   const channelAvatar = ref(null);
 
 function editChannel() {
+	channelName.value = '';
+	channelPassword.value = '';
+	channelType.value = 'PUBLIC';
+	avatarBase64.value = "";
+	errorMessage.value = '';
+	channelAvatar.value = null;
+	defaultAvatar.value = chat_avatar;
   instance?.emit("update-channel-status", true);
   instance?.emit("update-create-channel", true);
   channelName.value = selected.value?.name as any;
@@ -256,7 +264,7 @@ const toggleStatus = () => {
 const text = ref();
 
 function send() {
-  console.log("Chat Emit event: ", text.value);
+  //console.log("Chat Emit event: ", text.value);
   const message = text.value.trim();
   if (message) {
     //store.addMessage(selected.value?.objectId, menreceived message fromsagem);
@@ -331,7 +339,6 @@ const handleAvatarChange = (event: Event) => {
       .then((base64String) => {
         avatarBase64.value = base64String;
         defaultAvatar.value = URL.createObjectURL(file);
-        console.log("Base64 string:", base64String);
       })
       .catch((error) => {
         console.error("Error converting file to base64:", error);
@@ -366,7 +373,7 @@ function createOrUpdate()
   if (getButtomOp() == "Create Channel")
     createNewChannel();
   else {
-    console.log("UPDATE CHANNEL");
+   // console.log("UPDATE CHANNEL");
     updateChannel();
   }
 }
@@ -379,19 +386,14 @@ const joinProtected  = async () => {
     const response = await store.joinChannel(channelId, password);
 
     if (!response) {
-        // Reset form inputs
-        channelPassword.value = '';
-        errorMessage.value = '';
-        instance?.emit("protected-channel", false);
-        instance?.emit("update-channel-status", true);
-        store.getMessages(store.selected);
+        Menu?.openChannel();
       } else if (response.error == "INCORRECT_PASSWORD"){
         // Handle channel creation failure here
         errorMessage.value = 'Incorrect password. Please try again.';
         channelPassword.value = '';
         // Display error message in the form or take any other action
       } else {
-        console.log("Error response: " + response);
+        //console.log("Error response: " + response);
         channelPassword.value = '';
         errorMessage.value = 'Failed to join a channel. Please try later.';
       }
@@ -409,7 +411,6 @@ const createNewChannel = async () => {
     const password = channelType.value == "PROTECTED" ? channelPassword.value : undefined;
     const type = channelType.value;
     const avatar = avatarBase64.value ? avatarBase64.value : ""; // This is the File object
-    console.log("Avatar base64 string:", avatar);
 
     // Perform your logic here, e.g., make an API call to create the channel
     // You can use the values (name, password, type, avatar) as needed

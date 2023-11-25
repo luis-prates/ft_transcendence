@@ -46,7 +46,7 @@ onMounted(function () {
 
   const user = userStore().user;
   if (socket == undefined) {
-		console.log("socket is undefined");
+		//console.log("socket is undefined");
 		socketClass.setGameSocket({
 		  query: {
 			  userId: user.id,
@@ -56,7 +56,7 @@ onMounted(function () {
   }
 	socket.on("error", (errorMessage: string) => {
 		if (errorMessage.includes("Game does not exist")) {
-			console.log("Game does not exist");
+			//console.log("Game does not exist");
 			Router.push(`/lobby`);
 			socket.disconnect();
 		}
@@ -70,11 +70,11 @@ onMounted(function () {
     skin: user.infoPong.skin.default.paddle,
   });
 
-  console.log("pros: ", props);
+  //console.log("pros: ", props);
   
   const tableBoard = new TablePong(canvas.width, canvas.height, "DarkSlateBlue", "#1e8c2f");
   const game = new GamePong(canvas, canvas.width, canvas.height - 228, 164, ctx, props as gameRequest, tableBoard);
-  console.log(props);
+  //console.log(props);
 
   
   //Resize Button
@@ -131,8 +131,8 @@ onMounted(function () {
   button.addEventListener("click", leaveTheGame);
 
   socket.on("start_game", (e: GameStart) => {
-    console.log("Start:", e);
-    console.log(game);
+    //console.log("Start:", e);
+    //console.log(game);
     game.audio("music_play");
 
     game.maxScore = e.data.maxScore;
@@ -211,7 +211,7 @@ onMounted(function () {
   socket.on("end_game", (e: gameEnd) => {
     status.value = Status.Finish;
     game.updateStatus(Status.Finish);
-    console.log(e);
+    //console.log(e);
     game.endGame = e;
 
     //Buton Leave

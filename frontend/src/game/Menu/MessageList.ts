@@ -42,12 +42,12 @@ export class MessageList {
         this.usersList = this.usersList.filter((block: any) => block.blockerId !== this.user.id);
       }
       
-      console.log("Message List", this.title, ":", this.usersList)
+      //console.log("Message List", this.title, ":", this.usersList)
 
       this.pagination_list = new PaginationMenu(this.usersList, 8, 1);
 
 
-      console.log("friendRequests: ", this.usersList);
+      //console.log("friendRequests: ", this.usersList);
       
       this.menu.add(this.background);
       this.menu.add(this.createButtonExit(38, 16));
@@ -59,7 +59,7 @@ export class MessageList {
         this.response[index] = -1;
         const i = index - page * this.pagination_list.max_for_page;
         
-        console.log(request)
+        //console.log(request)
         if (this.title == "Request")
         {
           this.menu.add(this.background, this.createInvite(index, 38.5, 16 + (i + 1) * 6, 16, request.requestorName, request.requestorId));

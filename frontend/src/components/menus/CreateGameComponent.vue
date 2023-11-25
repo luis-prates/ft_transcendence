@@ -154,7 +154,7 @@ function saveTable() {
 
     const tableSkin = user.infoPong.skin.tables[currentPageTable.value];
 
-    console.log("skinImage: ", tableSkin);
+    //console.log("skinImage: ", tableSkin);
 
     user.infoPong.skin.default.tableColor = selectedColor.value;
     user.infoPong.skin.default.tableSkin = tableSkin;
@@ -167,7 +167,7 @@ async function createGame() {
     const skinImage = getTable();
     const color = selectedColor.value ? selectedColor.value : "#1e8c2f";
 
-    console.log({ objectId: data.objectId, maxScore: scoreCurrent.value, table: color, tableSkin: skinImage, bot: typeCurrent.value == 1 });
+    //console.log({ objectId: data.objectId, maxScore: scoreCurrent.value, table: color, tableSkin: skinImage, bot: typeCurrent.value == 1 });
 
     const gameCreate = await userStore().createGame(user.id, { objectId: data.objectId, maxScore: scoreCurrent.value, table: color, tableSkin: skinImage, bot: typeCurrent.value == 1 });
     if (gameCreate?.id) {
