@@ -1,0 +1,323 @@
+body,html{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .chat{
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  .card{
+    height: 100%;
+    border-radius: 15px !important;
+    background-color: rgba(20, 24, 7, 0.8) !important;
+    pointer-events: all;
+  }
+  .contacts_body{
+    padding:  0.75rem 0 !important;
+    overflow-y: auto;
+    white-space: nowrap;
+  }
+  .msg_card_body{
+    overflow-y: auto;
+  }
+  .card-header{
+    border-radius: 15px 15px 0 0 !important;
+    border-bottom: 0 !important;
+  }
+  .card-footer{
+  border-radius: 0 0 15px 15px !important;
+    border-top: 0 !important;
+  }
+  .container{
+    align-content: center;
+  }
+  .search{
+    border-radius: 15px 0 0 15px !important;
+    background-color: rgba(0,0,0,0.3) !important;
+    border:0 !important;
+    color:white !important;
+  }
+  .search::placeholder {
+    color: white;
+  }
+  .search:focus{
+     box-shadow:none !important;
+   outline:0px !important;
+  }
+  .type_msg{
+    background-color: rgba(0,0,0,0.3) !important;
+    border:0 !important;
+    color:white !important;
+    height: 40px !important;
+    overflow-y: auto;
+  }
+  .type_msg::placeholder {
+    color: white;
+  }
+    .type_msg:focus{
+     box-shadow:none !important;
+   outline:0px !important;
+  }
+  .attach_btn{
+  border-radius: 15px 0 0 15px !important;
+  background-color: rgba(0,0,0,0.3) !important;
+    border:0 !important;
+    color: white !important;
+    cursor: pointer;
+  }
+  .send_btn{
+  border-radius: 0 15px 15px 0 !important;
+  min-width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+    border:0 !important;
+    color: white !important;
+    cursor: pointer;
+  }
+  .search_btn{
+    border-radius: 0 15px 15px 0 !important;
+    background-color: rgba(0,0,0,0.3) !important;
+    border:0 !important;
+    color: white !important;
+    cursor: pointer;
+  }
+  .contacts{
+    list-style: none;
+    padding: 0;
+  }
+  .contacts li{
+    width: 100% !important;
+    padding: 5px 10px;
+  }
+  .active{
+    background-color: rgba(0,0,0,0.3);
+  }
+  .user_img{
+    height: 40px;
+    width: 40px;
+    border:1.5px solid #000000;
+    border-radius: 10px;
+  }
+  .user_img_msg{
+    height: 40px;
+    width: 40px;
+    border:1.5px solid #f5f6fa;
+    border-radius: 10px;
+  }
+  .img_cont{
+    position: relative;
+    height: 40px;
+    width: 40px;
+  }
+  .img_cont_msg{
+    height: 40px;
+    width: 40px;
+  }
+  .online_icon{
+  position: absolute;
+  height: 15px;
+  width:15px;
+  background-color: #4cd137;
+  border-radius: 50%;
+  bottom: -0.2em;
+  right: -0.2em;
+  border:1.5px solid white;
+  }
+  .ONLINE{
+    background-color: #4cd137 !important;
+  }
+  .OFFLINE{
+  background-color: #c23616 !important;
+  }
+  .IN_GAME{
+  background-color: #c2ae16 !important;
+  }
+  .user_info{
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 15px;
+  display:inline-block;
+    width:180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .user_info span{
+  font-size: 20px;
+  color: white;
+  }
+  .user_info p{
+  font-size: 10px;
+  color: rgba(255,255,255,0.6);
+  }
+  .video_cam{
+  margin-left: 50px;
+  margin-top: 5px;
+  margin: 0px 0px 0px auto;
+  }
+  .video_cam span{
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  margin-right: 20px;
+  }
+  .config_chat {
+    background-color: transparent;
+    border-color: transparent;
+  }
+  .config_chat_img {
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
+    max-width: 20px; /* Set the maximum width */
+    max-height: 20px; /* Set the maximum height */
+  }
+  .send_img {
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
+    max-width: 20px; /* Set the maximum width */
+    max-height: 20px; /* Set the maximum height */
+  }
+  .close_chat {
+    background-color: transparent;
+    border-color: transparent;
+  }
+  .close_chat_img {
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
+    max-width: 20px; /* Set the maximum width */
+    max-height: 20px; /* Set the maximum height */
+  }
+  .hide_chat {
+    background-color: black; 
+    border-color: transparent; 
+    color: white;
+  }
+  .msg_cotainer{
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 10px;
+  border-radius: 25px;
+  background-color: #82ccdd;
+  padding: 10px;
+  position: relative;
+  min-width: 45px;
+  display: inline-block;
+  }
+  .msg_cotainer_send{
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-right: 10px;
+  border-radius: 25px;
+  background-color: #78e08f;
+  padding: 10px;
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+  }
+  .msg_time{
+  position: absolute;
+  white-space: pre;
+  left: 0;
+  bottom: -15px;
+  color: rgba(255,255,255,0.5);
+  font-size: 10px;
+  }
+  .msg_time_send{
+  position: absolute;
+  white-space: pre;
+  right:0;
+  bottom: -15px;
+  color: rgba(255,255,255,0.5);
+  font-size: 10px;
+  }
+  .msg_head{
+  position: relative;
+  }
+  #action_menu_btn{
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: white;
+  cursor: pointer;
+  font-size: 20px;
+  }
+  .action_menu{
+  z-index: 1;
+  position: absolute;
+  padding: 15px 0;
+  background-color: rgba(0,0,0,0.5);
+  color: white;
+  border-radius: 15px;
+  top: 30px;
+  right: 15px;
+  display: none;
+  }
+  .action_menu ul{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  }
+  .action_menu ul li{
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 5px;
+  }
+  .action_menu ul li i{
+  padding-right: 10px;
+  }
+  .action_menu ul li:hover{
+  cursor: pointer;
+  background-color: rgba(0,0,0,0.2);
+  }
+  .chat_filter {
+    background-color: transparent;
+    border-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 25%;
+    padding-bottom: 10%;
+  }
+  .chat_filter_button{
+    background-color: transparent;
+    border-color: transparent;
+    border-radius: 10px;
+  }
+  .chat_filter_button:hover{
+    background-color: black;
+  }
+  .chat_filter_img{
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
+    max-width: 20px; /* Set the maximum width */
+    max-height: 20px; /* Set the maximum height */
+  }
+  @media(max-width: 576px){
+  .contacts_card{
+  margin-bottom: 15px !important;
+  }
+  }
+  .contacts_card ul li:hover{
+  cursor: pointer;
+  background-color: rgba(240, 223, 223, 0.2);
+  }
+  /* width */
+  ::-webkit-scrollbar {
+  width: 10px;
+  }
+  /* Track */
+  ::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+  }
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+  background: #7F7FD5; 
+  border-radius: 10px;
+  }
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+  background: #5454b6; 
+  }
+  

@@ -1,0 +1,36 @@
+# Environment variables declared in this file are automatically made available to Prisma.
+# See the documentation for more detail: https://pris.ly/d/prisma-schema#accessing-environment-variables-from-the-schema
+
+# Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB and CockroachDB.
+# See the documentation for all the connection string options: https://pris.ly/d/connection-strings
+
+# Change localhost by external public IP address!
+
+# database
+
+POSTGRES_USER="database user"
+POSTGRES_PASSWORD="database password"
+POSTGRES_DB="database name"
+POSTGRES_CONTAINER_NAME="postgres-docker-container-name"
+POSTGRES_PORT="port to connect to postgres"
+
+# common
+FRONTEND_PORT="port to run frontend on"
+BACKEND_PORT="port to run backend on"
+
+# backend
+
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER_NAME}:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public
+JWT_SECRET='jwt secret'
+FORTYTWO_CLIENT_ID="42 API Client ID"
+FORTYTWO_CLIENT_SECRET="42 API Client Secret"
+FORTYTWO_CALLBACK_URL=http://localhost:${FRONTEND_PORT}/auth/42/return
+FRONTEND_REDIRECT_URL="http://localhost:80"
+
+# frontend
+
+BACKEND_SERVER_URL=http://localhost:${FRONTEND_PORT}
+LOBBY_SERVER_URL=ws://localhost:${FRONTEND_PORT}/lobby
+GAME_SERVER_URL=ws://localhost:${FRONTEND_PORT}/game
+CHAT_SERVER_URL=ws://localhost:${FRONTEND_PORT}/chat
+REDIRECT_URI_42_API=http://localhost:${FRONTEND_PORT}/auth/42/return

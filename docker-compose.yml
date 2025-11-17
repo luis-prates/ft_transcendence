@@ -1,0 +1,86 @@
+version: '3.8'
+services:
+  init_certs:
+    image: alpine:latest
+    volumes:
+      - certs:/certs
+    command: >
+      /bin/sh -c "
+      apk --no-cache add openssl &&
+      if [ ! -f /certs/key.pem ]; then
+        openssl req -x509 -nodes -days 365 -subj '/C=PT/ST=Santarem/L=Abrantes/O=42lisboa/CN=lprates.42.fr' -newkey rsa:2048 -keyout /certs/nginx-selfsigned.key -out /certs/nginx-selfsigned.crt;
+      fi
+      "
+  # Create frontend container
+  frontend: # Name of our service
+    build: ./frontend # path to dockerfile
+    ports: # Port binding to host from docker container
+      - ${FRONTEND_PORT}:443 # Bind port from browser of host to 443 of container for ssl
+      #- 80:80 # bind to port 80 for http
+    environment:
+      - BACKEND_SERVER_URL
+      - LOBBY_SERVER_URL
+      - GAME_SERVER_URL
+      - CHAT_SERVER_URL
+      - REDIRECT_URI_42_API
+    container_name: frontend-docker
+    restart: always # What to do if container crashes
+    depends_on:
+      - backend
+      - init_certs
+    networks:
+      - transcendence
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - certs:/etc/ssl
+  # Create backend container
+  backend:
+    # Create backend container  
+    build: ./backend
+    expose:
+      - BACKEND_PORT # Expose port 3370 to other containers
+    ports:
+      # - ${BACKEND_PORT}:3000 # For debugging - Bind port 3370 of host to 3370 of container
+      - "5555:5555" # For debugging - access to prisma studio 
+    environment:
+      - DATABASE_URL
+      - JWT_SECRET
+      - BACKEND_PORT
+      - FORTYTWO_CLIENT_ID
+      - FORTYTWO_CLIENT_SECRET
+      - FORTYTWO_CALLBACK_URL
+      - FRONTEND_REDIRECT_URL
+      - NODE_TLS_REJECT_UNAUTHORIZED
+      - SESSION_SECRET
+    container_name: backend-docker
+    restart: always
+    depends_on:
+      - db
+      - init_certs
+    networks:
+      - transcendence
+    volumes:
+      - certs:/etc/ssl/
+  # Create database container
+  db:
+    image: postgres:alpine
+    container_name: ${POSTGRES_CONTAINER_NAME}
+    expose:
+      - POSTGRES_PORT
+    ports:
+      - ${POSTGRES_PORT}:5432
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    networks:
+      - transcendence
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+networks:
+  transcendence:
+
+volumes:
+  postgres_data:
+  certs:

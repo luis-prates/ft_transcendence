@@ -1,0 +1,63 @@
+# compiled output
+dist
+node_modules
+dist-ssr
+*.local
+package-lock.json
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+
+# Tests
+coverage
+.nyc_output
+
+# IDEs and editors - backend
+.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDEs and editors - frontend
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# frontend/src/env.ts
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+/cypress/videos/
+/cypress/screenshots/
+
+.env
+
+# Prisma migrations
+backend/prisma/migrations/
+
+# Frontend env.ts
+# can be pushed to git as it no longer has env vars
+# frontend/src/env.ts
+
+# certificates
+nginx-selfsigned.crt
+nginx-selfsigned.key
